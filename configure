@@ -1412,6 +1412,12 @@ ios7)
 	_host_cpu=arm
 	_host_alias=arm-apple-darwin11
 	;;
+m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
+	_host_os=amigaos3
+	_host_cpu=m68k
+	_host_alias=m68k-unknown-amigaos
+	#append_var LDFLAGS "-noixemul"
+	;;
 linupy)
 	_host_os=linux
 	_host_cpu=arm
@@ -1908,7 +1914,7 @@ echo $_use_cxx11
 # However, some platforms use GNU extensions in system header files, so
 # for these we must not use -pedantic.
 case $_host_os in
-android | androidsdl | gamecube | psp | tizen | wii | webos)
+amigaos3 | android | androidsdl | gamecube | psp | tizen | wii | webos)
 	;;
 *)
 	# ICC does not support pedantic, while GCC and clang do.
@@ -2193,7 +2199,13 @@ case $_host_os in
 		append_var LDFLAGS "-L$DEVKITPRO/portlibs/3ds/lib"
 		append_var LIBS "-lcitro3d -lctru"
 		;;
-	amigaos*)
+	m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
+		append_var DEFINES "-DFORBIDDEN_SYMBOL_ALLOW_ALL"
+		# append_var CXXFLAGS "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DNO_INLINE_VARARGS -DNO_INLINE_STDARG"
+		append_var CXXFLAGS "-fno-access-control"
+		add_line_to_config_mk 'AMIGAOS3 = 1'
+		;;
+	amigaos4*)
 		append_var LDFLAGS "-Wl,--export-dynamic"
 		append_var LDFLAGS "-L/sdk/local/newlib/lib"
 		# We have to use 'long' for our 4 byte typedef because AmigaOS already typedefs (u)int32
@@ -2856,6 +2868,13 @@ if test -n "$_host"; then
 			_seq_midi=no
 			_timidity=no
 			;;
+		m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
+			append_var DEFINES ""
+			_backend="amigaos3"
+			_build_scalers=no
+			_seq_midi=no
+			_timidity=no
+			;;
 		m68k-atari-mint)
 			append_var DEFINES "-DSYSTEM_NOT_SUPPORTING_D_TYPE"
 			_ranlib=m68k-atari-mint-ranlib
@@ -3165,6 +3184,8 @@ case $_backend in
 			append_var CFLAGS "-isysroot $SDKROOT -F$SDKROOT/System/Library/Frameworks"
 			append_var CXXFLAGS "-isysroot $SDKROOT -I$SDKROOT/usr/include/c++/4.2.1 -F$SDKROOT/System/Library/Frameworks"
 		fi
+		;;
+	amigaos3)
 		;;
 	linuxmoto)
 		append_var DEFINES "-DLINUXMOTO"
