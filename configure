@@ -1572,6 +1572,7 @@ esac
 if test "$_debug_build" != no; then
 	# Use the system default format for debug info.
 	append_var CXXFLAGS "-g"
+	append_var LDFLAGS "-g"
 fi
 
 if test "$_release_build" = yes; then
@@ -2862,7 +2863,6 @@ if test -n "$_host"; then
 			;;
 		m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
 			append_var DEFINES ""
-			append_var CXXFLAGS "-fomit-frame-pointer"
 			append_var CXXFLAGS "-m68030"
 			append_var CXXFLAGS "-m68881"
 			# try producing smaller executable
@@ -2871,13 +2871,14 @@ if test -n "$_host"; then
 			if test "$_debug_build" != yes; then
 				# throw away all debug info and symbols
 				append_var CXXFLAGS "-s"
+				append_var CXXFLAGS "-fomit-frame-pointer"
 			fi
 
 			_backend="amigaos3"
 			_build_scalers=no
 			_seq_midi=no
 			_timidity=no
-			# Use -O3 on the OpenPandora for optimized builds.
+			# Use -O3 on the Amiga for optimized builds.
 			if test "$_optimizations" = yes; then
 				_optimization_level=-Os
 			fi

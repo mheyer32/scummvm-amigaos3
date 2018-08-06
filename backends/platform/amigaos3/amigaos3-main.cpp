@@ -170,7 +170,14 @@ int main(int argcWb, char* argvWb[]) {
 	// Pre initialize the backend
 	((OSystem_AmigaOS3*)g_system)->init(audioThreadPriority);
 
-	char* argv[] = {"ScummVM", NULL};
+	char* argv[] = {"ScummVM"
+#ifndef NDEBUG
+									// FIXME: make this come from argc/argv and tooltypes
+									,
+									"--debuglevel=100"
+#endif
+									,
+									NULL};
 	int argc = sizeof(argv) / sizeof(char*) - 1;
 
 	if (closeWb) {
