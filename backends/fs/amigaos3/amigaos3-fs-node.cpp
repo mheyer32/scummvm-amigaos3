@@ -18,12 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL: https://scummvm.svn.sourceforge.net/svnroot/scummvm/scummvm/tags/release-1-0-0/backends/fs/amigaos4/amigaos4-fs.cpp $
+ * $URL:
+ * https://scummvm.svn.sourceforge.net/svnroot/scummvm/scummvm/tags/release-1-0-0/backends/fs/amigaos4/amigaos4-fs.cpp $
  * $Id: amigaos4-fs.cpp 36171 2009-02-01 09:49:24Z wjpalenstijn $
  */
-
-
-
 
 #include "backends/fs/amigaos3/amigaos3-fs-node.h"
 #include "backends/fs/stdiostream.h"
@@ -31,26 +29,23 @@
 #include "common/debug.h"
 
 #ifndef PATH_MAX
- #define PATH_MAX 1024
+#define PATH_MAX 1024
 #endif
 
 /****************************************************************************/
 /* Handy macros for checking what kind of object a ExAllData's
-   ed_Type describes;  ExAll() */
+	 ed_Type describes;  ExAll() */
 
-#define EAD_IS_FILE(ead)    ((ead)->ed_Type <  0)
+#define EAD_IS_FILE(ead) ((ead)->ed_Type < 0)
 
-#define EAD_IS_DRAWER(ead)  ((ead)->ed_Type >= 0 && \
-                             (ead)->ed_Type != ST_SOFTLINK)
+#define EAD_IS_DRAWER(ead) ((ead)->ed_Type >= 0 && (ead)->ed_Type != ST_SOFTLINK)
 
-#define EAD_IS_LINK(ead)    ((ead)->ed_Type == ST_SOFTLINK || \
-                             (ead)->ed_Type == ST_LINKDIR || \
-                             (ead)->ed_Type == ST_LINKFILE)
+#define EAD_IS_LINK(ead) \
+	((ead)->ed_Type == ST_SOFTLINK || (ead)->ed_Type == ST_LINKDIR || (ead)->ed_Type == ST_LINKFILE)
 
 #define EAD_IS_SOFTLINK(ead) ((ead)->ed_Type == ST_SOFTLINK)
 
-#define EAD_IS_LINKDIR(ead)  ((ead)->ed_Type == ST_LINKDIR)
-
+#define EAD_IS_LINKDIR(ead) ((ead)->ed_Type == ST_LINKDIR)
 
 /****************************************************************************/
 /* Handy macros for checking what kind of object a FileInfoBlock
@@ -59,33 +54,23 @@
  * in the include file;  dos/exall.h
  */
 
-#define FIB_IS_FILE(fib)      ((fib)->fib_DirEntryType <  0)
+#define FIB_IS_FILE(fib) ((fib)->fib_DirEntryType < 0)
 
-#define FIB_IS_DRAWER(fib)    ((fib)->fib_DirEntryType >= 0 && \
-                               (fib)->fib_DirEntryType != ST_SOFTLINK)
+#define FIB_IS_DRAWER(fib) ((fib)->fib_DirEntryType >= 0 && (fib)->fib_DirEntryType != ST_SOFTLINK)
 
-#define FIB_IS_LINK(fib)      ((fib)->fib_DirEntryType == ST_SOFTLINK || \
-                               (fib)->fib_DirEntryType == ST_LINKDIR || \
-                               (fib)->fib_DirEntryType == ST_LINKFILE)
+#define FIB_IS_LINK(fib)                                                                \
+	((fib)->fib_DirEntryType == ST_SOFTLINK || (fib)->fib_DirEntryType == ST_LINKDIR || \
+	 (fib)->fib_DirEntryType == ST_LINKFILE)
 
-#define FIB_IS_SOFTLINK(fib)  ((fib)->fib_DirEntryType == ST_SOFTLINK)
+#define FIB_IS_SOFTLINK(fib) ((fib)->fib_DirEntryType == ST_SOFTLINK)
 
-#define FIB_IS_LINKDIR(fib)   ((fib)->fib_DirEntryType == ST_LINKDIR)
-
+#define FIB_IS_LINKDIR(fib) ((fib)->fib_DirEntryType == ST_LINKDIR)
 
 // 16K ExAllData buffer.
-#define FILE_DATA_BUFFER  16384
+#define FILE_DATA_BUFFER 16384
 
 // 64K ExAllData buffer.
 //#define FILE_DATA_BUFFER    65536
-
-
-
-
-
-
-
-
 
 /**
  * Returns the last component of a given path.
@@ -95,7 +80,7 @@
  */
 static const char *lastPathComponent(const Common::String &str) {
 #ifndef NDEBUG
-    debug(8, "lastPathComponent(%s)", str.c_str());
+	debug(8, "lastPathComponent(%s)", str.c_str());
 #endif
 
 	int offset = str.size();
@@ -106,10 +91,10 @@ static const char *lastPathComponent(const Common::String &str) {
 
 	const char *p = str.c_str();
 
-	while (offset > 0 && (p[offset-1] == '/' || p[offset-1] == ':'))
+	while (offset > 0 && (p[offset - 1] == '/' || p[offset - 1] == ':'))
 		offset--;
 
-	while (offset > 0 && (p[offset-1] != '/' && p[offset-1] != ':'))
+	while (offset > 0 && (p[offset - 1] != '/' && p[offset - 1] != ':'))
 		offset--;
 
 	return p + offset;
@@ -123,7 +108,7 @@ static const char *lastPathComponent(const Common::String &str) {
  */
 static int getFibProtection(Common::String path) {
 #ifndef NDEBUG
-    debug(8, "getFibProtection(%s)", path.c_str());
+	debug(8, "getFibProtection(%s)", path.c_str());
 #endif
 
 	int fibProt = -1;
@@ -147,100 +132,92 @@ static int getFibProtection(Common::String path) {
 
 static void CopyStringBSTRToC(BPTR bptr, char *destination) {
 #ifndef NDEBUG
-    debug(8, "CopyStringBSTRToC(bptr, %s)", destination);
+	debug(8, "CopyStringBSTRToC(bptr, %s)", destination);
 #endif
 
-    const char *source = (const char*)BADDR(bptr);
-    size_t num = *source++;
+	const char *source = (const char *)BADDR(bptr);
+	size_t num = *source++;
 
-    strncpy(destination, source, num);
-    destination[num] = 0;
+	strncpy(destination, source, num);
+	destination[num] = 0;
 }
-
 
 AbstractFSList AmigaOS3FilesystemNode::listVolumes() const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::listVolumes()");
+	debug(8, "AmigaOS3FilesystemNode::listVolumes()");
 #endif
 
-    AbstractFSList myList;
-    char buffer[MAXPATHLEN];
+	AbstractFSList myList;
+	char buffer[MAXPATHLEN];
 
-    struct DosList *dosList = LockDosList(LDF_READ | LDF_VOLUMES | LDF_DEVICES);
-    if (!dosList) {
-    	return myList;
-    }
+	struct DosList *dosList = LockDosList(LDF_READ | LDF_VOLUMES | LDF_DEVICES);
+	if (!dosList) {
+		return myList;
+	}
 
-    // List the volumes.
-    struct DosList *volumeList = dosList;
+	// List the volumes.
+	struct DosList *volumeList = dosList;
 
-    volumeList = NextDosEntry(volumeList, LDF_VOLUMES);
+	volumeList = NextDosEntry(volumeList, LDF_VOLUMES);
 
-    while (volumeList) {
-        if (volumeList->dol_Type == DLT_VOLUME && volumeList->dol_Name && volumeList->dol_Task) {
+	while (volumeList) {
+		if (volumeList->dol_Type == DLT_VOLUME && volumeList->dol_Name && volumeList->dol_Task) {
+			// Find device name
+			char *devName = new char[MAXPATHLEN];
 
-            // Find device name
-            char *devName = new char[MAXPATHLEN];
+			struct DosList *deviceList = volumeList;
 
-            struct DosList *deviceList = volumeList;
+			deviceList = NextDosEntry(deviceList, LDF_DEVICES);
 
-            deviceList = NextDosEntry(deviceList, LDF_DEVICES);
+			while (deviceList) {
+				if (deviceList->dol_Task == volumeList->dol_Task) {
+					CopyStringBSTRToC(deviceList->dol_Name, devName);
+					break;
+				}
 
-            while (deviceList) {
-                if (deviceList->dol_Task == volumeList->dol_Task) {
-                    CopyStringBSTRToC(deviceList->dol_Name, devName);
-                    break;
-                }
+				deviceList = NextDosEntry(deviceList, LDF_DEVICES);
+			}
 
-                deviceList = NextDosEntry(deviceList, LDF_DEVICES);
-            }
+			// Find the volume name
+			CopyStringBSTRToC(volumeList->dol_Name, buffer);
 
-
-            // Find the volume name
-            CopyStringBSTRToC(volumeList->dol_Name, buffer);
-
-            // Volume name + '\0'
+			// Volume name + '\0'
 			char *volName = new char[strlen(buffer) + 1];
 
-            strcpy(volName, buffer);
+			strcpy(volName, buffer);
 
 			strcat(buffer, ":");
 
-            BPTR volumeLock = Lock((STRPTR)buffer, SHARED_LOCK);
-            if (volumeLock) {
-                char *displayName = new char[strlen(volName) + strlen(devName) + 3];
-                sprintf(displayName, "%s (%s)", volName, devName);
+			BPTR volumeLock = Lock((STRPTR)buffer, SHARED_LOCK);
+			if (volumeLock) {
+				char *displayName = new char[strlen(volName) + strlen(devName) + 3];
+				sprintf(displayName, "%s (%s)", volName, devName);
 
-                AmigaOS3FilesystemNode *entry = new AmigaOS3FilesystemNode(volumeLock, displayName);
-                delete[] displayName;
+				AmigaOS3FilesystemNode *entry = new AmigaOS3FilesystemNode(volumeLock, displayName);
+				delete[] displayName;
 
-                if (entry) {
-                    myList.push_back(entry);
-                }
+				if (entry) {
+					myList.push_back(entry);
+				}
 
-                UnLock(volumeLock);
-            }
+				UnLock(volumeLock);
+			}
 
-            delete[] devName;
-            delete[] volName;
+			delete[] devName;
+			delete[] volName;
 
-            volumeList = NextDosEntry(volumeList, LDF_VOLUMES);
-        }
-    }
+			volumeList = NextDosEntry(volumeList, LDF_VOLUMES);
+		}
+	}
 
-    UnLockDosList(LDF_READ | LDF_VOLUMES | LDF_DEVICES);
+	UnLockDosList(LDF_READ | LDF_VOLUMES | LDF_DEVICES);
 
-
-    return myList;
+	return myList;
 }
-
-
-
-
 
 AmigaOS3FilesystemNode::AmigaOS3FilesystemNode() {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode()");
+	debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode()");
 #endif
 
 	_sDisplayName = "Available Volumes";
@@ -252,7 +229,7 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode() {
 
 AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const Common::String &p) {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(%s)", p.c_str());
+	debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(%s)", p.c_str());
 #endif
 
 	int offset = p.size();
@@ -267,7 +244,7 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const Common::String &p) {
 	_bIsDirectory = false;
 
 	struct FileInfoBlock *fib = (struct FileInfoBlock *)AllocDosObject(DOS_FIB, TAG_END);
-    if (!fib) {
+	if (!fib) {
 		return;
 	}
 
@@ -284,8 +261,7 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const Common::String &p) {
 				const char c = _sPath.lastChar();
 				if (c != '/' && c != ':')
 					_sPath += '/';
-			}
-			else {
+			} else {
 				_bIsValid = true;
 			}
 		}
@@ -298,11 +274,10 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const Common::String &p) {
 
 AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(BPTR pLock, const char *pDisplayName) {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(pLock, %s)", pDisplayName);
+	debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(pLock, %s)", pDisplayName);
 
-    assert (pLock);
+	assert(pLock);
 #endif
-
 
 	int bufSize = MAXPATHLEN;
 	_pFileLock = 0;
@@ -326,12 +301,12 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(BPTR pLock, const char *pDisplayN
 		delete[] n;
 	}
 
-	_bIsValid =	false;
+	_bIsValid = false;
 	_bIsDirectory = false;
 
-	struct FileInfoBlock *fib = (struct	FileInfoBlock *)AllocDosObject(DOS_FIB, TAG_END);
+	struct FileInfoBlock *fib = (struct FileInfoBlock *)AllocDosObject(DOS_FIB, TAG_END);
 	if (!fib) {
-        return;
+		return;
 	}
 
 	if (Examine(pLock, fib) != DOSFALSE) {
@@ -343,8 +318,7 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(BPTR pLock, const char *pDisplayN
 			const char c = _sPath.lastChar();
 			if (c != '/' && c != ':')
 				_sPath += '/';
-		}
-		else {
+		} else {
 			_bIsValid = true;
 		}
 	}
@@ -353,9 +327,9 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(BPTR pLock, const char *pDisplayN
 }
 
 // We need the custom copy constructor because of DupLock()
-AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const AmigaOS3FilesystemNode& node) {
+AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const AmigaOS3FilesystemNode &node) {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(AmigaOS3FilesystemNode)");
+	debug(8, "AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(AmigaOS3FilesystemNode)");
 #endif
 
 	_sDisplayName = node._sDisplayName;
@@ -367,38 +341,38 @@ AmigaOS3FilesystemNode::AmigaOS3FilesystemNode(const AmigaOS3FilesystemNode& nod
 
 AmigaOS3FilesystemNode::~AmigaOS3FilesystemNode() {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::~AmigaOS3FilesystemNode()");
+	debug(8, "AmigaOS3FilesystemNode::~AmigaOS3FilesystemNode()");
 #endif
 
 	if (_pFileLock) {
 		UnLock(_pFileLock);
-    }
+	}
 }
 
 bool AmigaOS3FilesystemNode::exists() const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::exists(): %s", _sPath.c_str());
+	debug(8, "AmigaOS3FilesystemNode::exists(): %s", _sPath.c_str());
 #endif
 
-	if(_sPath.empty()) {
-        return false;
-    }
+	if (_sPath.empty()) {
+		return false;
+	}
 
 	bool nodeExists = false;
 
 	BPTR pLock = Lock((STRPTR)_sPath.c_str(), SHARED_LOCK);
 	if (pLock) {
-        nodeExists = true;
+		nodeExists = true;
 		UnLock(pLock);
-    }
+	}
 
-    debug(8, "-> %d\n", nodeExists);
+	debug(8, "-> %d\n", nodeExists);
 	return nodeExists;
 }
 
 AbstractFSNode *AmigaOS3FilesystemNode::getChild(const Common::String &n) const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::getChild()");
+	debug(8, "AmigaOS3FilesystemNode::getChild()");
 #endif
 
 	if (!_bIsDirectory) {
@@ -417,17 +391,17 @@ AbstractFSNode *AmigaOS3FilesystemNode::getChild(const Common::String &n) const 
 
 bool AmigaOS3FilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, bool hidden) const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::getChildren()");
+	debug(8, "AmigaOS3FilesystemNode::getChildren()");
 #endif
 
-	//TODO: honor the hidden flag
+	// TODO: honor the hidden flag
 
 	if (!_bIsValid) {
-		return false; // Empty list
+		return false;  // Empty list
 	}
 
 	if (!_bIsDirectory) {
-		return false; // Empty list
+		return false;  // Empty list
 	}
 
 	if (_pFileLock == 0) {
@@ -447,10 +421,10 @@ bool AmigaOS3FilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, 
 
 				LONG error = IoErr();
 				if (!bExMore && error != ERROR_NO_MORE_ENTRIES)
-					break; // Abnormal failure
+					break;  // Abnormal failure
 
-				if (eac->eac_Entries ==	0)
-					continue; // Normal failure, no entries
+				if (eac->eac_Entries == 0)
+					continue;  // Normal failure, no entries
 
 				struct ExAllData *ead = data;
 				do {
@@ -458,13 +432,13 @@ bool AmigaOS3FilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, 
 						(EAD_IS_DRAWER(ead) && (mode == Common::FSNode::kListDirectoriesOnly)) ||
 						(EAD_IS_FILE(ead) && (mode == Common::FSNode::kListFilesOnly))) {
 						Common::String full_path = _sPath;
-						full_path += (char*)ead->ed_Name;
+						full_path += (char *)ead->ed_Name;
 
 						BPTR lock = Lock((STRPTR)full_path.c_str(), SHARED_LOCK);
 						if (lock) {
 							AmigaOS3FilesystemNode *entry = new AmigaOS3FilesystemNode(lock, (char *)ead->ed_Name);
 							if (entry) {
-							    myList.push_back(entry);
+								myList.push_back(entry);
 							}
 
 							UnLock(lock);
@@ -483,10 +457,9 @@ bool AmigaOS3FilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, 
 	return true;
 }
 
-
 AbstractFSNode *AmigaOS3FilesystemNode::getParent() const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::getParent()");
+	debug(8, "AmigaOS3FilesystemNode::getParent()");
 #endif
 
 	if (!_bIsDirectory) {
@@ -499,23 +472,23 @@ AbstractFSNode *AmigaOS3FilesystemNode::getParent() const {
 
 	AmigaOS3FilesystemNode *node;
 
-	BPTR parentDir = ParentDir( _pFileLock );
+	BPTR parentDir = ParentDir(_pFileLock);
 	if (parentDir) {
 		node = new AmigaOS3FilesystemNode(parentDir);
 		UnLock(parentDir);
 	} else {
 		node = new AmigaOS3FilesystemNode();
-    }
+	}
 
 	return node;
 }
 
 bool AmigaOS3FilesystemNode::isReadable() const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::isReadable()");
+	debug(8, "AmigaOS3FilesystemNode::isReadable()");
 #endif
 
-    bool readable = false;
+	bool readable = false;
 	int fibProt = getFibProtection(_sPath);
 
 	if (fibProt >= 0) {
@@ -532,7 +505,7 @@ bool AmigaOS3FilesystemNode::isReadable() const {
 
 bool AmigaOS3FilesystemNode::isWritable() const {
 #ifndef NDEBUG
-    debug(8, "AmigaOS3FilesystemNode::isWritable()");
+	debug(8, "AmigaOS3FilesystemNode::isWritable()");
 #endif
 
 	bool writable = false;
@@ -550,11 +523,6 @@ bool AmigaOS3FilesystemNode::isWritable() const {
 	return writable;
 }
 
-
-
-
-
-
 Common::SeekableReadStream *AmigaOS3FilesystemNode::createReadStream() {
 	return StdioStream::makeFromPath(getPath().c_str(), false);
 }
@@ -562,7 +530,6 @@ Common::SeekableReadStream *AmigaOS3FilesystemNode::createReadStream() {
 Common::WriteStream *AmigaOS3FilesystemNode::createWriteStream() {
 	return StdioStream::makeFromPath(getPath().c_str(), true);
 }
-
 
 Common::String AmigaOS3FilesystemNode::getName() const {
 	return _sDisplayName;
@@ -578,4 +545,3 @@ bool AmigaOS3FilesystemNode::create(bool isDirectory) {
 	error("Not supported");
 	return false;
 }
-                

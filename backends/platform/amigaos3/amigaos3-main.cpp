@@ -25,30 +25,25 @@
 
 #include <stdio.h>
 
-#include "common/scummsys.h"
 #include "base/main.h"
+#include "common/scummsys.h"
 
 #include "backends/platform/amigaos3/amigaos3-aga.h"
 
-
 // Amiga includes.
-#include <proto/icon.h>
 #include <inline/icon.h>
+#include <proto/icon.h>
 
 #include <workbench/startup.h>
 
-
 #define DEFAULT_AUDIO_THREAD_PRIORITY 0
 
-
-const char *ID = "$VER: ScummVM 1.8.0\r\n";
-
-
+const char* ID = "$VER: ScummVM 1.8.0\r\n";
 
 static int wbClosed = 0;
 
 struct CxBase* CxBase;
-extern struct Library *CyberGfxBase;
+extern struct Library* CyberGfxBase;
 struct GfxBase* GfxBase;
 struct Library* IconBase;
 struct IntuitionBase* IntuitionBase;
@@ -60,147 +55,142 @@ extern struct Device* TimerBase;
 struct Device* TimerBase;
 
 static void unload_libraries(void) {
-    if (CxBase != NULL) {
-        CloseLibrary((struct Library*) CxBase);
-        CxBase = NULL;
-    }
+	if (CxBase != NULL) {
+		CloseLibrary((struct Library*)CxBase);
+		CxBase = NULL;
+	}
 
-    if (CyberGfxBase != NULL) {
-        CloseLibrary((struct Library*) CyberGfxBase);
-        CyberGfxBase = NULL;
-    }
+	if (CyberGfxBase != NULL) {
+		CloseLibrary((struct Library*)CyberGfxBase);
+		CyberGfxBase = NULL;
+	}
 
-    if (GfxBase != NULL) {
-        CloseLibrary((struct Library*) GfxBase);
-        GfxBase = NULL;
-    }
+	if (GfxBase != NULL) {
+		CloseLibrary((struct Library*)GfxBase);
+		GfxBase = NULL;
+	}
 
-    if (IconBase != NULL) {
-        CloseLibrary((struct Library*) IconBase);
-        IconBase = NULL;
-    }
+	if (IconBase != NULL) {
+		CloseLibrary((struct Library*)IconBase);
+		IconBase = NULL;
+	}
 
-    if (IntuitionBase != NULL) {
-        CloseLibrary((struct Library*) IntuitionBase);
-        IntuitionBase = NULL;
-    }
+	if (IntuitionBase != NULL) {
+		CloseLibrary((struct Library*)IntuitionBase);
+		IntuitionBase = NULL;
+	}
 
-    if (KeymapBase != NULL) {
-        CloseLibrary((struct Library*) KeymapBase);
-        KeymapBase = NULL;
-    }
+	if (KeymapBase != NULL) {
+		CloseLibrary((struct Library*)KeymapBase);
+		KeymapBase = NULL;
+	}
 
-    if (TimerBase != NULL) {
-        CloseDevice(&TimerDevice);
-        TimerBase = NULL;
-    }
+	if (TimerBase != NULL) {
+		CloseDevice(&TimerDevice);
+		TimerBase = NULL;
+	}
 }
 
 static void load_libraries(void) {
-    atexit(unload_libraries);
+	atexit(unload_libraries);
 
-    CxBase = (struct CxBase*) OpenLibrary("commodities.library", 0);
-    if (CxBase == NULL) {
-        fprintf(stderr, "Unable to load commodities.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	CxBase = (struct CxBase*)OpenLibrary("commodities.library", 0);
+	if (CxBase == NULL) {
+		fprintf(stderr, "Unable to load commodities.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    CyberGfxBase = (struct Library*) OpenLibrary("cybergraphics.library", 0);
-    if (CyberGfxBase == NULL) {
-        fprintf(stderr, "Unable to load cybergraphics.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	CyberGfxBase = (struct Library*)OpenLibrary("cybergraphics.library", 0);
+	if (CyberGfxBase == NULL) {
+		fprintf(stderr, "Unable to load cybergraphics.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    GfxBase = (struct GfxBase*) OpenLibrary("graphics.library", 0);
-    if (GfxBase == NULL) {
-        fprintf(stderr, "Unable to load graphics.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	GfxBase = (struct GfxBase*)OpenLibrary("graphics.library", 0);
+	if (GfxBase == NULL) {
+		fprintf(stderr, "Unable to load graphics.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    IconBase = (struct Library*) OpenLibrary("icon.library", 0);
-    if (IconBase == NULL) {
-        fprintf(stderr, "Unable to load icon.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	IconBase = (struct Library*)OpenLibrary("icon.library", 0);
+	if (IconBase == NULL) {
+		fprintf(stderr, "Unable to load icon.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    IntuitionBase = (struct IntuitionBase*) OpenLibrary("intuition.library", 0);
-    if (IntuitionBase == NULL) {
-        fprintf(stderr, "Unable to load intuition.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	IntuitionBase = (struct IntuitionBase*)OpenLibrary("intuition.library", 0);
+	if (IntuitionBase == NULL) {
+		fprintf(stderr, "Unable to load intuition.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    KeymapBase = (struct KeymapBase*) OpenLibrary("keymap.library", 0);
-    if (KeymapBase == NULL) {
-        fprintf(stderr, "Unable to load keymap.library!\n");
-        exit(EXIT_FAILURE);
-    }
+	KeymapBase = (struct KeymapBase*)OpenLibrary("keymap.library", 0);
+	if (KeymapBase == NULL) {
+		fprintf(stderr, "Unable to load keymap.library!\n");
+		exit(EXIT_FAILURE);
+	}
 
-    // Load timer.device so that GetSysTime is
-    // available.
-    OpenDevice("timer.device", 0, &TimerDevice, 37);
-    if (TimerDevice.io_Device == NULL) {
-        fprintf(stderr, "Unable to load timer.device!");
-        exit(EXIT_FAILURE);
-    }
-    TimerBase = TimerDevice.io_Device;
+	// Load timer.device so that GetSysTime is
+	// available.
+	OpenDevice("timer.device", 0, &TimerDevice, 37);
+	if (TimerDevice.io_Device == NULL) {
+		fprintf(stderr, "Unable to load timer.device!");
+		exit(EXIT_FAILURE);
+	}
+	TimerBase = TimerDevice.io_Device;
 }
 
-int main(int argcWb, char *argvWb[]) {
+int main(int argcWb, char* argvWb[]) {
+	load_libraries();
 
-    load_libraries();
+	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
+	struct WBStartup* wbStartup = NULL;
+	int closeWb = 0;
 
-    int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
-    struct WBStartup* wbStartup = NULL;
-    int closeWb = 0;
+	if (argcWb == 0) {
+		wbStartup = (struct WBStartup*)argvWb;
 
-    if (argcWb == 0) {
-        wbStartup = (struct WBStartup*)argvWb;
+		// Process Tooltypes.
+		struct DiskObject* diskObject;
+		diskObject = GetDiskObject((char*)wbStartup->sm_ArgList[0].wa_Name);
+		if (diskObject != NULL) {
+			char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
+			if (toolType != NULL) {
+				sscanf(toolType, "%ld", &audioThreadPriority);
+			}
 
-    	// Process Tooltypes.
-    	struct DiskObject *diskObject;
-    	diskObject = GetDiskObject((char*)wbStartup->sm_ArgList[0].wa_Name);
-    	if (diskObject != NULL) {
-            char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
-            if (toolType != NULL) {
-        		sscanf(toolType, "%ld", &audioThreadPriority);
-            }
-
-            toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "CLOSE_WB");
-            if (toolType != NULL) {
-        		closeWb = 1;
-            }
-        }
+			toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "CLOSE_WB");
+			if (toolType != NULL) {
+				closeWb = 1;
+			}
+		}
 	}
 
 	// Create our OSystem instance
 	g_system = new OSystem_AmigaOS3();
-    assert(g_system);
+	assert(g_system);
 
 	// Pre initialize the backend
-    ((OSystem_AmigaOS3 *)g_system)->init(audioThreadPriority);
+	((OSystem_AmigaOS3*)g_system)->init(audioThreadPriority);
 
-    char *argv[] = {"ScummVM", NULL};
-	int argc = sizeof(argv) / sizeof(char *) - 1;
+	char* argv[] = {"ScummVM", NULL};
+	int argc = sizeof(argv) / sizeof(char*) - 1;
 
-    if (closeWb) {
-	   wbClosed = CloseWorkBench();
-    }
+	if (closeWb) {
+		wbClosed = CloseWorkBench();
+	}
 
 	// Invoke the actual ScummVM main entry point:
 	int res = scummvm_main(argc, argv);
 
 	// Delete OSystem
 	if (g_system) {
-        delete (OSystem_AmigaOS3 *)g_system;
-    }
+		delete (OSystem_AmigaOS3*)g_system;
+	}
 
 	if (wbClosed) {
-        OpenWorkBench();
-    }
+		OpenWorkBench();
+	}
 
 	return res;
 }
-
-
-
-

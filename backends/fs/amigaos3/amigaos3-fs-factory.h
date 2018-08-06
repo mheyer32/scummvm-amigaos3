@@ -4,8 +4,8 @@
 #include "backends/fs/fs-factory.h"
 
 class AmigaOS3FilesystemFactory : public FilesystemFactory {
- 	virtual AbstractFSNode *makeRootFileNode() const;
- 	virtual AbstractFSNode *makeCurrentDirectoryFileNode() const;
+	virtual AbstractFSNode *makeRootFileNode() const;
+	virtual AbstractFSNode *makeCurrentDirectoryFileNode() const;
 	virtual AbstractFSNode *makeFileNodePath(const Common::String &path) const;
 };
 

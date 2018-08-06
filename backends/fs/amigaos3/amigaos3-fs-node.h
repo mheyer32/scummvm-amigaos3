@@ -1,8 +1,8 @@
 #ifndef FS_NODE_AMIGAOS3_H
 #define FS_NODE_AMIGAOS3_H
 
-#include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
 #include <stdio.h>
 
 #include "backends/fs/abstract-fs.h"
@@ -18,15 +18,16 @@ protected:
 	uint32 _nProt;
 
 	virtual AbstractFSList listVolumes() const;
+
 public:
 	AmigaOS3FilesystemNode();
 	AmigaOS3FilesystemNode(const Common::String &p);
 	AmigaOS3FilesystemNode(BPTR pLock, const char *pDisplayName = NULL);
-	AmigaOS3FilesystemNode(const AmigaOS3FilesystemNode& node);
+	AmigaOS3FilesystemNode(const AmigaOS3FilesystemNode &node);
 	virtual ~AmigaOS3FilesystemNode();
 
-    virtual Common::String getName() const;
-    virtual Common::String getPath() const;
+	virtual Common::String getName() const;
+	virtual Common::String getPath() const;
 	virtual bool isDirectory() const;
 
 	virtual bool exists() const;
