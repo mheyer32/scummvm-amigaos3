@@ -166,6 +166,8 @@ protected:
 	/** Hardware screen */
 	struct Screen *_hardwareScreen;
 
+	struct RastPort _screenRastPorts[2];
+
 	/** Unseen game screen */
 	Graphics::Surface _screen;
 	Graphics::Surface _tmpscreen;

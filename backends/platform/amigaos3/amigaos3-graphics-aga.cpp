@@ -32,8 +32,7 @@
 #include "common/textconsole.h"
 #include "graphics/scaler/aspect.h"
 
-#define c2p8_stub WritePixelArray8
-#define c2p8_deinit_stub(...)
+#include <proto/commodities.h>
 
 static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {{"1x", "Normal", GFX_NORMAL}, {0, 0, 0}};
 
@@ -46,9 +45,6 @@ static UWORD emptypointer[] = {
 #define AGA_VIDEO_DEPTH 8
 
 static struct ScreenBuffer *_hardwareScreenBuffer[2] = {NULL, NULL};
-
-void *c2p[2] = {NULL, NULL};
-
 static BYTE _currentScreenBuffer = 0;
 
 bool OSystem_AmigaOS3::hasFeature(OSystem::Feature f) {
@@ -261,9 +257,16 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 	if (_videoMode.overlayScreenHeight < 256) {
 		_videoMode.overlayScreenHeight = 256;
 	}
+	// Hack - should come from tooltypes
+	// FIXME: what is this whole overlay confuzzle? Why do we have multiple members
+	// with the same data?
+	_videoMode.overlayWidth = _videoMode.screenWidth;
+	_videoMode.overlayHeight = _videoMode.overlayScreenHeight;
 
+	_overlayWidth = _videoMode.overlayWidth;
+	_overlayHeight = _videoMode.overlayHeight;
 	// Create the hardware screen.
-	_hardwareScreen = createHardwareScreen();
+	_hardwareScreen = createHardwareScreen(_videoMode.screenWidth, _videoMode.overlayScreenHeight);
 	if (!_hardwareScreen) {
 		return false;
 	}
@@ -279,14 +282,16 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 		return false;
 	}
 
+	// WriteChunkyPixels wants a RastPort structure, so create two, one for each buffer
+	InitRastPort(&_screenRastPorts[0]);
+	InitRastPort(&_screenRastPorts[1]);
+
+	_screenRastPorts[0].BitMap = _hardwareScreenBuffer[0]->sb_BitMap;
+	_screenRastPorts[1].BitMap = _hardwareScreenBuffer[1]->sb_BitMap;
 	_currentScreenBuffer = 1;
 
-	// Setup C2P.
-	c2p[0] = c2p8_reloc_stub(_hardwareScreenBuffer[0]->sb_BitMap);
-	c2p[1] = c2p8_reloc_stub(_hardwareScreenBuffer[1]->sb_BitMap);
-
 	// Create the hardware window.
-	_hardwareWindow = createHardwareWindow();
+	_hardwareWindow = createHardwareWindow(_videoMode.screenWidth, _videoMode.overlayScreenHeight, _hardwareScreen);
 	if (!_hardwareWindow) {
 		return false;
 	}
@@ -307,32 +312,31 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 	return true;
 }
 
-struct Screen *OSystem_AmigaOS3::createHardwareScreen() {
+struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
 	// Create the hardware screen.
 	struct Screen *screen = NULL;
 	ULONG modeId = INVALID_ID;
 
-	modeId =
-	  BestModeID(BIDTAG_NominalWidth, _videoMode.screenWidth, BIDTAG_NominalHeight, _videoMode.overlayScreenHeight,
-				 BIDTAG_DesiredWidth, _videoMode.screenWidth, BIDTAG_DesiredHeight, _videoMode.overlayScreenHeight,
-				 BIDTAG_Depth, AGA_VIDEO_DEPTH, BIDTAG_MonitorID, PAL_MONITOR_ID, TAG_END);
+	modeId = BestModeID(BIDTAG_NominalWidth, width, BIDTAG_NominalHeight, height, BIDTAG_DesiredWidth, width,
+						BIDTAG_DesiredHeight, height, BIDTAG_Depth, AGA_VIDEO_DEPTH, BIDTAG_MonitorID, PAL_MONITOR_ID,
+						TAG_END);
+
+	ULONG errorCode = 0;
 
 	if (modeId != INVALID_ID) {
-		screen =
-		  OpenScreenTags(NULL, SA_Depth, AGA_VIDEO_DEPTH, SA_DisplayID, modeId, SA_Width, _videoMode.screenWidth,
-						 SA_Height, _videoMode.overlayScreenHeight, SA_Type, CUSTOMSCREEN, SA_Quiet, TRUE, SA_ShowTitle,
-						 FALSE, SA_Draggable, FALSE, SA_Exclusive, TRUE, SA_AutoScroll, FALSE, TAG_END);
+		screen = OpenScreenTags(NULL, SA_Depth, AGA_VIDEO_DEPTH, SA_DisplayID, modeId, SA_Width, width, SA_Height,
+								height, SA_Type, CUSTOMSCREEN, SA_Quiet, TRUE, SA_ShowTitle, FALSE, SA_Draggable, FALSE,
+								SA_Exclusive, TRUE, SA_AutoScroll, FALSE, SA_ErrorCode, (Tag)&errorCode, TAG_END);
 	}
 
 	return screen;
 }
 
-struct Window *OSystem_AmigaOS3::createHardwareWindow() {
-	return OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, _videoMode.screenWidth, WA_Height,
-						  _videoMode.overlayScreenHeight, SA_AutoScroll, FALSE, WA_CustomScreen, (ULONG)_hardwareScreen,
-						  WA_Backdrop, TRUE, WA_Borderless, TRUE, WA_DragBar, FALSE, WA_Activate, TRUE,
-						  WA_SimpleRefresh, TRUE, WA_NoCareRefresh, TRUE, WA_ReportMouse, TRUE, WA_RMBTrap, TRUE,
-						  WA_IDCMP, IDCMP_RAWKEY | IDCMP_MOUSEMOVE | IDCMP_MOUSEBUTTONS, TAG_END);
+struct Window *OSystem_AmigaOS3::createHardwareWindow(uint width, uint height, struct Screen *screen) {
+	return OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, width, WA_Height, height, SA_AutoScroll, FALSE,
+						  WA_CustomScreen, (Tag)screen, WA_Backdrop, TRUE, WA_Borderless, TRUE, WA_DragBar, FALSE,
+						  WA_Activate, TRUE, WA_SimpleRefresh, TRUE, WA_NoCareRefresh, TRUE, WA_ReportMouse, TRUE,
+						  WA_RMBTrap, TRUE, WA_IDCMP, IDCMP_RAWKEY | IDCMP_MOUSEMOVE | IDCMP_MOUSEBUTTONS, TAG_END);
 }
 
 void OSystem_AmigaOS3::unloadGFXMode() {
@@ -364,16 +368,6 @@ void OSystem_AmigaOS3::unloadGFXMode() {
 	if (_hardwareScreen) {
 		CloseScreen(_hardwareScreen);
 		_hardwareScreen = NULL;
-	}
-
-	if (c2p[0]) {
-		c2p8_deinit_stub(c2p[0]);
-		c2p[0] = NULL;
-	}
-
-	if (c2p[1]) {
-		c2p8_deinit_stub(c2p[1]);
-		c2p[1] = NULL;
 	}
 }
 
@@ -474,8 +468,8 @@ void OSystem_AmigaOS3::copyRectToScreen(const void *buf, int pitch, int x, int y
 }
 
 void OSystem_AmigaOS3::fillScreen(uint32 col) {
-	if (_screen.pixels) {
-		memset(_screen.pixels, (int)col, (_videoMode.screenWidth * _videoMode.screenHeight));
+	if (_screen.getPixels()) {
+		memset(_screen.getPixels(), (int)col, (_videoMode.screenWidth * _videoMode.screenHeight));
 	}
 }
 
@@ -491,10 +485,11 @@ void OSystem_AmigaOS3::updateScreen() {
 	}
 
 	if (_overlayVisible) {
-		src = (UBYTE *)_overlayscreen8.pixels;
-
-		c2p8_stub(c2p[_currentScreenBuffer], _hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap, src,
-				  _videoMode.screenWidth * _videoMode.overlayScreenHeight);
+		src = (UBYTE *)_overlayscreen8.getPixels();
+		assert(_videoMode.overlayWidth <= _videoMode.screenWidth);
+		assert(_videoMode.overlayHeight <= _videoMode.overlayScreenHeight);
+		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.overlayWidth,
+						  _videoMode.overlayHeight, src, _videoMode.overlayWidth);
 	} else {
 		if (_currentShakePos != _newShakePos) {
 			// Set the 'dirty area' to black.
@@ -509,13 +504,13 @@ void OSystem_AmigaOS3::updateScreen() {
 			// Reset.
 			_currentShakePos = _newShakePos;
 
-			src = (UBYTE *)_tmpscreen.pixels;
+			src = (UBYTE *)_tmpscreen.getPixels();
 		} else {
-			src = (UBYTE *)_screen.pixels;
+			src = (UBYTE *)_screen.getPixels();
 		}
 
-		c2p8_stub(c2p[_currentScreenBuffer], _hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap, src,
-				  _videoMode.screenWidth * _videoMode.screenHeight);
+		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
+						  _videoMode.screenHeight, src, _videoMode.screenWidth);
 	}
 
 	// Check whether the palette was changed.
@@ -630,18 +625,17 @@ void OSystem_AmigaOS3::hideOverlay() {
 
 	clearOverlay();
 
-	UBYTE *src = (UBYTE *)_overlayscreen8.pixels;
-	c2p8_stub(c2p[_currentScreenBuffer], _hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap, src,
-			  _videoMode.screenWidth * _videoMode.overlayScreenHeight);
+	UBYTE *src = (UBYTE *)_overlayscreen8.getPixels();
+
+	WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
+					  _videoMode.overlayScreenHeight, src, _videoMode.overlayScreenHeight);
 
 	if (ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer])) {
 		// Flip.
 		_currentScreenBuffer = _currentScreenBuffer ^ 1;
-
-		c2p8_stub(c2p[_currentScreenBuffer], _hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap, src,
-				  _videoMode.screenWidth * _videoMode.overlayScreenHeight);
+		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
+						  _videoMode.overlayScreenHeight, src, _videoMode.overlayScreenHeight);
 	}
-
 	_overlayVisible = false;
 
 	// Reset the game palette.
@@ -654,7 +648,7 @@ void OSystem_AmigaOS3::clearOverlay() {
 	}
 
 	// Set the background to black.
-	byte *src = (byte *)_overlayscreen8.pixels;
+	byte *src = (byte *)_overlayscreen8.getPixels();
 	memset(src, 0, (_videoMode.screenWidth * _videoMode.overlayScreenHeight));
 }
 
@@ -664,7 +658,7 @@ void OSystem_AmigaOS3::grabOverlay(void *buf, int pitch) {
 #endif
 
 	// Grab the overlay.
-	memcpy(buf, _overlayscreen16.pixels,
+	memcpy(buf, _overlayscreen16.getPixels(),
 		   (_videoMode.screenWidth * _videoMode.overlayScreenHeight) * _overlayscreen16.format.bytesPerPixel);
 }
 
@@ -779,7 +773,7 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 	_mouseCursor.hotY = hotspot_y;
 	_mouseCursor.keyColor = keycolor;
 
-	CopyMem((void *)buf, _mouseCursor.surface.pixels, w * h);
+	CopyMem((void *)buf, _mouseCursor.surface.getPixels(), w * h);
 }
 
 void OSystem_AmigaOS3::setMouseCursorPosition(uint x, uint y) {
@@ -798,7 +792,7 @@ void OSystem_AmigaOS3::drawMouse() {
 	int x = (_mouseCursor.x - _mouseCursor.hotX);
 	int y = (_mouseCursor.y - _mouseCursor.hotY);
 
-	byte *mousePixels = (byte *)_mouseCursor.surface.pixels;
+	byte *mousePixels = (byte *)_mouseCursor.surface.getPixels();
 
 	// Clip the coordinates
 	if (x < 0) {
@@ -832,7 +826,7 @@ void OSystem_AmigaOS3::drawMouse() {
 	_mouseCursorMask.w = w;
 	_mouseCursorMask.h = h;
 
-	byte *maskPixels = (byte *)_mouseCursorMask.surface.pixels;
+	byte *maskPixels = (byte *)_mouseCursorMask.surface.getPixels();
 
 	// Set the starting point of the screen we will be drawing to.
 	byte *screenPixels = NULL;
@@ -883,7 +877,7 @@ void OSystem_AmigaOS3::undrawMouse() {
 		dst = (byte *)_screen.getBasePtr(_mouseCursorMask.x, _mouseCursorMask.y);
 	}
 
-	byte *src = (byte *)_mouseCursorMask.surface.pixels;
+	byte *src = (byte *)_mouseCursorMask.surface.getPixels();
 
 	for (uint i = 0; i < _mouseCursorMask.h; i++) {
 		CopyMem(src, dst, _mouseCursorMask.w);
@@ -907,7 +901,7 @@ void OSystem_AmigaOS3::undrawMouse() {
 _newShakePos));
 
 				for (uint y = (_videoMode.scaledHeight - 1); y > _newShakePos; y--) {
-						src = (byte *)_screen.pixels + (aspect2Real(y + _newShakePos) * _videoMode.screenWidth);
+						src = (byte *)_screen.getPixels() + (aspect2Real(y + _newShakePos) * _videoMode.screenWidth);
 
 						CopyMemQuick(src, dst, _videoMode.screenWidth);
 
@@ -918,7 +912,7 @@ _newShakePos));
 			_currentShakePos = _newShakePos;
 		} else {
 				for (uint y = (_videoMode.scaledHeight - 1); y > 0; y--) {
-						src = (byte *)_screen.pixels + (aspect2Real(y) * _videoMode.screenWidth);
+						src = (byte *)_screen.getPixels() + (aspect2Real(y) * _videoMode.screenWidth);
 
 						CopyMemQuick(src, dst, _videoMode.screenWidth);
 
@@ -926,5 +920,5 @@ _newShakePos));
 				}
 		}
 
-		return (UBYTE*)_tmpscreen.pixels;
+		return (UBYTE*)_tmpscreen.getPixels();
 }*/
