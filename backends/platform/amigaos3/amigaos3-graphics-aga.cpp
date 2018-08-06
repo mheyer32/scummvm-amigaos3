@@ -586,9 +586,9 @@ void OSystem_AmigaOS3::loadOverlayColorMap() {
 	// Load overlay map file.
 	FILE *mapFile;
 
-	mapFile = fopen("overaly.map", "r");
+	mapFile = fopen("overlay.map", "r");
 	if (mapFile == NULL) {
-		error("Could not load the overaly map file");
+		error("Could not load the overlay map file");
 	}
 
 	int i = 0;
