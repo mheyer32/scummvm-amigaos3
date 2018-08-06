@@ -215,11 +215,6 @@ void OSystem_AmigaOS3::initBackend() {
 
 	_eventManager = new DefaultEventManager(_eventSource);
 
-	memset(&_screen, 0, sizeof(_screen));
-
-	memset(&_overlayscreen8, 0, sizeof(_overlayscreen8));
-	memset(&_overlayscreen16, 0, sizeof(_overlayscreen16));
-
 	_overlayFormat = Graphics::createPixelFormat<565>();
 
 	memset(&_transactionDetails, 0, sizeof(_transactionDetails));
@@ -239,7 +234,6 @@ void OSystem_AmigaOS3::initBackend() {
 
 	_screenChangeCount = 0;
 
-	memset(&_mouseCursor, 0, sizeof(_mouseCursor));
 	memset(&_mouseCursorMask, 0, sizeof(_mouseCursorMask));
 
 	// allocate palette storage

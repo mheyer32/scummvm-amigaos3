@@ -153,7 +153,7 @@ int main(int argcWb, char* argvWb[]) {
 		if (diskObject != NULL) {
 			char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
 			if (toolType != NULL) {
-				sscanf(toolType, "%ld", &audioThreadPriority);
+				sscanf(toolType, "%d", &audioThreadPriority);
 			}
 
 			toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "CLOSE_WB");

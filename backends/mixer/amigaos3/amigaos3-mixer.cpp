@@ -102,6 +102,9 @@ int init_scummvm_sound() {
 	soundBuffer[0] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
 	soundBuffer[1] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
 
+	if (!soundBuffer[0] || !soundBuffer[1]) {
+		error("Could not create soundbuffers for AHI");
+	}
 	// Make a copy of the request (for double buffering)
 	ahiReq[1] = (struct AHIRequest *)AllocVec(sizeof(struct AHIRequest), MEMF_PUBLIC);
 	if (!ahiReq[1]) {

@@ -221,6 +221,7 @@ protected:
 
 	// Mouse data.
 	struct MouseCursor {
+		MouseCursor() : visible(false), keyColor(0), w(0), h(0), x(0), y(0), hotX(0), hotY(0) {}
 		bool visible;
 
 		uint32 keyColor;
