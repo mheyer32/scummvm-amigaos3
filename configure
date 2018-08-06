@@ -2867,11 +2867,14 @@ if test -n "$_host"; then
 			#append_var CXXFLAGS "-mregparm=4"
 			# try producing smaller executable
 			append_var CXXFLAGS "-fno-exceptions"
-			append_var CXXFLAGS "-fno-rtti"
 			if test "$_debug_build" != yes; then
 				# throw away all debug info and symbols
 				append_var CXXFLAGS "-s"
 				append_var CXXFLAGS "-fomit-frame-pointer"
+				#rtti might help the debugger, but will increase file size
+				append_var CXXFLAGS "-fno-rtti"
+				# no logging, warning etc...
+				append_var DEFINES "-DDISABLE_TEXT_CONSOLE"
 			fi
 
 			_backend="amigaos3"
