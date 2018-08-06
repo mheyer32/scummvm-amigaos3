@@ -488,8 +488,8 @@ void OSystem_AmigaOS3::updateScreen() {
 		src = (UBYTE *)_overlayscreen8.getPixels();
 		assert(_videoMode.overlayWidth <= _videoMode.screenWidth);
 		assert(_videoMode.overlayHeight <= _videoMode.overlayScreenHeight);
-		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.overlayWidth,
-						  _videoMode.overlayHeight, src, _videoMode.overlayWidth);
+		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.overlayWidth - 1,
+						  _videoMode.overlayHeight - 1, src, _videoMode.overlayWidth);
 	} else {
 		if (_currentShakePos != _newShakePos) {
 			// Set the 'dirty area' to black.
@@ -509,8 +509,8 @@ void OSystem_AmigaOS3::updateScreen() {
 			src = (UBYTE *)_screen.getPixels();
 		}
 
-		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
-						  _videoMode.screenHeight, src, _videoMode.screenWidth);
+		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth - 1,
+						  _videoMode.screenHeight - 1, src, _videoMode.screenWidth);
 	}
 
 	// Check whether the palette was changed.
