@@ -30,10 +30,7 @@
 
 #include "backends/platform/amigaos3/amigaos3-aga.h"
 
-// Amiga includes.
-#include <inline/icon.h>
 #include <proto/icon.h>
-
 #include <workbench/startup.h>
 
 #define DEFAULT_AUDIO_THREAD_PRIORITY 0

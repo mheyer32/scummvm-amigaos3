@@ -1,5 +1,7 @@
 MODULE := backends/platform/amigaos3
 
+# change amigaos3-graphics-cgx.o to amigaos3-graphics-aga.o
+
 MODULE_OBJS = \
 	amigaos3-main.o \
 	amigaos3-aga.o \

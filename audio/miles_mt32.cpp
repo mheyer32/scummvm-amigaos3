@@ -902,7 +902,7 @@ MidiDriver *MidiDriver_Miles_MT32_create(const Common::String &instrumentDataFil
 }
 
 void MidiDriver_Miles_MT32_processXMIDITimbreChunk(MidiDriver_BASE *driver, const byte *timbreListPtr, uint32 timbreListSize) {
-	MidiDriver_Miles_MT32 *driverMT32 = dynamic_cast<MidiDriver_Miles_MT32 *>(driver);
+	MidiDriver_Miles_MT32 *driverMT32 = static_cast<MidiDriver_Miles_MT32 *>(driver);
 
 	if (driverMT32) {
 		driverMT32->processXMIDITimbreChunk(timbreListPtr, timbreListSize);

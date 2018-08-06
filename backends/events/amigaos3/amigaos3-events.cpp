@@ -36,13 +36,7 @@
 
 // Amiga includes.
 #include <proto/intuition.h>
-
-//#include <clib/exec_protos.h>
-#include <inline/exec.h>
 #include <proto/exec.h>
-
-//#include <clib/keymap_protos.h>
-#include <inline/keymap.h>
 #include <proto/keymap.h>
 
 //#include "rawkeycodes.h"

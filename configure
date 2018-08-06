@@ -1415,8 +1415,8 @@ ios7)
 m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
 	_host_os=amigaos3
 	_host_cpu=m68k
-	_host_alias=m68k-unknown-amigaos
-	#append_var LDFLAGS "-noixemul"
+	_host_alias=m68k-amigaos
+	 append_var LDFLAGS "-noixemul"
 	;;
 linupy)
 	_host_os=linux
@@ -1570,22 +1570,14 @@ caanoo | gp2x | gp2xwiz | openpandora | ps2)
 esac
 
 if test "$_debug_build" != no; then
-	# debug mode not explicitly disabled -> compile with debug information
-	case $_host_os in
-	amigaos*)
-		# AmigaOS debugger uses plain stabs, with no gdb extensions.
-		append_var CXXFLAGS "-gstabs"
-	;;
-	*)
-		# Use the system default format for debug info.
-		append_var CXXFLAGS "-g"
-	esac
+	# Use the system default format for debug info.
+	append_var CXXFLAGS "-g"
 fi
 
 if test "$_release_build" = yes; then
 	# Add a define, which indicates we are doing
 	# an build for a release version.
-	append_var DEFINES "-DRELEASE_BUILD"
+	append_var DEFINES "-DRELEASE_BUILD -DNDEBUG"
 fi
 
 
@@ -2870,10 +2862,25 @@ if test -n "$_host"; then
 			;;
 		m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
 			append_var DEFINES ""
+			append_var CXXFLAGS "-fomit-frame-pointer"
+			append_var CXXFLAGS "-m68030"
+			append_var CXXFLAGS "-m68881"
+			# try producing smaller executable
+			append_var CXXFLAGS "-fno-exceptions"
+			append_var CXXFLAGS "-fno-rtti"
+			if test "$_debug_build" != yes; then
+				# throw away all debug info and symbols
+				append_var CXXFLAGS "-s"
+			fi
+
 			_backend="amigaos3"
 			_build_scalers=no
 			_seq_midi=no
 			_timidity=no
+			# Use -O3 on the OpenPandora for optimized builds.
+			if test "$_optimizations" = yes; then
+				_optimization_level=-Os
+			fi
 			;;
 		m68k-atari-mint)
 			append_var DEFINES "-DSYSTEM_NOT_SUPPORTING_D_TYPE"

@@ -31,9 +31,6 @@
 
 // Amiga includes.
 #include <dos/dostags.h>
-#include <inline/ahi.h>
-#include <inline/dos.h>
-#include <inline/exec.h>
 #include <proto/ahi.h>
 #include <proto/dos.h>
 #include <proto/exec.h>

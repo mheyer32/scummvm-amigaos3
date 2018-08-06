@@ -42,7 +42,6 @@
 
 #include "graphics/colormasks.h"
 
-#include <inline/timer.h>
 #include <proto/timer.h>
 
 extern struct Device *TimerBase;

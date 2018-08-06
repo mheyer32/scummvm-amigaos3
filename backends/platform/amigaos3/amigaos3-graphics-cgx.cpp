@@ -32,18 +32,11 @@
 #include "common/textconsole.h"
 #include "graphics/scaler/aspect.h"
 
-#include <inline/commodities.h>
 #include <proto/commodities.h>
-
-#include <inline/graphics.h>
+#include <proto/cybergraphics.h>
 #include <proto/graphics.h>
 
 #include <cybergraphx/cybergraphics.h>
-//#include <proto/cybergraphics.h>
-//#include <inline/cybergraphics.h>
-
-//#include <clib/cybergraphics_protos.h>
-#include <inline/cybergraphics.h>
 
 #include <stdio.h>
 

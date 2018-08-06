@@ -32,10 +32,8 @@
 #include "common/textconsole.h"
 #include "graphics/scaler/aspect.h"
 
-#include <inline/commodities.h>
-#include <proto/commodities.h>
-
-#include "amiga_c2p_aga.h"
+#define c2p8_stub WritePixelArray8
+#define c2p8_deinit_stub(...)
 
 static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {{"1x", "Normal", GFX_NORMAL}, {0, 0, 0}};
 
