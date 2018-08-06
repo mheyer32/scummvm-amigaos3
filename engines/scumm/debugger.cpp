@@ -607,7 +607,7 @@ void ScummDebugger::printBox(int box) {
 
 /************ ENDER: Temporary debug code for boxen **************/
 
-static int gfxPrimitivesCompareInt(const void *a, const void *b);
+static int STDCALL gfxPrimitivesCompareInt(const void *a, const void *b);
 
 
 static void hlineColor(ScummEngine *scumm, int x1, int x2, int y, byte color) {
@@ -638,7 +638,7 @@ static void hlineColor(ScummEngine *scumm, int x1, int x2, int y, byte color) {
 	}
 }
 
-static int gfxPrimitivesCompareInt(const void *a, const void *b) {
+static int STDCALL gfxPrimitivesCompareInt(const void *a, const void *b) {
 	return (*(const int *)a) - (*(const int *)b);
 }
 

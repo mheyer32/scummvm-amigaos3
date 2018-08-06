@@ -1305,7 +1305,7 @@ void ScummEngine_v8::readGlobalObjects() {
 	// bsearch on it. For this we (ab)use strcmp, which works fine
 	// since the table entries start with a string.
 	qsort(_objectIDMap, _objectIDMapSize, sizeof(ObjectNameId),
-			(int (*)(const void*, const void*))strcmp);
+			strcmp_wrapper);
 }
 
 void ScummEngine_v7::readGlobalObjects() {

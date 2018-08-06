@@ -137,7 +137,7 @@ static void load_libraries(void) {
 	TimerBase = TimerDevice.io_Device;
 }
 
-int main(int argcWb, char* argvWb[]) {
+__stdargs int main(int argcWb, char* argvWb[]) {
 	load_libraries();
 
 	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;

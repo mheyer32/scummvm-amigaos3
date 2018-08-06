@@ -40,6 +40,10 @@ int toSimpleDir(int dirtype, int dir);
 
 void assertRange(int min, int value, int max, const char *desc);
 
+/* needed to call from qsort */
+extern STDCALL int strcmp_wrapper(const void *s1, const void *s2);
+
+
 } // End of namespace Scumm
 
 #endif

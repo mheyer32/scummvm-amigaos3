@@ -132,7 +132,7 @@ int BundleDirCache::matchFile(const char *filename) {
 			_budleDirCache[freeSlot].indexTable[i].index = i;
 		}
 		qsort(_budleDirCache[freeSlot].indexTable, _budleDirCache[freeSlot].numFiles,
-				sizeof(IndexNode), (int (*)(const void*, const void*))scumm_stricmp);
+				sizeof(IndexNode), scumm_stricmp_wrapper);
 		return freeSlot;
 	} else {
 		return fileId;
@@ -160,7 +160,7 @@ Common::SeekableReadStream *BundleMgr::getFile(const char *filename, int32 &offs
 	BundleDirCache::IndexNode target;
 	strcpy(target.filename, filename);
 	BundleDirCache::IndexNode *found = (BundleDirCache::IndexNode *)bsearch(&target, _indexTable, _numFiles,
-			sizeof(BundleDirCache::IndexNode), (int (*)(const void*, const void*))scumm_stricmp);
+			sizeof(BundleDirCache::IndexNode), scumm_stricmp_wrapper);
 	if (found) {
 		_file->seek(_bundleTable[found->index].offset, SEEK_SET);
 		offset = _bundleTable[found->index].offset;
@@ -341,7 +341,7 @@ int32 BundleMgr::decompressSampleByName(const char *name, int32 offset, int32 si
 	BundleDirCache::IndexNode target;
 	strcpy(target.filename, name);
 	BundleDirCache::IndexNode *found = (BundleDirCache::IndexNode *)bsearch(&target, _indexTable, _numFiles,
-			sizeof(BundleDirCache::IndexNode), (int (*)(const void*, const void*))scumm_stricmp);
+			sizeof(BundleDirCache::IndexNode), scumm_stricmp_wrapper);
 	if (found) {
 		final_size = decompressSampleByIndex(found->index, offset, size, comp_final, 0, header_outside);
 		return final_size;

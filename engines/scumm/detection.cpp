@@ -55,7 +55,7 @@ enum {
 #pragma mark --- Miscellaneous ---
 #pragma mark -
 
-static int compareMD5Table(const void *a, const void *b) {
+static int STDCALL compareMD5Table(const void *a, const void *b) {
 	const char *key = (const char *)a;
 	const MD5Table *elem = (const MD5Table *)b;
 	return strcmp(key, elem->md5);

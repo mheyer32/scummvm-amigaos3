@@ -99,4 +99,9 @@ int normalizeAngle(int angle) {
 	return toSimpleDir(1, temp) * 45;
 }
 
+STDCALL int strcmp_wrapper(const void *s1, const void *s2)
+{
+	return strcmp((const char *)s1, (const char *)s2);
+}
+
 } // End of namespace Scumm

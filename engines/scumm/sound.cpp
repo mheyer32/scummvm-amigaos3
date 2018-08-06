@@ -473,7 +473,7 @@ void Sound::processSfxQueues() {
 	}
 }
 
-static int compareMP3OffsetTable(const void *a, const void *b) {
+static int STDCALL compareMP3OffsetTable(const void *a, const void *b) {
 	return ((const MP3OffsetTable *)a)->org_offset - ((const MP3OffsetTable *)b)->org_offset;
 }
 

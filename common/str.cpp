@@ -894,6 +894,10 @@ int scumm_stricmp(const char *s1, const char *s2) {
 	return l1 - l2;
 }
 
+STDCALL int scumm_stricmp_wrapper(const void *s1, const void *s2)
+{
+	return scumm_stricmp((const char*)s1, (const char*)s2);
+}
 // Portable implementation of strnicmp / strncasecmp / strncmpi.
 // TODO: Rename this to Common::strncasecmp
 int scumm_strnicmp(const char *s1, const char *s2, uint n) {

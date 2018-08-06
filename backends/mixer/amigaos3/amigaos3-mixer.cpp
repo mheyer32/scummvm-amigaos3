@@ -138,7 +138,7 @@ void exit_scummvm_sound() {
 		DeleteMsgPort(ahiPort);
 }
 
-int __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
+int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 	// int __saveds scummvm_sound_thread(void) {
 	LONG priority = 0;
 	ULONG signals;

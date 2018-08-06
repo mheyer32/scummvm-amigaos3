@@ -411,4 +411,6 @@ size_t strlcat(char *dst, const char *src, size_t size);
 extern int scumm_stricmp(const char *s1, const char *s2);
 extern int scumm_strnicmp(const char *s1, const char *s2, uint n);
 
+extern STDCALL int scumm_stricmp_wrapper(const void *s1, const void *s2);
+
 #endif

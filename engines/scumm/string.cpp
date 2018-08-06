@@ -1309,7 +1309,7 @@ void ScummEngine::initCharset(int charsetno) {
 
 
 #ifdef ENABLE_SCUMM_7_8
-static int indexCompare(const void *p1, const void *p2) {
+static STDCALL int indexCompare(const void *p1, const void *p2) {
 	const ScummEngine_v7::LangIndexNode *i1 = (const ScummEngine_v7::LangIndexNode *) p1;
 	const ScummEngine_v7::LangIndexNode *i2 = (const ScummEngine_v7::LangIndexNode *) p2;
 

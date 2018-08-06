@@ -2193,7 +2193,7 @@ case $_host_os in
 		append_var LIBS "-lcitro3d -lctru"
 		;;
 	m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
-		append_var DEFINES "-DFORBIDDEN_SYMBOL_ALLOW_ALL"
+		append_var DEFINES "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DSTDCALL=__stdargs"
 		# append_var CXXFLAGS "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DNO_INLINE_VARARGS -DNO_INLINE_STDARG"
 		add_line_to_config_mk 'AMIGAOS3 = 1'
 		;;
@@ -2864,6 +2864,7 @@ if test -n "$_host"; then
 			append_var DEFINES ""
 			append_var CXXFLAGS "-m68030"
 			append_var CXXFLAGS "-m68881"
+			#append_var CXXFLAGS "-mregparm=4"
 			# try producing smaller executable
 			append_var CXXFLAGS "-fno-exceptions"
 			append_var CXXFLAGS "-fno-rtti"
