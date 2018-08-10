@@ -154,7 +154,6 @@ int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 			ahiReq[_currentSoundBuffer]->ahir_Std.io_Message.mn_Node.ln_Pri = priority;
 			ahiReq[_currentSoundBuffer]->ahir_Std.io_Command = CMD_WRITE;
 			ahiReq[_currentSoundBuffer]->ahir_Std.io_Data = soundBuffer[_currentSoundBuffer];
-			ahiReq[_currentSoundBuffer]->ahir_Std.io_Length = _sampleBufferSize;
 			ahiReq[_currentSoundBuffer]->ahir_Std.io_Offset = 0;
 			ahiReq[_currentSoundBuffer]->ahir_Type = AHIST_S16S;
 			ahiReq[_currentSoundBuffer]->ahir_Frequency = _mixingFrequency;
@@ -163,14 +162,20 @@ int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 			ahiReq[_currentSoundBuffer]->ahir_Link =
 			  (ahiReqSent[_currentSoundBuffer ^ 1]) ? ahiReq[_currentSoundBuffer ^ 1] : NULL;
 
-			g_mixer->mixCallback((byte *)soundBuffer[_currentSoundBuffer], _sampleBufferSize);
+//			ahiReq[_currentSoundBuffer]->ahir_Std.io_Length = _sampleBufferSize;
 
-			SendIO((struct IORequest *)ahiReq[_currentSoundBuffer]);
+			int mixedSamples = g_mixer->mixCallback((byte *)soundBuffer[_currentSoundBuffer], _sampleBufferSize);
+			if (mixedSamples) {
+				ahiReq[_currentSoundBuffer]->ahir_Std.io_Length = mixedSamples * 4;
+				SendIO((struct IORequest *)ahiReq[_currentSoundBuffer]);
+				ahiReqSent[_currentSoundBuffer] = true;
+				// Flip.
+				_currentSoundBuffer ^= 1;
+			} else {
+				// since we're not produceing any sound here, add a sleep for the required period??
+				ahiReqSent[_currentSoundBuffer] = false;
+			}
 
-			ahiReqSent[_currentSoundBuffer] = true;
-
-			// Flip.
-			_currentSoundBuffer ^= 1;
 		}
 
 		signals = Wait(SIGBREAKF_CTRL_C | (1 << ahiPort->mp_SigBit));
@@ -213,7 +218,7 @@ void AmigaOS3MixerManager::init(int priority) {
 	// that it must be a power of two. So e.g. at 22050 Hz, we request a
 	// sample buffer size of 2048.
 	_sampleCount = 8192;
-	while ((_sampleCount * 16) > (_mixingFrequency * 2)) {
+	while ((_sampleCount * 4) > (_mixingFrequency * 2)) {
 		_sampleCount >>= 1;
 	}
 
@@ -230,7 +235,9 @@ void AmigaOS3MixerManager::init(int priority) {
 	if (!g_soundThread) {
 		error("Could not create the sound thread");
 	}
-
+#ifndef NDEBUG
+	debug(1, "Setting audio thread priority to %d", priority);
+#endif
 	SetTaskPri(g_soundThread, priority);
 }
 
