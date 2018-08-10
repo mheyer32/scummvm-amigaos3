@@ -1,0 +1,6 @@
+CFLAGS = data=near nominc strmer streq nostkchk saveds ign=73
+
+all: playmf
+
+playmf: playmf.c
+	sc link $(CFLAGS) playmf.c
