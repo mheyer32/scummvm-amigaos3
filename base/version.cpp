@@ -56,7 +56,7 @@
  * to properly work in exports (i.e. release tar balls etc.).
  */
 const char *gScummVMVersion = SCUMMVM_VERSION;
-#ifdef __amigaos4__
+#if defined(__amigaos4__) || defined(__amigaos3__)
 static const char *version_cookie __attribute__((used)) = "$VER: ScummVM " SCUMMVM_VERSION " (" __DATE__ ", " __TIME__ ")";
 #endif
 #ifdef __PLAYSTATION2__

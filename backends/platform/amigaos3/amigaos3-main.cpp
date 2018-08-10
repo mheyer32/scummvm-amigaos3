@@ -35,8 +35,6 @@
 
 #define DEFAULT_AUDIO_THREAD_PRIORITY 0
 
-const char* ID = "$VER: ScummVM 1.8.0\r\n";
-
 static int wbClosed = 0;
 
 struct CxBase* CxBase;
