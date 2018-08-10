@@ -42,11 +42,6 @@ static UWORD emptypointer[] = {
   0x0000, 0x0000  /* reserved, must be NULL */
 };
 
-#define AGA_VIDEO_DEPTH 8
-
-static struct ScreenBuffer *_hardwareScreenBuffer[2] = {NULL, NULL};
-static BYTE _currentScreenBuffer = 0;
-
 bool OSystem_AmigaOS3::hasFeature(OSystem::Feature f) {
 	/*if (f == OSystem::kFeatureAspectRatioCorrection) {
 			return true;
@@ -271,23 +266,21 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 		return false;
 	}
 
-	// Setup double buffering.
-	_hardwareScreenBuffer[0] = AllocScreenBuffer(_hardwareScreen, NULL, SB_SCREEN_BITMAP);
-	if (!_hardwareScreenBuffer[0]) {
-		return false;
+
+	// Setup double/triple buffering.
+	for (unsigned s = 0; s < NUM_SCREENBUFFERS; ++s) {
+		_hardwareScreenBuffer[s] = AllocScreenBuffer(_hardwareScreen, NULL, s == 0 ? SB_SCREEN_BITMAP : 0);
+		if (!_hardwareScreenBuffer[s]) {
+			// FIXME: free all the stuff that has been allocated!
+			return false;
+		}
+		// WriteChunkyPixels wants a RastPort structure, so create one for each buffer
+		InitRastPort(&_screenRastPorts[s]);
+		_screenRastPorts[s].BitMap = _hardwareScreenBuffer[s]->sb_BitMap;
 	}
+	debug(4, "OSystem_AmigaOS3::loadGFXMode() 3");
 
-	_hardwareScreenBuffer[1] = AllocScreenBuffer(_hardwareScreen, NULL, 0);
-	if (!_hardwareScreenBuffer[1]) {
-		return false;
-	}
-
-	// WriteChunkyPixels wants a RastPort structure, so create two, one for each buffer
-	InitRastPort(&_screenRastPorts[0]);
-	InitRastPort(&_screenRastPorts[1]);
-
-	_screenRastPorts[0].BitMap = _hardwareScreenBuffer[0]->sb_BitMap;
-	_screenRastPorts[1].BitMap = _hardwareScreenBuffer[1]->sb_BitMap;
+	// 0 is shown, 1 is the new backbuffer
 	_currentScreenBuffer = 1;
 
 	// Create the hardware window.
@@ -360,9 +353,11 @@ void OSystem_AmigaOS3::unloadGFXMode() {
 		_hardwareScreenBuffer[0] = NULL;
 	}
 
-	if (_hardwareScreenBuffer[1] != NULL) {
-		FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[1]);
-		_hardwareScreenBuffer[1] = NULL;
+	for (unsigned s = 1; s < NUM_SCREENBUFFERS; ++s) {
+		if (_hardwareScreenBuffer[s]) {
+			FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[s]);
+			_hardwareScreenBuffer[s] = NULL;
+		}
 	}
 
 	if (_hardwareScreen) {
@@ -524,7 +519,7 @@ void OSystem_AmigaOS3::updateScreen() {
 
 	if (ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer])) {
 		// Flip.
-		_currentScreenBuffer = _currentScreenBuffer ^ 1;
+		_currentScreenBuffer = (_currentScreenBuffer + 1) % NUM_SCREENBUFFERS;
 	}
 }
 
@@ -627,15 +622,14 @@ void OSystem_AmigaOS3::hideOverlay() {
 
 	UBYTE *src = (UBYTE *)_overlayscreen8.getPixels();
 
-	WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
-					  _videoMode.overlayScreenHeight, src, _videoMode.overlayScreenHeight);
-
-	if (ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer])) {
-		// Flip.
-		_currentScreenBuffer = _currentScreenBuffer ^ 1;
-		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth,
-						  _videoMode.overlayScreenHeight, src, _videoMode.overlayScreenHeight);
+	// since the overlay is taller than the game screen height, need to make sure
+	// we're clearing all the screens (in particular the bottoms)
+	for (unsigned s = 0; s < NUM_SCREENBUFFERS; ++s) {
+		ClearScreen(&_screenRastPorts[_currentScreenBuffer]);
+		ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer]);
+		_currentScreenBuffer = (_currentScreenBuffer + 1) % NUM_SCREENBUFFERS;
 	}
+
 	_overlayVisible = false;
 
 	// Reset the game palette.

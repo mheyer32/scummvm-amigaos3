@@ -164,9 +164,14 @@ protected:
 	struct Window *_hardwareWindow;
 
 	/** Hardware screen */
-	struct Screen *_hardwareScreen;
+	static const BYTE AGA_VIDEO_DEPTH =  8;
+	static const BYTE NUM_SCREENBUFFERS  = 3;
 
-	struct RastPort _screenRastPorts[2];
+	struct ScreenBuffer *_hardwareScreenBuffer[NUM_SCREENBUFFERS] = {nullptr};
+	struct RastPort _screenRastPorts[NUM_SCREENBUFFERS];
+	BYTE _currentScreenBuffer = 0;
+
+	struct Screen *_hardwareScreen;
 
 	/** Unseen game screen */
 	Graphics::Surface _screen;
