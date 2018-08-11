@@ -30,11 +30,13 @@ namespace Scumm {
 #pragma mark --- Utilities ---
 #pragma mark -
 
+#ifndef NDEBUG
 void assertRange(int min, int value, int max, const char *desc) {
 	if (value < min || value > max) {
 		error("%s %d is out of bounds (%d,%d)", desc, value, min, max);
 	}
 }
+#endif
 
 /**
  * Convert an old style direction to a new style one (angle),

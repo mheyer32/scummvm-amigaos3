@@ -738,6 +738,7 @@ int32 IMuseInternal::doCommand_internal(int numargs, int a[]) {
 	if (!_initialized && (cmd || param))
 		return -1;
 
+#ifndef DISABLE_TEXT_CONSOLE
 	{
 		Common::String string = "doCommand - ";
 		string += Common::String::format("%d (%d/%d)", a[0], (int)param, (int)cmd);
@@ -745,6 +746,7 @@ int32 IMuseInternal::doCommand_internal(int numargs, int a[]) {
 			string += Common::String::format(", %d", a[i]);
 		debugC(DEBUG_IMUSE, "%s", string.c_str());
 	}
+#endif
 
 	if (param == 0) {
 		switch (cmd) {

@@ -38,7 +38,11 @@ int normalizeAngle(int angle);
 int fromSimpleDir(int dirtype, int dir);
 int toSimpleDir(int dirtype, int dir);
 
+#ifndef NDEBUG
 void assertRange(int min, int value, int max, const char *desc);
+#else
+#define assertRange(...)
+#endif
 
 /* needed to call from qsort */
 extern STDCALL int strcmp_wrapper(const void *s1, const void *s2);

@@ -37,6 +37,8 @@
 
 namespace Scumm {
 
+
+#ifndef DISABLE_TEXT_CONSOLE
 void debugC(int channel, const char *s, ...) {
 	char buf[STRINGBUFLEN];
 	va_list va;
@@ -52,6 +54,7 @@ void debugC(int channel, const char *s, ...) {
 
 	debug("%s", buf);
 }
+#endif
 
 ScummDebugger::ScummDebugger(ScummEngine *s)
 	: GUI::Debugger() {
