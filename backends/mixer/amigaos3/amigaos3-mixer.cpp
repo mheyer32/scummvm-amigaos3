@@ -174,6 +174,7 @@ int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 			} else {
 				// since we're not produceing any sound here, add a sleep for the required period??
 				ahiReqSent[_currentSoundBuffer] = false;
+				Delay(1);
 			}
 
 		}
