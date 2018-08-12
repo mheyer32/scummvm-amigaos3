@@ -34,24 +34,22 @@ public:
 	virtual void removeTimerProc(TimerProc proc);
 
 private:
-
-	template <typename PtrType>
-	struct HashPtr {
-		uint operator()(PtrType key) const {
-			static_assert (sizeof(uint) == sizeof(PtrType), "32bit pointers expected");
-			//mhhm, maybe not the best function...
-			return (uint)key;
-		}
+	struct TimerSlot {
+		struct Player *player;
+		ULONG tics;
+		void *refCon;
 	};
 
-	typedef Common::HashMap<TimerProc, struct Player *, HashPtr<TimerProc> > TimerProcMap;
-
-	Common::Mutex _mutex;
-	//	TimerSlot *_head;
-	TimerProcMap _callbacks;
+	Common::Mutex _mutex;  // is this really needed? Can callbacks add or remove timers asynchronously?
 
 	struct Task *_timerTask;
+	struct Task *_mainTask;
+	volatile ULONG _timerSignalMask;
+	TimerSlot _allTimers[32];
+	BYTE _numTimers;
 
+	static void __saveds __interrupt TimerTask(void);
+	static AmigaOS3TimerManager *_s_instance;
 };
 
 #endif  // AMIGAOS3TIMER_H

@@ -59,20 +59,16 @@
 #define RAWKEY_Y 0x15
 #define RAWKEY_Z 0x31
 
-static DefaultTimerManager *_timerManager = NULL;
-
 AmigaOS3EventSource::AmigaOS3EventSource() {
 #ifndef NDEBUG
 	debug(9, "AmigaOS3EventSource::AmigaOS3EventSource()");
 #endif
-	_timerManager = ((DefaultTimerManager *)g_system->getTimerManager());
 }
 
 AmigaOS3EventSource::~AmigaOS3EventSource() {
 #ifndef NDEBUG
 	debug(9, "AmigaOS3EventSource::~AmigaOS3EventSource()");
 #endif
-	_timerManager = NULL;
 }
 
 bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
@@ -81,8 +77,6 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 #endif
 
 	bool result = false;
-
-	_timerManager->handler();
 
 	struct Window *hardwareWindow = ((OSystem_AmigaOS3 *)g_system)->getHardwareWindow();
 
