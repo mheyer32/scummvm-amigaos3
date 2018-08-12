@@ -1878,7 +1878,7 @@ if test "$have_gcc" = yes ; then
 				;;
 			esac
 		fi
-		append_var CXXFLAGS "-W -Wno-unused-parameter"
+		append_var CXXFLAGS "-W -Wno-unused-parameter -Wno-unused-function"
 		add_line_to_config_mk 'HAVE_GCC3 = 1'
 		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
 	fi;
@@ -2876,6 +2876,8 @@ if test -n "$_host"; then
 				append_var CXXFLAGS "-fno-rtti"
 				# no logging, warning etc...
 				append_var DEFINES "-DDISABLE_TEXT_CONSOLE"
+			else
+				append_var CXXFLAGS "-Og"
 			fi
 
 			_backend="amigaos3"
