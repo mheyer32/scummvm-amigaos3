@@ -43,6 +43,7 @@ struct GfxBase* GfxBase;
 struct Library* IconBase;
 struct IntuitionBase* IntuitionBase;
 struct KeymapBase* KeymapBase;
+struct RealTimeBase  *RealTimeBase;
 
 static struct IORequest TimerDevice;
 
@@ -84,6 +85,12 @@ static void unload_libraries(void) {
 		CloseDevice(&TimerDevice);
 		TimerBase = NULL;
 	}
+
+	if (RealTimeBase != NULL) {
+		CloseLibrary((struct Library*)RealTimeBase);
+		RealTimeBase = NULL;
+	}
+
 }
 
 static void load_libraries(void) {
@@ -122,6 +129,12 @@ static void load_libraries(void) {
 	KeymapBase = (struct KeymapBase*)OpenLibrary("keymap.library", 0);
 	if (KeymapBase == NULL) {
 		fprintf(stderr, "Unable to load keymap.library!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	RealTimeBase = (struct RealTimeBase*)OpenLibrary("realtime.library", 0);
+	if (RealTimeBase == NULL)	 {
+		fprintf(stderr, "Unable to load realtime.library!\n");
 		exit(EXIT_FAILURE);
 	}
 

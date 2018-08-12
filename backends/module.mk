@@ -132,7 +132,8 @@ MODULE_OBJS += \
 	fs/amigaos3/amigaos3-fs-node.o \
 	fs/amigaos3/amigaos3-fs-factory.o \
 	mixer/amigaos3/amigaos3-mixer.o \
-	midi/amigaos3/amigaos3-camd.o
+	midi/amigaos3/amigaos3-camd.o \
+	timer/amigaos3/amigaos3-timer.o
 endif
 ifdef PLAYSTATION3
 MODULE_OBJS += \

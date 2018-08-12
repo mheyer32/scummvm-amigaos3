@@ -34,7 +34,7 @@
 #include "backends/fs/amigaos3/amigaos3-fs-node.h"
 #include "backends/fs/fs-factory.h"
 #include "backends/saves/default/default-saves.h"
-#include "backends/timer/default/default-timer.h"
+#include "backends/timer/amigaos3/amigaos3-timer.h"
 
 #include "common/debug.h"
 #include "common/scummsys.h"
@@ -188,7 +188,7 @@ void OSystem_AmigaOS3::init(int audioThreadPriority) {
 	delete node;
 #endif
 
-	_timerManager = new DefaultTimerManager();
+
 }
 
 void OSystem_AmigaOS3::initBackend() {
@@ -204,6 +204,8 @@ void OSystem_AmigaOS3::initBackend() {
 	GetCurrentDirName(pathName, 255);
 	strncat(pathName, "/", 1);
 	_savefileManager = new DefaultSaveFileManager(pathName);
+
+	_timerManager = new AmigaOS3TimerManager();
 
 	// Setup and start mixer
 	_mixerManager = new AmigaOS3MixerManager();
