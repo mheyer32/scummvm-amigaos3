@@ -135,9 +135,9 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 			  CreatePlayer(PLAYER_Name, (Tag)id.c_str(), PLAYER_Conductor, (Tag) "ScummVM TimerManager Conductor",
 						   PLAYER_AlarmSigTask, (Tag)_timerTask, PLAYER_AlarmSigBit, (Tag)timerSignalBit, PLAYER_ID,
 						   (Tag)timerSignalBit, PLAYER_UserData, (Tag)proc, PLAYER_ErrorCode, (Tag)&err, TAG_END);
-			if (!player || err) {
+			if (!player) {
 				FreeSignal(timerSignalBit);
-				error("AmigaOS3TimerManager() Can't create a Player: %d\n", err);
+				error("AmigaOS3TimerManager() can't create player; error: %lu\n", err);
 				return false;
 			}
 
