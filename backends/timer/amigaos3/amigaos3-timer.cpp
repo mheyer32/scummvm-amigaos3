@@ -42,10 +42,10 @@ void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
 				assert(slot.player->pl_PlayerID == playerId);
 
 				{
-					auto lock = LockRealTime(RT_CONDUCTORS);  // do I need this?
+//					auto lock = LockRealTime(RT_CONDUCTORS);  // do I need this?
 					LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
 											  PLAYER_Ready, TRUE, TAG_END);
-					UnlockRealTime(lock);
+//					UnlockRealTime(lock);
 				}
 
 				((Common::TimerManager::TimerProc)slot.player->pl_UserData)(slot.refCon);
@@ -83,13 +83,13 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 
 	if (_numTimers) {
 		// Find the first active player to stop the conductor
-		auto lock = LockRealTime(RT_CONDUCTORS);
+//		auto lock = LockRealTime(RT_CONDUCTORS);
 		for (auto &slot : _allTimers) {
 			if (slot.player) {
 				SetConductorState(slot.player, CONDSTATE_STOPPED, 0);
 			}
 		}
-		UnlockRealTime(lock);
+//		UnlockRealTime(lock);
 	}
 
 	if (_timerTask) {
@@ -127,7 +127,7 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 		struct Player *player = nullptr;
 
 		{
-			auto rtLock = LockRealTime(RT_CONDUCTORS);  // I believe I need to do this as two tasks
+//			auto rtLock = LockRealTime(RT_CONDUCTORS);  // I believe I need to do this as two tasks
 			// will access the same conductor/player state
 
 			ULONG err = 0;
@@ -162,7 +162,7 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 				return false;
 			}
 
-			UnlockRealTime(rtLock);
+//			UnlockRealTime(rtLock);
 		}
 
 		auto &slot = _allTimers[timerSignalBit];
@@ -208,9 +208,9 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 			FreeSignal(signalBit);
 
 			{
-				auto lock = LockRealTime(RT_CONDUCTORS);
+//				auto lockRT = LockRealTime(RT_CONDUCTORS);
 				DeletePlayer(player);
-				UnlockRealTime(lock);
+//				UnlockRealTime(lockRT);
 			}
 			player = nullptr;
 
