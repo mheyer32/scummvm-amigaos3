@@ -44,7 +44,7 @@ void setErrorHandler(ErrorHandler handler) {
 } // End of namespace Common
 
 
-#ifndef DISABLE_TEXT_CONSOLE
+#if !defined(DISABLE_TEXT_CONSOLE)
 
 void warning(const char *s, ...) {
 	Common::String output;

@@ -62,7 +62,7 @@ void setErrorHandler(ErrorHandler handler);
 
 void NORETURN_PRE error(const char *s, ...) GCC_PRINTF(1, 2) NORETURN_POST;
 
-#ifdef DISABLE_TEXT_CONSOLE
+#if defined(DISABLE_TEXT_CONSOLE) || (defined(__amigaos3__) && defined(NDEBUG))
 
 inline void warning(const char *s, ...) {}
 

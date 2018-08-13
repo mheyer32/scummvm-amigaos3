@@ -121,7 +121,7 @@ void Player_AD::startSound(int sound) {
 		// Try to allocate a sfx slot for playback.
 		SfxSlot *sfx = allocateSfxSlot(priority);
 		if (!sfx) {
-			debugC(3, DEBUG_SOUND, "AdLib: No free sfx slot for sound %d", sound);
+			::debugC(3, DEBUG_SOUND, "AdLib: No free sfx slot for sound %d", sound);
 			return;
 		}
 
@@ -712,7 +712,7 @@ void Player_AD::musicSeekTo(const uint position) {
 			// We encountered an EOT command. This should not happen unless
 			// we try to seek to an illegal position. In this case just abort
 			// seeking.
-			debugC(3, DEBUG_SOUND, "AD illegal seek to %u", position);
+			::debugC(3, DEBUG_SOUND, "AD illegal seek to %u", position);
 			break;
 		}
 		parseVLQ();
@@ -784,7 +784,7 @@ bool Player_AD::startSfx(SfxSlot *sfx, const byte *resource) {
 	// Try to allocate a hardware channel.
 	sfx->channels[0].hardwareChannel = allocateHWChannel(sfx->priority, sfx);
 	if (sfx->channels[0].hardwareChannel == -1) {
-		debugC(3, DEBUG_SOUND, "AD No hardware channel available");
+		::debugC(3, DEBUG_SOUND, "AD No hardware channel available");
 		return false;
 	}
 	sfx->channels[0].currentOffset = sfx->channels[0].startOffset = resource + 2;
@@ -819,7 +819,7 @@ bool Player_AD::startSfx(SfxSlot *sfx, const byte *resource) {
 			}
 			sfx->channels[curChannel].hardwareChannel = allocateHWChannel(sfx->priority, sfx);
 			if (sfx->channels[curChannel].hardwareChannel == -1) {
-				debugC(3, DEBUG_SOUND, "AD No hardware channel available");
+				::debugC(3, DEBUG_SOUND, "AD No hardware channel available");
 				return false;
 			}
 			sfx->channels[curChannel].currentOffset = bufferPosition;

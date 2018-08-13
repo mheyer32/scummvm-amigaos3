@@ -159,15 +159,6 @@ enum GameFeatures {
 	GF_MAC_CONTAINER       = 1 << 16
 };
 
-/* SCUMM Debug Channels */
-#if !defined(__amigaos3__) || !defined(NDEBUG)
-	void debugC(int level, const char *s, ...) GCC_PRINTF(2, 3);
-#else
-	// On classic Amigas, formatting potentially printing any form of debug info
-	// wastes a lot of resources
-	#define debugC(...)
-#endif
-
 enum {
 	DEBUG_GENERAL	=	1 << 0,		// General debug
 	DEBUG_SCRIPTS	=	1 << 2,		// Track script execution (start/stop/pause)

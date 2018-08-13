@@ -25,7 +25,7 @@
 
 #include "common/scummsys.h"
 
-#ifdef DISABLE_TEXT_CONSOLE
+#if defined(DISABLE_TEXT_CONSOLE) || (defined(__amigaos3__) && defined(NDEBUG))
 
 inline void debug(const char *s, ...) {}
 inline void debug(int level, const char *s, ...) {}
@@ -36,10 +36,8 @@ inline void debugC(uint32 engineChannel, const char *s, ...) {}
 inline void debugCN(int level, uint32 engineChannel, const char *s, ...) {}
 inline void debugCN(uint32 engineChannel, const char *s, ...) {}
 
-
 #else
 
-#if !defined(__amigaos3__) || !defined(NDEBUG)
 	/**
 	 * Print a debug message to the text console (stdout).
 	 * Automatically appends a newline.
@@ -108,14 +106,6 @@ inline void debugCN(uint32 engineChannel, const char *s, ...) {}
 	 */
 	void debugCN(uint32 debugChannels, const char *s, ...) GCC_PRINTF(2, 3);
 
-	#else
-		// On classic Amigas, formatting potentially printing any form of debug info
-		// wastes a lot of resources
-		#define debug(...)
-		#define debugN(...)
-		#define debugC(...)
-		#define debugCN(...)
-	#endif
 #endif
 
 /**
