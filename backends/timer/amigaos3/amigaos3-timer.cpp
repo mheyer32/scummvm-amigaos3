@@ -26,17 +26,11 @@ void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
 			// Main task wants to end thread
 			break;
 		}
-		// This is just a wakup call, for instance when main thread adds or removes
-		// a player and thus needed to update timerSignalMask
-		if (signals & SIGBREAKF_CTRL_F) {
-			// acknowledge that we received the change to timerSignalMask
-			signals &= ~SIGBREAKF_CTRL_F;
-			Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
-		}
 
+		ULONG playerSignals = signals & ~(SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C);
 		BYTE playerId = 0;
-		while (signals) {
-			if ((signals & 1) && tm->_allTimers[playerId].player) {
+		while (playerSignals) {
+			if ((playerSignals & 1) && tm->_allTimers[playerId].player) {
 				const auto &slot = tm->_allTimers[playerId];
 				assert(slot.player);
 				assert(slot.player->pl_PlayerID == playerId);
@@ -51,11 +45,19 @@ void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
 				((Common::TimerManager::TimerProc)slot.player->pl_UserData)(slot.refCon);
 			}
 			playerId++;
-			signals >>= 1;
+			playerSignals >>= 1;
+		}
+
+		// This is just a wakup call, for instance when main thread adds or removes
+		// a player and thus needed to update timerSignalMask
+		if (signals & SIGBREAKF_CTRL_F) {
+			Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
 		}
 	}
 
 	Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
+
+	Wait(0);
 }
 
 AmigaOS3TimerManager::AmigaOS3TimerManager()
@@ -93,6 +95,8 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 	}
 
 	if (_timerTask) {
+		// Wait for the Task to exit the loop, but don't kill it quite yet
+		// until we killed all players that might reference it
 		Wait(SIGBREAKF_CTRL_F);
 	}
 
@@ -102,6 +106,11 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 			DeletePlayer(slot.player);
 			FreeSignal(signalBit);
 		}
+	}
+
+	if (_timerTask) {
+		// FInally, kill it!
+		DeleteTask(_timerTask);
 	}
 
 	_s_instance = nullptr;
