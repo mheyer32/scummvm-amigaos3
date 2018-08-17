@@ -51,6 +51,7 @@ static uint32 _sampleBufferSize = 0;
 
 static Audio::MixerImpl *g_mixer = NULL;
 static struct Task *g_soundThread = NULL;
+static struct Task *g_mainThread = NULL;
 
 AmigaOS3MixerManager::AmigaOS3MixerManager() {
 #ifndef NDEBUG
@@ -68,7 +69,7 @@ AmigaOS3MixerManager::~AmigaOS3MixerManager() {
 
 		if (g_soundThread) {
 			Signal(g_soundThread, SIGBREAKF_CTRL_C);
-			Delay(10);
+			Wait(SIGBREAKF_CTRL_F);
 			g_soundThread = NULL;
 		}
 
@@ -175,15 +176,21 @@ int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 				// since we're not produceing any sound here, add a sleep for the required period??
 				ahiReqSent[_currentSoundBuffer] = false;
 				Delay(1);
+
+				signals = SetSignal(0L, 0L);
+				if (signals & SIGBREAKF_CTRL_C) {
+					goto exit_thread;
+				}
 			}
-
 		}
-
+		// We're playing a sound right now, wait for it to finish
 		signals = Wait(SIGBREAKF_CTRL_C | (1 << ahiPort->mp_SigBit));
 		if (signals & SIGBREAKF_CTRL_C) {
 			break;
 		}
 	}
+
+exit_thread:
 
 	if (ahiReqSent[_currentSoundBuffer]) {
 		AbortIO((struct IORequest *)ahiReq[_currentSoundBuffer]);
@@ -196,7 +203,7 @@ int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
 	}
 
 	exit_scummvm_sound();
-
+	Signal(g_mainThread, SIGBREAKF_CTRL_F);
 	return 0;
 }
 
@@ -229,8 +236,10 @@ void AmigaOS3MixerManager::init(int priority) {
 	assert(g_mixer);
 	g_mixer->setReady(true);
 
+	g_mainThread=FindTask(NULL);
+
 	g_soundThread =
-	  (Task *)CreateNewProcTags(NP_Name, (ULONG) "ScummVM Mixer Thread", NP_CloseOutput, FALSE, NP_CloseInput, FALSE,
+	  (Task *)CreateNewProcTags(NP_Name, (ULONG) "ScummVM MixerThread", NP_CloseOutput, FALSE, NP_CloseInput, FALSE,
 								NP_StackSize, 20000, NP_Entry, (ULONG)&scummvm_sound_thread, TAG_DONE);
 
 	if (!g_soundThread) {
