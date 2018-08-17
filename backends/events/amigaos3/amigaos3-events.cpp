@@ -83,7 +83,7 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 	if (hardwareWindow) {
 		struct IntuiMessage *imsg;
 
-		while (imsg = (struct IntuiMessage *)GetMsg(hardwareWindow->UserPort)) {
+		while (!result && (imsg = (struct IntuiMessage *)GetMsg(hardwareWindow->UserPort))) {
 			ReplyMsg((struct Message *)imsg);
 
 			switch (imsg->Class) {
