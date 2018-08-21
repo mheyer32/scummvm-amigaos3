@@ -181,7 +181,7 @@ __stdargs int main(int argcWb, char* argvWb[]) {
 	// Pre initialize the backend
 	((OSystem_AmigaOS3*)g_system)->init(audioThreadPriority);
 
-	char* argv[] = {"ScummVM"
+	const char* argv[] = {"ScummVM"
 #ifndef NDEBUG
 									// FIXME: make this come from argc/argv and tooltypes
 									,

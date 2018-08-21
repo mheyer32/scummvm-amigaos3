@@ -78,7 +78,7 @@ AmigaOS3MixerManager::~AmigaOS3MixerManager() {
 	}
 }
 
-int init_scummvm_sound() {
+bool init_scummvm_sound() {
 	ahiPort = (struct MsgPort *)CreateMsgPort();
 	if (!ahiPort) {
 		error("Could not create a Message Port for AHI");
@@ -117,6 +117,8 @@ int init_scummvm_sound() {
 	_currentSoundBuffer = 0;
 	ahiReqSent[0] = false;
 	ahiReqSent[1] = false;
+
+	return true;
 }
 
 void exit_scummvm_sound() {
