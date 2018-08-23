@@ -525,7 +525,7 @@ uint32 IMuseInternal::property(int prop, uint32 value) {
 void IMuseInternal::addSysexHandler(byte mfgID, sysexfunc handler) {
 	// TODO: Eventually support multiple sysEx handlers and pay
 	// attention to the client-supplied manufacturer ID.
-	Common::StackLock lock(_mutex, "IMuseInternal::property()");
+	Common::StackLock lock(_mutex, "IMuseInternal::addSysexHandler()");
 	_sysex = handler;
 }
 

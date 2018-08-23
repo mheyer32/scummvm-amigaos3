@@ -51,6 +51,7 @@ protected:
 
 public:
 	ScummEngine_v5(OSystem *syst, const DetectorResult &dr);
+	virtual ~ScummEngine_v5() {}
 
 	void clearFlashlight();
 

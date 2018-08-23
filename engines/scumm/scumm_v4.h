@@ -48,6 +48,7 @@ public:
 
 public:
 	ScummEngine_v4(OSystem *syst, const DetectorResult &dr);
+	virtual ~ScummEngine_v4() {}
 
 	virtual void resetScumm();
 
