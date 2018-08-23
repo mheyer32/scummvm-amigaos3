@@ -25,7 +25,7 @@
 
 #include "common/scummsys.h"
 
-#if defined(__amigaos4__) || defined(__amigaos3__)
+#if defined(__amigaos3__)
 
 #include "audio/mpu401.h"
 #include "audio/musicplugin.h"
@@ -34,8 +34,10 @@
 #include "common/str.h"
 #include "common/textconsole.h"
 #include "common/util.h"
+#include "common/debug.h"
 
 #include "camd/camd.h"
+#include "common/mutex.h"
 #include <proto/dos.h>
 #include <proto/exec.h>
 
@@ -54,29 +56,34 @@ public:
 	void sysEx(const byte *msg, uint16 length);
 
 private:
-	bool _isOpen;
-	struct Library *CamdBase;
+	struct Library *CAMD_BASE_NAME;
 	struct MidiNode *_midi_node;
 	struct MidiLink *_midi_link;
+
+	Common::Mutex _mutex;  // is this really needed? Can timer thread and main thread try to send MIDI at the same time?
+	bool _isOpen;
+
 	char _outport[128];
 
 	char *getDevice();
 	void closeAll();
 };
 
-MidiDriver_CAMD::MidiDriver_CAMD() : _isOpen(false), CamdBase(NULL), _midi_link(NULL) {}
+MidiDriver_CAMD::MidiDriver_CAMD() : CamdBase(NULL), _midi_link(NULL), _isOpen(false) {}
 
 int MidiDriver_CAMD::open() {
+	Common::StackLock lock(_mutex, "MidiDriver_CAMD::open");
+
 	if (_isOpen)
 		return MERR_ALREADY_OPEN;
 
-	CamdBase = OpenLibrary("camd.library", 36L);
-	if (!CamdBase) {
+	CAMD_BASE_NAME = OpenLibrary("camd.library", 36L);
+	if (!CAMD_BASE_NAME) {
 		error("Could not open 'camd.library'");
 		return -1;
 	}
 
-	_midi_node = CreateMidi(MIDI_MsgQueue, 0L, MIDI_SysExSize, 4096L, MIDI_Name, (Tag) "scummvm", TAG_END);
+	_midi_node = CreateMidi(MIDI_MsgQueue, 0L, MIDI_SysExSize, 0L, MIDI_Name, (Tag) "scummvm", TAG_END);
 	if (!_midi_node) {
 		closeAll();
 		error("Could not create CAMD MIDI node");
@@ -102,7 +109,11 @@ int MidiDriver_CAMD::open() {
 }
 
 void MidiDriver_CAMD::close() {
-	MidiDriver_MPU401::close();
+	{
+		Common::StackLock lock(_mutex,  "MidiDriver_CAMD::close");
+
+		MidiDriver_MPU401::close();
+	}
 	closeAll();
 }
 
@@ -112,8 +123,12 @@ void MidiDriver_CAMD::send(uint32 b) {
 		return;
 	}
 
-	ULONG data = READ_LE_UINT32(&b);
-	PutMidi(_midi_link, data);
+	{
+		Common::StackLock lock(_mutex/*, "MidiDriver_CAMD::send"*/);
+
+		ULONG data = READ_LE_UINT32(&b);
+		PutMidi(_midi_link, data);
+	}
 }
 
 void MidiDriver_CAMD::sysEx(const byte *msg, uint16 length) {
@@ -131,12 +146,17 @@ void MidiDriver_CAMD::sysEx(const byte *msg, uint16 length) {
 	memcpy(buf + 1, msg, length);
 	buf[length + 1] = 0xF7;
 
-	// Send it
-	PutSysEx(_midi_link, buf);
+	{
+		Common::StackLock lock(_mutex, "MidiDriver_CAMD::sysEx");
+		// Send it
+		PutSysEx(_midi_link, buf);
+	}
 }
 
 char *MidiDriver_CAMD::getDevice() {
 	char *retname = NULL;
+
+	Common::StackLock lock(_mutex);
 
 	APTR key = LockCAMD(CD_Linkages);
 	if (key != NULL) {
@@ -145,6 +165,8 @@ char *MidiDriver_CAMD::getDevice() {
 		while (cluster && !retname) {
 			// Get the current cluster name
 			char *dev = cluster->mcl_Node.ln_Name;
+
+			debug(1, "MidiDriver_CAMD::getDevice() found device '%s'\n", dev);
 
 			if (strstr(dev, "out") != NULL) {
 				// This is an output device, return this
@@ -167,6 +189,8 @@ char *MidiDriver_CAMD::getDevice() {
 }
 
 void MidiDriver_CAMD::closeAll() {
+	Common::StackLock lock(_mutex, "MidiDriver_CAMD::closeAll");
+
 	if (CamdBase) {
 		if (_midi_node) {
 			FlushMidi(_midi_node);
