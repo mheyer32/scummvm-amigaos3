@@ -106,6 +106,8 @@ add_feature() {
 }
 
 _srcdir=`dirname $0`
+cd $_srcdir
+_srcdir=$PWD
 
 # Read list of engines
 for i in $_srcdir/engines/*/configure.engine; do
@@ -1571,8 +1573,8 @@ esac
 
 if test "$_debug_build" != no; then
 	# Use the system default format for debug info.
-	append_var CXXFLAGS "-g"
-	append_var LDFLAGS "-g"
+	append_var CXXFLAGS "-g -ggdb"
+	append_var LDFLAGS "-g -ggdb"
 fi
 
 if test "$_release_build" = yes; then
@@ -2091,7 +2093,7 @@ cc_check_clean tmp_find_type_with_size.cpp
 # for the smaller sizes.
 echo_n "Alignment required... "
 case $_host_cpu in
-	i[3-6]86 | amd64 | x86_64 | powerpc*)
+	i[3-6]86 | amd64 | x86_64 | powerpc* | m68k)
 		# Unaligned access should work
 		_need_memalign=no
 		;;
@@ -2193,7 +2195,7 @@ case $_host_os in
 		append_var LIBS "-lcitro3d -lctru"
 		;;
 	m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
-		append_var DEFINES "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DSTDCALL=__stdargs"
+		append_var DEFINES "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DSTDCALL=__stdargs -DHAVE_CONFIG_H"
 		# append_var CXXFLAGS "-DFORBIDDEN_SYMBOL_ALLOW_ALL -DNO_INLINE_VARARGS -DNO_INLINE_STDARG"
 		add_line_to_config_mk 'AMIGAOS3 = 1'
 		;;
@@ -2862,9 +2864,13 @@ if test -n "$_host"; then
 			;;
 		m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
 			append_var DEFINES "-D__amigaos3__"
+			append_var DEFINES "-DREDUCE_MEMORY_USAGE"
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
 			append_var CXXFLAGS "-m68030"
 			append_var CXXFLAGS "-m68881"
+			append_var CXXFLAGS "-mhard-float"
+			append_var CXXFLAGS "-ffast-math"
+			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 			#append_var CXXFLAGS "-mregparm=4"
 			# try producing smaller executable
 			append_var CXXFLAGS "-fno-exceptions"
