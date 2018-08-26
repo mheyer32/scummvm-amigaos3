@@ -28,7 +28,7 @@ void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
 		}
 
 		ULONG playerSignals = signals & ~(SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C);
-		BYTE playerId = 0;
+		UBYTE playerId = 0;
 		while (playerSignals) {
 			if ((playerSignals & 1) && tm->_allTimers[playerId].player) {
 				const auto &slot = tm->_allTimers[playerId];
@@ -102,7 +102,7 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 
 	for (auto &slot : _allTimers) {
 		if (slot.player) {
-			BYTE signalBit = (BYTE)slot.player->pl_PlayerID;
+			UBYTE signalBit = (UBYTE)slot.player->pl_PlayerID;
 			DeletePlayer(slot.player);
 			FreeSignal(signalBit);
 		}
@@ -205,13 +205,13 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 	for (auto &slot : _allTimers) {
 		auto &player = slot.player;
 		if (player && player->pl_UserData == (void *)proc) {
-			BYTE signalBit = (BYTE)player->pl_PlayerID;
+			UBYTE signalBit = (UBYTE)player->pl_PlayerID;
 
 			// Prevent the timer thread from waiting on it.
 			// Not sure if I'm allowed to free a signal that is still potentially waited on.
 			// But since this is never the only signal the timerTask is waiting on,
 			// it would hardly block it.
-			_timerSignalMask &= ~(1L << signalBit);
+			_timerSignalMask &= ~(1UL << signalBit);
 			Signal(_timerTask, SIGBREAKF_CTRL_F);  // signal the change of g_timerSignalMask
 			Wait(SIGBREAKF_CTRL_F);				   // wait for acknowledge
 			FreeSignal(signalBit);

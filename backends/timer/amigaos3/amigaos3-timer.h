@@ -46,7 +46,7 @@ private:
 	struct Task *_mainTask;
 	volatile ULONG _timerSignalMask;
 	TimerSlot _allTimers[32];
-	BYTE _numTimers;
+	UBYTE _numTimers;
 
 	static void __saveds __interrupt TimerTask(void);
 	static AmigaOS3TimerManager *_s_instance;

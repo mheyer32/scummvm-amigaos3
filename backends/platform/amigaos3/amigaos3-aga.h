@@ -164,12 +164,12 @@ protected:
 	struct Window *_hardwareWindow;
 
 	/** Hardware screen */
-	static const BYTE AGA_VIDEO_DEPTH =  8;
-	static const BYTE NUM_SCREENBUFFERS  = 3;
+	static const UBYTE AGA_VIDEO_DEPTH = 8;
+	static const UBYTE NUM_SCREENBUFFERS = 3;
 
 	struct ScreenBuffer *_hardwareScreenBuffer[NUM_SCREENBUFFERS] = {nullptr};
 	struct RastPort _screenRastPorts[NUM_SCREENBUFFERS];
-	BYTE _currentScreenBuffer = 0;
+	UBYTE _currentScreenBuffer = 0;
 
 	struct Screen *_hardwareScreen;
 
