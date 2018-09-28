@@ -4,6 +4,7 @@
 #include "common/hashmap.h"
 #include "common/mutex.h"
 #include "common/timer.h"
+#include <exec/types.h>
 
 struct Task;
 
@@ -42,13 +43,15 @@ private:
 
 	Common::Mutex _mutex;  // is this really needed? Can callbacks add or remove timers asynchronously?
 
+
+	struct Process *_timerProcess;
 	struct Task *_timerTask;
 	struct Task *_mainTask;
 	volatile ULONG _timerSignalMask;
 	TimerSlot _allTimers[32];
 	UBYTE _numTimers;
 
-	static void __saveds __interrupt TimerTask(void);
+	static void __saveds TimerTask(void);
 	static AmigaOS3TimerManager *_s_instance;
 };
 

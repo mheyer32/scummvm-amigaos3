@@ -4,16 +4,18 @@
 #include "common/debug.h"
 #include "common/util.h"
 
-#include <clib/alib_protos.h>  // CreateTask
+#include <clib/alib_protos.h>  // DeleteTask
+#include <dos/dostags.h>
+#include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/realtime.h>
 
 AmigaOS3TimerManager *AmigaOS3TimerManager::_s_instance = nullptr;
 
-void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
+void __saveds AmigaOS3TimerManager::TimerTask(void) {
 	AmigaOS3TimerManager *const tm = _s_instance;
 
-	// Increase own prriority, so we'll hopefully never miss a trigger
+	// Increase own priority, so we'll hopefully never miss a trigger
 	struct Task *self = FindTask(NULL);
 	SetTaskPri(self, 21);
 
@@ -56,8 +58,7 @@ void __saveds __interrupt AmigaOS3TimerManager::TimerTask(void) {
 	}
 
 	Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
-
-	Wait(0);
+	Wait(SIGBREAKF_CTRL_C);
 }
 
 AmigaOS3TimerManager::AmigaOS3TimerManager()
@@ -69,20 +70,26 @@ AmigaOS3TimerManager::AmigaOS3TimerManager()
 	memset(_allTimers, 0, sizeof(_allTimers));
 	_mainTask = FindTask(NULL);
 
-	if ((_timerTask = CreateTask("ScummVM TimerManager", 10, (APTR)&TimerTask, 100000)) == NULL) {
+	if ((_timerProcess = CreateNewProcTags(NP_Name, (Tag) "ScummVM TimerManager", NP_Priority, 10, NP_Entry,
+										   (Tag)&TimerTask, NP_StackSize, 100000, TAG_END)) == NULL) {
 		error("Can't create TimerManager subtask");
 	}
+	_timerTask = FindTask("ScummVM TimerManager");
+	assert(_timerTask);
 
+	// wait for Timertask to report ready
 	Wait(SIGBREAKF_CTRL_F);
 	debug(1, "AmigaOS3TimerManager() created \n");
 }
 
 AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 	if (_timerTask) {
-		// now tell the timerTask to finish
+		// tell the timerTask to finish
 		Signal(_timerTask, SIGBREAKF_CTRL_C);
+		// Wait for the Task to exit the loop, but don't kill it quite yet
+		// until we killed all players that might reference it
+		Wait(SIGBREAKF_CTRL_F);
 	}
-
 	if (_numTimers) {
 		// Find the first active player to stop the conductor
 //		auto lock = LockRealTime(RT_CONDUCTORS);
@@ -94,23 +101,18 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 //		UnlockRealTime(lock);
 	}
 
-	if (_timerTask) {
-		// Wait for the Task to exit the loop, but don't kill it quite yet
-		// until we killed all players that might reference it
-		Wait(SIGBREAKF_CTRL_F);
-	}
-
 	for (auto &slot : _allTimers) {
 		if (slot.player) {
 			UBYTE signalBit = (UBYTE)slot.player->pl_PlayerID;
 			DeletePlayer(slot.player);
+			// FIXME:
 			FreeSignal(signalBit);
 		}
 	}
 
 	if (_timerTask) {
-		// FInally, kill it!
-		DeleteTask(_timerTask);
+		// now tell the timerTask to quit
+		Signal(_timerTask, SIGBREAKF_CTRL_C);
 	}
 
 	_s_instance = nullptr;
@@ -121,6 +123,9 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 	// DefaultTimerManager seems to check that neither the same id nor the same proc gets
 	// installed twice and would error out on it.
 	// I'm just relying on that premise and do not do those checks here.
+	// never install or remove a timer from within the timer task
+	assert(FindTask(NULL) != _timerTask);
+
 	{
 		Common::StackLock lock(_mutex);
 
@@ -195,6 +200,9 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 
 void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc) {
 	Common::StackLock lock(_mutex);
+
+	// never install or remove a timer from within the timer task
+	assert(FindTask(NULL) != _timerTask);
 
 	if (_numTimers <= 0) {
 		// It seems, sometimes the same procedure gets removed more than once
