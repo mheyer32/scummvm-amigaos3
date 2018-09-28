@@ -37,8 +37,8 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 				assert(slot.player);
 				assert(slot.player->pl_PlayerID == playerId);
 
-				LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
-										  PLAYER_Ready, TRUE, TAG_END);
+					LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
+											  PLAYER_Ready, TRUE, TAG_END);
 
 				((Common::TimerManager::TimerProc)slot.player->pl_UserData)(slot.refCon);
 			}
@@ -94,7 +94,6 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 			}
 		}
 	}
-
 	for (auto &slot : _allTimers) {
 		if (slot.player) {
 			UBYTE signalBit = (UBYTE)slot.player->pl_PlayerID;
@@ -203,6 +202,9 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 	// never install or remove a timer from within the timer task
 	assert(FindTask(NULL) != _timerTask);
 
+	// never install or remove a timer from within the timer task
+	assert(FindTask(NULL) != _timerTask);
+
 	if (_numTimers <= 0) {
 		// It seems, sometimes the same procedure gets removed more than once
 		debug(1, "AmigaOS3TimerManager::removeTimerProc() no timers left to remove for proc %p", (void *)proc);
@@ -230,7 +232,7 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 
 			FreeSignal(signalBit);
 
-			DeletePlayer(player);
+				DeletePlayer(player);
 			player = nullptr;
 
 			_numTimers--;
