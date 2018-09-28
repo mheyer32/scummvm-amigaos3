@@ -31,6 +31,7 @@
 #include "backends/platform/amigaos3/amigaos3-aga.h"
 
 #include <proto/icon.h>
+#include <proto/timer.h>
 #include <workbench/startup.h>
 
 #define DEFAULT_AUDIO_THREAD_PRIORITY 1
@@ -145,6 +146,12 @@ static void load_libraries(void) {
 		exit(EXIT_FAILURE);
 	}
 	TimerBase = TimerDevice.io_Device;
+
+	{
+		extern ULONG eclocks_per_ms;
+		struct EClockVal time;
+		eclocks_per_ms = ReadEClock(&time) / 1000;
+	}
 }
 
 __stdargs int main(int argcWb, char const * argvWb[]) {
