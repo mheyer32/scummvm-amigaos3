@@ -37,12 +37,8 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 				assert(slot.player);
 				assert(slot.player->pl_PlayerID == playerId);
 
-				{
-//					auto lock = LockRealTime(RT_CONDUCTORS);  // do I need this?
-					LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
-											  PLAYER_Ready, TRUE, TAG_END);
-//					UnlockRealTime(lock);
-				}
+				LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
+										  PLAYER_Ready, TRUE, TAG_END);
 
 				((Common::TimerManager::TimerProc)slot.player->pl_UserData)(slot.refCon);
 			}
@@ -92,13 +88,11 @@ AmigaOS3TimerManager::~AmigaOS3TimerManager() {
 	}
 	if (_numTimers) {
 		// Find the first active player to stop the conductor
-//		auto lock = LockRealTime(RT_CONDUCTORS);
 		for (auto &slot : _allTimers) {
 			if (slot.player) {
 				SetConductorState(slot.player, CONDSTATE_STOPPED, 0);
 			}
 		}
-//		UnlockRealTime(lock);
 	}
 
 	for (auto &slot : _allTimers) {
@@ -151,9 +145,6 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 		struct Player *player = nullptr;
 
 		{
-//			auto rtLock = LockRealTime(RT_CONDUCTORS);  // I believe I need to do this as two tasks
-			// will access the same conductor/player state
-
 			ULONG err = 0;
 			player =
 			  CreatePlayer(PLAYER_Name, (Tag)id.c_str(), PLAYER_Conductor, (Tag) "ScummVM TimerManager Conductor",
@@ -185,8 +176,6 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 				error("SetPlayerAttrs failed");
 				return false;
 			}
-
-//			UnlockRealTime(rtLock);
 		}
 
 		auto &slot = _allTimers[timerSignalBit];
@@ -241,11 +230,7 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 
 			FreeSignal(signalBit);
 
-			{
-//				auto lockRT = LockRealTime(RT_CONDUCTORS);
-				DeletePlayer(player);
-//				UnlockRealTime(lockRT);
-			}
+			DeletePlayer(player);
 			player = nullptr;
 
 			_numTimers--;
