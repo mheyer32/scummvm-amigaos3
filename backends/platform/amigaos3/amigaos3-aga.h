@@ -165,9 +165,9 @@ protected:
 
 	/** Hardware screen */
 	static const UBYTE AGA_VIDEO_DEPTH = 8;
-	static const UBYTE NUM_SCREENBUFFERS = 3;
+	static const UBYTE NUM_SCREENBUFFERS = 2;
 
-	struct ScreenBuffer *_hardwareScreenBuffer[NUM_SCREENBUFFERS] = {nullptr};
+	struct ScreenBuffer *_hardwareScreenBuffer[NUM_SCREENBUFFERS];
 	struct RastPort _screenRastPorts[NUM_SCREENBUFFERS];
 	UBYTE _currentScreenBuffer = 0;
 

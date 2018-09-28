@@ -268,6 +268,7 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 
 
 	// Setup double/triple buffering.
+	memset(_hardwareScreenBuffer, 0, sizeof(_hardwareScreenBuffer));
 	for (unsigned s = 0; s < NUM_SCREENBUFFERS; ++s) {
 		_hardwareScreenBuffer[s] = AllocScreenBuffer(_hardwareScreen, NULL, s == 0 ? SB_SCREEN_BITMAP : 0);
 		if (!_hardwareScreenBuffer[s]) {
