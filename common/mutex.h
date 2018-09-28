@@ -25,32 +25,14 @@
 
 #include "common/scummsys.h"
 #include "common/system.h"
+#include "common/debug.h"
 
 namespace Common {
-
-class Mutex;
 
 /**
  * An pseudo-opaque mutex type. See OSystem::createMutex etc. for more details.
  */
 typedef OSystem::MutexRef MutexRef;
-
-
-/**
- * Auxillary class to (un)lock a mutex on the stack.
- */
-class StackLock {
-	MutexRef _mutex;
-	const char *_mutexName;
-
-	void lock();
-	void unlock();
-public:
-	explicit StackLock(MutexRef mutex, const char *mutexName = NULL);
-	explicit StackLock(const Mutex &mutex, const char *mutexName = NULL);
-	~StackLock();
-};
-
 
 /**
  * Wrapper class around the OSystem mutex functions.
@@ -68,7 +50,56 @@ public:
 	void unlock();
 };
 
+/**
+ * Auxillary class to (un)lock a mutex on the stack.
+ */
+class StackLock {
+	MutexRef _mutex;
+#ifndef NDEBUG
+	const char *_mutexName;
+#endif
 
-} // End of namespace Common
+	inline void lock() {
+#ifndef NDEBUG
+		if (_mutexName != NULL) {
+			debug(6, "Locking mutex %s", _mutexName);
+		}
+#endif
+		g_system->lockMutex(_mutex);
+	}
+	inline void unlock() {
+#ifndef NDEBUG
+		if (_mutexName != NULL) {
+			debug(6, "Unlocking mutex %s", _mutexName);
+		}
+#endif
+		g_system->unlockMutex(_mutex);
+	}
+
+public:
+	inline explicit StackLock(MutexRef mutex, const char *mutexName = NULL)
+	  : _mutex(mutex)
+#ifndef NDEBUG
+		,
+		_mutexName(mutexName)
+#endif
+	{
+		lock();
+	}
+	inline explicit StackLock(const Mutex &mutex, const char *mutexName = NULL)
+	  : _mutex(mutex._mutex)
+#ifndef NDEBUG
+		,
+		_mutexName(mutexName)
+#endif
+
+	{
+		lock();
+	}
+
+	inline ~StackLock() { unlock(); }
+};
+
+}  // End of namespace Common
 
 #endif

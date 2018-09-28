@@ -22,7 +22,6 @@
 
 #include "common/debug.h"
 #include "common/mutex.h"
-#include "common/system.h"
 
 namespace Common {
 
@@ -43,36 +42,6 @@ void Mutex::unlock() {
 	g_system->unlockMutex(_mutex);
 }
 
-
 #pragma mark -
 
-
-StackLock::StackLock(MutexRef mutex, const char *mutexName)
-	: _mutex(mutex), _mutexName(mutexName) {
-	lock();
-}
-
-StackLock::StackLock(const Mutex &mutex, const char *mutexName)
-	: _mutex(mutex._mutex), _mutexName(mutexName) {
-	lock();
-}
-
-StackLock::~StackLock() {
-	unlock();
-}
-
-void StackLock::lock() {
-	if (_mutexName != NULL)
-		debug(6, "Locking mutex %s", _mutexName);
-
-	g_system->lockMutex(_mutex);
-}
-
-void StackLock::unlock() {
-	if (_mutexName != NULL)
-		debug(6, "Unlocking mutex %s", _mutexName);
-
-	g_system->unlockMutex(_mutex);
-}
-
-} // End of namespace Common
+}  // End of namespace Common
