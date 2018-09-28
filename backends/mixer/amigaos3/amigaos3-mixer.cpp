@@ -141,7 +141,7 @@ void exit_scummvm_sound() {
 		DeleteMsgPort(ahiPort);
 }
 
-int __stdargs __saveds scummvm_sound_thread(STRPTR /*args*/, ULONG /*length*/) {
+void __stdargs __saveds scummvm_sound_thread() {
 	// int __saveds scummvm_sound_thread(void) {
 	LONG priority = 0;
 	ULONG signals;
@@ -206,7 +206,6 @@ exit_thread:
 
 	exit_scummvm_sound();
 	Signal(g_mainThread, SIGBREAKF_CTRL_F);
-	return 0;
 }
 
 void AmigaOS3MixerManager::init(int priority) {
