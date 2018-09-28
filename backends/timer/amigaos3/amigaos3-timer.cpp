@@ -131,12 +131,22 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 
 		LONG tics = MAX(1, (interval * TICK_FREQ) / 1000000);
 
+		// FIXME: this is all wrong, but miraculously working.
+		// You are not allowed to allocate signals in thread A and wait on them in thread B.
+		// Instead, thread B needs to allocate the signals it is waiting on.
+		// This will require restructuring all of this code here.
 		BYTE timerSignalBit = AllocSignal(-1L);
 		if (timerSignalBit == -1) {
 			error("AmigaOS3TimerManager() Couldn't allocate additional signal bit\n");
 			return false;
 		}
 		assert(!_allTimers[timerSignalBit].player);
+
+		// HACK HACK HACK: pretend  _timerTask actually allocated the signal bit
+		assert(!(_timerTask->tc_SigAlloc & (1UL << timerSignalBit)));
+		Forbid();
+		_timerTask->tc_SigAlloc |= (1UL << timerSignalBit);
+		Permit();
 
 		struct Player *player = nullptr;
 
@@ -222,6 +232,13 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 			_timerSignalMask &= ~(1UL << signalBit);
 			Signal(_timerTask, SIGBREAKF_CTRL_F);  // signal the change of g_timerSignalMask
 			Wait(SIGBREAKF_CTRL_F);				   // wait for acknowledge
+
+			// HACK HACK HACK: pretend  _timerTask actually allocated the signal bit
+			assert(_timerTask->tc_SigAlloc & (1UL << signalBit));
+			Forbid();
+			_timerTask->tc_SigAlloc &= ~(1UL << signalBit);
+			Permit();
+
 			FreeSignal(signalBit);
 
 			{
