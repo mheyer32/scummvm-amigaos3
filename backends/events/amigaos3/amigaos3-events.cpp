@@ -78,7 +78,8 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 
 	bool result = false;
 
-	struct Window *hardwareWindow = ((OSystem_AmigaOS3 *)g_system)->getHardwareWindow();
+	OSystem_AmigaOS3 * const system = static_cast<OSystem_AmigaOS3 *>(g_system);
+	struct Window *hardwareWindow = system->getHardwareWindow();
 
 	if (hardwareWindow) {
 		struct IntuiMessage *imsg;
@@ -91,7 +92,7 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 				event.type = Common::EVENT_MOUSEMOVE;
 				event.mouse.x = imsg->MouseX;
 				event.mouse.y = imsg->MouseY;
-				((OSystem_AmigaOS3 *)g_system)->setMouseCursorPosition(imsg->MouseX, imsg->MouseY);
+				system->setMouseCursorPosition(imsg->MouseX, imsg->MouseY);
 				result = true;
 				break;
 
