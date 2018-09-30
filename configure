@@ -1418,7 +1418,6 @@ m68k-amigaos | m68k-unknown-amigaos | m68k-aros | amigaos3)
 	_host_os=amigaos3
 	_host_cpu=m68k
 	_host_alias=m68k-amigaos
-	 append_var LDFLAGS "-noixemul"
 	;;
 linupy)
 	_host_os=linux
@@ -2866,20 +2865,23 @@ if test -n "$_host"; then
 			append_var DEFINES "-D__amigaos3__"
 			append_var DEFINES "-DREDUCE_MEMORY_USAGE"
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
-			append_var CXXFLAGS "-m68030"
+			append_var CXXFLAGS "-m68020-60"
 			append_var CXXFLAGS "-m68881"
 			append_var CXXFLAGS "-mhard-float"
 			append_var CXXFLAGS "-ffast-math"
 			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 			#append_var CXXFLAGS "-mregparm=4"
+
 			# try producing smaller executable
 			append_var CXXFLAGS "-fno-exceptions"
+			append_var CXXFLAGS "-fno-rtti"
+
+			append_var CXXFLAGS "-noixemul"
+			append_var LDFLAGS "-noixemul"
 			if test "$_debug_build" != yes; then
 				# throw away all debug info and symbols
 				append_var CXXFLAGS "-s"
 				append_var CXXFLAGS "-fomit-frame-pointer"
-				#rtti might help the debugger, but will increase file size
-				append_var CXXFLAGS "-fno-rtti"
 				# no logging, warning etc...
 				append_var DEFINES "-DDISABLE_TEXT_CONSOLE"
 			else
