@@ -33,22 +33,21 @@
 #include <proto/icon.h>
 #include <workbench/startup.h>
 
-#define DEFAULT_AUDIO_THREAD_PRIORITY 0
+#define DEFAULT_AUDIO_THREAD_PRIORITY 1
 
 static int wbClosed = 0;
 
-struct CxBase* CxBase;
-extern struct Library* CyberGfxBase;
-struct GfxBase* GfxBase;
-struct Library* IconBase;
-struct IntuitionBase* IntuitionBase;
-struct KeymapBase* KeymapBase;
-struct RealTimeBase  *RealTimeBase;
+struct CxBase* CxBase = NULL;
+extern struct Library* CyberGfxBase = NULL;
+struct GfxBase* GfxBase = NULL;
+struct Library* IconBase = NULL;
+struct IntuitionBase* IntuitionBase = NULL;
+struct KeymapBase* KeymapBase = NULL;
+struct RealTimeBase  *RealTimeBase = NULL;
 
+//extern struct Device* TimerBase = NULL;
+struct Device* TimerBase = NULL;
 static struct IORequest TimerDevice;
-
-extern struct Device* TimerBase;
-struct Device* TimerBase;
 
 static void unload_libraries(void) {
 	if (CxBase != NULL) {
@@ -140,27 +139,38 @@ static void load_libraries(void) {
 
 	// Load timer.device so that GetSysTime is
 	// available.
-	OpenDevice("timer.device", 0, &TimerDevice, 37);
-	if (TimerDevice.io_Device == NULL) {
+	BYTE err = OpenDevice("timer.device", 0, &TimerDevice, 37);
+	if (err || TimerDevice.io_Device == NULL) {
 		fprintf(stderr, "Unable to load timer.device!");
 		exit(EXIT_FAILURE);
 	}
 	TimerBase = TimerDevice.io_Device;
 }
 
-__stdargs int main(int argcWb, char* argvWb[]) {
+__stdargs int main(int argcWb, char const * argvWb[]) {
 	load_libraries();
 
+	char const * const argvDefault[] = {"ScummVM", NULL};
+
+	char const * const *argv = argvDefault;
+	int argc = sizeof(argvDefault) / sizeof(argvDefault[0]) - 1;
+
 	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
-	struct WBStartup* wbStartup = NULL;
 	int closeWb = 0;
 
+	struct Process* proc = (struct Process*)FindTask(NULL);
+	printf("Process stack size is %ld bytes.\n", proc->pr_StackSize);
+	if (proc->pr_StackSize < 100000) {
+		printf("Process stack size is smaller than 100000. Exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (argcWb == 0) {
-		wbStartup = (struct WBStartup*)argvWb;
+		struct WBStartup* wbStartup = (struct WBStartup*)argvWb;
 
 		// Process Tooltypes.
-		struct DiskObject* diskObject;
-		diskObject = GetDiskObject((char*)wbStartup->sm_ArgList[0].wa_Name);
+		struct DiskObject* diskObject = GetDiskObject((char*)wbStartup->sm_ArgList[0].wa_Name);
+
 		if (diskObject != NULL) {
 			char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
 			if (toolType != NULL) {
@@ -171,25 +181,22 @@ __stdargs int main(int argcWb, char* argvWb[]) {
 			if (toolType != NULL) {
 				closeWb = 1;
 			}
+
+			FreeDiskObject(diskObject);
 		}
+
+	} else {
+		argc = argcWb;
+		argv = argvWb;
 	}
 
 	// Create our OSystem instance
-	g_system = new OSystem_AmigaOS3();
+	OSystem_AmigaOS3 *amigaOsSystem = new OSystem_AmigaOS3();
+	g_system = amigaOsSystem;
 	assert(g_system);
 
 	// Pre initialize the backend
-	((OSystem_AmigaOS3*)g_system)->init(audioThreadPriority);
-
-	const char* argv[] = {"ScummVM"
-#ifndef NDEBUG
-									// FIXME: make this come from argc/argv and tooltypes
-									,
-									"--debuglevel=100"
-#endif
-									,
-									NULL};
-	int argc = sizeof(argv) / sizeof(char*) - 1;
+	amigaOsSystem->init(audioThreadPriority);
 
 	if (closeWb) {
 		wbClosed = CloseWorkBench();
@@ -200,7 +207,7 @@ __stdargs int main(int argcWb, char* argvWb[]) {
 
 	// Delete OSystem
 	if (g_system) {
-		delete (OSystem_AmigaOS3*)g_system;
+		delete amigaOsSystem;
 	}
 
 	if (wbClosed) {
