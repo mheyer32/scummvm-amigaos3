@@ -68,10 +68,14 @@ OSystem_AmigaOS3::OSystem_AmigaOS3() {
 
 	_hardwareWindow = NULL;
 	_hardwareScreen = NULL;
+	memset(_hardwareScreenBuffer, 0, sizeof(_hardwareScreenBuffer));
+	_currentScreenBuffer = 0;
+
+	_currentPalette = NULL,
+	_currentShakePos = 0;
+
 	_screenDirty = false;
 	_overlayDirty = false;
-
-	//_splashSurface = NULL;
 
 	_overlayVisible = true;
 	_overlayColorMap = NULL;
