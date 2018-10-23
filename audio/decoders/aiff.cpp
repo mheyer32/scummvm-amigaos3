@@ -38,6 +38,8 @@
 #include "audio/decoders/raw.h"
 #include "audio/decoders/3do.h"
 
+#include <type_traits>
+#include <functional>
 namespace Audio {
 
 uint32 readExtended(Common::SeekableReadStream &stream) {
@@ -72,7 +74,20 @@ static const uint32 kVersionAIFC = MKTAG('A', 'I', 'F', 'C');
 // Codecs
 static const uint32 kCodecPCM = MKTAG('N', 'O', 'N', 'E'); // very original
 
-RewindableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse) {
+template <typename ReturnType, typename Functor>
+typename std::enable_if<std::is_convertible<RewindableAudioStream, ReturnType>::value, ReturnType>::type *
+makeRewindableAudioStream(const Functor &f) {
+	return f();
+}
+
+template <typename ReturnType, typename Functor>
+typename std::enable_if<!std::is_convertible<RewindableAudioStream, ReturnType>::value, ReturnType>::type *
+makeRewindableAudioStream(const Functor &f) {
+	return NULL;
+}
+
+template<typename ReturnType>
+ReturnType *makeGenericAIFFStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse) {
 	if (stream->readUint32BE() != MKTAG('F', 'O', 'R', 'M')) {
 		warning("makeAIFFStream: No 'FORM' header");
 
@@ -216,16 +231,32 @@ RewindableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream, Dispos
 		break;
 	case MKTAG('A', 'D', 'P', '4'):
 		// ADP4 on 3DO
-		return make3DO_ADP4AudioStream(dataStream, rate, channels == 2);
+	{
+		auto makeFunc = std::bind(make3DO_ADP4AudioStream, dataStream, rate, channels == 2, NULL, DisposeAfterUse::YES, NULL);
+		return makeRewindableAudioStream<ReturnType>(makeFunc);
+	}
 	case MKTAG('S', 'D', 'X', '2'):
 		// SDX2 on 3DO
-		return make3DO_SDX2AudioStream(dataStream, rate, channels == 2);
+	{
+		auto makeFunc = std::bind(make3DO_SDX2AudioStream, dataStream, rate, channels == 2, NULL, DisposeAfterUse::YES, NULL);
+		return makeRewindableAudioStream<ReturnType>(makeFunc);
+	}
 	default:
 		warning("Unhandled AIFF-C compression tag '%s'", tag2str(codec));
 	}
 
 	delete dataStream;
 	return 0;
+}
+
+SeekableAudioStream *makeSeekableAIFFStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse)
+{
+	return makeGenericAIFFStream<SeekableAudioStream>(stream, disposeAfterUse);
+}
+
+RewindableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse)
+{
+	return makeGenericAIFFStream<RewindableAudioStream>(stream, disposeAfterUse);
 }
 
 } // End of namespace Audio
