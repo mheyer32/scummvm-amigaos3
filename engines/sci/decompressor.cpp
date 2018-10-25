@@ -63,11 +63,11 @@ void Decompressor::fetchBitsMSB() {
 	}
 }
 
-uint32 Decompressor::getBitsMSB(int n) {
+uint32 Decompressor::getBitsMSB(unsigned n) {
 	// fetching more data to buffer if needed
 	if (_nBits < n)
 		fetchBitsMSB();
-	uint32 ret = _dwBits >> (32 - n);
+	uint32 ret = _dwBits >> (32u - n);
 	_dwBits <<= n;
 	_nBits -= n;
 	return ret;
@@ -85,11 +85,11 @@ void Decompressor::fetchBitsLSB() {
 	}
 }
 
-uint32 Decompressor::getBitsLSB(int n) {
+uint32 Decompressor::getBitsLSB(unsigned n) {
 	// fetching more data to buffer if needed
 	if (_nBits < n)
 		fetchBitsLSB();
-	uint32 ret = (_dwBits & ~(0xFFFFFFFFU << n));
+	uint32 ret = (_dwBits & ~((~0u) << n));
 	_dwBits >>= n;
 	_nBits -= n;
 	return ret;
