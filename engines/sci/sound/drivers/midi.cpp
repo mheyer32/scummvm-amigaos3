@@ -472,9 +472,8 @@ void MidiPlayer_Midi::sendMt32SysEx(const uint32 addr, Common::SeekableReadStrea
 }
 
 void MidiPlayer_Midi::sendMt32SysEx(const uint32 addr, const byte *buf, int len, bool noDelay = false) {
-	Common::MemoryReadStream *str = new Common::MemoryReadStream(buf, len);
-	sendMt32SysEx(addr, str, len, noDelay);
-	delete str;
+	Common::MemoryReadStream str(buf, len);
+	sendMt32SysEx(addr, &str, len, noDelay);
 }
 
 void MidiPlayer_Midi::readMt32Patch(const byte *data, int size) {
