@@ -53,12 +53,7 @@ struct resource_index_t {
 
 //////////////////////////////////////////////////////////////////////
 
-static SciVersion s_sciVersion = SCI_VERSION_NONE;	// FIXME: Move this inside a suitable class, e.g. SciEngine
-
-SciVersion getSciVersion() {
-	assert(s_sciVersion != SCI_VERSION_NONE);
-	return s_sciVersion;
-}
+SciVersion s_sciVersion = SCI_VERSION_NONE;	// FIXME: Move this inside a suitable class, e.g. SciEngine
 
 SciVersion getSciVersionForDetection() {
 	assert(!g_sci);

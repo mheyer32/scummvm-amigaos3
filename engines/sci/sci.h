@@ -451,7 +451,11 @@ extern SciEngine *g_sci;
 /**
  * Convenience function to obtain the active SCI version.
  */
-SciVersion getSciVersion();
+static inline SciVersion getSciVersion() {
+	extern SciVersion s_sciVersion;
+	assert(s_sciVersion != SCI_VERSION_NONE);
+	return s_sciVersion;
+}
 
 /**
  * Same as above, but this version doesn't assert on unknown SCI versions.
