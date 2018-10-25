@@ -183,7 +183,7 @@ _as="as"
 _windres=windres
 _stagingpath="staging"
 _win32path="c:/scummvm"
-_amigaospath="/media/sf_Amiga/ScummNew"
+_amigaospath="amiga"
 _staticlibpath=
 _xcodetoolspath=
 _sparklepath=
@@ -1301,6 +1301,10 @@ for ac_option in $@; do
 			engine_disable ${engine_name}
 		done
 		;;
+	--with-amiga-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+			_amigaospath="$arg"
+			;;
 	*)
 		option_error
 		;;
