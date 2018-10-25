@@ -24,6 +24,7 @@
 #define SCI_ENGINE_VM_TYPES_H
 
 #include "common/scummsys.h"
+#include "sci/sciversion.h"
 
 namespace Sci {
 
@@ -42,7 +43,9 @@ struct reg_t {
 	uint16 _offset;
 
 	SegmentId getSegment() const;
+
 	void setSegment(SegmentId segment);
+
 	uint32 getOffset() const;
 	void setOffset(uint32 offset);
 
@@ -86,48 +89,48 @@ struct reg_t {
 		return (getOffset() != x.getOffset()) || (getSegment() != x.getSegment());
 	}
 
-	bool operator>(const reg_t right) const {
+	bool operator>(const reg_t &right) const {
 		return cmp(right, false) > 0;
 	}
 
-	bool operator>=(const reg_t right) const {
+	bool operator>=(const reg_t &right) const {
 		return cmp(right, false) >= 0;
 	}
 
-	bool operator<(const reg_t right) const {
+	bool operator<(const reg_t &right) const {
 		return cmp(right, false) < 0;
 	}
 
-	bool operator<=(const reg_t right) const {
+	bool operator<=(const reg_t &right) const {
 		return cmp(right, false) <= 0;
 	}
 
 	// Same as the normal operators, but perform unsigned
 	// integer checking
-	bool gtU(const reg_t right) const {
+	bool gtU(const reg_t &right) const {
 		return cmp(right, true) > 0;
 	}
 
-	bool geU(const reg_t right) const {
+	bool geU(const reg_t &right) const {
 		return cmp(right, true) >= 0;
 	}
 
-	bool ltU(const reg_t right) const {
+	bool ltU(const reg_t &right) const {
 		return cmp(right, true) < 0;
 	}
 
-	bool leU(const reg_t right) const {
+	bool leU(const reg_t &right) const {
 		return cmp(right, true) <= 0;
 	}
 
 	// Arithmetic operators
-	reg_t operator+(const reg_t right) const;
-	reg_t operator-(const reg_t right) const;
-	reg_t operator*(const reg_t right) const;
-	reg_t operator/(const reg_t right) const;
-	reg_t operator%(const reg_t right) const;
-	reg_t operator>>(const reg_t right) const;
-	reg_t operator<<(const reg_t right) const;
+	reg_t operator+(const reg_t &right) const;
+	reg_t operator-(const reg_t &right) const;
+	reg_t operator*(const reg_t &right) const;
+	reg_t operator/(const reg_t &right) const;
+	reg_t operator%(const reg_t &right) const;
+	reg_t operator>>(const reg_t &right) const;
+	reg_t operator<<(const reg_t &right) const;
 
 	reg_t operator+(int16 right) const;
 	reg_t operator-(int16 right) const;
@@ -138,9 +141,9 @@ struct reg_t {
 	void operator-=(int16 right) { *this = *this - right; }
 
 	// Boolean operators
-	reg_t operator&(const reg_t right) const;
-	reg_t operator|(const reg_t right) const;
-	reg_t operator^(const reg_t right) const;
+	reg_t operator&(const reg_t &right) const;
+	reg_t operator|(const reg_t &right) const;
+	reg_t operator^(const reg_t &right) const;
 
 #ifdef ENABLE_SCI32
 	reg_t operator&(int16 right) const;
@@ -163,14 +166,32 @@ private:
 	 * - 0 if *this == right
 	 * - a negative number if *this < right
 	 */
-	int cmp(const reg_t right, bool treatAsUnsigned) const;
-	reg_t lookForWorkaround(const reg_t right, const char *operation) const;
-	bool pointerComparisonWithInteger(const reg_t right) const;
+	int cmp(const reg_t &right, bool treatAsUnsigned) const;
+	reg_t lookForWorkaround(const reg_t &right, const char *operation) const;
+	bool pointerComparisonWithInteger(const reg_t &right) const;
 
 #ifdef ENABLE_SCI32
 	int sci32Comparison(const reg_t right) const;
 #endif
 };
+
+inline SegmentId reg_t::getSegment() const {
+	if (getSciVersion() < SCI_VERSION_3) {
+		return _segment;
+	} else {
+		// Return the lower 14 bits of the segment
+		return (_segment & 0x3FFF);
+	}
+}
+
+inline uint32 reg_t::getOffset() const {
+	if (getSciVersion() < SCI_VERSION_3) {
+		return _offset;
+	} else {
+		// Return the lower 16 bits from the offset, and the 17th and 18th bits from the segment
+		return ((_segment & 0xC000) << 2) | _offset;
+	}
+}
 
 static inline reg_t make_reg(SegmentId segment, uint16 offset) {
 	reg_t r;

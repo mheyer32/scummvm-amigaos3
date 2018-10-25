@@ -35,6 +35,7 @@
 #include "sci/resource.h"
 #include "sci/resource_intern.h"
 #include "sci/util.h"
+#include "sci/sciversion.h"
 
 namespace Sci {
 
