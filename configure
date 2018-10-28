@@ -3062,6 +3062,7 @@ if test -n "$_host"; then
 			append_var DEFINES "-D__amigaos3__"
 			append_var DEFINES "-DREDUCE_MEMORY_USAGE"
 			append_var DEFINES "-DDISABLE_FANCY_THEMES"
+			append_var DEFINES "-DGUI_ONLY_FULLSCREEN"
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
 			append_var CXXFLAGS "-m68020-60"
 			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
