@@ -231,9 +231,9 @@ void Surface::fillRect(Common::Rect r, uint32 color) {
 	if (!r.isValidRect())
 		return;
 
-	int width = r.width();
-	int lineLen = width;
-	int height = r.height();
+	int16 width = r.width();
+	int16 lineLen = width;
+	int16 height = r.height();
 	bool useMemset = true;
 
 	if (format.bytesPerPixel == 2) {

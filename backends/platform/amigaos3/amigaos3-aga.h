@@ -130,7 +130,7 @@ public:
 
 	virtual void setCursorPalette(const byte *colors, uint start, uint num) {}
 	void disableCursorPalette(bool disable) {}
-	void setMouseCursorPosition(uint x, uint y);
+	void setMouseCursorPosition(uint16 x, uint16 y);
 
 	// inline struct Window* getHardwareWindow() { return _hardwareWindow; }
 	struct Window *getHardwareWindow();
@@ -196,22 +196,18 @@ protected:
 	TransactionDetails _transactionDetails;
 
 	struct VideoState {
-		bool setup;
+		uint16 screenWidth, screenHeight;
+		uint16 overlayScreenHeight;
 
-		// bool aspectRatioCorrectionRequested;
-		// bool aspectRatioCorrectionInUse;
+		uint16 overlayWidth;
+		uint16 overlayHeight;
+
+		uint16 bytesPerRow;
+		uint16 overlayBytesPerRow;
 
 		int mode;
 
-		uint screenWidth, screenHeight;
-		uint overlayScreenHeight;
-		// uint scaledHeight;
-
-		uint overlayWidth;
-		uint overlayHeight;
-
-		uint bytesPerRow;
-		uint overlayBytesPerRow;
+		bool setup;
 	};
 	VideoState _videoMode, _oldVideoMode;
 
@@ -229,16 +225,12 @@ protected:
 	// Mouse data.
 	struct MouseCursor {
 		MouseCursor() : visible(false), keyColor(0), w(0), h(0), x(0), y(0), hotX(0), hotY(0) {}
-		bool visible;
-
 		uint32 keyColor;
-
-		uint w, h;
-
+		uint16 w, h;
 		// The mouse position.
-		uint x, y;
-
-		int hotX, hotY;
+		uint16 x, y;
+		int16 hotX, hotY;
+		bool visible;
 
 		Graphics::Surface surface;
 	};
@@ -263,7 +255,7 @@ protected:
 	byte *_overlayPalette;
 
 	ULONG *_agaPalette;
-	uint _paletteDirtyStart, _paletteDirtyEnd;
+	uint16 _paletteDirtyStart, _paletteDirtyEnd;
 
 	// Shake mode
 	int _currentShakePos;
@@ -279,8 +271,8 @@ protected:
 	ULONG loadModeId();
 	void saveModeId(ULONG modeId);
 
-	struct Screen *createHardwareScreen(uint width, uint height);
-	struct Window *createHardwareWindow(uint width, uint height, struct Screen *screen);
+	struct Screen *createHardwareScreen(uint16 width, uint16 height);
+	struct Window *createHardwareWindow(uint16 width, uint16 height, struct Screen *screen);
 	void unloadGFXMode();
 	void updatePalette();
 
