@@ -121,6 +121,12 @@ bool OSystem::setGraphicsMode(const char *name) {
 	return false;
 }
 
+
+const OSystem::GraphicsMode* OSystem::getSupportedShaders() const {
+	static const OSystem::GraphicsMode no_shader[2] = {{"NONE", "Normal (no shader)", 0}, {0, 0, 0}};
+	return no_shader;
+}
+
 void OSystem::fatalError() {
 	quit();
 	exit(1);

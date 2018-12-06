@@ -389,7 +389,7 @@ void OSystem_AmigaOS3::setPalette(const byte *colors, uint start, uint num) {
 	}
 }
 
-void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) {
+void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) const {
 #ifndef NDEBUG
 	assert(colors);
 #endif

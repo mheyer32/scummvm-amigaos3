@@ -586,10 +586,7 @@ public:
 	 * The list is terminated by an all-zero entry.
 	 * @return a list of supported shaders
 	 */
-	virtual const GraphicsMode *getSupportedShaders() const {
-		static const OSystem::GraphicsMode no_shader[2] = {{"NONE", "Normal (no shader)", 0}, {0, 0, 0}};
-		return no_shader;
-	}
+	virtual const GraphicsMode *getSupportedShaders() const;
 
 	/**
 	 * Switch to the specified shader mode. If switching to the new mode

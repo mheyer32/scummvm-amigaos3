@@ -171,6 +171,12 @@ AMIGA_DATE = $(shell gdate '+%d.%m.%Y')
 base/version.o: CXXFLAGS:=$(CXXFLAGS) -DAMIGA_DATE=\"$(AMIGA_DATE)\"
 endif
 
+ifdef AMIGAOS3
+# Amiga needs date in specific format for the version cookie
+AMIGA_DATE = $(shell date '+%d.%m.%Y')
+base/version.o: CXXFLAGS:=$(CXXFLAGS) -DAMIGA_DATE=\"$(AMIGA_DATE)\"
+endif
+
 ######################################################################
 # Get git's working copy information
 ######################################################################

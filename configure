@@ -3067,7 +3067,7 @@ if test -n "$_host"; then
 
 			# try producing smaller executable
 			append_var CXXFLAGS "-fno-exceptions"
-			append_var CXXFLAGS "-fno-rtti"
+			#append_var CXXFLAGS "-fno-rtti"
 
 			append_var CXXFLAGS "-noixemul"
 			append_var LDFLAGS "-noixemul"
