@@ -51,7 +51,7 @@ void TattooEngine::showOpening() {
 }
 
 void TattooEngine::initialize() {
-	initGraphics(640, 480, true);
+	initGraphics(640, 480);
 
 	// Initialize the base engine
 	SherlockEngine::initialize();
@@ -63,7 +63,7 @@ void TattooEngine::initialize() {
 
 	// Add some more files to the cache
 	_res->addToCache("walk.lib");
-	
+
 	// Set up list of people
 	TattooFixedText &fixedText = *(TattooFixedText *)_fixedText;
 	const char *peopleNamePtr = nullptr;
@@ -122,7 +122,7 @@ void TattooEngine::startScene() {
 		// Darts Board minigame
 		_darts.playDarts(GAME_CRICKET);
 		break;
-	
+
 	case 102:
 		// Darts Board minigame
 		_darts.playDarts(GAME_301);

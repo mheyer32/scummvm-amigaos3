@@ -17,7 +17,11 @@ install:
 	$(INSTALL) -d "$(DESTDIR)$(docdir)"
 	$(INSTALL) -c -m 644 $(DIST_FILES_DOCS) "$(DESTDIR)$(docdir)"
 	$(INSTALL) -d "$(DESTDIR)$(datadir)"
-	$(INSTALL) -c -m 644 $(DIST_FILES_THEMES) $(DIST_FILES_ENGINEDATA) "$(DESTDIR)$(datadir)/"
+	$(INSTALL) -c -m 644 $(DIST_FILES_THEMES) $(DIST_FILES_NETWORKING) $(DIST_FILES_ENGINEDATA) "$(DESTDIR)$(datadir)/"
+	$(INSTALL) -d "$(DESTDIR)$(datarootdir)/applications"
+	$(INSTALL) -c -m 644 "$(srcdir)/dists/scummvm.desktop" "$(DESTDIR)$(datarootdir)/applications/scummvm.desktop"
+	$(INSTALL) -d "$(DESTDIR)$(datarootdir)/appdata"
+	$(INSTALL) -c -m 644 "$(srcdir)/dists/scummvm.appdata.xml" "$(DESTDIR)$(datarootdir)/appdata/scummvm.appdata.xml"
 ifdef DYNAMIC_MODULES
 	$(INSTALL) -d "$(DESTDIR)$(libdir)/scummvm/"
 	$(INSTALL) -c -m 644 $(PLUGINS) "$(DESTDIR)$(libdir)/scummvm/"
@@ -35,7 +39,11 @@ install-strip:
 	$(INSTALL) -d "$(DESTDIR)$(docdir)"
 	$(INSTALL) -c -m 644 $(DIST_FILES_DOCS) "$(DESTDIR)$(docdir)"
 	$(INSTALL) -d "$(DESTDIR)$(datadir)"
-	$(INSTALL) -c -m 644 $(DIST_FILES_THEMES) $(DIST_FILES_ENGINEDATA) "$(DESTDIR)$(datadir)/"
+	$(INSTALL) -c -m 644 $(DIST_FILES_THEMES) $(DIST_FILES_NETWORKING) $(DIST_FILES_ENGINEDATA) "$(DESTDIR)$(datadir)/"
+	$(INSTALL) -d "$(DESTDIR)$(datarootdir)/applications"
+	$(INSTALL) -c -m 644 "$(srcdir)/dists/scummvm.desktop" "$(DESTDIR)$(datarootdir)/applications/scummvm.desktop"
+	$(INSTALL) -d "$(DESTDIR)$(datarootdir)/appdata"
+	$(INSTALL) -c -m 644 "$(srcdir)/dists/scummvm.appdata.xml" "$(DESTDIR)$(datarootdir)/appdata/scummvm.appdata.xml"
 ifdef DYNAMIC_MODULES
 	$(INSTALL) -d "$(DESTDIR)$(libdir)/scummvm/"
 	$(INSTALL) -c -s -m 644 $(PLUGINS) "$(DESTDIR)$(libdir)/scummvm/"
@@ -48,6 +56,8 @@ uninstall:
 	rm -f "$(DESTDIR)$(datarootdir)/icons/hicolor/scalable/apps/scummvm.svg"
 	rm -rf "$(DESTDIR)$(docdir)"
 	rm -rf "$(DESTDIR)$(datadir)"
+	rm -f "$(DESTDIR)$(datarootdir)/applications/scummvm.desktop"
+	rm -f "$(DESTDIR)$(datarootdir)/appdata/scummvm.appdata.xml"
 ifdef DYNAMIC_MODULES
 	rm -rf "$(DESTDIR)$(libdir)/scummvm/"
 endif
@@ -103,6 +113,9 @@ endif
 	cp $(srcdir)/icons/scummvm.icns $(bundle_name)/Contents/Resources/
 	cp $(DIST_FILES_DOCS) $(bundle_name)/
 	cp $(DIST_FILES_THEMES) $(bundle_name)/Contents/Resources/
+ifdef DIST_FILES_NETWORKING
+	cp $(DIST_FILES_NETWORKING) $(bundle_name)/Contents/Resources/
+endif
 ifdef DIST_FILES_ENGINEDATA
 	cp $(DIST_FILES_ENGINEDATA) $(bundle_name)/Contents/Resources/
 endif
@@ -121,6 +134,9 @@ iphonebundle: iphone
 	cp $(srcdir)/dists/iphone/Info.plist $(bundle_name)/
 	cp $(DIST_FILES_DOCS) $(bundle_name)/
 	cp $(DIST_FILES_THEMES) $(bundle_name)/
+ifdef DIST_FILES_NETWORKING
+	cp $(DIST_FILES_NETWORKING) $(bundle_name)/
+endif
 ifdef DIST_FILES_ENGINEDATA
 	cp $(DIST_FILES_ENGINEDATA) $(bundle_name)/
 endif
@@ -229,6 +245,9 @@ ios7bundle: iphone
 	sed -i'' -e 's/$$(PRODUCT_BUNDLE_IDENTIFIER)/org.scummvm.scummvm/' $(bundle_name)/Info.plist
 	cp $(DIST_FILES_DOCS) $(bundle_name)/
 	cp $(DIST_FILES_THEMES) $(bundle_name)/
+ifdef DIST_FILES_NETWORKING
+	cp $(DIST_FILES_NETWORKING) $(bundle_name)/
+endif
 ifdef DIST_FILES_ENGINEDATA
 	cp $(DIST_FILES_ENGINEDATA) $(bundle_name)/
 endif
@@ -263,7 +282,20 @@ ifneq ($(BACKEND), iphone)
 ifneq ($(BACKEND), ios7)
 # Static libaries, used for the scummvm-static and iphone targets
 OSX_STATIC_LIBS := `$(SDLCONFIG) --static-libs`
+ifdef USE_SDL_NET
+ifdef USE_SDL2
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libSDL2_net.a
+else
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libSDL_net.a
 endif
+endif
+# With sdl2-config we don't always get the OpenGL framework
+OSX_STATIC_LIBS += -framework OpenGL
+endif
+endif
+
+ifdef USE_LIBCURL
+OSX_STATIC_LIBS += -lcurl
 endif
 
 ifdef USE_FREETYPE2
@@ -273,8 +305,7 @@ endif
 ifdef USE_VORBIS
 OSX_STATIC_LIBS += \
 		$(STATICLIBPATH)/lib/libvorbisfile.a \
-		$(STATICLIBPATH)/lib/libvorbis.a \
-		$(STATICLIBPATH)/lib/libogg.a
+		$(STATICLIBPATH)/lib/libvorbis.a
 endif
 
 ifdef USE_TREMOR
@@ -283,6 +314,10 @@ endif
 
 ifdef USE_FLAC
 OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libFLAC.a
+endif
+
+ifdef USE_OGG
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libogg.a
 endif
 
 ifdef USE_FLUIDSYNTH
@@ -294,7 +329,7 @@ OSX_STATIC_LIBS += \
 
 ifneq ($(BACKEND), iphone)
 ifneq ($(BACKEND), ios7)
-OSX_STATIC_LIBS += -lreadline
+OSX_STATIC_LIBS += -lreadline -framework AudioUnit
 endif
 endif
 endif
@@ -371,7 +406,7 @@ osxsnap: bundle
 	mkdir ScummVM-snapshot/doc/da
 	cp $(srcdir)/doc/da/HurtigStart ./ScummVM-snapshot/doc/da/HurtigStart
 	mkdir ScummVM-snapshot/doc/de
-	cp $(srcdir)/doc/de/Liesmich ./ScummVM-snapshot/doc/de/Liesmich
+	cp $(srcdir)/doc/de/LIESMICH ./ScummVM-snapshot/doc/de/LIESMICH
 	cp $(srcdir)/doc/de/Schnellstart ./ScummVM-snapshot/doc/de/Schnellstart
 	mkdir ScummVM-snapshot/doc/es
 	cp $(srcdir)/doc/es/InicioRapido ./ScummVM-snapshot/doc/es
@@ -405,13 +440,13 @@ osxsnap: bundle
 	rm -rf ScummVM-snapshot
 
 publish-appcast:
-	scp dists/macosx/scummvm_appcast.xml www.scummvm.org:/var/www/html/
+	scp dists/macosx/scummvm_appcast.xml www.scummvm.org:/var/www/html/appcasts/macosx/release.xml
 
 #
 # Windows specific
 #
 
-scummvmwinres.o: $(srcdir)/icons/scummvm.ico $(DIST_FILES_THEMES) $(DIST_FILES_ENGINEDATA) $(srcdir)/dists/scummvm.rc
+scummvmwinres.o: $(srcdir)/icons/scummvm.ico $(DIST_FILES_THEMES) $(DIST_FILES_NETWORKING) $(DIST_FILES_ENGINEDATA) $(srcdir)/dists/scummvm.rc
 	$(QUIET_WINDRES)$(WINDRES) -DHAVE_CONFIG_H $(WINDRESFLAGS) $(DEFINES) -I. -I$(srcdir) $(srcdir)/dists/scummvm.rc scummvmwinres.o
 
 # Special target to create a win32 snapshot binary (for Inno Setup)
@@ -436,7 +471,7 @@ win32dist: $(EXECUTABLE)
 	cp $(srcdir)/COPYRIGHT $(WIN32PATH)/COPYRIGHT.txt
 	cp $(srcdir)/NEWS $(WIN32PATH)/NEWS.txt
 	cp $(srcdir)/doc/cz/PrectiMe $(WIN32PATH)/doc/cz/PrectiMe.txt
-	cp $(srcdir)/doc/de/Neues $(WIN32PATH)/doc/de/Neues.txt
+	cp $(srcdir)/doc/de/NEUES $(WIN32PATH)/doc/de/NEUES.txt
 	cp $(srcdir)/doc/QuickStart $(WIN32PATH)/doc/QuickStart.txt
 	cp $(srcdir)/doc/es/InicioRapido $(WIN32PATH)/doc/es/InicioRapido.txt
 	cp $(srcdir)/doc/fr/DemarrageRapide $(WIN32PATH)/doc/fr/DemarrageRapide.txt
@@ -446,10 +481,10 @@ win32dist: $(EXECUTABLE)
 	cp $(srcdir)/doc/de/Schnellstart $(WIN32PATH)/doc/de/Schnellstart.txt
 	cp $(srcdir)/doc/se/Snabbstart $(WIN32PATH)/doc/se/Snabbstart.txt
 	cp $(srcdir)/README $(WIN32PATH)/README.txt
-	cp $(srcdir)/doc/de/Liesmich $(WIN32PATH)/doc/de/Liesmich.txt
+	cp $(srcdir)/doc/de/LIESMICH $(WIN32PATH)/doc/de/LIESMICH.txt
 	cp $(srcdir)/doc/se/LasMig $(WIN32PATH)/doc/se/LasMig.txt
 	cp /usr/local/README-SDL.txt $(WIN32PATH)
-	cp /usr/local/bin/SDL.dll $(WIN32PATH)
+	cp /usr/local/bin/SDL2.dll $(WIN32PATH)
 	cp $(srcdir)/dists/win32/graphics/left.bmp $(WIN32PATH)/graphics
 	cp $(srcdir)/dists/win32/graphics/scummvm-install.ico $(WIN32PATH)/graphics
 	cp $(srcdir)/dists/win32/migration.bat $(WIN32PATH)

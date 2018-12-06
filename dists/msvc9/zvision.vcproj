@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="zvision"
-	ProjectGUID="{E771433F-6029-4902-89BB-E795590CA269}"
+	ProjectGUID="{D23A5F1E-DA91-42FC-AD6F-FB78A214CDAA}"
 	RootNamespace="zvision"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

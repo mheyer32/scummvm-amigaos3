@@ -89,7 +89,7 @@ bool TuckerEngine::hasFeature(EngineFeature f) const {
 }
 
 Common::Error TuckerEngine::run() {
-	initGraphics(kScreenWidth, kScreenHeight, false);
+	initGraphics(kScreenWidth, kScreenHeight);
 	syncSoundSettings();
 	_compressedSound.openFile();
 	if (_startSlot == -1)
@@ -708,6 +708,10 @@ void TuckerEngine::setCursorNum(int num) {
 void TuckerEngine::setCursorType(int type) {
 	_cursorType = type;
 	CursorMan.showMouse(_cursorType < 2);
+}
+
+void TuckerEngine::showCursor(bool visible) {
+	CursorMan.showMouse(visible);
 }
 
 void TuckerEngine::setupNewLocation() {

@@ -43,6 +43,7 @@
 #include "backends/audiocd/sdl/sdl-audiocd.h"
 #endif
 
+#include "backends/events/default/default-events.h"
 #include "backends/events/sdl/sdl-events.h"
 #include "backends/mutex/sdl/sdl-mutex.h"
 #include "backends/timer/sdl/sdl-timer.h"
@@ -60,6 +61,14 @@
 #endif // !WIN32
 #endif
 
+#ifdef USE_SDL_NET
+#include <SDL_net.h>
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+#include <SDL_clipboard.h>
+#endif
+
 OSystem_SDL::OSystem_SDL()
 	:
 #ifdef USE_OPENGL
@@ -73,6 +82,9 @@ OSystem_SDL::OSystem_SDL()
 #endif
 	_inited(false),
 	_initedSDL(false),
+#ifdef USE_SDL_NET
+	_initedSDLnet(false),
+#endif
 	_logger(0),
 	_mixerManager(0),
 	_eventSource(0),
@@ -120,6 +132,10 @@ OSystem_SDL::~OSystem_SDL() {
 	delete _logger;
 	_logger = 0;
 
+#ifdef USE_SDL_NET
+	if (_initedSDLnet) SDLNet_Quit();
+#endif
+
 	SDL_Quit();
 }
 
@@ -160,6 +176,17 @@ void OSystem_SDL::init() {
 
 }
 
+bool OSystem_SDL::hasFeature(Feature f) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (f == kFeatureClipboardSupport) return true;
+#endif
+#ifdef JOY_ANALOG
+	if (f == kFeatureJoystickDeadzone) return true;
+#endif
+	if (f == kFeatureKbdMouseSpeed) return true;
+	return ModularBackend::hasFeature(f);
+}
+
 void OSystem_SDL::initBackend() {
 	// Check if backend has not been initialized
 	assert(!_inited);
@@ -180,6 +207,16 @@ void OSystem_SDL::initBackend() {
 	// manager didn't provide one yet.
 	if (_eventSource == 0)
 		_eventSource = new SdlEventSource();
+
+	if (_eventManager == nullptr) {
+		DefaultEventManager *eventManager = new DefaultEventManager(_eventSource);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		// SDL 2 generates its own keyboard repeat events.
+		eventManager->setGenerateKeyRepeatEvents(false);
+#endif
+		_eventManager = eventManager;
+	}
+
 
 #ifdef USE_OPENGL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -245,21 +282,23 @@ void OSystem_SDL::initBackend() {
 		_timerManager = new SdlTimerManager();
 #endif
 
-	if (_audiocdManager == 0) {
-		// Audio CD support was removed with SDL 2.0
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		_audiocdManager = new DefaultAudioCDManager();
-#else
-		_audiocdManager = new SdlAudioCDManager();
-#endif
-
-	}
+	_audiocdManager = createAudioCDManager();
 
 	// Setup a custom program icon.
 	_window->setupIcon();
 
 	_inited = true;
 
+	if (!ConfMan.hasKey("kbdmouse_speed")) {
+		ConfMan.registerDefault("kbdmouse_speed", 3);
+		ConfMan.setInt("kbdmouse_speed", 3);
+	}
+#ifdef JOY_ANALOG
+	if (!ConfMan.hasKey("joystick_deadzone")) {
+		ConfMan.registerDefault("joystick_deadzone", 3);
+		ConfMan.setInt("joystick_deadzone", 3);
+	}
+#endif
 	ModularBackend::initBackend();
 
 	// We have to initialize the graphics manager before the event manager
@@ -269,20 +308,28 @@ void OSystem_SDL::initBackend() {
 	dynamic_cast<SdlGraphicsManager *>(_graphicsManager)->activateManager();
 }
 
-#if defined(USE_TASKBAR)
 void OSystem_SDL::engineInit() {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	dynamic_cast<SdlGraphicsManager *>(_graphicsManager)->unlockWindowSize();
+#endif
+#ifdef USE_TASKBAR
 	// Add the started engine to the list of recent tasks
 	_taskbarManager->addRecent(ConfMan.getActiveDomainName(), ConfMan.get("description"));
 
 	// Set the overlay icon the current running engine
 	_taskbarManager->setOverlayIcon(ConfMan.getActiveDomainName(), ConfMan.get("description"));
+#endif
 }
 
 void OSystem_SDL::engineDone() {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	dynamic_cast<SdlGraphicsManager *>(_graphicsManager)->unlockWindowSize();
+#endif
+#ifdef USE_TASKBAR
 	// Remove overlay icon
 	_taskbarManager->setOverlayIcon("", "");
-}
 #endif
+}
 
 void OSystem_SDL::initSDL() {
 	// Check if SDL has not been initialized
@@ -302,6 +349,17 @@ void OSystem_SDL::initSDL() {
 
 		_initedSDL = true;
 	}
+
+#ifdef USE_SDL_NET
+	// Check if SDL_net has not been initialized
+	if (!_initedSDLnet) {
+		// Initialize SDL_net
+		if (SDLNet_Init() == -1)
+			error("Could not initialize SDL_net: %s", SDLNet_GetError());
+
+		_initedSDLnet = true;
+	}
+#endif
 }
 
 void OSystem_SDL::addSysArchivesToSearchSet(Common::SearchSet &s, int priority) {
@@ -393,7 +451,7 @@ Common::String OSystem_SDL::getSystemLanguage() const {
 	char langName[9];
 	char ctryName[9];
 
-	const LCID languageIdentifier = GetThreadLocale();
+	const LCID languageIdentifier = GetUserDefaultUILanguage();
 
 	if (GetLocaleInfo(languageIdentifier, LOCALE_SISO639LANGNAME, langName, sizeof(langName)) != 0 &&
 		GetLocaleInfo(languageIdentifier, LOCALE_SISO3166CTRYNAME, ctryName, sizeof(ctryName)) != 0) {
@@ -437,6 +495,30 @@ Common::String OSystem_SDL::getSystemLanguage() const {
 #else // USE_DETECTLANG
 	return ModularBackend::getSystemLanguage();
 #endif // USE_DETECTLANG
+}
+
+bool OSystem_SDL::hasTextInClipboard() {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	return SDL_HasClipboardText() == SDL_TRUE;
+#else
+	return false;
+#endif
+}
+
+Common::String OSystem_SDL::getTextFromClipboard() {
+	if (!hasTextInClipboard()) return "";
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	char *text = SDL_GetClipboardText();
+	Common::String strText = text;
+	SDL_free(text);
+
+	// FIXME: The string returned by SDL is in UTF-8, it is not clear
+	// what encoding should be used for the returned string.
+	return strText;
+#else
+	return "";
+#endif
 }
 
 uint32 OSystem_SDL::getMillis(bool skipRecord) {
@@ -489,6 +571,31 @@ Common::TimerManager *OSystem_SDL::getTimerManager() {
 #else
 	return _timerManager;
 #endif
+}
+
+AudioCDManager *OSystem_SDL::createAudioCDManager() {
+	// Audio CD support was removed with SDL 2.0
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	return new DefaultAudioCDManager();
+#else
+	return new SdlAudioCDManager();
+#endif
+}
+
+Common::SaveFileManager *OSystem_SDL::getSavefileManager() {
+#ifdef ENABLE_EVENTRECORDER
+    return g_eventRec.getSaveManager(_savefileManager);
+#else
+    return _savefileManager;
+#endif
+}
+
+//Not specified in base class
+Common::String OSystem_SDL::getScreenshotsPath() {
+	Common::String path = ConfMan.get("screenshotpath");
+	if (!path.empty() && !path.hasSuffix("/"))
+		path += "/";
+	return path;
 }
 
 #ifdef USE_OPENGL

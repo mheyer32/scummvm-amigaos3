@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{D438170F-C1F4-4EBF-AB7C-63A7E3C76AF3}</ProjectGuid>
+		<ProjectGuid>{30CC1EA2-9D8D-4C03-BE63-DCD0A5088A7E}</ProjectGuid>
 		<RootNamespace>tsage</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -157,6 +157,7 @@
 		<ClCompile Include="..\..\engines\tsage\resources.cpp" />
 		<ClCompile Include="..\..\engines\tsage\saveload.cpp" />
 		<ClCompile Include="..\..\engines\tsage\scenes.cpp" />
+		<ClCompile Include="..\..\engines\tsage\screen.cpp" />
 		<ClCompile Include="..\..\engines\tsage\sound.cpp" />
 		<ClCompile Include="..\..\engines\tsage\staticres.cpp" />
 		<ClCompile Include="..\..\engines\tsage\tsage.cpp" />
@@ -210,6 +211,7 @@
 		<ClInclude Include="..\..\engines\tsage\resources.h" />
 		<ClInclude Include="..\..\engines\tsage\saveload.h" />
 		<ClInclude Include="..\..\engines\tsage\scenes.h" />
+		<ClInclude Include="..\..\engines\tsage\screen.h" />
 		<ClInclude Include="..\..\engines\tsage\sound.h" />
 		<ClInclude Include="..\..\engines\tsage\staticres.h" />
 		<ClInclude Include="..\..\engines\tsage\tsage.h" />

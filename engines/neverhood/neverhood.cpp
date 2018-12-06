@@ -24,6 +24,8 @@
 #include "common/config-manager.h"
 #include "common/textconsole.h"
 
+#include "audio/mixer.h"
+
 #include "base/plugins.h"
 #include "base/version.h"
 
@@ -63,7 +65,7 @@ NeverhoodEngine::~NeverhoodEngine() {
 }
 
 Common::Error NeverhoodEngine::run() {
-	initGraphics(640, 480, true);
+	initGraphics(640, 480);
 
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
 

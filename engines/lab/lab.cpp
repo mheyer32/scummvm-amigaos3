@@ -31,6 +31,7 @@
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
 #include "common/error.h"
+#include "common/file.h"
 
 #include "engines/util.h"
 
@@ -159,9 +160,9 @@ LabEngine::~LabEngine() {
 
 Common::Error LabEngine::run() {
 	if (getFeatures() & GF_LOWRES)
-		initGraphics(320, 200, false);
+		initGraphics(320, 200);
 	else
-		initGraphics(640, 480, true);
+		initGraphics(640, 480);
 
 	_interface = new Interface(this);
 	_event = new EventManager(this);

@@ -167,7 +167,7 @@ ControlStatus::~ControlStatus() {
 
 void ControlStatus::setToText(const char *newText) {
 	char tmpLine[256];
-	strcpy(tmpLine, newText);
+	Common::strlcpy(tmpLine, newText, 256);
 	if (_textData) {
 		_statusText->flushForRedraw();
 		free(_textData);
@@ -402,7 +402,8 @@ void Control::animClick(ConResource *pButton) {
 void Control::drawMainPanel() {
 	memset(_screenBuf, 0, GAME_SCREEN_WIDTH * FULL_SCREEN_HEIGHT);
 	_system->copyRectToScreen(_screenBuf, GAME_SCREEN_WIDTH, 0, 0, GAME_SCREEN_WIDTH, FULL_SCREEN_HEIGHT);
-	_controlPanel->drawToScreen(NO_MASK);
+	if (_controlPanel)
+		_controlPanel->drawToScreen(NO_MASK);
 	_exitButton->drawToScreen(NO_MASK);
 	_savePanButton->drawToScreen(NO_MASK);
 	_restorePanButton->drawToScreen(NO_MASK);
@@ -1337,13 +1338,13 @@ uint16 Control::parseSaveData(uint8 *srcBuf) {
 		displayMessage(0, "Unknown save file revision (%d)", saveRev);
 		return RESTORE_FAILED;
 	} else if (saveRev < OLD_SAVEGAME_TYPE) {
-		displayMessage(0, "This savegame version is unsupported.");
+		displayMessage(0, "This saved game version is unsupported.");
 		return RESTORE_FAILED;
 	}
 	LODSD(srcPos, gameVersion);
 	if (gameVersion != SkyEngine::_systemVars.gameVersion) {
 		if ((!SkyEngine::isCDVersion()) || (gameVersion < 365)) { // cd versions are compatible
-			displayMessage(NULL, "This savegame was created by\n"
+			displayMessage(NULL, "This saved game was created by\n"
 				"Beneath a Steel Sky v0.0%03d\n"
 				"It cannot be loaded by this version (v0.0%3d)",
 				gameVersion, SkyEngine::_systemVars.gameVersion);

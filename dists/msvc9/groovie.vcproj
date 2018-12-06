@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="groovie"
-	ProjectGUID="{9EAF19CF-EE28-454D-AC70-4317343FC3EC}"
+	ProjectGUID="{355866A3-D405-45ED-98CD-13D305D2A915}"
 	RootNamespace="groovie"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

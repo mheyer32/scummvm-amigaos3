@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{DD61BFC5-E688-4C14-9A0A-F22E73D97D0C}</ProjectGuid>
+		<ProjectGuid>{AFB9C221-E1F4-4922-9ACA-AB9FE3BC4E86}</ProjectGuid>
 		<RootNamespace>lure</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

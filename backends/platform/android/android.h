@@ -234,7 +234,7 @@ private:
 protected:
 	// PaletteManager API
 	virtual void setPalette(const byte *colors, uint start, uint num);
-	virtual void grabPalette(byte *colors, uint start, uint num);
+	virtual void grabPalette(byte *colors, uint start, uint num) const;
 
 public:
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y,
@@ -286,6 +286,7 @@ public:
 	virtual void logMessage(LogMessageType::Type type, const char *message);
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s,
 											int priority = 0);
+	virtual bool openUrl(const Common::String &url);
 	virtual Common::String getSystemLanguage() const;
 };
 

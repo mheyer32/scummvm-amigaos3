@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{401F04E7-ECBD-4728-B1B4-05C004C47CEA}</ProjectGuid>
+		<ProjectGuid>{A7507F21-68C2-49F6-9587-871A4F09EC76}</ProjectGuid>
 		<RootNamespace>made</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>

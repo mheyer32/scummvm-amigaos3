@@ -20,13 +20,14 @@
  *
  */
 
-#ifndef AGI_H
-#define AGI_H
+#ifndef AGI_AGI_H
+#define AGI_AGI_H
 
 #include "common/scummsys.h"
 #include "common/error.h"
 #include "common/util.h"
 #include "common/file.h"
+#include "common/keyboard.h"
 #include "common/rect.h"
 #include "common/rendermode.h"
 #include "common/stack.h"
@@ -42,8 +43,6 @@
 #include "agi/picture.h"
 #include "agi/logic.h"
 #include "agi/sound.h"
-
-#include "gui/predictivedialog.h"
 
 namespace Common {
 class RandomSource;
@@ -148,17 +147,17 @@ enum BooterDisks {
 // position and position.v.
 //
 enum AgiGameFeatures {
-	GF_AGIMOUSE    = (1 << 0),
+	GF_AGIMOUSE    = (1 << 0), // this disables "Click-to-walk mouse interface"
 	GF_AGDS        = (1 << 1),
-	GF_AGI256      = (1 << 2),
-	GF_AGI256_2    = (1 << 3),
-	GF_AGIPAL      = (1 << 4),
-	GF_MACGOLDRUSH = (1 << 5),
-	GF_FANMADE     = (1 << 6),
-	GF_MENUS       = (1 << 7),
-	GF_ESCPAUSE    = (1 << 8),
+	GF_AGI256      = (1 << 2), // marks fanmade AGI-256 games
+	GF_AGI256_2    = (1 << 3), // marks fanmade AGI-256-2 games
+	GF_AGIPAL      = (1 << 4), // marks game using fanmade AGIPAL extension
+	GF_MACGOLDRUSH = (1 << 5), // use "grdir" instead of "dir" for volume loading
+	GF_FANMADE     = (1 << 6), // marks fanmade games
+	GF_MENUS       = (1 << 7), // not used anymore
+	GF_ESCPAUSE    = (1 << 8), // not used anymore, we detect this internally
 	GF_OLDAMIGAV20 = (1 << 9),
-	GF_CLIPCOORDS  = (1 << 10),
+	GF_CLIPCOORDS  = (1 << 10), // not used atm
 	GF_2GSOLDSOUND = (1 << 11)
 };
 
@@ -467,8 +466,6 @@ struct AgiGame {
 
 	ScreenObjEntry addToPicView;
 
-	int32 ver;                      /**< detected game version */
-
 	bool automaticSave;             /**< set by CmdSetSimple() */
 	char automaticSaveDescription[SAVEDGAME_DESCRIPTION_LEN + 1];
 
@@ -719,7 +716,20 @@ struct AgiArtificialDelayEntry {
 	uint16 millisecondsDelay;
 };
 
-typedef void (*AgiCommand)(AgiGame *state, AgiEngine *vm, uint8 *p);
+typedef void (*AgiOpCodeFunction)(AgiGame *state, AgiEngine *vm, uint8 *p);
+
+struct AgiOpCodeEntry {
+	const char *name;
+	const char *parameters;
+	AgiOpCodeFunction functionPtr;
+	uint16     parameterSize;
+};
+
+struct AgiOpCodeDefinitionEntry {
+	const char *name;
+	const char *parameters;
+	AgiOpCodeFunction functionPtr;
+};
 
 class AgiEngine : public AgiBase {
 protected:
@@ -738,8 +748,6 @@ public:
 
 	Common::Error loadGameState(int slot);
 	Common::Error saveGameState(int slot, const Common::String &description);
-
-	void adjustPosToGameScreen(int16 &x, int16 &y);
 
 private:
 	int _keyQueue[KEY_QUEUE_SIZE];
@@ -859,7 +867,7 @@ public:
 	void unloadLogic(int16 logicNr);
 	int runLogic(int16 logicNr);
 	void debugConsole(int, int, const char *);
-	int testIfCode(int);
+	bool testIfCode(int16 logicNr);
 	void executeAgiCommand(uint8, uint8 *);
 
 private:
@@ -940,6 +948,7 @@ public:
 	int getDirection(int16 objX, int16 objY, int16 destX, int16 destY, int16 stepSize);
 
 	bool _keyHoldMode;
+	Common::KeyCode _keyHoldModeLastKey;
 
 	// Keyboard
 	int doPollKeyboard();
@@ -982,17 +991,20 @@ public:
 	void inGameTimerUpdate();
 
 private:
-	uint32 _lastUsedPlayTimeInCycles; // 20 per second
+	uint32 _lastUsedPlayTimeInCycles; // 40 per second
 	uint32 _lastUsedPlayTimeInSeconds; // actual seconds
 	uint32 _passedPlayTimeCycles; // increased by 1 every time we passed a cycle
 
 private:
-	AgiCommand _agiCommands[183];
-	AgiCommand _agiCondCommands[256];
+	AgiOpCodeEntry _opCodes[256]; // always keep those at 256, so that there is no way for invalid memory access
+	AgiOpCodeEntry _opCodesCond[256];
 
-	void setupOpcodes();
+	void setupOpCodes(uint16 version);
+
+public:
+	const AgiOpCodeEntry *getOpCodesTable() { return _opCodes; }
 };
 
 } // End of namespace Agi
 
-#endif /* AGI_H */
+#endif /* AGI_AGI_H */

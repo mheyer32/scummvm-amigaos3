@@ -56,13 +56,12 @@ public:
 	void fadeFromBlack();
 
 	void clearScreenPalette();
-	void setBasePalette();
 	void setPaletteToScreen();
 	const byte *getPalette() const { return _palette; }
 
 protected:
-	MohawkSurface *decodeImage(uint16 id);
-	MohawkEngine *getVM() { return (MohawkEngine *)_vm; }
+	MohawkSurface *decodeImage(uint16 id) override;
+	MohawkEngine *getVM() override { return (MohawkEngine *)_vm; }
 
 private:
 	MohawkEngine_Myst *_vm;
@@ -73,12 +72,6 @@ private:
 	Common::Rect _viewport;
 	byte _palette[256 * 3];
 
-	int _enableDrawingTimeSimulation;
-	uint32 _nextAllowedDrawTime;
-	static const uint _constantDrawDelay = 10; // ms
-	static const uint _proportionalDrawDelay = 500; // pixels per ms
-
-	void simulatePreviousDrawDelay(const Common::Rect &dest);
 	void transitionDissolve(Common::Rect rect, uint step);
 	void transitionSlideToLeft(Common::Rect rect, uint16 steps, uint16 delay);
 	void transitionSlideToRight(Common::Rect rect, uint16 steps, uint16 delay);
@@ -86,6 +79,11 @@ private:
 	void transitionSlideToBottom(Common::Rect rect, uint16 steps, uint16 delay);
 	void transitionPartialToRight(Common::Rect rect, uint32 width, uint32 steps);
 	void transitionPartialToLeft(Common::Rect rect, uint32 width, uint32 steps);
+
+	void remapSurfaceToSystemPalette(MohawkSurface *mhkSurface);
+	byte getColorIndex(const byte *palette, byte red, byte green, byte blue);
+
+	void applyImagePatches(uint16 id, const MohawkSurface *mhkSurface) const;
 };
 
 } // End of namespace Mohawk

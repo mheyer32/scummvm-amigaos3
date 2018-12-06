@@ -101,6 +101,12 @@ ListWidget::~ListWidget() {
 	delete[] _textWidth;
 }
 
+bool ListWidget::containsWidget(Widget *w) const {
+	if (w == _scrollBar || _scrollBar->containsWidget(w))
+		return true;
+	return false;
+}
+
 Widget *ListWidget::findWidget(int x, int y) {
 	if (x >= _w - _scrollBarWidth)
 		return _scrollBar;
@@ -353,6 +359,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_BACKSPACE:
 		case Common::KEYCODE_DELETE:
 			if (_selectedItem >= 0) {
@@ -369,6 +376,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_END:
 			_selectedItem = _list.size() - 1;
 			break;
@@ -379,6 +387,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_DOWN:
 			if (_selectedItem < (int)_list.size() - 1)
 				_selectedItem++;
@@ -389,6 +398,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_PAGEDOWN:
 			_selectedItem += _entriesPerPage - 1;
 			if (_selectedItem >= (int)_list.size() )
@@ -400,6 +410,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_HOME:
 			_selectedItem = 0;
 			break;
@@ -409,6 +420,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_UP:
 			if (_selectedItem > 0)
 				_selectedItem--;
@@ -419,6 +431,7 @@ bool ListWidget::handleKeyDown(Common::KeyState state) {
 				handled = false;
 				break;
 			}
+			// fall through
 		case Common::KEYCODE_PAGEUP:
 			_selectedItem -= _entriesPerPage - 1;
 			if (_selectedItem < 0)
@@ -488,7 +501,7 @@ void ListWidget::drawWidget() {
 	Common::String buffer;
 
 	// Draw a thin frame around the list.
-	g_gui.theme()->drawWidgetBackground(Common::Rect(_x, _y, _x + _w, _y + _h), 0, ThemeEngine::kWidgetBackgroundBorder);
+	g_gui.theme()->drawWidgetBackgroundClip(Common::Rect(_x, _y, _x + _w, _y + _h), getBossClipRect(), 0, ThemeEngine::kWidgetBackgroundBorder);
 	const int scrollbarW = (_scrollBar && _scrollBar->isVisible()) ? _scrollBarWidth : 0;
 
 	// Draw the list items
@@ -507,7 +520,7 @@ void ListWidget::drawWidget() {
 		// If in numbering mode, we first print a number prefix
 		if (_numberingMode != kListNumberingOff) {
 			buffer = Common::String::format("%2d. ", (pos + _numberingMode));
-			g_gui.theme()->drawText(Common::Rect(_x, y, _x + r.left + _leftPadding, y + fontHeight - 2),
+			g_gui.theme()->drawTextClip(Common::Rect(_x, y, _x + r.left + _leftPadding, y + fontHeight - 2), getBossClipRect(),
 									buffer, _state, Graphics::kTextAlignLeft, inverted, _leftPadding, true);
 			pad = 0;
 		}
@@ -528,12 +541,12 @@ void ListWidget::drawWidget() {
 			color = _editColor;
 			adjustOffset();
 			width = _w - r.left - _hlRightPadding - _leftPadding - scrollbarW;
-			g_gui.theme()->drawText(Common::Rect(_x + r.left, y, _x + r.left + width, y + fontHeight - 2), buffer, _state,
+			g_gui.theme()->drawTextClip(Common::Rect(_x + r.left, y, _x + r.left + width, y + fontHeight - 2), getBossClipRect(), buffer, _state,
 									Graphics::kTextAlignLeft, inverted, pad, true, ThemeEngine::kFontStyleBold, color);
 		} else {
 			buffer = _list[pos];
 			width = _w - r.left - scrollbarW;
-			g_gui.theme()->drawText(Common::Rect(_x + r.left, y, _x + r.left + width, y + fontHeight - 2), buffer, _state,
+			g_gui.theme()->drawTextClip(Common::Rect(_x + r.left, y, _x + r.left + width, y + fontHeight - 2), getBossClipRect(), buffer, _state,
 									Graphics::kTextAlignLeft, inverted, pad, true, ThemeEngine::kFontStyleBold, color);
 		}
 

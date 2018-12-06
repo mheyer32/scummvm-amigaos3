@@ -267,8 +267,10 @@ void QuickTimeDecoder::VideoSampleDesc::initCodec() {
 	_videoCodec = Image::createQuickTimeCodec(_codecTag, _parentTrack->width, _parentTrack->height, _bitsPerSample & 0x1f);
 }
 
-QuickTimeDecoder::AudioTrackHandler::AudioTrackHandler(QuickTimeDecoder *decoder, QuickTimeAudioTrack *audioTrack)
-		: _decoder(decoder), _audioTrack(audioTrack) {
+QuickTimeDecoder::AudioTrackHandler::AudioTrackHandler(QuickTimeDecoder *decoder, QuickTimeAudioTrack *audioTrack) :
+		SeekableAudioTrack(decoder->getSoundType()),
+		_decoder(decoder),
+		_audioTrack(audioTrack) {
 }
 
 void QuickTimeDecoder::AudioTrackHandler::updateBuffer() {
@@ -447,7 +449,9 @@ const Graphics::Surface *QuickTimeDecoder::VideoTrackHandler::decodeNextFrame() 
 	}
 
 	// Update the edit list, if applicable
-	if (endOfCurEdit()) {
+	// FIXME: Add support for playing backwards videos with more than one edit
+	// For now, stay on the first edit for reversed playback
+	if (endOfCurEdit() && !_reversed) {
 		_curEdit++;
 
 		if (atLastEdit())
@@ -503,7 +507,7 @@ bool QuickTimeDecoder::VideoTrackHandler::setReverse(bool reverse) {
 	_reversed = reverse;
 
 	if (_reversed) {
-		if (_parent->editCount != 1) {
+		if (_parent->editList.size() != 1) {
 			// TODO: Myst's holo.mov needs this :(
 			warning("Can only set reverse without edits");
 			return false;
@@ -513,7 +517,7 @@ bool QuickTimeDecoder::VideoTrackHandler::setReverse(bool reverse) {
 			// If we're at the end of the video, go to the penultimate edit.
 			// The current frame is set to one beyond the last frame here;
 			// one "past" the currently displayed frame.
-			_curEdit = _parent->editCount - 1;
+			_curEdit = _parent->editList.size() - 1;
 			_curFrame = _parent->frameCount;
 			_nextFrameStartTime = _parent->editList[_curEdit].trackDuration + _parent->editList[_curEdit].timeOffset;
 		} else if (_durationOverride >= 0) {
@@ -765,7 +769,7 @@ uint32 QuickTimeDecoder::VideoTrackHandler::getCurEditTrackDuration() const {
 }
 
 bool QuickTimeDecoder::VideoTrackHandler::atLastEdit() const {
-	return _curEdit == _parent->editCount;
+	return _curEdit == _parent->editList.size();
 }
 
 bool QuickTimeDecoder::VideoTrackHandler::endOfCurEdit() const {

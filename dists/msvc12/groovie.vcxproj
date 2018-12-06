@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{552DC37D-2212-4331-B793-B6146BB01470}</ProjectGuid>
+		<ProjectGuid>{989C17EC-9BCD-4136-89D0-44CF43A4CB7B}</ProjectGuid>
 		<RootNamespace>groovie</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

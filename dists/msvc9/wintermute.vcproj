@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="wintermute"
-	ProjectGUID="{430E6C40-1094-4D86-B9F3-8775118B3133}"
+	ProjectGUID="{D900CD3A-0FDB-4552-8139-DB9FE2B114B4}"
 	RootNamespace="wintermute"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -143,6 +143,12 @@
 				<File RelativePath="..\..\engines\wintermute\base\particles\part_particle.h" />
 			</Filter>
 			<Filter	Name="scriptables">
+				<Filter	Name="debuggable">
+					<File RelativePath="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.cpp" />
+					<File RelativePath="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.h" />
+					<File RelativePath="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.cpp" />
+					<File RelativePath="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.h" />
+				</Filter>
 				<File RelativePath="..\..\engines\wintermute\base\scriptables\dcscript.h" />
 				<File RelativePath="..\..\engines\wintermute\base\scriptables\script.cpp" />
 				<File RelativePath="..\..\engines\wintermute\base\scriptables\script.h" />
@@ -233,6 +239,36 @@
 			<File RelativePath="..\..\engines\wintermute\base\saveload.h" />
 			<File RelativePath="..\..\engines\wintermute\base\timer.cpp" />
 			<File RelativePath="..\..\engines\wintermute\base\timer.h" />
+		</Filter>
+		<Filter	Name="debugger">
+			<Filter	Name="listing_providers">
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.cpp" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.h" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\blank_listing.cpp" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\blank_listing.h" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.cpp" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.h" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.cpp" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.h" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\source_listing.cpp" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\source_listing.h" />
+				<File RelativePath="..\..\engines\wintermute\debugger\listing_providers\source_listing_provider.h" />
+			</Filter>
+			<File RelativePath="..\..\engines\wintermute\debugger\breakpoint.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\breakpoint.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\debugger_controller.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\debugger_controller.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\error.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\error.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\listing.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\listing.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\listing_provider.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\script_monitor.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\script_monitor.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\watch.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\watch.h" />
+			<File RelativePath="..\..\engines\wintermute\debugger\watch_instance.cpp" />
+			<File RelativePath="..\..\engines\wintermute\debugger\watch_instance.h" />
 		</Filter>
 		<Filter	Name="math">
 			<File RelativePath="..\..\engines\wintermute\math\floatpoint.h" />

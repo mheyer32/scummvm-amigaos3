@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="queen"
-	ProjectGUID="{8DD8D595-481D-43C9-837B-070C6BDA94FA}"
+	ProjectGUID="{0C2D5ACF-850C-4CD4-AAEE-02A7AE0271EB}"
 	RootNamespace="queen"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

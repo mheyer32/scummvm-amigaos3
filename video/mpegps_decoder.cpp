@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -21,7 +21,6 @@
  */
 
 #include "audio/audiostream.h"
-#include "audio/decoders/raw.h"
 #include "audio/decoders/mp3.h"
 #include "common/debug.h"
 #include "common/endian.h"
@@ -143,7 +142,7 @@ void MPEGPSDecoder::readNextPacket() {
 			} else if (startCode >= 0x1C0 && startCode <= 0x1DF) {
 #ifdef USE_MAD
 				// MPEG Audio stream
-				MPEGAudioTrack *audioTrack = new MPEGAudioTrack(*packet);
+				MPEGAudioTrack *audioTrack = new MPEGAudioTrack(*packet, getSoundType());
 				stream = audioTrack;
 				_streamMap[startCode] = audioTrack;
 				addTrack(audioTrack);
@@ -513,7 +512,8 @@ void MPEGPSDecoder::MPEGVideoTrack::findDimensions(Common::SeekableReadStream *f
 
 // The audio code here is almost entirely based on what we do in mp3.cpp
 
-MPEGPSDecoder::MPEGAudioTrack::MPEGAudioTrack(Common::SeekableReadStream &firstPacket) {
+MPEGPSDecoder::MPEGAudioTrack::MPEGAudioTrack(Common::SeekableReadStream &firstPacket, Audio::Mixer::SoundType soundType) :
+		AudioTrack(soundType) {
 	_audStream = Audio::makePacketizedMP3Stream(firstPacket);
 }
 

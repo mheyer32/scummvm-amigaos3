@@ -15,10 +15,14 @@
 			<StringPooling>true</StringPooling>
 			<BufferSecurityCheck>false</BufferSecurityCheck>
 			<DebugInformationFormat></DebugInformationFormat>
-			<RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+			<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 			<EnablePREfast>false</EnablePREfast>
 		</ClCompile>
+		<Lib>
+			<LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+		</Lib>
 		<Link>
+			<LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
 			<IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
 			<SetChecksum>true</SetChecksum>
 		</Link>

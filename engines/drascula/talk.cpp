@@ -338,14 +338,14 @@ void DrasculaEngine::talk_bj(int index) {
 
 			updateRefresh_pre();
 
-			copyBackground(bjX + 2, bjY - 1, bjX + 2, bjY - 1, 27, 40, bgSurface, screenSurface);
+			copyBackground(170 + 2, 90 - 1, 170 + 2, 90 - 1, 27, 40, bgSurface, screenSurface);
 
-			copyRect(x_talk[face], 99, bjX + 2, bjY - 1, 27, 40, drawSurface3, screenSurface);
+			copyRect(x_talk[face], 99, 170 + 2, 90 - 1, 27, 40, drawSurface3, screenSurface);
 			moveCharacters();
 			updateRefresh();
 
 			if (!_subtitlesDisabled)
-				centerText(said, bjX + 7, bjY);
+				centerText(said, 170 + 7, 90);
 
 			updateScreen();
 
@@ -379,10 +379,10 @@ void DrasculaEngine::talk(const char *said, const char *filename) {
 
 	int y_mask_talk = 170;
 	int face;
-	
+
 	// Fix bug #5903 DRASCULA-IT: Crash/graphic glitch at castle towers
 	// Chapter 5 Room 45 is the castle tower part
-	// We use this variable as a condition below because at the castle towers we don't want to draw out the head 
+	// We use this variable as a condition below because at the castle towers we don't want to draw out the head
 	bool notTowers = !((currentChapter == 5) && (_roomNumber == 45));
 
 	if (currentChapter == 6) {
@@ -440,12 +440,9 @@ void DrasculaEngine::talk(const char *said, const char *filename) {
 				copyRect(x_talk_izq[face], y_mask_talk, curX + 8, curY - 1, TALK_WIDTH, TALK_HEIGHT,
 						extraSurface, screenSurface);
 			else if (notTowers) {
-				byte *srcSurface = extraSurface;
-				if (currentChapter == 6 && _lang == kSpanish)
-					srcSurface = tableSurface;
 				reduce_hare_chico(x_talk_izq[face], y_mask_talk, curX + (int)((8.0f / 100) * factor_red[MIN(201, curY + curHeight)]),
 					curY, TALK_WIDTH, TALK_HEIGHT, factor_red[MIN(201, curY + curHeight)],
-					srcSurface, screenSurface);
+					extraSurface, screenSurface);
 			}
 			updateRefresh();
 		} else if (trackProtagonist == 1) {
@@ -453,11 +450,8 @@ void DrasculaEngine::talk(const char *said, const char *filename) {
 				copyRect(x_talk_dch[face], y_mask_talk, curX + 12, curY, TALK_WIDTH, TALK_HEIGHT,
 					extraSurface, screenSurface);
 			else if (notTowers) {
-				byte *srcSurface = extraSurface;
-				if (currentChapter == 6 && _lang == kSpanish)
-					srcSurface = tableSurface;
 				reduce_hare_chico(x_talk_dch[face], y_mask_talk, curX + (int)((12.0f / 100) * factor_red[MIN(201, curY + curHeight)]),
-					curY, TALK_WIDTH, TALK_HEIGHT, factor_red[MIN(201, curY + curHeight)], srcSurface, screenSurface);
+					curY, TALK_WIDTH, TALK_HEIGHT, factor_red[MIN(201, curY + curHeight)], extraSurface, screenSurface);
 			}
 			updateRefresh();
 		} else if (trackProtagonist == 2) {
@@ -494,7 +488,7 @@ void DrasculaEngine::talk(const char *said, const char *filename) {
 				centerText(said, 160, 25);
 			}
 		}
-	
+
 
 		updateScreen();
 		updateEvents();
@@ -979,7 +973,7 @@ void DrasculaEngine::grr() {
 	copyBackground(253, 110, 150, 65, 20, 30, drawSurface3, screenSurface);
 
 	if (!_subtitlesDisabled)
-		centerText("groaaarrrrgghhhh!", 153, 65);
+		centerText(_textmisc[6], 153, 65); // "groaaarrrrgghhhh!"
 
 	updateScreen();
 

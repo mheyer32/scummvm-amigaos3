@@ -20,15 +20,13 @@
  *
  */
 
-#ifndef MOHAWK_H
-#define MOHAWK_H
+#ifndef MOHAWK_MOHAWK_H
+#define MOHAWK_MOHAWK_H
 
 #include "common/scummsys.h"
 #include "common/array.h"
 
 #include "engines/engine.h"
-
-#include "mohawk/video.h"
 
 class OSystem;
 
@@ -100,8 +98,6 @@ public:
 
 	bool hasFeature(EngineFeature f) const;
 
-	Sound *_sound;
-	VideoManager *_video;
 	CursorManager *_cursor;
 
 	virtual Common::SeekableReadStream *getResource(uint32 tag, uint16 id);
@@ -113,13 +109,8 @@ public:
 
 	void pauseGame();
 
-	// Check if events should be done based on a video's current time
-	// (currently only used for Riven's storeMovieOpcode function)
-	virtual void doVideoTimer(VideoHandle handle, bool force) {}
-
 private:
 	PauseDialog *_pauseDialog;
-	void pauseEngineIntern(bool);
 
 protected:
 	// An array holding the main Mohawk archives require by the games

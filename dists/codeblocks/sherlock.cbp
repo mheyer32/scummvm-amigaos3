@@ -23,7 +23,6 @@
 					<Add option="-Wcast-qual" />
 					<Add option="-Wcast-align" />
 					<Add option="-Wshadow" />
-					<Add option="-Wimplicit" />
 					<Add option="-Wnon-virtual-dtor" />
 					<Add option="-Wwrite-strings" />
 					<Add option="-fno-exceptions" />
@@ -37,20 +36,26 @@
 					<Add option="-DUSE_FREETYPE2" />
 					<Add option="-DUSE_JPEG" />
 					<Add option="-DUSE_FLUIDSYNTH" />
+					<Add option="-DUSE_LIBCURL" />
+					<Add option="-DUSE_SDL_NET" />
 					<Add option="-DUSE_BINK" />
 					<Add option="-DUSE_SCALERS" />
 					<Add option="-DUSE_HQ_SCALERS" />
 					<Add option="-DUSE_RGB_COLOR" />
+					<Add option="-DUSE_HIGHRES" />
 					<Add option="-DUSE_MT32EMU" />
 					<Add option="-DUSE_NASM" />
 					<Add option="-DUSE_OPENGL" />
+					<Add option="-DUSE_GLES" />
 					<Add option="-DUSE_TASKBAR" />
+					<Add option="-DUSE_CLOUD" />
 					<Add option="-DUSE_TRANSLATION" />
 					<Add option="-DUSE_DETECTLANG" />
 					<Add option="-DENABLE_SCUMM" />
 					<Add option="-DENABLE_SCUMM_7_8" />
 					<Add option="-DENABLE_HE" />
 					<Add option="-DENABLE_ACCESS" />
+					<Add option="-DENABLE_ADL" />
 					<Add option="-DENABLE_AGI" />
 					<Add option="-DENABLE_AGOS" />
 					<Add option="-DENABLE_AGOS2" />
@@ -63,6 +68,8 @@
 					<Add option="-DENABLE_DRACI" />
 					<Add option="-DENABLE_DRASCULA" />
 					<Add option="-DENABLE_DREAMWEB" />
+					<Add option="-DENABLE_FULLPIPE" />
+					<Add option="-DENABLE_GNAP" />
 					<Add option="-DENABLE_GOB" />
 					<Add option="-DENABLE_GROOVIE" />
 					<Add option="-DENABLE_HOPKINS" />
@@ -75,14 +82,18 @@
 					<Add option="-DENABLE_MADE" />
 					<Add option="-DENABLE_MADS" />
 					<Add option="-DENABLE_MOHAWK" />
+					<Add option="-DENABLE_RIVEN" />
+					<Add option="-DENABLE_MYST" />
 					<Add option="-DENABLE_MORTEVIELLE" />
 					<Add option="-DENABLE_NEVERHOOD" />
 					<Add option="-DENABLE_PARALLACTION" />
 					<Add option="-DENABLE_PEGASUS" />
+					<Add option="-DENABLE_PLUMBERS" />
 					<Add option="-DENABLE_QUEEN" />
 					<Add option="-DENABLE_SAGA" />
 					<Add option="-DENABLE_IHNM" />
 					<Add option="-DENABLE_SCI" />
+					<Add option="-DENABLE_SCI32" />
 					<Add option="-DENABLE_SHERLOCK" />
 					<Add option="-DENABLE_SKY" />
 					<Add option="-DENABLE_SWORD1" />
@@ -90,6 +101,7 @@
 					<Add option="-DENABLE_SWORD25" />
 					<Add option="-DENABLE_TEENAGENT" />
 					<Add option="-DENABLE_TINSEL" />
+					<Add option="-DENABLE_TITANIC" />
 					<Add option="-DENABLE_TOLTECS" />
 					<Add option="-DENABLE_TONY" />
 					<Add option="-DENABLE_TOON" />
@@ -101,6 +113,7 @@
 					<Add option="-DENABLE_ZVISION" />
 					<Add option="-DWIN32" />
 					<Add option="-DSDL_BACKEND" />
+					<Add option="-DUSE_SDL2" />
 					<Add option="-g" />
 					<Add directory="..\..\engines" />
 					<Add directory="..\..\..\scummvm" />
@@ -109,6 +122,8 @@
 		</Build>
 		<Unit filename="..\..\engines\sherlock\scalpel\3do\movie_decoder.cpp" />
 		<Unit filename="..\..\engines\sherlock\scalpel\3do\movie_decoder.h" />
+		<Unit filename="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.cpp" />
+		<Unit filename="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.h" />
 		<Unit filename="..\..\engines\sherlock\scalpel\drivers\adlib.cpp" />
 		<Unit filename="..\..\engines\sherlock\scalpel\drivers\mididriver.h" />
 		<Unit filename="..\..\engines\sherlock\scalpel\drivers\mt32.cpp" />
@@ -164,6 +179,8 @@
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_resources.h" />
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_scene.cpp" />
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_scene.h" />
+		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_screen.cpp" />
+		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_screen.h" />
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_talk.cpp" />
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_talk.h" />
 		<Unit filename="..\..\engines\sherlock\tattoo\tattoo_user_interface.cpp" />

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="gob"
-	ProjectGUID="{52FBDEDE-AED5-4777-B75B-02B2769CE823}"
+	ProjectGUID="{6C7D6E6C-578B-40AC-9EB6-11B85640F626}"
 	RootNamespace="gob"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

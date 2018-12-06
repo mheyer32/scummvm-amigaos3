@@ -93,7 +93,7 @@ public:
 protected:
 	// PaletteManager API
 	virtual void setPalette(const byte *colors, uint start, uint num);
-	virtual void grabPalette(byte *colors, uint start, uint num);
+	virtual void grabPalette(byte *colors, uint start, uint num) const;
 
 public:
 	void restoreHardwarePalette();
@@ -130,7 +130,8 @@ public:
 	// FIXME/TODO: The CD API as follows is *obsolete*
 	// and should be replaced by an AudioCDManager subclass,
 	// see backends/audiocd/ and common/system.h
-	virtual bool openCD(int drive);
+	virtual bool openCD();
+	virtual void closeCD() {}
 	virtual bool pollCD();
 	virtual void playCD(int track, int num_loops, int start_frame, int duration);
 	virtual void stopCD();

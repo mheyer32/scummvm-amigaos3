@@ -32,6 +32,7 @@
 #include "agos/intern.h"
 #include "agos/agos.h"
 #include "agos/midi.h"
+#include "agos/sound.h"
 
 #include "backends/audiocd/audiocd.h"
 
@@ -576,7 +577,7 @@ Common::Error AGOSEngine::init() {
 		_screenHeight = 200;
 	}
 
-	initGraphics(_screenWidth, _screenHeight, getGameType() == GType_FF || getGameType() == GType_PP);
+	initGraphics(_screenWidth, _screenHeight);
 
 	_midi = new MidiPlayer();
 

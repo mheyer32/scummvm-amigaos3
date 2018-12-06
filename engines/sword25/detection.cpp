@@ -52,7 +52,7 @@ static const ExtraGuiOption sword25ExtraGuiOption = {
 class Sword25MetaEngine : public AdvancedMetaEngine {
 public:
 	Sword25MetaEngine() : AdvancedMetaEngine(Sword25::gameDescriptions, sizeof(ADGameDescription), sword25Game) {
-		_guioptions = GUIO1(GUIO_NOMIDI);
+		_guiOptions = GUIO1(GUIO_NOMIDI);
 		_maxScanDepth = 2;
 		_directoryGlobs = directoryGlobs;
 	}
@@ -91,7 +91,7 @@ const ExtraGuiOptions Sword25MetaEngine::getExtraGuiOptions(const Common::String
 
 SaveStateList Sword25MetaEngine::listSaves(const char *target) const {
 	Common::String pattern = target;
-	pattern = pattern + ".???";
+	pattern = pattern + ".###";
 	SaveStateList saveList;
 
 	Sword25::PersistenceService ps;

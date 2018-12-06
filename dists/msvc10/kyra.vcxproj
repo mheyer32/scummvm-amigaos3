@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{6EEFB5F1-80D4-4894-BBC2-5C2466C675FB}</ProjectGuid>
+		<ProjectGuid>{185C57CF-CAEA-4DC7-8885-63B784305959}</ProjectGuid>
 		<RootNamespace>kyra</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>
