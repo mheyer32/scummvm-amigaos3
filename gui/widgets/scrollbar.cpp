@@ -205,8 +205,10 @@ void ScrollBarWidget::drawWidget() {
 
 	Common::Rect clipRect = getBossClipRect();
 	//scrollbar is not a usual child of ScrollContainerWidget, so it gets this special treatment
-	if (dynamic_cast<ScrollContainerWidget *>(_boss))
+
+	if (_boss->isWidget() && static_cast<Widget *>(_boss)->getType() == kScrollContainerWidget) {
 		clipRect.right += _w;
+	}
 	g_gui.theme()->drawScrollbarClip(Common::Rect(_x, _y, _x+_w, _y+_h), clipRect, _sliderPos, _sliderHeight, state, _state);
 }
 

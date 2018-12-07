@@ -111,7 +111,10 @@ protected:
 	 * @param track The track to add
 	 * @param isExternal Is this an external track not found by loadStream()?
 	 */
-	void addTrack(Track *track, bool isExternal = false);
+	class AVIVideoTrack;
+	class AVIAudioTrack;
+	void addVideoTrack(AVIVideoTrack *track, bool isExternal = false);
+	void addAudioTrack(AVIAudioTrack *track, bool isExternal = false);
 
 	struct BitmapInfoHeader {
 		uint32 size;
@@ -339,6 +342,11 @@ protected:
 
 	int _videoTrackCounter, _audioTrackCounter;
 	Track *_lastAddedTrack;
+	enum TrackType {
+		None,
+		Audio,
+		Video
+	} _lastAddedTrackType;
 
 	void initCommon();
 

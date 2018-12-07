@@ -2090,7 +2090,8 @@ Resource *ResourceManager::updateResource(ResourceId resId, ResourceSource *src,
 		error("Could not open %s for reading", src->getLocationName().c_str());
 	}
 
-	AudioVolumeResourceSource *avSrc = dynamic_cast<AudioVolumeResourceSource *>(src);
+
+	AudioVolumeResourceSource *avSrc = src->getSourceType() == kSourceAudioVolume ? static_cast<AudioVolumeResourceSource *>(src) : NULL;
 	if (avSrc != nullptr && !avSrc->relocateMapOffset(offset, size)) {
 		warning("Compressed volume %s does not contain a valid entry for %s (map offset %u)", src->getLocationName().c_str(), resId.toString().c_str(), offset);
 		_hasBadResources = true;

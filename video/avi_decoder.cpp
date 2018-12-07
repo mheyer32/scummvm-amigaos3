@@ -327,7 +327,7 @@ void AVIDecoder::handleStreamHeader(uint32 size) {
 			}
 		}
 
-		addTrack(new AVIVideoTrack(_header.totalFrames, sHeader, bmInfo, initialPalette));
+		addVideoTrack(new AVIVideoTrack(_header.totalFrames, sHeader, bmInfo, initialPalette));
 	} else if (sHeader.streamType == ID_AUDS) {
 		PCMWaveFormat wvInfo;
 		wvInfo.tag = _fileStream->readUint16LE();
@@ -344,17 +344,25 @@ void AVIDecoder::handleStreamHeader(uint32 size) {
 
 		AVIAudioTrack *track = createAudioTrack(sHeader, wvInfo);
 		track->createAudioStream();
-		addTrack(track);
+		addAudioTrack(track);
 	}
 
 	// Ensure that we're at the end of the chunk
 	_fileStream->seek(startPos + strfSize);
 }
 
-void AVIDecoder::addTrack(Track *track, bool isExternal) {
+void AVIDecoder::addVideoTrack(AVIVideoTrack *track, bool isExternal) {
 	VideoDecoder::addTrack(track, isExternal);
 	_lastAddedTrack = track;
+	_lastAddedTrackType = Video;
 }
+
+void AVIDecoder::addAudioTrack(AVIAudioTrack *track, bool isExternal) {
+	VideoDecoder::addTrack(track, isExternal);
+	_lastAddedTrack = track;
+	_lastAddedTrackType = Audio;
+}
+
 
 void AVIDecoder::readStreamName(uint32 size) {
 	if (!_lastAddedTrack) {
@@ -369,12 +377,10 @@ void AVIDecoder::readStreamName(uint32 size) {
 
 		// Apply it to the most recently read stream
 		assert(_lastAddedTrack);
-		AVIVideoTrack *vidTrack = dynamic_cast<AVIVideoTrack *>(_lastAddedTrack);
-		AVIAudioTrack *audTrack = dynamic_cast<AVIAudioTrack *>(_lastAddedTrack);
-		if (vidTrack)
-			vidTrack->getName() = Common::String(buffer);
-		else if (audTrack)
-			audTrack->getName() = Common::String(buffer);
+		if (_lastAddedTrackType == Video)
+			static_cast<AVIVideoTrack *>(_lastAddedTrack)->getName() = Common::String(buffer);
+		else if (_lastAddedTrackType == Audio)
+			static_cast<AVIAudioTrack *>(_lastAddedTrack)->getName() = Common::String(buffer);
 	}
 }
 

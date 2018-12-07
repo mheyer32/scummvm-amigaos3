@@ -97,6 +97,9 @@ public:
 		return (x >= _x && x < (_x + _w) && (y >= _y) && (y < _y + _h));
 	}
 
+	// Poor man's RTTI
+	virtual bool isWidget() const { return false; }
+
 protected:
 	virtual void	releaseFocus() = 0;
 };

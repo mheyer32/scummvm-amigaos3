@@ -160,7 +160,9 @@ public:
 	void setTooltip(const Common::String &tooltip) { _tooltip = tooltip; }
 
 	virtual bool containsWidget(Widget *) const { return false; }
+	virtual bool isWidget() const { return true; }
 
+	uint32 getType() const {return _type;}
 protected:
 	void updateState(int oldFlags, int newFlags);
 

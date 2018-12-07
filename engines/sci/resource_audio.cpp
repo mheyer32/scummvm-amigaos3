@@ -1093,14 +1093,16 @@ void ResourceManager::changeAudioDirectory(Common::String path) {
 	}
 
 	for (SourcesList::iterator it = _sources.begin(); it != _sources.end(); ) {
-		IntMapResourceSource *mapSource = dynamic_cast<IntMapResourceSource *>(*it);
+		IntMapResourceSource *mapSource =
+		  (*it)->getSourceType() == kSourceIntMap ? static_cast<IntMapResourceSource *>(*it) : NULL;
 		if (mapSource && mapSource->_mapNumber != 65535) {
 			delete *it;
 			it = _sources.erase(it);
 			continue;
 		}
 
-		AudioVolumeResourceSource *volSource = dynamic_cast<AudioVolumeResourceSource *>(*it);
+		AudioVolumeResourceSource *volSource =
+		  (*it)->getSourceType() == kSourceAudioVolume ? static_cast<AudioVolumeResourceSource *>(*it) : NULL;
 		if (volSource && volSource->getLocationName().contains("RESOURCE.AUD")) {
 			delete volSource;
 			it = _sources.erase(it);
