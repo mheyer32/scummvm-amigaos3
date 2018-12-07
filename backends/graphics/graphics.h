@@ -47,10 +47,7 @@ public:
 	virtual bool setGraphicsMode(int mode) = 0;
 	virtual void resetGraphicsScale() = 0;
 	virtual int getGraphicsMode() const = 0;
-	virtual const OSystem::GraphicsMode *getSupportedShaders() const {
-		static const OSystem::GraphicsMode no_shader[2] = {{"NONE", "Normal (no shader)", 0}, {0, 0, 0}};
-		return no_shader;
-	};
+	virtual const OSystem::GraphicsMode *getSupportedShaders() const;
 	virtual bool setShader(int id) { return false; }
 	virtual int getShader() const { return 0; }
 
@@ -100,5 +97,10 @@ public:
 	//virtual void setPalette(const byte *colors, uint start, uint num) = 0;
 	//virtual void grabPalette(byte *colors, uint start, uint num) const = 0;
 };
+
+const OSystem::GraphicsMode*GraphicsManager::getSupportedShaders() const {
+	static const OSystem::GraphicsMode no_shader[2] = {{"NONE", "Normal (no shader)", 0}, {0, 0, 0}};
+	return no_shader;
+}
 
 #endif
