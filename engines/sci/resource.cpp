@@ -349,7 +349,8 @@ Common::SeekableReadStream *ResourceManager::getVolumeFile(ResourceSource *sourc
 	Common::File *file;
 
 #ifdef ENABLE_SCI32
-	ChunkResourceSource *chunkSource = dynamic_cast<ChunkResourceSource *>(source);
+	ChunkResourceSource *chunkSource = source->getSourceType() == kSourceChunk ? static_cast<ChunkResourceSource *>(source)
+																			   : NULL;
 	if (chunkSource != nullptr) {
 		Resource *res = findResource(ResourceId(kResourceTypeChunk, chunkSource->getNumber()), false);
 		return res ? res->makeStream() : nullptr;
@@ -392,7 +393,8 @@ Common::SeekableReadStream *ResourceManager::getVolumeFile(ResourceSource *sourc
 
 void ResourceManager::disposeVolumeFileStream(Common::SeekableReadStream *fileStream, Sci::ResourceSource *source) {
 #ifdef ENABLE_SCI32
-	ChunkResourceSource *chunkSource = dynamic_cast<ChunkResourceSource *>(source);
+	ChunkResourceSource *chunkSource = source->getSourceType() == kSourceChunk ? static_cast<ChunkResourceSource *>(source)
+																			   : NULL;
 	if (chunkSource != nullptr) {
 		delete fileStream;
 		return;
