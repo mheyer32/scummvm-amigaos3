@@ -61,10 +61,14 @@ static reg_t &validate_property(EngineState *s, Object *obj, int index) {
 	if (!obj)
 		error("validate_property: Sending to disposed object");
 
-	if (getSciVersion() == SCI_VERSION_3)
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
 		index = obj->locateVarSelector(s->_segMan, index);
-	else
+	} else
+#endif
+	{
 		index >>= 1;
+	}
 
 	if (index < 0 || (uint)index >= obj->getVarCount()) {
 		// This is same way sierra does it and there are some games, that contain such scripts like
@@ -1003,8 +1007,12 @@ void run_vm(EngineState *s) {
 			break;
 
 		case op_info: // (38)
+#ifdef ENABLE_SCI32
 			if (getSciVersion() < SCI_VERSION_3)
-				error("Dummy opcode 0x%x called", opcode);	// should never happen
+#endif
+			{
+				error("Dummy opcode 0x%x called", opcode);
+			}  // should never happen
 
 			if (!(extOpcode & 1))
 				s->r_acc = obj->getInfoSelector();
@@ -1013,8 +1021,12 @@ void run_vm(EngineState *s) {
 			break;
 
 		case op_superP: // (39)
+#ifdef ENABLE_SCI32
 			if (getSciVersion() < SCI_VERSION_3)
+#endif
+			{
 				error("Dummy opcode 0x%x called", opcode);	// should never happen
+			}
 
 			if (!(extOpcode & 1))
 				s->r_acc = obj->getSuperClassSelector();
@@ -1055,6 +1067,7 @@ void run_vm(EngineState *s) {
 			if (!r_temp.isPointer())
 				error("[VM]: Invalid superclass in object");
 			else {
+#ifdef ENABLE_SCI32
 				// SCI3 sets r_acc to whatever was in EAX at the start of a
 				// send. In the case of a super call this is the object ID of
 				// the superclass, as determined by the interpreter, rather than
@@ -1062,6 +1075,7 @@ void run_vm(EngineState *s) {
 				if (getSciVersion() == SCI_VERSION_3) {
 					s->r_acc = r_temp;
 				}
+#endif
 
 				s_temp = s->xs->sp;
 				s->xs->sp -= ((opparams[1] >> 1) + s->r_rest); // Adjust stack

@@ -301,7 +301,7 @@ Common::Error SciEngine::run() {
 		_forceHiresGraphics = ConfMan.getBool("enable_high_resolution_graphics");
 	}
 
-	if (getSciVersion() < SCI_VERSION_2) {
+	if (getSciVersion() <= SCI_VERSION_1_1) {
 		// Initialize the game screen
 		_gfxScreen = new GfxScreen(_resMan);
 		_gfxScreen->enableUndithering(ConfMan.getBool("disable_dithering"));
@@ -660,7 +660,7 @@ void SciEngine::initGraphics() {
 	}
 #endif
 
-	if (getSciVersion() < SCI_VERSION_2) {
+	if (getSciVersion() <= SCI_VERSION_1_1) {
 		// Set default (EGA, amiga or resource 999) palette
 		_gfxPalette16->setDefault();
 	}

@@ -48,7 +48,11 @@ SoundCommandParser::SoundCommandParser(ResourceManager *resMan, SegManager *segM
 	// resource number, but it's totally unrelated to the menu music).
 	// The GK1 demo (very late SCI1.1) does the same thing
 	// TODO: Check the QFG4 demo
-	_useDigitalSFX = (_soundVersion >= SCI_VERSION_2 || g_sci->getGameId() == GID_GK1DEMO || ConfMan.getBool("prefer_digitalsfx"));
+	_useDigitalSFX = (
+#ifdef ENABLE_SCI32
+						 _soundVersion >= SCI_VERSION_2 ||
+#endif
+						 g_sci->getGameId() == GID_GK1DEMO || ConfMan.getBool("prefer_digitalsfx"));
 
 	_music = new SciMusic(_soundVersion, _useDigitalSFX);
 	_music->init();
@@ -328,9 +332,11 @@ reg_t SoundCommandParser::kDoSoundPause(EngineState *s, int argc, reg_t *argv) {
 	reg_t obj = argv[0];
 	const bool shouldPause = argc > 1 ? argv[1].toUint16() : false;
 	if (
-		(_soundVersion < SCI_VERSION_2 && !obj.getSegment()) ||
-		(_soundVersion >= SCI_VERSION_2 && obj.isNull())
-	) {
+		(_soundVersion <= SCI_VERSION_1_1 && !obj.getSegment())
+#ifdef ENABLE_SCI32
+		|| (_soundVersion >= SCI_VERSION_2 && obj.isNull())
+#endif
+		) {
 		_music->pauseAll(shouldPause);
 #ifdef ENABLE_SCI32
 		if (_soundVersion >= SCI_VERSION_2_1_EARLY) {

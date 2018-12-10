@@ -167,9 +167,12 @@ reg_t kCheckFreeSpace(EngineState *s, int argc, reg_t *argv) {
 	int16 subop;
 	// In SCI2.1mid, the call is moved into kFileIO and the arguments are
 	// flipped
+#ifdef ENABLE_SCI32
 	if (getSciVersion() >= SCI_VERSION_2_1_MIDDLE) {
 		subop = argc > 0 ? argv[0].toSint16() : 2;
-	} else {
+	} else
+#endif
+	{
 		subop = argc > 1 ? argv[1].toSint16() : 2;
 	}
 
@@ -565,8 +568,12 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 	uint16 handle = argv[0].toUint16();
 
 	if (handle >= kVirtualFileHandleStart) {
+#ifdef ENABLE_SCI32
 		// it's a virtual handle? ignore it
 		return getSciVersion() >= SCI_VERSION_2 ? TRUE_REG : SIGNAL_REG;
+#else
+		return SIGNAL_REG;
+#endif
 	}
 
 	FileHandle *f = getFileFromHandle(s, handle);
@@ -574,7 +581,11 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 		f->close();
 		if (getSciVersion() <= SCI_VERSION_0_LATE)
 			return s->r_acc;	// SCI0 semantics: no value returned
+#ifdef ENABLE_SCI32
 		return getSciVersion() >= SCI_VERSION_2 ? TRUE_REG : SIGNAL_REG;
+#else
+		return SIGNAL_REG;
+#endif
 	}
 
 	if (getSciVersion() <= SCI_VERSION_0_LATE)
@@ -778,12 +789,14 @@ reg_t kFileIOSeek(EngineState *s, int argc, reg_t *argv) {
 
 	if (f && f->_in) {
 		const bool success = f->_in->seek(offset, whence);
+#ifdef ENABLE_SCI32
 		if (getSciVersion() >= SCI_VERSION_2) {
 			if (success) {
 				return make_reg(0, f->_in->pos());
 			}
 			return SIGNAL_REG;
 		}
+#endif
 		return make_reg(0, success);
 	} else if (f && f->_out) {
 		error("kFileIOSeek: Unsupported seek operation on a writeable stream (offset: %d, whence: %d)", offset, whence);

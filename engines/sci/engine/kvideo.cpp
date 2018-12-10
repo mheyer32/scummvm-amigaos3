@@ -207,7 +207,7 @@ reg_t kShowMovie(EngineState *s, int argc, reg_t *argv) {
 		// We also won't be copying the screen to the SCI screen...
 		if (g_system->getScreenFormat().bytesPerPixel != 1)
 			initGraphics(screenWidth, screenHeight);
-		else if (getSciVersion() < SCI_VERSION_2) {
+		else if (getSciVersion() <= SCI_VERSION_1_1) {
 			g_sci->_gfxScreen->kernelSyncWithFramebuffer();
 			g_sci->_gfxPalette16->kernelSyncScreenPalette();
 		}

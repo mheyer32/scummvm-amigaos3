@@ -65,6 +65,7 @@ struct SciKernelMapSubEntry {
 #define SIG_SCI1             SCI_VERSION_1_EGA_ONLY, SCI_VERSION_1_LATE
 #define SIG_SCI11            SCI_VERSION_1_1, SCI_VERSION_1_1
 #define SIG_SINCE_SCI11      SCI_VERSION_1_1, SCI_VERSION_NONE
+#ifdef ENABLE_SCI32
 #define SIG_SCI2             SCI_VERSION_2, SCI_VERSION_2
 #define SIG_SCI21EARLY       SCI_VERSION_2_1_EARLY, SCI_VERSION_2_1_EARLY
 #define SIG_SCI21MID_LATE    SCI_VERSION_2_1_MIDDLE, SCI_VERSION_2_1_LATE
@@ -75,6 +76,7 @@ struct SciKernelMapSubEntry {
 #define SIG_SINCE_SCI21LATE  SCI_VERSION_2_1_LATE, SCI_VERSION_3
 #define SIG_SCI21LATE        SCI_VERSION_2_1_LATE, SCI_VERSION_2_1_LATE
 #define SIG_SCI3             SCI_VERSION_3, SCI_VERSION_3
+#endif
 
 #define SIG_SCI16          SCI_VERSION_NONE, SCI_VERSION_1_1
 #define SIG_SCI32          SCI_VERSION_2, SCI_VERSION_NONE
@@ -658,8 +660,8 @@ static SciKernelMapEntry s_kernelMap[] = {
 #ifdef ENABLE_SCI32
 	{ "CelHigh", kCelHigh32,       SIG_SCI32, SIGFOR_ALL,    "iii",                   NULL,            NULL },
 	{ "CelWide", kCelWide32,       SIG_SCI32, SIGFOR_ALL,    "iii",                   NULL,            kCelWide_workarounds },
-#endif
 	{ MAP_CALL(CheckFreeSpace),    SIG_THRU_SCI21EARLY, SIGFOR_ALL, "r(i)",           NULL,            NULL },
+#endif
 	{ MAP_CALL(CheckFreeSpace),    SIG_SCI11, SIGFOR_ALL,    "r(i)",                  NULL,            NULL },
 	{ MAP_CALL(CheckFreeSpace),    SIG_SCI16, SIGFOR_ALL,    "r",                     NULL,            NULL },
 #ifdef ENABLE_SCI32

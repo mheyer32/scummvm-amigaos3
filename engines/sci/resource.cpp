@@ -81,6 +81,7 @@ const char *getSciVersionDesc(SciVersion version) {
 		return "Late SCI1";
 	case SCI_VERSION_1_1:
 		return "SCI1.1";
+#ifdef ENABLE_SCI32
 	case SCI_VERSION_2:
 		return "SCI2";
 	case SCI_VERSION_2_1_EARLY:
@@ -91,6 +92,7 @@ const char *getSciVersionDesc(SciVersion version) {
 		return "Late SCI2.1";
 	case SCI_VERSION_3:
 		return "SCI3";
+#endif
 	default:
 		return "Unknown";
 	}
@@ -184,7 +186,7 @@ ResourceType ResourceManager::convertResType(byte type) {
 	        g_sci->getGameId() == GID_QFG4 || g_sci->getGameId() == GID_PQ4))
 		forceSci0 = true;
 
-	if (_mapVersion < kResVersionSci2 || forceSci0) {
+	if (_mapVersion <= kResVersionSci11Mac || forceSci0) {
 		// SCI0 - SCI2
 		if (type < ARRAYSIZE(s_resTypeMapSci0))
 			return s_resTypeMapSci0[type];
@@ -1011,6 +1013,7 @@ void ResourceManager::init() {
 
 	debugC(1, kDebugLevelResMan, "resMan: Detected %s", getSciVersionDesc(getSciVersion()));
 
+#ifdef ENABLE_SCI32
 	// Resources in SCI32 games are significantly larger than SCI16
 	// games and can cause immediate exhaustion of the LRU resource
 	// cache, leading to constant decompression of picture resources
@@ -1018,6 +1021,7 @@ void ResourceManager::init() {
 	if (getSciVersion() >= SCI_VERSION_2) {
 		_maxMemoryLRU = 4096 * 1024; // 4MiB
 	}
+#endif
 
 	switch (_viewType) {
 	case kViewEga:
@@ -1201,10 +1205,12 @@ const char *ResourceManager::versionDescription(ResVersion version) const {
 		return "SCI1.1";
 	case kResVersionSci11Mac:
 		return "Mac SCI1.1+";
+#ifdef ENABLE_SCI32
 	case kResVersionSci2:
 		return "SCI2/2.1";
 	case kResVersionSci3:
 		return "SCI3";
+#endif
 	}
 
 	return "Version not valid";
@@ -1275,12 +1281,17 @@ ResVersion ResourceManager::detectMapVersion() {
 	while (!fileStream->eos()) {
 		directoryType = fileStream->readByte();
 		directoryOffset = fileStream->readUint16LE();
-
+#ifdef ENABLE_SCI32
 		// Only SCI32 has directory type < 0x80
-		if (directoryType < 0x80 && (mapDetected == kResVersionUnknown || mapDetected == kResVersionSci2))
+		if (directoryType < 0x80 && (mapDetected == kResVersionUnknown || mapDetected == kResVersionSci2)) {
 			mapDetected = kResVersionSci2;
-		else if (directoryType < 0x80 || ((directoryType & 0x7f) > 0x20 && directoryType != 0xFF))
-			break;
+		} else
+#endif
+		{
+			if (directoryType < 0x80 || ((directoryType & 0x7f) > 0x20 && directoryType != 0xFF)) {
+				break;
+			}
+		}
 
 		// Offset is above file size? -> definitely not SCI1/SCI1.1
 		if (directoryOffset > fileStream->size())
@@ -1361,8 +1372,8 @@ ResVersion ResourceManager::detectVolVersion() {
 		if (curVersion > kResVersionSci0Sci1Early)
 			fileStream->readByte();
 		fileStream->skip(2);	// resId
-		dwPacked = (curVersion < kResVersionSci2) ? fileStream->readUint16LE() : fileStream->readUint32LE();
-		dwUnpacked = (curVersion < kResVersionSci2) ? fileStream->readUint16LE() : fileStream->readUint32LE();
+		dwPacked = (curVersion <= kResVersionSci11Mac) ? fileStream->readUint16LE() : fileStream->readUint32LE();
+		dwUnpacked = (curVersion <= kResVersionSci11Mac) ? fileStream->readUint16LE() : fileStream->readUint32LE();
 
 		// The compression field is present, but bogus when
 		// loading SCI3 volumes, the format is otherwise
@@ -1380,14 +1391,16 @@ ResVersion ResourceManager::detectVolVersion() {
 
 		if (curVersion == kResVersionSci0Sci1Early)
 			chk = 4;
-		else if (curVersion < kResVersionSci2)
+		else if (curVersion <= kResVersionSci11Mac)
 			chk = 20;
 		else
 			chk = 32; // We don't need this, but include it for completeness
 
 		int offs = curVersion < kResVersionSci11 ? 4 : 0;
-		if ((curVersion < kResVersionSci2 && wCompression > chk)
+		if ((curVersion <= kResVersionSci11Mac && wCompression > chk)
+#ifdef ENABLE_SCI32
 				|| (curVersion == kResVersionSci2 && wCompression != 0 && wCompression != 32)
+#endif
 				|| (wCompression == 0 && dwPacked != dwUnpacked + offs)
 		        || (dwUnpacked < dwPacked - offs)) {
 
@@ -1399,11 +1412,15 @@ ResVersion ResourceManager::detectVolVersion() {
 			} else if (curVersion == kResVersionSci11 && !sci11Align) {
 				// Later versions (e.g. QFG1VGA) have resources word-aligned
 				sci11Align = true;
-			} else if (curVersion == kResVersionSci11) {
+			}
+#ifdef ENABLE_SCI32
+			else if (curVersion == kResVersionSci11) {
 				curVersion = kResVersionSci2;
 			} else if (curVersion == kResVersionSci2) {
 				curVersion = kResVersionSci3;
-			} else {
+			}
+#endif
+			else {
 				// All version checks failed, exit loop
 				failed = true;
 				break;
@@ -1417,8 +1434,10 @@ ResVersion ResourceManager::detectVolVersion() {
 			fileStream->seek(dwPacked - 4, SEEK_CUR);
 		else if (curVersion == kResVersionSci11)
 			fileStream->seek(sci11Align && ((9 + dwPacked) % 2) ? dwPacked + 1 : dwPacked, SEEK_CUR);
+#ifdef ENABLE_SCI32
 		else if (curVersion >= kResVersionSci2)
 			fileStream->seek(dwPacked, SEEK_CUR);
+#endif
 	}
 
 	delete fileStream;
@@ -1517,7 +1536,7 @@ void ResourceManager::processPatch(ResourceSource *source, ResourceType resource
 			patchDataOffset += fileStream->readByte() + kViewHeaderSize + kExtraHeaderSize;
 			break;
 		case kResourceTypePic:
-			if (_volVersion < kResVersionSci2) {
+			if (_volVersion <= kResVersionSci11Mac) {
 				fileStream->seek(3, SEEK_SET);
 				patchDataOffset += fileStream->readByte() + kViewHeaderSize + kExtraHeaderSize;
 			} else {
@@ -2478,11 +2497,12 @@ void ResourceManager::detectSciVersion() {
 	ResourceCompression viewCompression;
 #ifdef ENABLE_SCI32
 	viewCompression = getViewCompression();
-#else
 	if (_volVersion >= kResVersionSci2) {
 		// SCI32 support isn't built in, thus view detection will fail
 		viewCompression = kCompUnknown;
-	} else {
+	} else
+#else
+	{
 		viewCompression = getViewCompression();
 	}
 #endif
@@ -2510,17 +2530,19 @@ void ResourceManager::detectSciVersion() {
 #ifdef ENABLE_SCI32
 		// Otherwise we detect it from a view
 		_viewType = detectViewType();
-#else
 		if (_volVersion == kResVersionSci2 && viewCompression == kCompUnknown) {
 			// A SCI32 game, but SCI32 support is disabled. Force the view type
 			// to kViewVga11, as we can't read from the game's resource files
 			_viewType = kViewVga11;
-		} else {
+		} else
+#endif
+		{
 			_viewType = detectViewType();
 		}
-#endif
+
 	}
 
+#ifdef ENABLE_SCI32
 	if (_volVersion == kResVersionSci11Mac) {
 		Resource *res = testResource(ResourceId(kResourceTypeScript, 64920));
 		// Distinguish between SCI1.1 and SCI32 games here. SCI32 games will
@@ -2575,6 +2597,7 @@ void ResourceManager::detectSciVersion() {
 		}
 		return;
 	}
+#endif
 
 	// Check for transitive SCI1/SCI1.1 games, like PQ1 here
 	// If the game has any heap file (here we check for heap file 0), then
@@ -2881,7 +2904,11 @@ reg_t ResourceManager::findGameObject(const bool addSci11ScriptOffset, const boo
 
 		int16 offset = !isSci11Mac() ? offsetPtr.getUint16LE() : offsetPtr.getUint16BE();
 		return make_reg(1, offset);
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			  && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		offsetPtr = script->cbegin() + 4 + 2 + 2;
 
 		// In SCI1.1 - SCI2.1, the heap is appended at the end of the script,
@@ -2910,10 +2937,16 @@ Common::String ResourceManager::findSierraGameId(const bool isBE) {
 	if (getSciVersion() < SCI_VERSION_1_1) {
 		heap = findResource(ResourceId(kResourceTypeScript, 0), false);
 		nameSelector = 3;
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		heap = findResource(ResourceId(kResourceTypeHeap, 0), false);
 		nameSelector = 8;
-	} else if (getSciVersion() == SCI_VERSION_3) {
+	}
+#ifdef ENABLE_SCI32
+	else if (getSciVersion() == SCI_VERSION_3) {
 		heap = findResource(ResourceId(kResourceTypeScript, 0), false);
 
 		Resource *vocab = findResource(ResourceId(kResourceTypeVocab, VOCAB_RESOURCE_SELECTORS), false);
@@ -2936,6 +2969,7 @@ Common::String ResourceManager::findSierraGameId(const bool isBE) {
 			}
 		}
 	}
+#endif
 
 	if (!heap || nameSelector == -1)
 		return "";
@@ -2946,9 +2980,12 @@ Common::String ResourceManager::findSierraGameId(const bool isBE) {
 		return "";
 
 	int32 offset;
+#ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		offset = relocateOffsetSci3(*heap, gameObjectOffset + /* base selector offset */ 0x110 + nameSelector * sizeof(uint16), isBE);
-	} else {
+	} else
+#endif
+	{
 		// Seek to the name selector of the first export
 		SciSpan<const byte>::const_iterator offsetPtr = heap->cbegin() + gameObjectOffset + nameSelector * sizeof(uint16);
 		offset = !isSci11Mac() ? offsetPtr.getUint16LE() : offsetPtr.getUint16BE();

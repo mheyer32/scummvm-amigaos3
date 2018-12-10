@@ -93,7 +93,11 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 
 	if (getSciVersion() == SCI_VERSION_0_EARLY) {
 		bufSize += script->getUint16LEAt(0) * 2;
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		// In SCI1.1 - SCI2.1, the heap was in a separate space from the script. We append
 		// it to the end of the script, and adjust addressing accordingly.
 		// However, since we address the heap with a 16-bit pointer, the
@@ -115,10 +119,13 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 			error("Script and heap %d sizes combined exceed 64K. This means a fundamental "
 					"design bug was made regarding SCI1.1 and newer games.\n"
 					"Please report this error to the ScummVM team", script_nr);
-	} else if (getSciVersion() == SCI_VERSION_3 && script->size() > 0x3FFFF) {
+	}
+#ifdef ENABLE_SCI32
+	else if (getSciVersion() == SCI_VERSION_3 && script->size() > 0x3FFFF) {
 		error("Script %d size exceeds 256K (it is %u bytes).\n"
 			  "Please report this error to the ScummVM team", script_nr, script->size());
 	}
+#endif
 
 	uint extraLocalsWorkaround = 0;
 	if (g_sci->getGameId() == GID_FANMADE && _nr == 1 && script->size() == 11140) {
@@ -138,7 +145,11 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 	// size
 	_script = _buf->subspan(0, scriptSize, script->name());
 
-	if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		Resource *heap = resMan->findResource(ResourceId(kResourceTypeHeap, _nr), false);
 		assert(heap);
 
@@ -179,7 +190,11 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 			_localsOffset = localsTable - *_buf + 4;
 			_localsCount = localsTable.size() / 2 - 2;
 		}
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		_numExports = _buf->getUint16SEAt(kSci11NumExportsOffset);
 		if (_numExports) {
 			_exports = _buf->subspan<const uint16>(kSci11ExportTableOffset, _numExports * sizeof(uint16));
@@ -187,7 +202,9 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 
 		_localsOffset = getHeapOffset() + 4;
 		_localsCount = _buf->getUint16SEAt(_localsOffset - 2);
-	} else if (getSciVersion() == SCI_VERSION_3) {
+	}
+#ifdef ENABLE_SCI32
+	else if (getSciVersion() == SCI_VERSION_3) {
 		_localsCount = _buf->getUint16LEAt(12);
 		_numExports = _buf->getUint16LEAt(20);
 		if (_numExports) {
@@ -200,6 +217,7 @@ void Script::load(int script_nr, ResourceManager *resMan, ScriptPatcher *scriptP
 		else
 			_localsOffset = 24 + _numExports * sizeof(uint16);
 	}
+#endif
 
 	// WORKAROUND: Increase locals, if needed (check above)
 	_localsCount += extraLocalsWorkaround;
@@ -387,7 +405,11 @@ void Script::identifyOffsets() {
 			scriptDataPtr  += blockSize;
 		}
 
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		// Strings in SCI1.1 up to SCI2 come after the object instances
 		scriptDataPtr = _heap;
 
@@ -706,6 +728,7 @@ bool Script::relocateLocal(SegmentId segment, int location, uint32 offset) {
 }
 
 uint32 Script::getRelocationOffset(const uint32 offset) const {
+#ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		SciSpan<const byte> relocStart = _buf->subspan(_buf->getUint32SEAt(8));
 		const uint relocCount = _buf->getUint16SEAt(18);
@@ -716,7 +739,9 @@ uint32 Script::getRelocationOffset(const uint32 offset) const {
 			}
 			relocStart += 10;
 		}
-	} else {
+	} else
+#endif
+	{
 		const SciSpan<const uint16> relocTable = getRelocationTableSci0Sci21();
 		for (uint i = 0; i < relocTable.size(); ++i) {
 			if (relocTable.getUint16SEAt(i) == offset) {
@@ -765,7 +790,11 @@ const SciSpan<const uint16> Script::getRelocationTableSci0Sci21() const {
 		if (firstEntry == 0) {
 			dataOffset += 2;
 		}
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		relocationBlock = _heap.subspan(_heap.getUint16SEAt(0));
 
 		if (!relocationBlock) {
@@ -885,10 +914,12 @@ uint32 Script::validateExportFunc(int pubfunct, bool relocSci3) {
 #endif
 		offset = _exports.getUint16SEAt(pubfunct);
 
+#ifdef ENABLE_SCI32
 	// TODO: Check if this should be done for SCI1.1 games as well
 	if (getSciVersion() >= SCI_VERSION_2 && offset == 0) {
 		offset = getCodeBlockOffset();
 	}
+#endif
 
 	if (offset == -1 || offset >= (int)_buf->size())
 		error("Invalid export %d function pointer (%d) in script %d", pubfunct, offset, _nr);
@@ -1002,7 +1033,11 @@ void Script::initializeClasses(SegManager *segMan) {
 		if (getSciVersion() == SCI_VERSION_0_EARLY) {
 			seeker += 2;
 		}
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		seeker = _heap.subspan(4 + _heap.getUint16SEAt(2) * 2);
 		mult = 2;
 #ifdef ENABLE_SCI32
@@ -1036,13 +1071,20 @@ void Script::initializeClasses(SegManager *segMan) {
 			if (isClass)
 				species = seeker.getUint16SEAt(12);
 			classpos += 12;
-		} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+		} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 			isClass = (seeker.getUint16SEAt(14) & kInfoFlagClass);	// -info- selector
 			species = seeker.getUint16SEAt(10);
-		} else if (getSciVersion() == SCI_VERSION_3) {
+		}
+#ifdef ENABLE_SCI32
+		else if (getSciVersion() == SCI_VERSION_3) {
 			isClass = (seeker.getUint16SEAt(10) & kInfoFlagClass);
 			species = seeker.getUint16SEAt(4);
 		}
+#endif
 
 		if (isClass) {
 			// WORKAROUNDs for off-by-one script errors
@@ -1215,7 +1257,11 @@ void Script::initializeObjectsSci3(SegManager *segMan, SegmentId segmentId) {
 void Script::initializeObjects(SegManager *segMan, SegmentId segmentId) {
 	if (getSciVersion() <= SCI_VERSION_1_LATE)
 		initializeObjectsSci0(segMan, segmentId);
-	else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE)
+	else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			 && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			 )
 		initializeObjectsSci11(segMan, segmentId);
 #ifdef ENABLE_SCI32
 	else if (getSciVersion() == SCI_VERSION_3)

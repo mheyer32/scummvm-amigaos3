@@ -280,19 +280,24 @@ SciVersion GameFeatures::detectLofsType() {
 			return _lofsType;
 		}
 
-		if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+		if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+				&& getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			) {
 			// SCI1.1 type, i.e. we compensate for the fact that the heap is attached
 			// to the end of the script
 			_lofsType = SCI_VERSION_1_1;
 			return _lofsType;
 		}
-
+#ifdef ENABLE_SCI32
 		if (getSciVersion() == SCI_VERSION_3) {
 			// SCI3 type, same as pre-SCI1.1, really, as there is no separate heap
 			// resource
 			_lofsType = SCI_VERSION_3;
 			return _lofsType;
 		}
+#endif
 
 		// Find a function of the "Game" object (which is the game super class) which invokes lofsa/lofss
 		const Object *gameObject = _segMan->getObject(g_sci->getGameObject());

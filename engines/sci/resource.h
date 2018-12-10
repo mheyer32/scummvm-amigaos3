@@ -139,8 +139,10 @@ enum ResVersion {
 	kResVersionSci1Late,
 	kResVersionSci11,
 	kResVersionSci11Mac,
+#ifdef ENABLE_SCI32
 	kResVersionSci2,
 	kResVersionSci3
+#endif
 };
 
 class ResourceManager;
@@ -197,10 +199,12 @@ public:
 	// Convert from a resource ID to a base36 patch name
 	Common::String toPatchNameBase36() const {
 		Common::String output;
-
+#ifdef ENABLE_SCI32
 		if (getSciVersion() >= SCI_VERSION_2) {
 			output += (getType() == kResourceTypeAudio36) ? 'A' : 'S'; // Identifier
-		} else {
+		} else
+#endif
+		{
 			output += (getType() == kResourceTypeAudio36) ? '@' : '#'; // Identifier
 		}
 		output += intToBase36(getNumber(), 3);                     // Map

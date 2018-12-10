@@ -28,26 +28,28 @@
 
 namespace Sci {
 
-
-
 void reg_t::setSegment(SegmentId segment) {
-	if (getSciVersion() < SCI_VERSION_3) {
-		_segment = segment;
-	} else {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
 		// Set the lower 14 bits of the segment, and preserve the upper 2 ones for the offset
 		_segment = (_segment & 0xC000) | (segment & 0x3FFF);
+	} else
+#endif
+	{
+		_segment = segment;
 	}
 }
 
-
-
 void reg_t::setOffset(uint32 offset) {
-	if (getSciVersion() < SCI_VERSION_3) {
-		_offset = offset;
-	} else {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
 		// Store the lower 16 bits in the offset, and the 17th and 18th bits in the segment
 		_offset = offset & 0xFFFF;
 		_segment = ((offset & 0x30000) >> 2) | (_segment & 0x3FFF);
+	} else
+#endif
+	{
+		_offset = offset;
 	}
 }
 

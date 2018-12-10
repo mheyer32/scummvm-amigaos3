@@ -302,9 +302,11 @@ reg_t disassemble(EngineState *s, reg32_t pos, const Object *obj, bool printBWTa
 			if (!obj) {
 				warning("Attempted to reference on non-object at %04x:%04x", PRINT_REG(s->xs->objp));
 			} else {
+#ifdef ENABLE_SCI32
 				if (getSciVersion() == SCI_VERSION_3)
 					debugN("\t(%s)", g_sci->getKernel()->getSelectorName(param_value).c_str());
 				else
+#endif
 					debugN("\t(%s)", g_sci->getKernel()->getSelectorName(obj->propertyOffsetToId(s->_segMan, param_value)).c_str());
 			}
 		}
@@ -941,13 +943,20 @@ void debugSelectorCall(reg_t send_obj, Selector selector, int argc, StackPtr arg
 
 void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, reg_t curValue, reg_t newValue, SegManager *segMan, BreakpointType breakpointType) {
 	const Object *var_container = obj;
-	if (!obj->isClass() && getSciVersion() != SCI_VERSION_3)
+	if (!obj->isClass()
+#ifdef ENABLE_SCI32
+			&& getSciVersion() != SCI_VERSION_3
+#endif
+			)
 		var_container = segMan->getObject(obj->getSuperClassSelector());
 
 	uint16 varSelector;
+#ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		varSelector = index;
-	} else {
+	} else
+#endif
+	{
 		index >>= 1;
 
 		if (index >= var_container->getVarCount()) {
@@ -1161,6 +1170,7 @@ bool printObject(reg_t pos) {
 		var_container = s->_segMan->getObject(obj->getSuperClassSelector());
 	con->debugPrintf("  -- member variables:\n");
 
+#ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		con->debugPrintf("    (----) [---] -size- = 0000:%04x (%d)\n", obj->getVarCount(), obj->getVarCount());
 		con->debugPrintf("    (----) [---] -classScript- = %04x:%04x (%d)\n", PRINT_REG(obj->getClassScriptSelector()), obj->getClassScriptSelector().getOffset());
@@ -1168,7 +1178,7 @@ bool printObject(reg_t pos) {
 		con->debugPrintf("    (----) [---] -super- = %04x:%04x (%s)\n", PRINT_REG(obj->getSuperClassSelector()), s->_segMan->getObjectName(obj->getSuperClassSelector()));
 		con->debugPrintf("    (----) [---] -info- = %04x:%04x (%d)\n", PRINT_REG(obj->getInfoSelector()), obj->getInfoSelector().getOffset());
 	}
-
+#endif
 	for (i = 0; (uint)i < obj->getVarCount(); i++) {
 		con->debugPrintf("    ");
 		if (var_container && i < var_container->getVarCount()) {

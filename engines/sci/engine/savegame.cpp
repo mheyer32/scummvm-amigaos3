@@ -525,7 +525,11 @@ void Script::syncStringHeap(Common::Serializer &s) {
 			buf += blockSize;
 		}
 
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE){
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ){
 		// Strings in SCI1.1 come after the object instances
 		SciSpan<byte> buf = _heap.subspan(4 + _heap.getUint16SEAt(2) * 2);
 
@@ -536,11 +540,14 @@ void Script::syncStringHeap(Common::Serializer &s) {
 		// Now, sync everything till the end of the buffer
 		const int length = _heap.size() - (buf - _heap);
 		s.syncBytes(buf.getUnsafeDataAt(0, length), length);
-	} else if (getSciVersion() == SCI_VERSION_3) {
+	}
+#ifdef ENABLE_SCI32
+	else if (getSciVersion() == SCI_VERSION_3) {
 		const int stringOffset = _buf->getInt32SEAt(4);
 		const int length = _buf->getInt32SEAt(8) - stringOffset;
 		s.syncBytes(_buf->getUnsafeDataAt(stringOffset, length), length);
 	}
+#endif
 }
 
 void Script::saveLoadWithSerializer(Common::Serializer &s) {
@@ -1284,7 +1291,7 @@ void gamestate_restore(EngineState *s, Common::SeekableReadStream *fh) {
 	}
 
 	// In SCI32 these checks are all in kCheckSaveGame32
-	if (getSciVersion() < SCI_VERSION_2) {
+	if (getSciVersion() <= SCI_VERSION_1_1) {
 		if ((meta.version < MINIMUM_SAVEGAME_VERSION) || (meta.version > CURRENT_SAVEGAME_VERSION)) {
 			if (meta.version < MINIMUM_SAVEGAME_VERSION) {
 				showScummVMDialog(_("The format of this saved game is obsolete, unable to load it"));

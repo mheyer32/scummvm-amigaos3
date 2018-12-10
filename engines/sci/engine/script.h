@@ -110,7 +110,11 @@ public:
 	uint32 getHeapSize() const { return _heap.size(); }
 	uint32 getBufSize() const { return _buf->size(); }
 	inline uint32 getHeapOffset() const {
-		if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+		if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			&& getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			) {
 			return _script.size();
 		}
 

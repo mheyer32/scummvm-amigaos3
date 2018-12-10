@@ -85,10 +85,11 @@ void InitSciReadWriteFunctions() {
 		READ_SCI11ENDIAN_UINT16 = SCI_READ_BE_UINT16;
 	else
 		READ_SCI11ENDIAN_UINT16 = SCI_READ_LE_UINT16;
-
+#ifdef ENABLE_SCI32
 	if (g_sci->getPlatform() == Common::kPlatformMacintosh && getSciVersion() >= SCI_VERSION_2_1_EARLY)
 		READ_SCI32ENDIAN_UINT16 = SCI_READ_BE_UINT16;
 	else
+#endif
 		READ_SCI32ENDIAN_UINT16 = SCI_READ_LE_UINT16;
 
 	if (g_sci->getPlatform() == Common::kPlatformMacintosh && getSciVersion() >= SCI_VERSION_1_1)

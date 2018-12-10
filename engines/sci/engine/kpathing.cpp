@@ -1508,7 +1508,7 @@ reg_t kAvoidPath(EngineState *s, int argc, reg_t *argv) {
 		Common::Point end = Common::Point(argv[2].toSint16(), argv[3].toSint16());
 		reg_t poly_list, output;
 		int width, height, opt = 1;
-
+#ifdef ENABLE_SCI32
 		if (getSciVersion() >= SCI_VERSION_2) {
 			if (argc < 7)
 				error("[avoidpath] Not enough arguments");
@@ -1518,7 +1518,9 @@ reg_t kAvoidPath(EngineState *s, int argc, reg_t *argv) {
 			height = argv[6].toUint16();
 			if (argc > 7)
 				opt = argv[7].toUint16();
-		} else {
+		} else
+#endif
+		{
 			// SCI1.1 and older games always ran with an internal resolution of 320x200
 			poly_list = argv[4];
 			width = 320;

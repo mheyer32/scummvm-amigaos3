@@ -1130,11 +1130,14 @@ int MidiPlayer_Midi::open(ResourceManager *resMan) {
 				if (!isMt32GmPatch(*res)) {
 					mapMt32ToGm(*res);
 				} else {
-					if (getSciVersion() < SCI_VERSION_3) {
-						error("MT-32 patch has wrong type");
-					} else {
+#ifdef ENABLE_SCI32
+					if (getSciVersion() == SCI_VERSION_3) {
 						// Happens in the SCI3 interactive demo of Lighthouse
 						warning("TODO: Ignoring new SCI3 type of MT-32 patch for now (size = %u)", res->size());
+					} else
+#endif
+					{
+						error("MT-32 patch has wrong type");
 					}
 				}
 			} else {

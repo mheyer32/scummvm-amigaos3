@@ -517,10 +517,12 @@ bool Console::cmdGetVersion(int argc, const char **argv) {
 	if (getSciVersion() <= SCI_VERSION_1_1) {
 		debugPrintf("kAnimate fastCast enabled: %s\n", g_sci->_gfxAnimate->isFastCastEnabled() ? "yes" : "no");
 	}
+#ifdef ENABLE_SCI32
 	if (getSciVersion() < SCI_VERSION_2) {
 		debugPrintf("Uses palette merging: %s\n", g_sci->_gfxPalette16->isMerging() ? "yes" : "no");
 		debugPrintf("Uses 16 bit color matching: %s\n", g_sci->_gfxPalette16->isUsing16bitColorMatch() ? "yes" : "no");
 	}
+#endif
 	debugPrintf("Resource volume version: %s\n", g_sci->getResMan()->getVolVersionDesc());
 	debugPrintf("Resource map version: %s\n", g_sci->getResMan()->getMapVersionDesc());
 	debugPrintf("Contains selector vocabulary (vocab.997): %s\n", hasVocab997 ? "yes" : "no");
@@ -1216,7 +1218,11 @@ bool Console::cmdVerifyScripts(int argc, const char **argv) {
 		if (!script)
 			debugPrintf("Error: script %d couldn't be loaded\n", itr->getNumber());
 
-		if (getSciVersion() <= SCI_VERSION_2_1_LATE) {
+		if (getSciVersion() <= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			|| getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			) {
 			heap = _engine->getResMan()->findResource(ResourceId(kResourceTypeHeap, itr->getNumber()), false);
 			if (!heap)
 				debugPrintf("Error: script %d doesn't have a corresponding heap\n", itr->getNumber());
@@ -4531,8 +4537,14 @@ bool Console::cmdMapVocab994(int argc, const char **argv) {
 	Common::Array<bool> markers;
 
 	markers.resize(_engine->getKernel()->getSelectorNamesSize());
-	if (!obj->isClass() && getSciVersion() != SCI_VERSION_3)
+	if (!obj->isClass()
+#ifdef ENABLE_SCI32
+			&& getSciVersion() != SCI_VERSION_3
+#endif
+		) {
 		obj = s->_segMan->getObject(obj->getSuperClassSelector());
+	}
+
 
 	first = MIN<uint32>(first, resource->size() / 2 - 2);
 	last =  MIN<uint32>(last, resource->size() / 2 - 2);

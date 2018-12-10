@@ -114,6 +114,9 @@ static const SelectorRemap sciSelectorRemap[] = {
 	{        SCI_VERSION_1_1,        SCI_VERSION_1_1, "cantBeHere",   54 },
 	// The following are not really needed. They've only been defined to
 	// ease game debugging.
+#ifndef ENABLE_SCI32
+#define SCI_VERSION_2_1_LATE SCI_VERSION_1_1
+#endif
 	{        SCI_VERSION_1_1,        SCI_VERSION_2_1_LATE,    "-objID-", 4096 },
 	{        SCI_VERSION_1_1,        SCI_VERSION_2_1_LATE,     "-size-", 4097 },
 	{        SCI_VERSION_1_1,        SCI_VERSION_2_1_LATE, "-propDict-", 4098 },
@@ -124,6 +127,9 @@ static const SelectorRemap sciSelectorRemap[] = {
 	//
 	{        SCI_VERSION_1_1,        SCI_VERSION_2_1_LATE,     "-info-", 4103 },
 	{        SCI_VERSION_NONE,           SCI_VERSION_NONE,            0,    0 }
+#ifndef ENABLE_SCI32
+#undef SCI_VERSION_2_1_LATE
+#endif
 };
 
 struct ClassReference {

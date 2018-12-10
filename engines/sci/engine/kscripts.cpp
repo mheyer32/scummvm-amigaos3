@@ -109,7 +109,7 @@ reg_t kLock(EngineState *s, int argc, reg_t *argv) {
 	if (lock) {
 		g_sci->getResMan()->findResource(id, true);
 	} else {
-		if (getSciVersion() < SCI_VERSION_2 && id.getNumber() == 0xFFFF) {
+		if (getSciVersion() <= SCI_VERSION_1_1 && id.getNumber() == 0xFFFF) {
 			// Unlock all resources of the requested type
 			Common::List<ResourceId> resources = g_sci->getResMan()->listResources(type);
 			Common::List<ResourceId>::iterator itr;

@@ -86,7 +86,11 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 			_baseMethod.push_back(methodEntries.getUint16SEAt(_methodCount + /* zero-terminator */ 1));
 			++methodEntries;
 		}
-	} else if (getSciVersion() >= SCI_VERSION_1_1 && getSciVersion() <= SCI_VERSION_2_1_LATE) {
+	} else if (getSciVersion() >= SCI_VERSION_1_1
+#ifdef ENABLE_SCI32
+			   && getSciVersion() <= SCI_VERSION_2_1_LATE
+#endif
+			   ) {
 		_variables.resize(data.getUint16SEAt(2));
 
 		// Non-class objects do not have a baseVars section
@@ -122,11 +126,13 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 			_baseMethod.push_back(methodEntries.getUint16SEAt(1));
 			methodEntries += 2;
 		}
-#ifdef ENABLE_SCI32
-	} else if (getSciVersion() == SCI_VERSION_3) {
-		initSelectorsSci3(buf, initVariables);
-#endif
+
 	}
+#ifdef ENABLE_SCI32
+	else if (getSciVersion() == SCI_VERSION_3) {
+		initSelectorsSci3(buf, initVariables);
+	}
+#endif
 
 	// Some objects, like the unnamed LarryTalker instance in LSL6hires script
 	// 610, and the File class in Torin script 64993, have a `name` property
@@ -140,23 +146,27 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 	// the reg_t pointer to the original static name value for the object is
 	// stored here, ensuring that it is constant and guaranteed to be either a
 	// valid dereferenceable string or NULL_REG.
-	if (getSciVersion() != SCI_VERSION_3) {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() != SCI_VERSION_3)
+#endif
+	{
 		const uint32 heapOffset = owner.getHeapOffset();
 		const uint32 nameOffset = (obj_pos.getOffset() - heapOffset) + (_offset + 3) * sizeof(uint16);
 		const uint32 relocOffset = owner.getRelocationOffset(nameOffset);
 		if (relocOffset != kNoRelocation) {
 			_name = make_reg(obj_pos.getSegment(), relocOffset + _baseObj.getUint16SEAt((_offset + 3) * sizeof(uint16)));
 		}
+	}
 #ifdef ENABLE_SCI32
-	} else if (_propertyOffsetsSci3.size()) {
+	 else if (_propertyOffsetsSci3.size()) {
 		const uint32 nameOffset = _propertyOffsetsSci3[0];
 		const uint32 relocOffset = owner.getRelocationOffset(nameOffset);
 		if (relocOffset != kNoRelocation) {
 			_name.setSegment(obj_pos.getSegment());
 			_name.setOffset(relocOffset + buf.getUint16SEAt(nameOffset));
 		}
-#endif
 	}
+#endif
 
 	if (initVariables) {
 #ifdef ENABLE_SCI32
@@ -184,10 +194,9 @@ int Object::locateVarSelector(SegManager *segMan, Selector slc) const {
 	if (getSciVersion() == SCI_VERSION_3) {
 		buf = &_baseVars;
 		varCount = getVarCount();
-	} else {
-#else
-	{
+	} else
 #endif
+	{
 		const Object *obj = getClass(segMan);
 		buf = &obj->_baseVars;
 		varCount = obj->getVarCount();

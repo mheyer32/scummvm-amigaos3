@@ -366,10 +366,11 @@ Common::String convertSierraGameId(Common::String sierraId, uint32 *gameFlags, R
 		// qfg1 VGA doesn't have view 1
 		if (!resMan.testResource(ResourceId(kResourceTypeView, 1)))
 			return "qfg1vga";
-
+#ifdef ENABLE_SCI32
 		// qfg4 full is SCI2
 		if (getSciVersion() == SCI_VERSION_2)
 			return "qfg4";
+#endif
 
 		// qfg4 demo has less than 50 scripts
 		if (resources.size() < 50)
@@ -657,7 +658,7 @@ const ADGameDescription *SciMetaEngine::fallbackDetect(const FileMap &allFiles, 
 #ifndef ENABLE_SCI32
 	// Is SCI32 compiled in? If not, and this is a SCI32 game,
 	// stop here
-	if (getSciVersionForDetection() >= SCI_VERSION_2)
+	if (getSciVersionForDetection() > SCI_VERSION_1_1)
 		return 0;
 #endif
 

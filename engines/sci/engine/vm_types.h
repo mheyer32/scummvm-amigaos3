@@ -176,20 +176,26 @@ private:
 };
 
 inline SegmentId reg_t::getSegment() const {
-	if (getSciVersion() < SCI_VERSION_3) {
-		return _segment;
-	} else {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
 		// Return the lower 14 bits of the segment
 		return (_segment & 0x3FFF);
+	} else
+#endif
+	{
+		return _segment;
 	}
 }
 
 inline uint32 reg_t::getOffset() const {
-	if (getSciVersion() < SCI_VERSION_3) {
-		return _offset;
-	} else {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
 		// Return the lower 16 bits from the offset, and the 17th and 18th bits from the segment
 		return ((_segment & 0xC000) << 2) | _offset;
+	} else
+#endif
+	{
+		return _offset;
 	}
 }
 

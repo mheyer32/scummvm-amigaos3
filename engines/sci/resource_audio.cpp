@@ -288,7 +288,7 @@ void ResourceManager::removeAudioResource(ResourceId resId) {
 // w syncAscSize (iff seq has bit 6 set)
 
 int ResourceManager::readAudioMapSCI11(IntMapResourceSource *map) {
-#ifndef ENABLE_SCI32
+#ifdef ENABLE_SCI32
 	// SCI32 support is not built in. Check if this is a SCI32 game
 	// and if it is abort here.
 	if (_volVersion >= kResVersionSci2)
@@ -340,11 +340,14 @@ int ResourceManager::readAudioMapSCI11(IntMapResourceSource *map) {
 	SciSpan<const byte>::const_iterator ptr = mapRes->cbegin();
 
 	uint32 entrySize = 0;
+#ifdef ENABLE_SCI32
 	if (_volVersion >= kResVersionSci2) {
 		// The heuristic size detection is incompatible with at least Torin RU,
 		// which is fine because it is not needed for SCI32
 		entrySize = 11;
-	} else {
+	} else
+#endif
+	{
 		// Heuristic to detect entry size
 		for (int i = mapRes->size() - 1; i >= 0; --i) {
 			if (ptr[i] == 0xff)
@@ -685,10 +688,11 @@ bool ResourceManager::isGMTrackIncluded() {
 	// This check only makes sense for SCI1 and newer games
 	if (getSciVersion() < SCI_VERSION_1_EARLY)
 		return false;
-
+#ifdef ENABLE_SCI32
 	// SCI2 and newer games always have GM tracks
 	if (getSciVersion() >= SCI_VERSION_2)
 		return true;
+#endif
 
 	// For the leftover games, we can safely use SCI_VERSION_1_EARLY for the soundVersion
 	const SciVersion soundVersion = SCI_VERSION_1_EARLY;
@@ -766,7 +770,11 @@ SoundResource::SoundResource(uint32 resourceNr, ResourceManager *resMan, SciVers
 			_tracks->digitalSampleEnd = 0;
 			sampleChannel->data += 44; // Skip over header
 		}
-	} else if (_soundVersion >= SCI_VERSION_1_EARLY && _soundVersion <= SCI_VERSION_2_1_MIDDLE) {
+	} else if (_soundVersion >= SCI_VERSION_1_EARLY
+#ifdef ENABLE_SCI32
+			   && _soundVersion <= SCI_VERSION_2_1_MIDDLE
+#endif
+			   ) {
 		SciSpan<const byte> data = *resource;
 		// Count # of tracks
 		_trackCount = 0;

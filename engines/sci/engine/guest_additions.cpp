@@ -95,7 +95,7 @@ bool GuestAdditions::shouldSyncAudioToScummVM() const {
 		const ExecStack &call = *it;
 		const Common::String objName = _segMan->getObjectName(call.sendp);
 
-		if (getSciVersion() < SCI_VERSION_2 && (objName == "TheMenuBar" ||
+		if (getSciVersion() <= SCI_VERSION_1_1 && (objName == "TheMenuBar" ||
 												objName == "MenuBar")) {
 			// SCI16 with menu bar
 			return true;
@@ -305,8 +305,13 @@ bool GuestAdditions::kPlayDuckPlayVMDHook() const {
 #pragma mark Integrated save & restore
 
 void GuestAdditions::patchGameSaveRestore() const {
-	if (ConfMan.getBool("originalsaveload") || getSciVersion() >= SCI_VERSION_2)
+	if (ConfMan.getBool("originalsaveload")
+#ifdef ENABLE_SCI32
+			|| getSciVersion() >= SCI_VERSION_2
+#endif
+			) {
 		return;
+	}
 
 	patchGameSaveRestoreSCI16();
 }
@@ -971,7 +976,7 @@ void GuestAdditions::syncMasterVolumeToScummVM(const int16 masterVolume) const {
 	// kDoAudioVolume
 	// TODO: In SCI16, the volume slider only changed the music volume.
 	// Is this non-standard behavior better, or just wrong?
-	if (getSciVersion() < SCI_VERSION_2) {
+	if (getSciVersion() <= SCI_VERSION_1_1) {
 		ConfMan.setInt("sfx_volume", scummVMVolume);
 		ConfMan.setInt("speech_volume", scummVMVolume);
 	}

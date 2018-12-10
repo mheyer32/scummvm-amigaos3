@@ -187,7 +187,10 @@ static const byte sci32SystemFont[] = {
 
 	GfxFontFromResource::GfxFontFromResource(ResourceManager *resMan, GfxScreen *screen, GuiResourceId resourceId)
 	: _resourceId(resourceId), _screen(screen), _resMan(resMan) {
-	if (getSciVersion() < SCI_VERSION_2) {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() < SCI_VERSION_2)
+#endif
+	{
 		assert(resourceId != -1);
 	}
 

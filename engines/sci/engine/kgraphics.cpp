@@ -160,13 +160,15 @@ static reg_t kSetCursorSci11(EngineState *s, int argc, reg_t *argv) {
 		break;
 	case 4: {
 		int16 top, left, bottom, right;
-
+#ifdef ENABLE_SCI32
 		if (getSciVersion() >= SCI_VERSION_2) {
 			top = argv[1].toSint16();
 			left = argv[0].toSint16();
 			bottom = argv[3].toSint16();
 			right = argv[2].toSint16();
-		} else {
+		} else
+#endif
+		{
 			top = argv[0].toSint16();
 			left = argv[1].toSint16();
 			bottom = argv[2].toSint16();
