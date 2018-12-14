@@ -819,12 +819,10 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 									  bool dontScale, const Graphics::PixelFormat *format) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setMouseCursor(w = %d, h = %d)", w, h);
-
-	assert(buf);
 #endif
 
 	// Sanity check.
-	if (w == 0 || h == 0) {
+	if (w == 0 || h == 0 || !buf) {
 		return;
 	}
 
