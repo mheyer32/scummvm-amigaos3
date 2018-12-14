@@ -741,17 +741,10 @@ void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int _pitch, int _x, in
 	assert(_transactionMode == kTransactionNone);
 #endif
 
+	//FIXME: we're not using pitch
 	uint16 pitch = _pitch, x = _x, y = _y, w = _w, h = _h;
 
 	// Clip the coordinates
-	if (x < 0) {
-		return;
-	}
-
-	if (y < 0) {
-		return;
-	}
-
 	if (x + w > _videoMode.screenWidth) {
 		w = _videoMode.screenWidth - x;
 	}
@@ -760,7 +753,7 @@ void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int _pitch, int _x, in
 		h = _videoMode.overlayScreenHeight - y;
 	}
 
-	if (w <= 0 || h <= 0) {
+	if (w == 0 || h == 0) {
 		return;
 	}
 
