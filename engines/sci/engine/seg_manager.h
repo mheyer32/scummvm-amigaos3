@@ -388,14 +388,14 @@ public:
 	 * @param[in] offset	Location (segment, offset) of the object
 	 * @return				The object in question, or NULL if there is none
 	 */
-	Object *getObject(reg_t pos) const;
+	Object *getObject(const reg_t &pos) const;
 
 	/**
 	 * Checks whether a heap address contains an object
 	 * @parm obj The address to check
 	 * @return True if it is an object, false otherwise
 	 */
-	bool isObject(reg_t obj) const { return getObject(obj) != NULL; }
+	bool isObject(const reg_t &obj) const { return getObject(obj) != NULL; }
 
 	// TODO: document this
 	bool isHeapObject(reg_t pos) const;
@@ -503,4 +503,17 @@ private:
 
 } // End of namespace Sci
 
+namespace Sci {
+
+inline reg_t* ObjVarRef::getPointer(SegManager* segMan) const {
+	Object *o = segMan->getObject(obj);
+	return o ? &o->getVariableRef(varindex) : 0;
+}
+
+inline reg_t*ExecStack::getVarPointer(SegManager* segMan) const {
+	assert(type == EXEC_STACK_TYPE_VARSELECTOR);
+	return addr.varp.getPointer(segMan);
+}
+
+} // End of namespace Sci
 #endif // SCI_ENGINE_SEGMAN_H

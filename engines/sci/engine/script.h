@@ -30,6 +30,12 @@
 
 namespace Sci {
 
+/** Magical object identifier */
+#define SCRIPT_OBJECT_MAGIC_NUMBER 0x1234
+
+/** Offset of this identifier */
+#define SCRIPT_OBJECT_MAGIC_OFFSET (getSciVersion() < SCI_VERSION_1_1 ? -8 : 0)
+
 struct EngineState;
 class ResourceManager;
 struct SciScriptPatcherEntry;
@@ -130,8 +136,10 @@ public:
 	void syncLocalsBlock(SegManager *segMan);
 	ObjMap &getObjectMap() { return _objects; }
 	const ObjMap &getObjectMap() const { return _objects; }
-	bool offsetIsObject(uint32 offset) const;
 
+	inline bool offsetIsObject(uint32 offset) const {
+		return _buf->getUint16SEAt(offset + SCRIPT_OBJECT_MAGIC_OFFSET) == SCRIPT_OBJECT_MAGIC_NUMBER;
+	}
 public:
 	Script();
 	~Script();
@@ -156,8 +164,19 @@ public:
 
 	virtual void saveLoadWithSerializer(Common::Serializer &ser);
 
-	Object *getObject(uint32 offset);
-	const Object *getObject(uint32 offset) const;
+	Object *getObject(uint32 offset) {
+		if (_objects.contains(offset))
+			return &_objects[offset];
+		else
+			return 0;
+	}
+
+	const Object *getObject(uint32 offset) const {
+		if (_objects.contains(offset))
+			return &_objects[offset];
+		else
+			return 0;
+	}
 
 	/**
 	 * Initializes an object within the segment manager

@@ -773,9 +773,7 @@ Common::Language SciEngine::getLanguage() const {
 	return _gameDescription->language;
 }
 
-Common::Platform SciEngine::getPlatform() const {
-	return _gameDescription->platform;
-}
+
 
 bool SciEngine::isDemo() const {
 	return _gameDescription->flags & ADGF_DEMO;
@@ -787,16 +785,6 @@ bool SciEngine::isCD() const {
 
 bool SciEngine::forceHiresGraphics() const {
 	return _forceHiresGraphics;
-}
-
-bool SciEngine::isBE() const{
-	switch(_gameDescription->platform) {
-	case Common::kPlatformAmiga:
-	case Common::kPlatformMacintosh:
-		return true;
-	default:
-		return false;
-	}
 }
 
 bool SciEngine::hasMacIconBar() const {

@@ -1438,14 +1438,6 @@ void run_vm(EngineState *s) {
 	}
 }
 
-reg_t *ObjVarRef::getPointer(SegManager *segMan) const {
-	Object *o = segMan->getObject(obj);
-	return o ? &o->getVariableRef(varindex) : 0;
-}
 
-reg_t *ExecStack::getVarPointer(SegManager *segMan) const {
-	assert(type == EXEC_STACK_TYPE_VARSELECTOR);
-	return addr.varp.getPointer(segMan);
-}
 
 } // End of namespace Sci

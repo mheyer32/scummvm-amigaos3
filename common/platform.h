@@ -35,7 +35,7 @@ class String;
  * This may be optional or required, depending on the game engine and the
  * game in question.
  */
-enum Platform {
+enum Platform : byte {
 	kPlatformDOS,
 	kPlatformAmiga,
 	kPlatformAtari8Bit,
@@ -61,7 +61,7 @@ enum Platform {
 	kPlatformOS2,
 	kPlatformBeOS,
 
-	kPlatformUnknown = -1
+	kPlatformUnknown = 0xFF
 };
 
 struct PlatformDescription {

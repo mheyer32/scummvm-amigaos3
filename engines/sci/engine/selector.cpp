@@ -239,7 +239,7 @@ void Kernel::mapSelectors() {
 #endif
 }
 
-reg_t readSelector(SegManager *segMan, reg_t object, Selector selectorId) {
+reg_t readSelector(SegManager *segMan, const reg_t &object, Selector selectorId) {
 	ObjVarRef address;
 
 	if (lookupSelector(segMan, object, selectorId, &address, NULL) != kSelectorVariable)
@@ -256,7 +256,7 @@ void updateInfoFlagViewVisible(Object *obj, int index, bool fromPropertyOp) {
 }
 #endif
 
-void writeSelector(SegManager *segMan, reg_t object, Selector selectorId, reg_t value) {
+void writeSelector(SegManager *segMan, const reg_t &object, Selector selectorId, reg_t value) {
 	ObjVarRef address;
 
 	if ((selectorId < 0) || (selectorId > (int)g_sci->getKernel()->getSelectorNamesSize())) {
@@ -275,7 +275,7 @@ void writeSelector(SegManager *segMan, reg_t object, Selector selectorId, reg_t 
 #endif
 }
 
-void invokeSelector(EngineState *s, reg_t object, int selectorId,
+void invokeSelector(EngineState *s, const reg_t& object, int selectorId,
 	int k_argc, StackPtr k_argp, int argc, const reg_t *argv) {
 	int i;
 	int framesize = 2 + 1 * argc;
@@ -310,7 +310,7 @@ void invokeSelector(EngineState *s, reg_t object, int selectorId,
 	run_vm(s); // Start a new vm
 }
 
-SelectorType lookupSelector(SegManager *segMan, reg_t obj_location, Selector selectorId, ObjVarRef *varp, reg_t *fptr) {
+SelectorType lookupSelector(SegManager *segMan, const reg_t &obj_location, Selector selectorId, ObjVarRef *varp, reg_t *fptr) {
 	const Object *obj = segMan->getObject(obj_location);
 	int index;
 	bool oldScriptHeader = (getSciVersion() == SCI_VERSION_0_EARLY);

@@ -41,12 +41,6 @@ class Script;
 /** Number of bytes to be allocated for the stack */
 #define VM_STACK_SIZE 0x1000
 
-/** Magical object identifier */
-#define SCRIPT_OBJECT_MAGIC_NUMBER 0x1234
-
-/** Offset of this identifier */
-#define SCRIPT_OBJECT_MAGIC_OFFSET (getSciVersion() < SCI_VERSION_1_1 ? -8 : 0)
-
 /** Stack pointer value: Use predecessor's value */
 #define CALL_SP_CARRY NULL
 
@@ -102,7 +96,9 @@ struct ExecStack {
 	int debugKernelSubFunction; // The kernel subfunction called, or -1 if not applicable
 	ExecStackType type;
 
-	reg_t* getVarPointer(SegManager *segMan) const;
+	reg_t * getPointer(SegManager *segMan) const;
+
+	reg_t * getVarPointer(SegManager *segMan) const;
 
 	ExecStack(reg_t objp_, reg_t sendp_, StackPtr sp_, int argc_, StackPtr argp_,
 				SegmentId localsSegment_, reg32_t pc_, Selector debugSelector_,
@@ -392,7 +388,7 @@ void script_debug(EngineState *s);
  * 							kSelectorMethod if the selector represents a
  * 							method
  */
-SelectorType lookupSelector(SegManager *segMan, reg_t obj, Selector selectorid,
+SelectorType lookupSelector(SegManager *segMan, const reg_t &obj, Selector selectorid,
 		ObjVarRef *varp, reg_t *fptr);
 
 /**

@@ -30,6 +30,7 @@
 #include "sci/engine/vm_types.h"	// for Selector
 #include "sci/debug.h"	// for DebugState
 #include "sci/sciversion.h"
+#include "advancedDetector.h"
 
 struct ADGameDescription;
 
@@ -214,7 +215,7 @@ enum SciGameId {
 };
 
 /** Supported languages */
-enum kLanguage {
+enum kLanguage : uint16_t {
 	K_LANG_NONE = 0,
 	K_LANG_ENGLISH = 1,
 	K_LANG_FRENCH = 33,
@@ -250,13 +251,23 @@ public:
 	const char *getGameIdStr() const;
 	int getResourceVersion() const;
 	Common::Language getLanguage() const;
-	Common::Platform getPlatform() const;
+	inline Common::Platform getPlatform() const {
+		return _gameDescription->platform;
+	}
 	bool isDemo() const;
 	bool isCD() const;
 	bool forceHiresGraphics() const;
 
 	/** Returns true if the game's original platform is big-endian. */
-	bool isBE() const;
+	inline bool isBE() const{
+		switch(_gameDescription->platform) {
+		case Common::kPlatformAmiga:
+		case Common::kPlatformMacintosh:
+			return true;
+		default:
+			return false;
+		}
+	}
 
 	bool hasMacIconBar() const;
 

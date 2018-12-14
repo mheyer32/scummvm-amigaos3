@@ -656,19 +656,6 @@ SciSpan<const byte> Script::getSci3ObjectsPointer() {
 }
 #endif
 
-Object *Script::getObject(uint32 offset) {
-	if (_objects.contains(offset))
-		return &_objects[offset];
-	else
-		return 0;
-}
-
-const Object *Script::getObject(uint32 offset) const {
-	if (_objects.contains(offset))
-		return &_objects[offset];
-	else
-		return 0;
-}
 
 Object *Script::scriptObjInit(reg_t obj_pos, bool fullObjectInit) {
 	if (obj_pos.getOffset() >= _buf->size())
@@ -1326,10 +1313,6 @@ Common::Array<reg_t> Script::listObjectReferences() const {
 	}
 
 	return tmp;
-}
-
-bool Script::offsetIsObject(uint32 offset) const {
-	return _buf->getUint16SEAt(offset + SCRIPT_OBJECT_MAGIC_OFFSET) == SCRIPT_OBJECT_MAGIC_NUMBER;
 }
 
 } // End of namespace Sci

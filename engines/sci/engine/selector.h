@@ -211,7 +211,7 @@ struct SelectorCache {
  * This macro halts on error. 'selector' must be a selector name registered in vm.h's
  * SelectorCache and mapped in script.cpp.
  */
-reg_t readSelector(SegManager *segMan, reg_t object, Selector selectorId);
+reg_t readSelector(SegManager *segMan, const reg_t &object, Selector selectorId);
 #define readSelectorValue(segMan, _obj_, _slc_) (readSelector(segMan, _obj_, _slc_).getOffset())
 
 /**
@@ -223,13 +223,13 @@ reg_t readSelector(SegManager *segMan, reg_t object, Selector selectorId);
  * This macro halts on error. 'selector' must be a selector name registered in vm.h's
  * SelectorCache and mapped in script.cpp.
  */
-void writeSelector(SegManager *segMan, reg_t object, Selector selectorId, reg_t value);
+void writeSelector(SegManager *segMan, const reg_t &object, Selector selectorId, reg_t value);
 #define writeSelectorValue(segMan, _obj_, _slc_, _val_) writeSelector(segMan, _obj_, _slc_, make_reg(0, _val_))
 
 /**
  * Invokes a selector from an object.
  */
-void invokeSelector(EngineState *s, reg_t object, int selectorId,
+void invokeSelector(EngineState *s, const reg_t &object, int selectorId,
 	int k_argc, StackPtr k_argp, int argc = 0, const reg_t *argv = 0);
 
 #ifdef ENABLE_SCI32
