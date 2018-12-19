@@ -9,7 +9,7 @@ sound playback - lots of room for improvement.
 
 ## How to build
 
-This source will build with bobbo's GCC 6.4.1 toolchain at: https://github.com/bebbo/amiga-gcc
+This source will build with bebbo's GCC 6.4.1 toolchain at: https://github.com/bebbo/amiga-gcc
 
 The binary directory of the toolchain is expectyd to be in the search path.
 
