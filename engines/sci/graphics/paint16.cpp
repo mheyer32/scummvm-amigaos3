@@ -64,14 +64,15 @@ void GfxPaint16::debugSetEGAdrawingVisualize(bool state) {
 }
 
 void GfxPaint16::drawPicture(GuiResourceId pictureId, int16 animationNr, bool mirroredFlag, bool addToFlag, GuiResourceId paletteId) {
-	GfxPicture *picture = new GfxPicture(_resMan, _coordAdjuster, _ports, _screen, _palette, pictureId, _EGAdrawingVisualize);
+	{
+		GfxPicture picture(_resMan, _coordAdjuster, _ports, _screen, _palette, pictureId, _EGAdrawingVisualize);
 
-	// do we add to a picture? if not -> clear screen with white
-	if (!addToFlag)
-		clearScreen(_screen->getColorWhite());
+		// do we add to a picture? if not -> clear screen with white
+		if (!addToFlag)
+			clearScreen(_screen->getColorWhite());
 
-	picture->draw(animationNr, mirroredFlag, addToFlag, paletteId);
-	delete picture;
+		picture.draw(animationNr, mirroredFlag, addToFlag, paletteId);
+	}
 
 	// We make a call to SciPalette here, for increasing sys timestamp and also loading targetpalette, if palvary active
 	//  (SCI1.1 only)
