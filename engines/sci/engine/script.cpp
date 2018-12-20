@@ -1280,8 +1280,8 @@ Common::Array<reg_t> Script::listAllDeallocatable(SegmentId segId) const {
 Common::Array<reg_t> Script::listAllOutgoingReferences(reg_t addr) const {
 	Common::Array<reg_t> tmp;
 	if (addr.getOffset() <= _buf->size() && addr.getOffset() >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET && offsetIsObject(addr.getOffset())) {
-		const Object *obj = getObject(addr.getOffset());
-		if (obj) {
+		const Object *obj = isReleaseBuild ? getObject(addr.getOffset()) : findObject(addr.getOffset());
+		if (isReleaseBuild || obj) {
 			// Note all local variables, if we have a local variable environment
 			if (_localsSegment)
 				tmp.push_back(make_reg(_localsSegment, 0));

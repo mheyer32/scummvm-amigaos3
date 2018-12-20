@@ -201,13 +201,13 @@ void SegManager::deallocateScript(int script_nr) {
 
 Script *SegManager::getScript(const SegmentId seg) {
 	SegmentId actualSegment = getActualSegment(seg);
-	if (actualSegment < 1 || (uint)actualSegment >= _heap.size()) {
+	if (!isReleaseBuild && (actualSegment < 1 || (uint)actualSegment >= _heap.size())) {
 		error("SegManager::getScript(): seg id %x out of bounds", actualSegment);
 	}
-	if (!_heap[actualSegment]) {
+	if (!isReleaseBuild && !_heap[actualSegment]) {
 		error("SegManager::getScript(): seg id %x is not in memory", actualSegment);
 	}
-	if (_heap[actualSegment]->getType() != SEG_TYPE_SCRIPT) {
+	if (!isReleaseBuild && (_heap[actualSegment]->getType() != SEG_TYPE_SCRIPT)) {
 		error("SegManager::getScript(): seg id %x refers to type %d != SEG_TYPE_SCRIPT", actualSegment, _heap[actualSegment]->getType());
 	}
 	return (Script *)_heap[actualSegment];
@@ -229,7 +229,13 @@ SegmentId SegManager::findSegmentByType(int type) const {
 
 SegmentObj *SegManager::getSegmentObj(SegmentId seg) const {
 	SegmentId actualSegment = getActualSegment(seg);
-	if (actualSegment < 1 || (uint)actualSegment >= _heap.size() || !_heap[actualSegment])
+	assert(!((actualSegment < 1 || (uint)actualSegment >= _heap.size() || !_heap[actualSegment])));
+	return _heap[actualSegment];
+}
+
+SegmentObj *SegManager::findSegmentObj(SegmentId seg) const {
+	SegmentId actualSegment = getActualSegment(seg);
+	if (actualSegment < 1 || (uint)actualSegment >= _heap.size())
 		return 0;
 	return _heap[actualSegment];
 }
@@ -246,22 +252,22 @@ SegmentObj *SegManager::getSegment(SegmentId seg, SegmentType type) const {
 	return getSegmentType(actualSegment) == type ? _heap[actualSegment] : NULL;
 }
 
-Object *SegManager::getObject(reg_t pos) const {
-	SegmentObj *mobj = getSegmentObj(pos.getSegment());
+Object *SegManager::getObject(const reg_t &pos) const {
+	SegmentObj *mobj = findSegmentObj(pos.getSegment());
 	Object *obj = NULL;
-
+	const uint32 offset = pos.getOffset();
 	if (mobj != NULL) {
 		if (mobj->getType() == SEG_TYPE_CLONES) {
 			CloneTable &ct = *(CloneTable *)mobj;
-			if (ct.isValidEntry(pos.getOffset()))
-				obj = &(ct[pos.getOffset()]);
+			if (isReleaseBuild || ct.isValidEntry(offset))
+				obj = &(ct[offset]);
 			else
 				warning("getObject(): Trying to get an invalid object");
 		} else if (mobj->getType() == SEG_TYPE_SCRIPT) {
 			Script *scr = (Script *)mobj;
-			if (pos.getOffset() <= scr->getBufSize() && pos.getOffset() >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET
-			        && scr->offsetIsObject(pos.getOffset())) {
-				obj = scr->getObject(pos.getOffset());
+			if (isReleaseBuild || (offset <= scr->getBufSize() && offset >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET &&
+								   scr->offsetIsObject(offset))) {
+				obj = scr->getObject(offset);
 			}
 		}
 	}

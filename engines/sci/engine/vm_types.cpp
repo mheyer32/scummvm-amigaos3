@@ -67,7 +67,7 @@ reg_t reg_t::operator+(const reg_t &right) const {
 		// Pointer arithmetics. Only some pointer types make sense here
 		SegmentObj *mobj = g_sci->getEngineState()->_segMan->getSegmentObj(getSegment());
 
-		if (!mobj)
+		if (!isReleaseBuild && !mobj)
 			error("[VM]: Attempt to add %d to invalid pointer %04x:%04x", right.getOffset(), PRINT_REG(*this));
 
 		switch (mobj->getType()) {

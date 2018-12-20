@@ -165,13 +165,16 @@ public:
 	virtual void saveLoadWithSerializer(Common::Serializer &ser);
 
 	Object *getObject(uint32 offset) {
-		if (_objects.contains(offset))
-			return &_objects[offset];
-		else
-			return 0;
+		assert(_objects.contains(offset));
+		return &_objects[offset];
 	}
 
 	const Object *getObject(uint32 offset) const {
+		assert(_objects.contains(offset));
+		return &_objects[offset];
+	}
+
+	const Object *findObject(uint32 offset) const {
 		if (_objects.contains(offset))
 			return &_objects[offset];
 		else

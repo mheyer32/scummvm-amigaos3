@@ -1026,7 +1026,7 @@ void logKernelCall(const KernelFunction *kernelCall, const KernelSubFunction *ke
 				break;
 			case SIG_TYPE_REFERENCE:
 			{
-				SegmentObj *mobj = s->_segMan->getSegmentObj(argv[parmNr].getSegment());
+				SegmentObj *mobj = s->_segMan->findSegmentObj(argv[parmNr].getSegment());
 				if (mobj) {
 					switch (mobj->getType()) {
 					case SEG_TYPE_HUNK:

@@ -320,7 +320,7 @@ SelectorType lookupSelector(SegManager *segMan, const reg_t &obj_location, Selec
 	if (oldScriptHeader)
 		selectorId &= ~1;
 
-	if (!obj) {
+	if (!isReleaseBuild && !obj) {
 		const SciCallOrigin origin = g_sci->getEngineState()->getCurrentCallOrigin();
 		error("lookupSelector: Attempt to send to non-object or invalid script. Address %04x:%04x, %s", PRINT_REG(obj_location), origin.toString().c_str());
 	}

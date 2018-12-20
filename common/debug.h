@@ -142,4 +142,10 @@ enum GlobalDebugLevels {
 	kDebugLevelEventRec = 1 << 30
 };
 
+#ifndef NDEBUG
+	static const bool isReleaseBuild = false;
+#else
+	static const bool isReleaseBuild = true;
+#endif
+
 #endif

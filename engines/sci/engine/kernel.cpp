@@ -385,7 +385,7 @@ uint16 Kernel::findRegType(reg_t reg) {
 		return SIG_TYPE_UNINITIALIZED;
 
 	// Otherwise it's an object
-	SegmentObj *mobj = _segMan->getSegmentObj(reg.getSegment());
+	SegmentObj *mobj = _segMan->findSegmentObj(reg.getSegment());
 	if (!mobj)
 		return SIG_TYPE_ERROR;
 
@@ -398,7 +398,7 @@ uint16 Kernel::findRegType(reg_t reg) {
 		if (reg.getOffset() <= (*(Script *)mobj).getBufSize() &&
 			reg.getOffset() >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET &&
 			(*(Script *)mobj).offsetIsObject(reg.getOffset())) {
-			result |= ((Script *)mobj)->getObject(reg.getOffset()) ? SIG_TYPE_OBJECT : SIG_TYPE_REFERENCE;
+			result |= ((Script *)mobj)->findObject(reg.getOffset()) ? SIG_TYPE_OBJECT : SIG_TYPE_REFERENCE;
 		} else
 			result |= SIG_TYPE_REFERENCE;
 		break;

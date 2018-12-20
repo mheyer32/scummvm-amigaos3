@@ -376,6 +376,7 @@ public:
 
 	// TODO: document this
 	SegmentObj *getSegmentObj(SegmentId seg) const;
+	SegmentObj* findSegmentObj(SegmentId seg) const;
 
 	// TODO: document this
 	SegmentType getSegmentType(SegmentId seg) const;

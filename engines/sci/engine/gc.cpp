@@ -73,7 +73,7 @@ static AddrSet *normalizeAddresses(SegManager *segMan, const AddrSet &nonnormal_
 
 	for (AddrSet::const_iterator i = nonnormal_map.begin(); i != nonnormal_map.end(); ++i) {
 		reg_t reg = i->_key;
-		SegmentObj *mobj = segMan->getSegmentObj(reg.getSegment());
+		SegmentObj *mobj = segMan->findSegmentObj(reg.getSegment());
 
 		if (mobj) {
 			reg = mobj->findCanonicAddress(segMan, reg);

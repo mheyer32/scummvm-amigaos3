@@ -82,11 +82,15 @@ static reg_t &validate_property(EngineState *s, Object *obj, int index) {
 }
 
 static StackPtr validate_stack_addr(EngineState *s, StackPtr sp) {
+#ifndef NDEBUG
 	if (sp >= s->stack_base && sp < s->stack_top)
 		return sp;
 	else
 	error("[VM] Stack index %d out of valid range [%d..%d]",
 		(int)(sp - s->stack_base), 0, (int)(s->stack_top - s->stack_base - 1));
+#else
+	return sp;
+#endif
 }
 
 static bool validate_variable(reg_t *r, reg_t *stack_base, int type, int max, int index) {
