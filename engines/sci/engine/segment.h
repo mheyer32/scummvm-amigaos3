@@ -58,7 +58,7 @@ struct SegmentRef {
 };
 
 
-enum SegmentType {
+enum SegmentType : byte {
 	SEG_TYPE_INVALID = 0,
 	SEG_TYPE_SCRIPT = 1,
 	SEG_TYPE_CLONES = 2,

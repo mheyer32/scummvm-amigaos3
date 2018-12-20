@@ -36,7 +36,7 @@ namespace Sci {
 class SegManager;
 class Script;
 
-enum infoSelectorFlags {
+enum infoSelectorFlags : uint16 {
 	kInfoFlagClone        = 0x0001,
 #ifdef ENABLE_SCI32
 	/**

@@ -40,7 +40,7 @@ struct EngineState;
 class ResourceManager;
 struct SciScriptPatcherEntry;
 
-enum ScriptObjectTypes {
+enum ScriptObjectTypes : byte {
 	SCI_OBJ_TERMINATOR,
 	SCI_OBJ_OBJECT,
 	SCI_OBJ_CODE,
@@ -56,7 +56,7 @@ enum ScriptObjectTypes {
 
 typedef Common::HashMap<uint32, Object> ObjMap;
 
-enum ScriptOffsetEntryTypes {
+enum ScriptOffsetEntryTypes : byte {
 	SCI_SCR_OFFSET_TYPE_OBJECT = 0, // classes are handled by this type as well
 	SCI_SCR_OFFSET_TYPE_STRING,
 	SCI_SCR_OFFSET_TYPE_SAID
