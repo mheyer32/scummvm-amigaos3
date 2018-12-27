@@ -139,6 +139,16 @@ GfxScreen::GfxScreen(ResourceManager *resMan) : _resMan(resMan) {
 		break;
 	}
 
+	if (_displayWidth == 320 && _width == 320) {
+		_getPixelFunc = _vectorGetPixelFunc = &GfxScreen::getPixel320;
+		_putPixelFunc = _vectorPutPixelFunc = &GfxScreen::putPixel320;
+	} else {
+		_getPixelFunc = &GfxScreen::getPixelGeneric;
+		_vectorGetPixelFunc = &GfxScreen::vectorGetPixelGeneric;
+		_putPixelFunc = &GfxScreen::putPixelGeneric;
+		_vectorPutPixelFunc = &GfxScreen::vectorPutPixelGeneric;
+	}
+
 	_displayPixels = _displayWidth * _displayHeight;
 
 	// Allocate visual, priority, control and display screen

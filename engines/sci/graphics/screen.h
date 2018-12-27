@@ -159,11 +159,36 @@ private:
 
 	void setVerticalShakePos(uint16 shakePos);
 
+	void  REGPARM putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+		// Set pixel for visual, priority and control map directly, those are not upscaled
+		const uint offset = ((uint)y  << 8)  + ((uint)y << 6) + x;
+
+		if (drawMask & GFX_SCREEN_MASK_VISUAL) {
+//			_visualScreen[offset] = color;
+			_displayScreen[offset] = color;
+		}
+		if (drawMask & GFX_SCREEN_MASK_PRIORITY) {
+			_priorityScreen[offset] = priority;
+		}
+		if (drawMask & GFX_SCREEN_MASK_CONTROL) {
+			_controlScreen[offset] = control;
+		}
+	}
+
 	/**
 	 * If this flag is true, undithering is enabled, otherwise disabled.
 	 */
 	bool _unditheringEnabled;
 	int16 _ditheredPicColors[DITHERED_BG_COLORS_SIZE];
+
+
+	typedef byte REGPARM (GfxScreen::*GetPixelFunc)(const byte *screen, int16 x, int16) const;
+	GetPixelFunc _getPixelFunc = &GfxScreen::getPixel320;
+	GetPixelFunc _vectorGetPixelFunc = &GfxScreen::getPixel320;
+
+	typedef void  REGPARM  (GfxScreen::*PutPixelFunc)(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control)  const;
+	PutPixelFunc _putPixelFunc = &GfxScreen::putPixel320;
+	PutPixelFunc _vectorPutPixelFunc = &GfxScreen::putPixel320;
 
 	// These screens have the real resolution of the game engine (320x200 for
 	// SCI0/SCI1/SCI11 games, 640x480 for SCI2 games). SCI0 games will be
@@ -206,15 +231,22 @@ private:
 	 */
 	bool _fontIsUpscaled;
 
-
 	// pixel related code, in header so that it can be inlined for performance
 public:
-	void putPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
+
+	inline void REGPARM putPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+		(this->*_putPixelFunc)(x, y, drawMask, color, priority, control);
+	}
+
+	inline void REGPARM vectorPutPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+		(this->*_vectorPutPixelFunc)(x, y, drawMask, color, priority, control);
+	}
+
+	void  REGPARM putPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
 		if (_upscaledHires == GFX_SCREEN_UPSCALED_480x300) {
 			putPixel480x300(x, y, drawMask, color, priority, control);
 			return;
 		}
-
 		// Set pixel for visual, priority and control map directly, those are not upscaled
 		int offset = y * _width + x;
 
@@ -246,7 +278,7 @@ public:
 		}
 	}
 
-	void putPixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
+	void  REGPARM putPixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
 		int offset = ((y * 3) / 2 * _width) + ((x * 3) / 2);
 
 		// All maps are upscaled
@@ -262,7 +294,8 @@ public:
 			putPixel480x300Worker(x, y, offset, _controlScreen, control);
 		}
 	}
-	void putPixel480x300Worker(int16 x, int16 y, int offset, byte *screen, byte byteToSet) {
+
+	void  REGPARM putPixel480x300Worker(int16 x, int16 y, int offset, byte *screen, byte byteToSet) const {
 		screen[offset] = byteToSet;
 		if (x & 1)
 			screen[offset + 1] = byteToSet;
@@ -273,7 +306,7 @@ public:
 	}
 
 	// This is called from vector drawing to put a pixel at a certain location
-	void vectorPutPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
+	void  REGPARM vectorPutPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
 		switch (_upscaledHires) {
 		case GFX_SCREEN_UPSCALED_640x400:
 		case GFX_SCREEN_UPSCALED_640x440:
@@ -307,13 +340,13 @@ public:
 	 * only used on upscaled-Hires games where hires content needs to get drawn ONTO
 	 * the upscaled display screen (like japanese fonts, hires portraits, etc.).
 	 */
-	void putPixelOnDisplay(int16 x, int16 y, byte color) {
+	void REGPARM putPixelOnDisplay(int16 x, int16 y, byte color) const {
 		int offset = y * _displayWidth + x;
 		_displayScreen[offset] = color;
 	}
 
 	// Upscales a pixel and puts it on display screen only
-	void putScaledPixelOnDisplay(int16 x, int16 y, byte color) {
+	void REGPARM putScaledPixelOnDisplay(int16 x, int16 y, byte color) const {
 		int displayOffset = 0;
 
 		switch (_upscaledHires) {
@@ -360,8 +393,8 @@ public:
 	 *  do triple pixel lines in any case on upscaled hires. That way the font will not get distorted
 	 *  Sierra SCI didn't do this
 	 */
-	void putFontPixel(int16 startingY, int16 x, int16 y, byte color) {
-		int16 actualY = startingY + y;
+	void putFontPixel(int16 startingY, int16 x, int16 y, byte color) const {
+		uint16 actualY = startingY + y;
 		if (_fontIsUpscaled) {
 			// Do not scale ourselves, but put it on the display directly
 			putPixelOnDisplay(x, actualY, color);
@@ -392,7 +425,20 @@ public:
 		}
 	}
 
-	byte getPixel(byte *screen, int16 x, int16 y) {
+	// Vector related public code - in here, so that it can be inlined
+	byte REGPARM getPixel320(const byte *screen, int16 x, int16 y) const {
+		return screen[((uint)y  << 8)  + ((uint)y << 6) + x];
+	}
+
+	inline byte REGPARM getPixel(const byte *screen, int16 x, int16 y) const {
+		return (this->*_getPixelFunc)(screen, x, y);
+	}
+
+	inline byte REGPARM vectorGetPixel(const byte *screen, int16 x, int16 y) const {
+		return (this->*_vectorGetPixelFunc)(screen, x, y);
+	}
+
+	byte REGPARM getPixelGeneric(const byte *screen, int16 x, int16 y) const {
 		switch (_upscaledHires) {
 		case GFX_SCREEN_UPSCALED_480x300: {
 			int offset = ((y * 3) / 2) * _width + ((y * 3) / 2);
@@ -406,32 +452,32 @@ public:
 		return screen[y * _width + x];
 	}
 
-	byte getVisual(int16 x, int16 y) {
+	byte REGPARM getVisual(int16 x, int16 y) const {
 		return getPixel(_visualScreen, x, y);
 	}
-	byte getPriority(int16 x, int16 y) {
+	byte REGPARM getPriority(int16 x, int16 y) const {
 		return getPixel(_priorityScreen, x, y);
 	}
-	byte getControl(int16 x, int16 y) {
+	byte REGPARM getControl(int16 x, int16 y) const {
 		return getPixel(_controlScreen, x, y);
 	}
 
 	// Vector related public code - in here, so that it can be inlined
-	byte vectorGetPixel(byte *screen, int16 x, int16 y) {
+	byte REGPARM vectorGetPixelGeneric(const byte *screen, int16 x, int16 y) const {
 		return screen[y * _width + x];
 	}
 
-	byte vectorGetVisual(int16 x, int16 y) {
+	byte REGPARM vectorGetVisual(int16 x, int16 y) const {
 		return vectorGetPixel(_visualScreen, x, y);
 	}
-	byte vectorGetPriority(int16 x, int16 y) {
+	byte REGPARM vectorGetPriority(int16 x, int16 y) const {
 		return vectorGetPixel(_priorityScreen, x, y);
 	}
-	byte vectorGetControl(int16 x, int16 y) {
+	byte REGPARM vectorGetControl(int16 x, int16 y) const {
 		return vectorGetPixel(_controlScreen, x, y);
 	}
 
-	void vectorAdjustCoordinate(int16 *x, int16 *y) {
+	void vectorAdjustCoordinate(int16 *x, int16 *y) const {
 		switch (_upscaledHires) {
 		case GFX_SCREEN_UPSCALED_480x300:
 			*x = (*x * 3) / 2;
