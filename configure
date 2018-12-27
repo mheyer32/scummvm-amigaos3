@@ -3075,23 +3075,28 @@ if test -n "$_host"; then
 
 			append_var CXXFLAGS "-noixemul"
 			append_var LDFLAGS "-noixemul"
+
 			if test "$_debug_build" != yes; then
-				# throw away all debug info and symbols
-				append_var CXXFLAGS "-s"
-				append_var CXXFLAGS "-fomit-frame-pointer"
 				# no logging, warning etc...
 				append_var DEFINES "-DDISABLE_TEXT_CONSOLE"
-			else
-				append_var CXXFLAGS "-Og"
+				append_var CXXFLAGS "-fstrict-aliasing"
+				# in release mode without profiling, disable frame pointer
+				if test "$_enable_prof" != yes; then
+					append_var CXXFLAGS "-fomit-frame-pointer"
+				fi
 			fi
 
 			_backend="amigaos3"
 			_build_scalers=no
 			_seq_midi=no
 			_timidity=no
+			_mt32emu=no
+			_alsa=no
 			# Use -O3 on the Amiga for optimized builds.
 			if test "$_optimizations" = yes; then
 				_optimization_level=-Os
+			else
+				append_var CXXFLAGS "-Og"
 			fi
 			;;
 		m68k-atari-mint)
