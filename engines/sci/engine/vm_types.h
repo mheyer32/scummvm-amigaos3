@@ -30,6 +30,11 @@ namespace Sci {
 
 // Segment ID type
 typedef uint16 SegmentId;
+#ifdef ENABLE_SCI32
+typedef uint32 Offset;
+#else
+typedef uint16 Offset;
+#endif
 
 enum {
 	kUninitializedSegment = 0x1FFF,
@@ -46,10 +51,10 @@ struct reg_t {
 
 	void setSegment(SegmentId segment);
 
-	uint32 getOffset() const;
-	void setOffset(uint32 offset);
+	Offset getOffset() const;
+	void setOffset(Offset offset);
 
-	inline void incOffset(int32 offset) {
+	inline void incOffset(Offset offset) {
 		setOffset(getOffset() + offset);
 	}
 
@@ -187,7 +192,7 @@ inline SegmentId reg_t::getSegment() const {
 	}
 }
 
-inline uint32 reg_t::getOffset() const {
+inline Offset reg_t::getOffset() const {
 #ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		// Return the lower 16 bits from the offset, and the 17th and 18th bits from the segment

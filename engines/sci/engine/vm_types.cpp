@@ -40,7 +40,7 @@ void reg_t::setSegment(SegmentId segment) {
 	}
 }
 
-void reg_t::setOffset(uint32 offset) {
+void reg_t::setOffset(Offset offset) {
 #ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		// Store the lower 16 bits in the offset, and the 17th and 18th bits in the segment

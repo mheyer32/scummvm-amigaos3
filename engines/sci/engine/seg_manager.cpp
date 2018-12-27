@@ -255,7 +255,7 @@ SegmentObj *SegManager::getSegment(SegmentId seg, SegmentType type) const {
 Object *SegManager::getObject(const reg_t &pos) const {
 	SegmentObj *mobj = findSegmentObj(pos.getSegment());
 	Object *obj = NULL;
-	const uint32 offset = pos.getOffset();
+	const auto offset = pos.getOffset();
 	if (mobj != NULL) {
 		if (mobj->getType() == SEG_TYPE_CLONES) {
 			CloneTable &ct = *(CloneTable *)mobj;
@@ -310,7 +310,8 @@ Common::Array<reg_t> SegManager::findObjectsByName(const Common::String &name) {
 			const Script *scr = (const Script *)mobj;
 			const ObjMap &objects = scr->getObjectMap();
 			for (ObjMap::const_iterator it = objects.begin(); it != objects.end(); ++it) {
-				objpos.setOffset(it->_value.getPos().getOffset());
+				OBJECT_FROM_ITERATOR();
+				objpos.setOffset(object.getPos().getOffset());
 				if (name == getObjectName(objpos))
 					result.push_back(objpos);
 			}

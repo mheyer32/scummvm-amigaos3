@@ -54,7 +54,22 @@ enum ScriptObjectTypes : byte {
 	SCI_OBJ_LOCALVARS
 };
 
+#ifdef ENABLE_SCI32
 typedef Common::HashMap<uint32, Object> ObjMap;
+#define OBJECT_FROM_ITERATOR() auto &object = it->_value;
+#else
+// This is a hack: when switching from HashMap to Array, we now
+// have to deal with 'holes' in the array where there's no object allocated yet.
+// We need to skip these holes as the original HashMap iterator only enumerates
+// active objects.
+typedef Common::Array<Object *> ObjMap;
+
+#define OBJECT_FROM_ITERATOR() \
+	if (!(*it)) {              \
+		continue;              \
+	}                          \
+	auto &object = *(*it);
+#endif
 
 enum ScriptOffsetEntryTypes : byte {
 	SCI_SCR_OFFSET_TYPE_OBJECT = 0, // classes are handled by this type as well
@@ -99,7 +114,9 @@ private:
 	LocalVariables *_localsBlock;
 
 	ObjMap _objects;	/**< Table for objects, contains property variables */
-
+#ifndef ENABLE_SCI32
+	Offset _numObjects; /**< number of live objects in 'objects' */
+#endif
 protected:
 	offsetLookupArrayType _offsetLookupArray; // Table of all elements of currently loaded script, that may get pointed to
 
@@ -164,22 +181,38 @@ public:
 
 	virtual void saveLoadWithSerializer(Common::Serializer &ser);
 
-	Object *getObject(uint32 offset) {
+#ifdef ENABLE_SCI32
+	Object *getObject(Offset offset) {
 		assert(_objects.contains(offset));
 		return &_objects[offset];
 	}
 
-	const Object *getObject(uint32 offset) const {
+	const Object *getObject(Offset offset) const {
 		assert(_objects.contains(offset));
 		return &_objects[offset];
 	}
 
-	const Object *findObject(uint32 offset) const {
+	const Object *findObject(Offset offset) const {
 		if (_objects.contains(offset))
 			return &_objects[offset];
 		else
 			return 0;
 	}
+#else
+	Object *getObject(Offset offset) {
+		assert(_objects[offset]);
+		return _objects[offset];
+	}
+
+	const Object *getObject(Offset offset) const {
+		assert(_objects[offset]);
+		return _objects[offset];
+	}
+
+	const Object *findObject(Offset offset) const {
+		return _objects[offset];
+	}
+#endif
 
 	/**
 	 * Initializes an object within the segment manager

@@ -67,7 +67,17 @@ void Script::freeScript(const bool keepLocalsSegment) {
 
 	_lockers = 1;
 	_markedAsDeleted = false;
+
+#ifdef ENABLE_SCI32
 	_objects.clear();
+#else
+	for (ObjMap::iterator it = _objects.begin(); it != _objects.end(); ++it ){
+		delete *it;
+	}
+	_objects.resize(0);
+	_objects.reserve(0xFFFF);
+	_numObjects = 0;
+#endif
 
 	_offsetLookupArray.clear();
 	_offsetLookupObjectCount = 0;
@@ -663,7 +673,17 @@ Object *Script::scriptObjInit(reg_t obj_pos, bool fullObjectInit) {
 
 	// Get the object at the specified position and init it. This will
 	// automatically "allocate" space for it in the _objects map if necessary.
+#ifndef ENABLE_SCI32
+	const auto offset = obj_pos.getOffset();
+	_objects.resize(MAX(_objects.size(), (size_t)offset +1));
+	if (!_objects[offset]) {
+		_objects[offset] = new Object();
+		++_numObjects;
+	}
+	Object *obj = _objects[offset];
+#else
 	Object *obj = &_objects[obj_pos.getOffset()];
+#endif
 	obj->init(*this, obj_pos, fullObjectInit);
 
 	return obj;
@@ -824,9 +844,11 @@ void Script::relocateSci0Sci21(const SegmentId segmentId) {
 			// Not a local? It's probably an object or code block. If it's an
 			// object, relocate it.
 			const ObjMap::iterator end = _objects.end();
-			for (ObjMap::iterator it = _objects.begin(); it != end; ++it)
-				if (it->_value.relocateSci0Sci21(segmentId, pos, getHeapOffset()))
+			for (ObjMap::iterator it = _objects.begin(); it != end; ++it) {
+				OBJECT_FROM_ITERATOR()
+				if (object.relocateSci0Sci21(segmentId, pos, getHeapOffset()))
 					break;
+			}
 		}
 	}
 }
@@ -1133,7 +1155,15 @@ void Script::initializeObjectsSci0(SegManager *segMan, SegmentId segmentId) {
 								// #3150767.
 								// Same happens with script 764, it seems to
 								// contain junk towards its end.
+#ifdef ENABLE_SCI32
 								_objects.erase(addr.toUint16() - SCRIPT_OBJECT_MAGIC_OFFSET);
+#else
+								// FIXME: have a deleteObject function?
+								const auto offset = addr.toUint16() - SCRIPT_OBJECT_MAGIC_OFFSET;
+								delete _objects[offset];
+								_objects[offset] = NULL;
+								--_numObjects;
+#endif
 							} else {
 								error("Failed to locate base object for object at %04x:%04x in script %d", PRINT_REG(addr), _nr);
 							}
@@ -1306,10 +1336,11 @@ Common::Array<reg_t> Script::listObjectReferences() const {
 		tmp.push_back(make_reg(_localsSegment, 0));
 
 	// All objects (may be classes, may be indirectly reachable)
-	ObjMap::iterator it;
-	const ObjMap::iterator end = _objects.end();
+	ObjMap::const_iterator it;
+	const ObjMap::const_iterator end = _objects.end();
 	for (it = _objects.begin(); it != end; ++it) {
-		tmp.push_back(it->_value.getPos());
+		OBJECT_FROM_ITERATOR();
+		tmp.push_back(object.getPos());
 	}
 
 	return tmp;

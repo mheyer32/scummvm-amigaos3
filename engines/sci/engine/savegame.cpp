@@ -281,7 +281,10 @@ void SegManager::saveLoadWithSerializer(Common::Serializer &s) {
 
 				ObjMap &objects = scr->getObjectMap();
 				for (ObjMap::iterator it = objects.begin(); it != objects.end(); ++it) {
-					reg_t addr = it->_value.getPos();
+
+					OBJECT_FROM_ITERATOR();
+					auto addr = object.getPos();
+
 					if (pass == 1) {
 						scr->scriptObjInit(addr, false);
 					} else {
@@ -570,21 +573,36 @@ void Script::saveLoadWithSerializer(Common::Serializer &s) {
 	// By "chance" this format is identical to the format used to sync Common::Array<>,
 	// hence we can still old savegames with identical code :).
 
+#ifdef ENABLE_SCI32
 	uint numObjs = _objects.size();
+#else
+	uint numObjs = _numObjects;
+#endif
 	s.syncAsUint32LE(numObjs);
 
 	if (s.isLoading()) {
-		_objects.clear();
+#ifdef ENABLE_SCI32
+		assert(_objects.empty());
+#endif
 		Object tmp;
 		for (uint i = 0; i < numObjs; ++i) {
 			syncWithSerializer(s, tmp);
+#ifdef ENABLE_SCI32
 			_objects[tmp.getPos().getOffset()] = tmp;
+#else
+			const auto offset = tmp.getPos().getOffset();
+			_objects.resize(MAX(_objects.size(), (size_t)offset + 1));
+			assert(_objects[offset] == NULL);
+			_objects[offset] = new Object();
+			*_objects[offset] = tmp;
+#endif
 		}
 	} else {
 		ObjMap::iterator it;
 		const ObjMap::iterator end = _objects.end();
 		for (it = _objects.begin(); it != end; ++it) {
-			syncWithSerializer(s, it->_value);
+			OBJECT_FROM_ITERATOR()
+			syncWithSerializer(s, object);
 		}
 	}
 

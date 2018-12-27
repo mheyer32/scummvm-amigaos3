@@ -2450,10 +2450,13 @@ bool Console::segmentInfo(int nr) {
 		for (it = objects.begin(); it != end; ++it) {
 			debugPrintf("    ");
 			// Object header
-			const Object *obj = _engine->_gamestate->_segMan->getObject(it->_value.getPos());
+			OBJECT_FROM_ITERATOR();
+			const auto regpos = object.getPos();
+			const Object *obj = _engine->_gamestate->_segMan->getObject(regpos);
+
 			if (obj)
-				debugPrintf("[%04x:%04x] %s : %3d vars, %3d methods\n", PRINT_REG(it->_value.getPos()),
-							_engine->_gamestate->_segMan->getObjectName(it->_value.getPos()),
+				debugPrintf("[%04x:%04x] %s : %3d vars, %3d methods\n", PRINT_REG(regpos),
+							_engine->_gamestate->_segMan->getObjectName(regpos),
 							obj->getVarCount(), obj->getMethodCount());
 		}
 	}
@@ -3692,11 +3695,14 @@ void Console::printKernelCallsFound(int kernelFuncNum, bool showFoundScripts) {
 
 		// Iterate through all the script's objects
 		const ObjMap &objects = script->getObjectMap();
+		//FIXME: replace objectmap traversal with general foreach_object function, using
+		//lambdas. This would get us around the weirdo iterator macro
 		ObjMap::const_iterator it;
 		const ObjMap::const_iterator end = objects.end();
 		for (it = objects.begin(); it != end; ++it) {
-			const Object *obj = customSegMan->getObject(it->_value.getPos());
-			const char *objName = customSegMan->getObjectName(it->_value.getPos());
+			OBJECT_FROM_ITERATOR();
+			const Object *obj = &object;
+			const char *objName = customSegMan->getObjectName(object.getPos());
 
 			// Now dissassemble each method of the script object
 			for (uint16 i = 0; i < obj->getMethodCount(); i++) {
