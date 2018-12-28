@@ -47,8 +47,9 @@ struct KeymapBase* KeymapBase = NULL;
 struct RealTimeBase  *RealTimeBase = NULL;
 
 //extern struct Device* TimerBase = NULL;
+struct MsgPort* TimerMP = NULL;
 struct Device* TimerBase = NULL;
-static struct IORequest TimerDevice;
+struct timerequest *TimerIOReq = NULL;
 
 static void unload_libraries(void) {
 	if (CxBase != NULL) {
@@ -81,16 +82,26 @@ static void unload_libraries(void) {
 		KeymapBase = NULL;
 	}
 
-	if (TimerBase != NULL) {
-		CloseDevice(&TimerDevice);
-		TimerBase = NULL;
-	}
 
 	if (RealTimeBase != NULL) {
 		CloseLibrary((struct Library*)RealTimeBase);
 		RealTimeBase = NULL;
 	}
 
+	if (TimerBase != NULL) {
+		CloseDevice(&TimerIOReq->tr_node);
+		TimerBase = NULL;
+	}
+
+	if (TimerIOReq != NULL) {
+		DeleteIORequest(TimerIOReq);
+		TimerIOReq = NULL;
+	}
+
+	if (TimerMP != NULL) {
+		DeleteMsgPort(TimerMP);
+		TimerMP = NULL;
+	}
 }
 
 static void load_libraries(void) {
@@ -140,12 +151,18 @@ static void load_libraries(void) {
 
 	// Load timer.device so that GetSysTime is
 	// available.
-	BYTE err = OpenDevice("timer.device", 0, &TimerDevice, 37);
-	if (err || TimerDevice.io_Device == NULL) {
+	if ((TimerMP = CreateMsgPort()) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+	if ((TimerIOReq = (timerequest*)CreateIORequest(TimerMP, sizeof(struct timerequest))) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+	BYTE err = OpenDevice("timer.device", UNIT_MICROHZ, &TimerIOReq->tr_node, 37);
+	if (err || TimerIOReq->tr_node.io_Device == NULL) {
 		fprintf(stderr, "Unable to load timer.device!");
 		exit(EXIT_FAILURE);
 	}
-	TimerBase = TimerDevice.io_Device;
+	TimerBase = TimerIOReq->tr_node.io_Device;
 
 	{
 		extern ULONG eclocks_per_ms;
