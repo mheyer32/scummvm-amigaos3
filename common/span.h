@@ -530,11 +530,13 @@ protected:
 	}
 
 	inline void validate(const index_type index, const difference_type deltaInBytes, const SpanValidationMode mode = kValidateRead) const {
+#ifndef NDEBUG
 		/* LCOV_EXCL_START */
 		if (impl().checkInvalidBounds(index, deltaInBytes)) {
 			error("%s", impl().getValidationMessage(index, deltaInBytes, mode).c_str());
 		}
 		/* LCOV_EXCL_STOP */
+#endif
 	}
 };
 
@@ -740,36 +742,58 @@ class NamedSpanImpl : public SpanImpl<ValueType, Derived> {
 public:
 	COMMON_SPAN_TYPEDEFS
 
-	inline NamedSpanImpl() : super_type(), _name(), _sourceByteOffset(0) {}
+	inline NamedSpanImpl()
+	  : super_type()
+#ifndef NDEBUG
+	  ,_name()
+#endif
+	  ,_sourceByteOffset(0) {}
 
 	inline NamedSpanImpl(const pointer data_,
 						 const size_type size_,
 						 const String &name_ = String(),
 						 const size_type sourceByteOffset_ = 0) :
 		super_type(data_, size_),
+#ifndef NDEBUG
 		_name(name_),
+#endif
+		_sourceByteOffset(sourceByteOffset_) {}
+
+
+	inline NamedSpanImpl(const pointer data_,
+						 const size_type size_,
+						 const size_type sourceByteOffset_ = 0) :
+		super_type(data_, size_),
 		_sourceByteOffset(sourceByteOffset_) {}
 
 	template <typename Other>
 	inline NamedSpanImpl(const Other &other) :
 		super_type(other),
+#ifndef NDEBUG
 		_name(other.name()),
+#endif
 		_sourceByteOffset(other.sourceByteOffset()) {}
 
 	inline void clear() {
 		super_type::clear();
+#ifndef NDEBUG
 		_name.clear();
+#endif
 		_sourceByteOffset = 0;
 	}
 
+#ifndef NDEBUG
 	const String &name() const { return _name; }
 	String &name() { return _name; }
+#endif
 
 	const size_type &sourceByteOffset() const { return _sourceByteOffset; }
 	size_type &sourceByteOffset() { return _sourceByteOffset; }
 
 private:
+#ifndef NDEBUG
 	String _name;
+#endif
 	size_type _sourceByteOffset;
 
 #pragma mark -
@@ -777,25 +801,47 @@ private:
 
 public:
 	template <typename NewValueType>
-	inline const Derived<NewValueType> subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const String &name_ = String(), const size_type sourceByteOffset_ = kSpanKeepOffset) const {
+	inline const Derived<NewValueType> subspan(const index_type index, const size_type numEntries, const String &name_, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
 		Derived<NewValueType> span;
 		populateSubspan(span, index, numEntries, name_, sourceByteOffset_);
 		return span;
 	}
 
 	template <typename NewValueType>
-	inline Derived<NewValueType> subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const String &name_ = String(), const size_type sourceByteOffset_ = kSpanKeepOffset) {
+	inline const Derived<NewValueType> subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
+		Derived<NewValueType> span;
+		populateSubspan(span, index, numEntries, sourceByteOffset_);
+		return span;
+	}
+
+	template <typename NewValueType>
+	inline Derived<NewValueType> subspan(const index_type index, const size_type numEntries, const String &name_, const size_type sourceByteOffset_ = kSpanKeepOffset) {
 		Derived<NewValueType> span;
 		populateSubspan(span, index, numEntries, name_, sourceByteOffset_);
 		return span;
 	}
 
-	inline const_derived_type subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const String &name_ = String(), const size_type sourceByteOffset_ = kSpanKeepOffset) const {
+	template <typename NewValueType>
+	inline Derived<NewValueType> subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const size_type sourceByteOffset_ = kSpanKeepOffset) {
+		Derived<NewValueType> span;
+		populateSubspan(span, index, numEntries, sourceByteOffset_);
+		return span;
+	}
+
+	inline const_derived_type subspan(const index_type index, const size_type numEntries, const String &name_, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
 		return subspan<value_type>(index, numEntries, name_, sourceByteOffset_);
 	}
 
-	inline mutable_derived_type subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const String &name_ = String(), const size_type sourceByteOffset_ = kSpanKeepOffset) {
+	inline const_derived_type subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
+		return subspan<value_type>(index, numEntries, sourceByteOffset_);
+	}
+
+	inline mutable_derived_type subspan(const index_type index, const size_type numEntries, const String &name_, const size_type sourceByteOffset_ = kSpanKeepOffset) {
 		return subspan<value_type>(index, numEntries, name_, sourceByteOffset_);
+	}
+
+	inline mutable_derived_type subspan(const index_type index, const size_type numEntries = kSpanMaxSize, const size_type sourceByteOffset_ = kSpanKeepOffset) {
+		return subspan<value_type>(index, numEntries, sourceByteOffset_);
 	}
 
 #if !defined(_MSC_VER)
@@ -807,11 +853,13 @@ protected:
 	void populateSubspan(Derived<NewValueType> &span, const index_type index, size_type numEntries, const String &name_, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
 		super_type::template populateSubspan<NewValueType>(span, index, numEntries);
 
+#ifndef NDEBUG
 		if (name_.empty()) {
 			span._name = _name;
 		} else {
 			span._name = name_;
 		}
+#endif
 
 		if (sourceByteOffset_ == kSpanKeepOffset) {
 			span._sourceByteOffset = _sourceByteOffset + index * sizeof(value_type);
@@ -820,6 +868,15 @@ protected:
 		}
 	}
 
+	template <typename NewValueType>
+	void populateSubspan(Derived<NewValueType> &span, const index_type index, size_type numEntries, const size_type sourceByteOffset_ = kSpanKeepOffset) const {
+		super_type::template populateSubspan<NewValueType>(span, index, numEntries);
+		if (sourceByteOffset_ == kSpanKeepOffset) {
+			span._sourceByteOffset = _sourceByteOffset + index * sizeof(value_type);
+		} else {
+			span._sourceByteOffset = sourceByteOffset_;
+		}
+	}
 #pragma mark -
 #pragma mark NamedSpanImpl - Validation
 
@@ -843,9 +900,20 @@ private:
 	typedef Derived<mutable_value_type> mutable_value_derived_type;
 
 public:
-	mutable_value_derived_type &allocate(const size_type numEntries, const String &name_ = String()) {
+	mutable_value_derived_type &allocate(const size_type numEntries, const String &name_) {
 		super_type::allocate(numEntries);
+#ifndef NDEBUG
 		_name = name_;
+#endif
+		_sourceByteOffset = 0;
+		return (mutable_value_derived_type &)const_cast<Derived<value_type> &>(this->impl());
+	}
+
+	mutable_value_derived_type &allocate(const size_type numEntries) {
+		super_type::allocate(numEntries);
+#ifndef NDEBUG
+		_name = String();
+#endif
 		_sourceByteOffset = 0;
 		return (mutable_value_derived_type &)const_cast<Derived<value_type> &>(this->impl());
 	}
@@ -853,7 +921,9 @@ public:
 	template <typename OtherValueType>
 	mutable_value_derived_type &allocateFromSpan(const NamedSpanImpl<OtherValueType, Derived> &other) {
 		super_type::allocateFromSpan(other);
+#ifndef NDEBUG
 		_name = other.name();
+#endif
 		_sourceByteOffset = other.sourceByteOffset();
 		return (mutable_value_derived_type &)const_cast<Derived<value_type> &>(this->impl());
 	}
@@ -866,10 +936,22 @@ public:
 
 	mutable_value_derived_type &allocateFromStream(SeekableReadStream &stream, size_type numEntries = kSpanMaxSize, const String &name_ = String()) {
 		super_type::allocateFromStream(stream, numEntries);
+#ifndef NDEBUG
 		_name = name_;
+#endif
 		_sourceByteOffset = 0;
 		return (mutable_value_derived_type &)const_cast<Derived<value_type> &>(this->impl());
 	}
+
+	mutable_value_derived_type &allocateFromStream(SeekableReadStream &stream, size_type numEntries = kSpanMaxSize) {
+		super_type::allocateFromStream(stream, numEntries);
+#ifndef NDEBUG
+		_name = String();
+#endif
+		_sourceByteOffset = 0;
+		return (mutable_value_derived_type &)const_cast<Derived<value_type> &>(this->impl());
+	}
+
 
 	mutable_value_derived_type &allocateFromStream(File &file, const size_type numEntries = kSpanMaxSize) {
 		return allocateFromStream(file, numEntries, file.getName());
