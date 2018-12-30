@@ -3094,7 +3094,7 @@ if test -n "$_host"; then
 			_alsa=no
 			# Use -O3 on the Amiga for optimized builds.
 			if test "$_optimizations" = yes; then
-				_optimization_level=-Os
+				_optimization_level=-Ofast
 			else
 				append_var CXXFLAGS "-Og"
 			fi
