@@ -81,7 +81,7 @@ static reg_t &validate_property(EngineState *s, Object *obj, int index) {
 	return obj->getVariableRef(index);
 }
 
-static StackPtr validate_stack_addr(EngineState *s, StackPtr sp) {
+FORCEINLINE static StackPtr validate_stack_addr(EngineState *s, StackPtr sp) {
 #ifndef NDEBUG
 	if (sp >= s->stack_base && sp < s->stack_top)
 		return sp;
@@ -464,12 +464,14 @@ int readPMachineInstruction(const byte *src, byte &extOpcode, int16 opparams[4])
 	extOpcode = src[offset++]; // Get "extended" opcode (lower bit has special meaning)
 	const byte opcode = extOpcode >> 1;	// get the actual opcode
 
-	memset(opparams, 0, 4*sizeof(int16));
+	// Is this being done just for cleaning purposes?
+	//	memset(opparams, 0, 4*sizeof(int16));
 
-	for (int i = 0; g_sci->_opcode_formats[opcode][i]; ++i) {
+	const opcode_format *opcode_formats = g_sci->_opcode_formats[opcode];
+	for (byte i = 0; opcode_formats[i]; ++i) {
 		//debugN("Opcode: 0x%x, Opnumber: 0x%x, temp: %d\n", opcode, opcode, temp);
 		assert(i < 3);
-		switch (g_sci->_opcode_formats[opcode][i]) {
+		switch (opcode_formats[i]) {
 
 		case Script_Byte:
 			opparams[i] = src[offset++];
@@ -614,8 +616,10 @@ void run_vm(EngineState *s) {
 
 		if (s->_executionStackPosChanged) {
 			scr = s->_segMan->getScriptIfLoaded(s->xs->addr.pc.getSegment());
+#ifndef NDEBUG
 			if (!scr)
 				error("No script in segment %d",  s->xs->addr.pc.getSegment());
+#endif
 			s->xs = &(s->_executionStack.back());
 			s->_executionStackPosChanged = false;
 
@@ -637,6 +641,7 @@ void run_vm(EngineState *s) {
 		if (s->abortScriptProcessing != kAbortNone)
 			return; // Stop processing
 
+#ifndef NDEBUG
 		g_sci->checkAddressBreakpoint(s->xs->addr.pc);
 
 		// Debug if this has been requested:
@@ -647,16 +652,24 @@ void run_vm(EngineState *s) {
 		}
 		Console *con = g_sci->getSciDebugger();
 		con->onFrame();
+#endif
 
-		if (s->xs->sp < s->xs->fp)
+#ifndef NDEBUG
+		if (s->xs->sp < s->xs->fp) {
 			error("run_vm(): stack underflow, sp: %04x:%04x, fp: %04x:%04x",
-			PRINT_REG(*s->xs->sp), PRINT_REG(*s->xs->fp));
+				  PRINT_REG(*s->xs->sp),
+				  PRINT_REG(*s->xs->fp));
+		}
+#endif
 
 		s->variablesMax[VAR_TEMP] = s->xs->sp - s->xs->fp;
 
-		if (s->xs->addr.pc.getOffset() >= scr->getBufSize())
-			error("run_vm(): program counter gone astray, addr: %d, code buffer size: %d",
-			s->xs->addr.pc.getOffset(), scr->getBufSize());
+#ifndef NDEBUG
+		if (s->xs->addr.pc.getOffset() >= scr->getBufSize()) {
+			error("run_vm(): program counter gone astray, addr: %d, code buffer size: %d", s->xs->addr.pc.getOffset(),
+				  scr->getBufSize());
+		}
+#endif
 
 		// Get opcode
 		byte extOpcode;
@@ -1433,11 +1446,13 @@ void run_vm(EngineState *s) {
 		if (s->_executionStackPosChanged) // Force initialization
 			s->xs = xs_new;
 
+#ifndef NDEBUG
 		if (s->xs != &(s->_executionStack.back())) {
 			error("xs is stale (%p vs %p); last command was %02x",
 					(void *)s->xs, (void *)&(s->_executionStack.back()),
 					opcode);
 		}
+#endif
 		++s->scriptStepCounter;
 	}
 }

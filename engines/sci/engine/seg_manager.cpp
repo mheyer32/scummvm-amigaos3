@@ -146,7 +146,7 @@ Script *SegManager::allocateScript(int script_nr, SegmentId *segid) {
 	return (Script *)mem;
 }
 
-SegmentId SegManager::getActualSegment(SegmentId seg) const {
+inline SegmentId SegManager::getActualSegment(SegmentId seg) const {
 #ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
 		// Return the lower 14 bits of the segment

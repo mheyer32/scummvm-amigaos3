@@ -276,8 +276,8 @@ enum {
 };
 
 // Opcode formats
-enum opcode_format {
-	Script_Invalid = -1,
+enum opcode_format : byte {
+	Script_Invalid = 0xFF,
 	Script_None = 0,
 	Script_Byte,
 	Script_SByte,
