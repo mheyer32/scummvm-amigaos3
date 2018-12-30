@@ -28,14 +28,14 @@
 namespace Sci {
 
 struct CelInfo {
+	uint32 offsetRLE;
+	uint32 offsetLiteral;
+	uint16 offsetEGA;
 	int16 width, height;
 	int16 scriptWidth, scriptHeight;
 	int16 displaceX;
 	int16 displaceY;
 	byte clearKey;
-	uint16 offsetEGA;
-	uint32 offsetRLE;
-	uint32 offsetLiteral;
 	Common::SpanOwner<SciSpan<const byte> > rawBitmap;
 };
 

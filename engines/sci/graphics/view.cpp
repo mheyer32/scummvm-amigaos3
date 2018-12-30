@@ -660,9 +660,12 @@ const SciSpan<const byte> &GfxView::getBitmap(int16 loopNo, int16 celNo) {
 	const uint16 width = cel.width;
 	const uint16 height = cel.height;
 	const uint pixelCount = width * height;
+#ifndef NDEBUG
+	SciSpan<byte> outBitmap = cel.rawBitmap->allocate(pixelCount);
+#else
 	const Common::String sourceName = Common::String::format("%s loop %d cel %d", _resource->name().c_str(), loopNo, celNo);
-
 	SciSpan<byte> outBitmap = cel.rawBitmap->allocate(pixelCount, sourceName);
+#endif
 
 	// unpack the actual cel bitmap data
 	unpackCel(loopNo, celNo, outBitmap);
