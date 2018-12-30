@@ -612,6 +612,202 @@ void GfxScreen::setVerticalShakePos(uint16 shakePos) {
 		g_system->setShakePos(_upscaledHeightMapping[shakePos]);
 }
 
+void REGPARM GfxScreen::putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+	// Set pixel for visual, priority and control map directly, those are not upscaled
+	const uint offset = ((uint)y  << 8)  + ((uint)y << 6) + x;
+
+	if (drawMask & GFX_SCREEN_MASK_VISUAL) {
+		_visualScreen[offset] = color;
+		_displayScreen[offset] = color;
+	}
+	if (drawMask & GFX_SCREEN_MASK_PRIORITY) {
+		_priorityScreen[offset] = priority;
+	}
+	if (drawMask & GFX_SCREEN_MASK_CONTROL) {
+		_controlScreen[offset] = control;
+	}
+}
+
+void REGPARM GfxScreen::putPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+	if (_upscaledHires == GFX_SCREEN_UPSCALED_480x300) {
+		putPixel480x300(x, y, drawMask, color, priority, control);
+		return;
+	}
+	// Set pixel for visual, priority and control map directly, those are not upscaled
+	int offset = y * _width + x;
+
+	if (drawMask & GFX_SCREEN_MASK_VISUAL) {
+		_visualScreen[offset] = color;
+
+		int displayOffset = 0;
+
+		switch (_upscaledHires) {
+		case GFX_SCREEN_UPSCALED_DISABLED:
+			displayOffset = offset;
+			_displayScreen[displayOffset] = color;
+			break;
+
+		case GFX_SCREEN_UPSCALED_640x400:
+		case GFX_SCREEN_UPSCALED_640x440:
+		case GFX_SCREEN_UPSCALED_640x480:
+			putScaledPixelOnDisplay(x, y, color);
+			break;
+		default:
+			break;
+		}
+	}
+	if (drawMask & GFX_SCREEN_MASK_PRIORITY) {
+		_priorityScreen[offset] = priority;
+	}
+	if (drawMask & GFX_SCREEN_MASK_CONTROL) {
+		_controlScreen[offset] = control;
+	}
+}
+
+void REGPARM GfxScreen::putPixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+	int offset = ((y * 3) / 2 * _width) + ((x * 3) / 2);
+
+	// All maps are upscaled
+	// TODO: figure out, what Sierra exactly did on Mac for these games
+	if (drawMask & GFX_SCREEN_MASK_VISUAL) {
+		putPixel480x300Worker(x, y, offset, _visualScreen, color);
+		putPixel480x300Worker(x, y, offset, _displayScreen, color);
+	}
+	if (drawMask & GFX_SCREEN_MASK_PRIORITY) {
+		putPixel480x300Worker(x, y, offset, _priorityScreen, priority);
+	}
+	if (drawMask & GFX_SCREEN_MASK_CONTROL) {
+		putPixel480x300Worker(x, y, offset, _controlScreen, control);
+	}
+}
+
+void REGPARM GfxScreen::putPixel480x300Worker(int16 x, int16 y, int offset, byte* screen, byte byteToSet) const {
+	screen[offset] = byteToSet;
+	if (x & 1)
+		screen[offset + 1] = byteToSet;
+	if (y & 1)
+		screen[offset + _width] = byteToSet;
+	if ((x & 1) && (y & 1))
+		screen[offset + _width + 1] = byteToSet;
+}
+
+void REGPARM GfxScreen::vectorPutPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+	switch (_upscaledHires) {
+	case GFX_SCREEN_UPSCALED_640x400:
+	case GFX_SCREEN_UPSCALED_640x440:
+	case GFX_SCREEN_UPSCALED_640x480:
+		// For regular upscaled modes forward to the regular putPixel
+		putPixel(x, y, drawMask, color, priority, control);
+		return;
+		break;
+
+	default:
+		break;
+	}
+
+	// For non-upscaled mode and 480x300 Mac put pixels directly
+	int offset = y * _width + x;
+
+	if (drawMask & GFX_SCREEN_MASK_VISUAL) {
+		_visualScreen[offset] = color;
+		_displayScreen[offset] = color;
+	}
+	if (drawMask & GFX_SCREEN_MASK_PRIORITY) {
+		_priorityScreen[offset] = priority;
+	}
+	if (drawMask & GFX_SCREEN_MASK_CONTROL) {
+		_controlScreen[offset] = control;
+	}
+}
+
+void REGPARM GfxScreen::putScaledPixelOnDisplay(int16 x, int16 y, byte color) const {
+	int displayOffset = 0;
+
+	switch (_upscaledHires) {
+	case GFX_SCREEN_UPSCALED_640x400:
+		displayOffset = (y * 2) * _displayWidth + x * 2; // straight 1 pixel -> 2 mapping
+
+		_displayScreen[displayOffset] = color;
+		_displayScreen[displayOffset + 1] = color;
+		_displayScreen[displayOffset + _displayWidth] = color;
+		_displayScreen[displayOffset + _displayWidth + 1] = color;
+		break;
+
+	case GFX_SCREEN_UPSCALED_640x440: {
+		int16 startY = (y * 11) / 5;
+		int16 endY = ((y + 1) * 11) / 5;
+		displayOffset = (startY * _displayWidth) + x * 2;
+
+		for (int16 curY = startY; curY < endY; curY++) {
+			_displayScreen[displayOffset] = color;
+			_displayScreen[displayOffset + 1] = color;
+			displayOffset += _displayWidth;
+		}
+		break;
+	}
+	case GFX_SCREEN_UPSCALED_640x480: {
+		int16 startY = (y * 12) / 5;
+		int16 endY = ((y + 1) * 12) / 5;
+		displayOffset = (startY * _displayWidth) + x * 2;
+
+		for (int16 curY = startY; curY < endY; curY++) {
+			_displayScreen[displayOffset] = color;
+			_displayScreen[displayOffset + 1] = color;
+			displayOffset += _displayWidth;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void REGPARM GfxScreen::putFontPixel(int16 startingY, int16 x, int16 y, byte color) const {
+	uint16 actualY = startingY + y;
+	if (_fontIsUpscaled) {
+		// Do not scale ourselves, but put it on the display directly
+		putPixelOnDisplay(x, actualY, color);
+	} else {
+		int offset = actualY * _width + x;
+
+		_visualScreen[offset] = color;
+		switch (_upscaledHires) {
+		case GFX_SCREEN_UPSCALED_DISABLED:
+			_displayScreen[offset] = color;
+			break;
+		case GFX_SCREEN_UPSCALED_640x400:
+		case GFX_SCREEN_UPSCALED_640x440:
+		case GFX_SCREEN_UPSCALED_640x480: {
+			// to 1-> 4 pixels upscaling for all of those, so that fonts won't look weird
+			int displayOffset = (_upscaledHeightMapping[startingY] + y * 2) * _displayWidth + x * 2;
+			_displayScreen[displayOffset] = color;
+			_displayScreen[displayOffset + 1] = color;
+			displayOffset += _displayWidth;
+			_displayScreen[displayOffset] = color;
+			_displayScreen[displayOffset + 1] = color;
+			break;
+		}
+		default:
+			putScaledPixelOnDisplay(x, actualY, color);
+			break;
+		}
+	}
+}
+
+byte REGPARM GfxScreen::getPixelGeneric(const byte* screen, int16 x, int16 y) const {
+	switch (_upscaledHires) {
+	case GFX_SCREEN_UPSCALED_480x300: {
+		int offset = ((y * 3) / 2) * _width + ((y * 3) / 2);
+
+		return screen[offset];
+		break;
+	}
+	default:
+		break;
+	}
+	return screen[y * _width + x];
+}
+
 void GfxScreen::kernelShakeScreen(uint16 shakeCount, uint16 directions) {
 	while (shakeCount--) {
 		if (directions & kShakeVertical)
