@@ -264,9 +264,12 @@ reg_t kGetEvent(EngineState *s, int argc, reg_t *argv) {
 	// check bugs #3058865 and #3127824
 	if (s->_gameIsBenchmarking) {
 		// Game is benchmarking, don't add a delay
-	} else if (getSciVersion() <= SCI_VERSION_1_1) {
+	}
+#ifndef __amigaos3__
+	else if (getSciVersion() <= SCI_VERSION_1_1) {
 		g_system->delayMillis(10);
 	}
+#endif
 
 	return s->r_acc;
 }
