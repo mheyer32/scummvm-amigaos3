@@ -256,8 +256,8 @@ void GfxAnimate::makeSortedList(List *list) {
 
 void GfxAnimate::fill(byte &old_picNotValid) {
 	GfxView *view = NULL;
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 
 	for (it = _list.begin(); it != end; ++it) {
 		// Get the corresponding view
@@ -290,7 +290,7 @@ void GfxAnimate::fill(byte &old_picNotValid) {
 	}
 }
 
-void GfxAnimate::adjustInvalidCels(GfxView *view, AnimateList::iterator it) {
+void GfxAnimate::adjustInvalidCels(GfxView *view, AnimateArrayIterator it) {
 	// adjust loop and cel, if any of those is invalid
 	//  this seems to be completely crazy code
 	//  sierra sci checked signed int16 to be above or equal the counts and reseted to 0 in those cases
@@ -317,7 +317,7 @@ void GfxAnimate::adjustInvalidCels(GfxView *view, AnimateList::iterator it) {
 	}
 }
 
-void GfxAnimate::processViewScaling(GfxView *view, AnimateList::iterator it) {
+void GfxAnimate::processViewScaling(GfxView *view, AnimateArrayIterator it) {
 	if (!view->isScaleable()) {
 		// Laura Bow 2 (especially floppy) depends on this, some views are not supposed to be scaleable
 		//  this "feature" was removed in later versions of SCI1.1
@@ -333,7 +333,7 @@ void GfxAnimate::processViewScaling(GfxView *view, AnimateList::iterator it) {
 	}
 }
 
-void GfxAnimate::applyGlobalScaling(AnimateList::iterator entry, GfxView *view) {
+void GfxAnimate::applyGlobalScaling(AnimateArrayIterator entry, GfxView *view) {
 	// Global scaling uses global var 2 and some other stuff to calculate scaleX/scaleY
 	int16 maxScale = readSelectorValue(_s->_segMan, entry->object, SELECTOR(maxScale));
 	int16 celHeight = view->getHeight(entry->loopNo, entry->celNo);
@@ -359,7 +359,7 @@ void GfxAnimate::applyGlobalScaling(AnimateList::iterator entry, GfxView *view) 
 	writeSelectorValue(_s->_segMan, entry->object, SELECTOR(scaleY), entry->scaleY);
 }
 
-void GfxAnimate::setNsRect(GfxView *view, AnimateList::iterator it) {
+void GfxAnimate::setNsRect(GfxView *view, AnimateArrayIterator it) {
 	bool shouldSetNsRect = true;
 
 	// Create rect according to coordinates and given cel
@@ -388,11 +388,13 @@ void GfxAnimate::setNsRect(GfxView *view, AnimateList::iterator it) {
 void GfxAnimate::update() {
 	reg_t bitsHandle;
 	Common::Rect rect;
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 
 	// Remove all no-update cels, if requested
-	for (it = _list.reverse_begin(); it != end; --it) {
+	//for (it = _list.reverse_begin(); it != end; --it) {
+	for (int e = _list.size() -1 ; e >= 0; --e) {
+		it = &_list[e];
 		if (it->signal & kSignalNoUpdate) {
 			if (!(it->signal & kSignalRemoveView)) {
 				bitsHandle = readSelector(_s->_segMan, it->object, SELECTOR(underBits));
@@ -463,8 +465,8 @@ void GfxAnimate::update() {
 
 void GfxAnimate::drawCels() {
 	reg_t bitsHandle;
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 	_lastCastData.clear();
 
 	for (it = _list.begin(); it != end; ++it) {
@@ -487,8 +489,8 @@ void GfxAnimate::drawCels() {
 }
 
 void GfxAnimate::updateScreen(byte oldPicNotValid) {
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 	Common::Rect lsRect;
 	Common::Rect workerRect;
 
@@ -527,8 +529,8 @@ void GfxAnimate::updateScreen(byte oldPicNotValid) {
 }
 
 void GfxAnimate::restoreAndDelete(int argc, reg_t *argv) {
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 
 	// This has to be done in a separate loop. At least in sq1 some .dispose
 	// modifies FIXEDLOOP flag in signal for another object. In that case we
@@ -538,7 +540,9 @@ void GfxAnimate::restoreAndDelete(int argc, reg_t *argv) {
 		writeSelectorValue(_s->_segMan, it->object, SELECTOR(signal), it->signal);
 	}
 
-	for (it = _list.reverse_begin(); it != end; --it) {
+	//for (it = _list.reverse_begin(); it != end; --it) {
+	for (int e = _list.size() -1 ; e >= 0; --e) {
+		it = &_list[e];
 		// We read out signal here again, this is not by accident but to ensure
 		// that we got an up-to-date signal
 		it->signal = readSelectorValue(_s->_segMan, it->object, SELECTOR(signal));
@@ -577,8 +581,8 @@ void GfxAnimate::reAnimate(Common::Rect rect) {
 void GfxAnimate::addToPicDrawCels() {
 	reg_t curObject;
 	GfxView *view = NULL;
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 
 	for (it = _list.begin(); it != end; ++it) {
 		curObject = it->object;
@@ -783,8 +787,8 @@ void GfxAnimate::kernelAddToPicView(GuiResourceId viewId, int16 loopNo, int16 ce
 }
 
 void GfxAnimate::printAnimateList(Console *con) {
-	AnimateList::iterator it;
-	const AnimateList::iterator end = _list.end();
+	AnimateArrayIterator it;
+	const AnimateArrayIterator end = _list.end();
 
 	for (it = _list.begin(); it != end; ++it) {
 		Script *scr = _s->_segMan->getScriptIfLoaded(it->object.getSegment());
