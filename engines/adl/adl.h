@@ -40,6 +40,7 @@
 #include "adl/console.h"
 #include "adl/disk.h"
 #include "adl/sound.h"
+#include "adl/detection.h"
 
 namespace Common {
 class ReadStream;
@@ -47,6 +48,7 @@ class WriteStream;
 class SeekableReadStream;
 class File;
 struct Event;
+class RandomSource;
 }
 
 namespace Adl {
@@ -241,6 +243,9 @@ protected:
 	Common::Error saveGameState(int slot, const Common::String &desc);
 	bool canSaveGameStateCurrently();
 
+	Common::String getDiskImageName(byte volume) const { return Adl::getDiskImageName(*_gameDescription, volume); }
+	GameType getGameType() const { return Adl::getGameType(*_gameDescription); }
+	GameVersion getGameVersion() const { return Adl::getGameVersion(*_gameDescription); }
 	virtual void gameLoop();
 	virtual void loadState(Common::ReadStream &stream);
 	virtual void saveState(Common::WriteStream &stream);
@@ -395,8 +400,13 @@ protected:
 	bool _isRestarting, _isRestoring, _isQuitting;
 	bool _canSaveNow, _canRestoreNow;
 	bool _abortScript;
+	Common::RandomSource *_random;
 
 	const AdlGameDescription *_gameDescription;
+
+	mutable Common::File *_inputScript;
+	mutable uint _scriptDelay;
+	mutable bool _scriptPaused;
 
 private:
 	virtual void runIntro() { }
@@ -407,7 +417,10 @@ private:
 	virtual void loadRoom(byte roomNr) = 0;
 	virtual void showRoom() = 0;
 	virtual void switchRegion(byte region) { }
-
+	void runScript(const char *filename) const;
+	void stopScript() const;
+	void setScriptDelay(uint scriptDelay) const { _scriptDelay = scriptDelay; }
+	Common::String getScriptLine() const;
 	// Engine
 	Common::Error run();
 	bool hasFeature(EngineFeature f) const;

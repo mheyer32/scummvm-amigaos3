@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -80,7 +80,7 @@ bool SceneScriptUG01::ClickedOn3DObject(const char *objectName, bool a2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -9.0f, -50.13f, -148.0f, 0, 1, false, 0) && !Game_Flag_Query(324)) {
 			Actor_Says(kActorMcCoy, 8525, 13);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 			Game_Flag_Set(324);
 		} else {
 			Actor_Says(kActorMcCoy, 8525, 13);
@@ -101,7 +101,7 @@ bool SceneScriptUG01::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -32.0f, -50.13f, -1350.0f, 12, 1, false, 0)) {
 			Game_Flag_Set(316);
-			Set_Enter(83, 95);
+			Set_Enter(83, kSceneUG10);
 		}
 		return true;
 	}
@@ -112,14 +112,14 @@ bool SceneScriptUG01::ClickedOnExit(int exitId) {
 			Game_Flag_Set(119);
 			Game_Flag_Reset(259);
 			Game_Flag_Set(182);
-			Set_Enter(70, 80);
+			Set_Enter(70, kSceneRC03);
 		}
 		return true;
 	}
 	if (exitId == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -126.0f, -50.13f, -286.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(314);
-			Set_Enter(75, 87);
+			Set_Enter(75, kSceneUG02);
 		}
 		return true;
 	}

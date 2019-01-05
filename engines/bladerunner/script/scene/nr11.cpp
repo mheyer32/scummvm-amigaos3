@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -122,7 +122,7 @@ bool SceneScriptNR11::ClickedOn3DObject(const char *objectName, bool a2) {
 			}
 			Actor_Set_Goal_Number(kActorMcCoy, 230);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		} else if (Actor_Query_Goal_Number(kActorDektora) == 250) {
 			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 24.0f, 0.33f, 0.0f, 0, 1, false, 0)) {
 				Actor_Face_XYZ(kActorMcCoy, -180.0f, 0.0f, -170.0f, true);
@@ -140,7 +140,7 @@ bool SceneScriptNR11::ClickedOn3DObject(const char *objectName, bool a2) {
 				} else {
 					Actor_Says(kActorMcCoy, 3840, 18);
 					Delay(1000);
-					if (Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy) > 59 && !Global_Variable_Query(45)) {
+					if (Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy) > 59 && Global_Variable_Query(kVariableAffectionTowards) == 0) {
 						Music_Play(21, 35, 0, 3, -1, 0, 0);
 					}
 					Loop_Actor_Walk_To_XYZ(kActorDektora, -135.0f, 0.33f, -267.0f, 0, 0, false, 0);
@@ -164,8 +164,8 @@ bool SceneScriptNR11::ClickedOn3DObject(const char *objectName, bool a2) {
 					Actor_Says(kActorMcCoy, 3870, 3);
 					Actor_Says(kActorDektora, 1070, 14);
 					Actor_Modify_Friendliness_To_Other(kActorDektora, kActorMcCoy, 5);
-					if (Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy) > 55 && !Global_Variable_Query(45)) {
-						Global_Variable_Set(45, 2);
+					if (Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy) > 55 && Global_Variable_Query(kVariableAffectionTowards) == 0) {
+						Global_Variable_Set(kVariableAffectionTowards, 2);
 						Actor_Says(kActorDektora, 1130, 17);
 						Actor_Says(kActorMcCoy, 6365, 12);
 						Actor_Says(kActorDektora, 1140, 14);
@@ -208,7 +208,7 @@ bool SceneScriptNR11::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 100.0f, 1.75f, -8.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(477);
-			Set_Enter(59, 63);
+			Set_Enter(59, kSceneNR10);
 			return true;
 		}
 	}
@@ -260,7 +260,7 @@ void SceneScriptNR11::SceneFrameAdvanced(int frame) {
 		}
 		Actor_Set_Goal_Number(kActorMcCoy, 230);
 		Scene_Loop_Set_Default(3);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		Game_Flag_Reset(635);
 	} else {
 		if (frame < 61 || frame > 120) {
@@ -289,7 +289,7 @@ void SceneScriptNR11::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 void SceneScriptNR11::PlayerWalkedIn() {
 	if (Actor_Query_Goal_Number(kActorDektora) == 250) {
 		Player_Set_Combat_Mode(true);
-		if (Game_Flag_Query(47)) {
+		if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 			Actor_Set_Goal_Number(kActorSteele, 210);
 		}
 	}
@@ -301,7 +301,7 @@ void SceneScriptNR11::PlayerWalkedIn() {
 		Actor_Set_Invisible(kActorMcCoy, false);
 		Player_Set_Combat_Mode(false);
 		Player_Gains_Control();
-		if (Game_Flag_Query(47)) {
+		if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 			if (Actor_Query_Goal_Number(kActorSteele) == 211) {
 				Actor_Set_At_XYZ(kActorMcCoy, -37.41f, 0.33f, -86.0f, 26);
 				Delay(500);

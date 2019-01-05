@@ -25,6 +25,7 @@
 #include "mohawk/cursors.h"
 #include "mohawk/riven_graphics.h"
 #include "mohawk/riven_stack.h"
+#include "mohawk/riven_stacks/aspit.h"
 #include "mohawk/riven_video.h"
 
 #include "mohawk/resource.h"
@@ -72,8 +73,19 @@ void RivenCard::loadCardResource(uint16 id) {
 void RivenCard::applyPatches(uint16 id) {
 	uint32 globalId = _vm->getStack()->getCardGlobalId(id);
 
-	// Apply properties patches
+	applyPropertiesPatch8EB7(globalId);
+	applyPropertiesPatch2E76(globalId);
 
+	// Apply script patches
+	for (uint i = 0; i < _scripts.size(); i++) {
+		_scripts[i].script->applyCardPatches(_vm, globalId, _scripts[i].type, 0xFFFF);
+	}
+
+	applyPropertiesPatch22118(globalId);
+	applyPropertiesPatchE2E(globalId);
+}
+
+void RivenCard::applyPropertiesPatch8EB7(uint32 globalId) {
 	// On Jungle Island on the back side of the "beetle" gate, the forward hotspot
 	// is always enabled, preventing keyboard navigation from automatically opening
 	// the gate.
@@ -138,7 +150,9 @@ void RivenCard::applyPatches(uint16 id) {
 
 		debugC(kRivenDebugPatches, "Applied fix always enabled forward hotspot in card %x", globalId);
 	}
+}
 
+void RivenCard::applyPropertiesPatch2E76(uint32 globalId) {
 	// In Gehn's office, after having encountered him once before and coming back
 	// with the trap book, the draw update script of card 1 tries to switch to
 	// card 2 while still loading card 1. Switching cards is not allowed during
@@ -179,7 +193,7 @@ void RivenCard::applyPatches(uint16 id) {
 	//       activatePLST(6);
 	//       break;
 	//   }
-	// break;
+	//   break;
 	// case 2:
 	//   activatePLST(5);
 	//   break;
@@ -243,11 +257,222 @@ void RivenCard::applyPatches(uint16 id) {
 		debugC(kRivenDebugPatches, "Applied invalid card change during screen update (1/2) to card %x", globalId);
 		// The second part of this patch is in the script patches
 	}
+}
 
-	// Apply script patches
-	for (uint i = 0; i < _scripts.size(); i++) {
-		_scripts[i].script->applyCardPatches(_vm, globalId, _scripts[i].type, 0xFFFF);
+void RivenCard::applyPropertiesPatch22118(uint32 globalId) {
+	// On Temple Island, near the steam valve closest to the bridge to Boiler island,
+	// the background sound on the view offering a view to the bridge does
+	// not properly reflect the valve's position.
+	//
+	// The sound is always that of steam going through the pipe when the bridge is
+	// down. When the valve points up, the sound should be that of steam escaping
+	// through the top of the pipe.
+	//
+	// Script before patch:
+	// == Script 0 ==
+	// type: CardLoad
+	// switch (bbigbridge) {
+	//   case 0:
+	//     switch (tbookvalve) {
+	//       case 0:
+	//         activatePLST(2);
+	//         activateSLST(1);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 0:
+	//     switch (tbookvalve) {
+	//       case 1:
+	//         activatePLST(2);
+	//         activateSLST(2);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 1:
+	//     switch (tbookvalve) {
+	//       case 0:
+	//         activatePLST(1);
+	//         activateSLST(2);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 1:
+	//     switch (tbookvalve) {
+	//       case 1:
+	//         activatePLST(1);
+	//         activateSLST(2);
+	//         break;
+	//     }
+	//     break;
+	// }
+	//
+	//
+	// Script after patch:
+	// == Script 0 ==
+	// type: CardLoad
+	// switch (bbigbridge) {
+	//   case 0:
+	//     switch (tbookvalve) {
+	//       case 0:
+	//         activatePLST(2);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 0:
+	//     switch (tbookvalve) {
+	//       case 1:
+	//         activatePLST(2);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 1:
+	//     switch (tbookvalve) {
+	//       case 0:
+	//         activatePLST(1);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (bbigbridge) {
+	//   case 1:
+	//     switch (tbookvalve) {
+	//       case 1:
+	//         activatePLST(1);
+	//         break;
+	//     }
+	//     break;
+	// }
+	// switch (tbookvalve) {
+	//   case 0:
+	//     activateSLST(1);
+	//     break;
+	//   case 1:
+	//     activateSLST(2);
+	//     break;
+	// }
+	if (globalId == 0x22118) {
+		uint16 tBookValveVariable = _vm->getStack()->getIdFromName(kVariableNames, "tbookvalve");
+		uint16 patchData[] = {
+				1, // Command count in script
+				kRivenCommandSwitch,
+				2, // Unused
+				tBookValveVariable,
+				2, // Branches count
+
+				0, // tbookvalve == 0 branch (steam escaping at the top of the pipe)
+				1, // Command count in sub-script
+				kRivenCommandActivateSLST,
+				1, // Argument count
+				1, // Steam leaking sound id
+
+				1, // tbookvalve == 1 branch (steam going to the left pipe)
+				1, // Command count in sub-script
+				kRivenCommandActivateSLST,
+				1, // Argument count
+				2, // Steam in pipe sound id
+		};
+
+		RivenScriptPtr patchScript = _vm->_scriptMan->readScriptFromData(patchData, ARRAYSIZE(patchData));
+
+		// Append the patch to the existing script
+		RivenScriptPtr loadScript = getScript(kCardLoadScript);
+		loadScript += patchScript;
+
+		debugC(kRivenDebugPatches, "Applied incorrect steam sounds (2/2) to card %x", globalId);
 	}
+}
+
+void RivenCard::applyPropertiesPatchE2E(uint32 globalId) {
+	if (!(_vm->getFeatures() & GF_25TH))
+		return;
+
+	// The main menu in the Myst 25th anniversary version is patched to include new items:
+	//   - Save game
+	if (globalId == 0xE2E) {
+		moveHotspot(   22, Common::Rect(470, 175, 602, 190)); // Setup
+		moveHotspot(   16, Common::Rect(470, 201, 602, 216)); // New game
+		addMenuHotspot(23, Common::Rect(470, 227, 602, 242), 3, RivenStacks::ASpit::kExternalRestoreGame, "xarestoregame");
+		addMenuHotspot(24, Common::Rect(470, 256, 602, 271), 4, RivenStacks::ASpit::kExternalSaveGame,    "xaSaveGame");
+		addMenuHotspot(25, Common::Rect(470, 283, 602, 300), 5, RivenStacks::ASpit::kExternalResume,      "xaResumeGame");
+		addMenuHotspot(26, Common::Rect(470, 309, 602, 326), 6, RivenStacks::ASpit::kExternalOptions,     "xaOptions");
+		addMenuHotspot(27, Common::Rect(470, 335, 602, 352), 7, RivenStacks::ASpit::kExternalQuit,        "xademoquit");
+		_vm->getStack()->registerName(kExternalCommandNames,    RivenStacks::ASpit::kExternalNewGame,     "xaNewGame");
+	}
+}
+
+void RivenCard::moveHotspot(uint16 blstId, const Common::Rect &position) {
+	RivenHotspot *hotspot = getHotspotByBlstId(blstId);
+	if (!hotspot) {
+		warning("Could not find hotspot with blstId %d", blstId);
+		return;
+	}
+
+	hotspot->setRect(position);
+}
+
+void RivenCard::addMenuHotspot(uint16 blstId, const Common::Rect &position, uint16 index,
+                               uint16 externalCommandNameId, const char *externalCommandName) {
+	RivenHotspot *existingHotspot = getHotspotByBlstId(blstId);
+	if (existingHotspot) {
+		moveHotspot(blstId, position);
+		return; // Don't add the hotspot if it already exists
+	}
+
+	// Add the external command id => name mapping if it is missing
+	int16 existingCommandNameId = _vm->getStack()->getIdFromName(kExternalCommandNames, externalCommandName);
+	if (existingCommandNameId < 0) {
+		_vm->getStack()->registerName(kExternalCommandNames, externalCommandNameId, externalCommandName);
+	} else {
+		externalCommandNameId = existingCommandNameId;
+	}
+
+	uint16 patchData[] = {
+			blstId,
+			0xFFFF,           // name
+			(uint16) position.left,
+			(uint16) position.top,
+			(uint16) position.right,
+			(uint16) position.bottom,
+			0,                // u0
+			kRivenMainCursor, // cursor
+			index,
+			0xFFFF,           // transition offset
+			0,                // flags
+			2,                // script count
+
+			kMouseDownScript,          // script type
+			1,                         // command count
+			kRivenCommandRunExternal,  // command type
+			2,                         // argument count
+			externalCommandNameId,
+			0,                         // external argument count
+
+			kMouseInsideScript,        // script type
+			1,                         // command count
+			kRivenCommandChangeCursor, // command type
+			1,                         // argument count
+			kRivenOpenHandCursor       // cursor
+		};
+
+	// Script data is expected to be in big endian
+	for (uint i = 0; i < ARRAYSIZE(patchData); i++) {
+			patchData[i] = TO_BE_16(patchData[i]);
+		}
+
+	// Add the new hotspot to the existing ones
+	Common::MemoryReadStream patchStream((const byte *)(patchData), ARRAYSIZE(patchData) * sizeof(uint16));
+	RivenHotspot *newHotspot = new RivenHotspot(_vm, &patchStream);
+	_hotspots.push_back(newHotspot);
 }
 
 void RivenCard::enter(bool unkMovies) {

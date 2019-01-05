@@ -20,12 +20,12 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
 void SceneScriptPS13::InitializeScene() {
-	Police_Maze_Set_Pause_State(1);
+	Police_Maze_Set_Pause_State(true);
 	if (Game_Flag_Query(18)) {
 		Scene_Loop_Start_Special(0, 0, 0);
 		Scene_Loop_Set_Default(1);
@@ -99,7 +99,7 @@ void SceneScriptPS13::SceneLoaded() {
 		Item_Add_To_World(51, 443, 14, -24.0f, 102.0f, 1625.0f, 823, 72, 36, true, false, false, true);
 		Item_Add_To_World(52, 449, 14, 180.0f, -72.7f, 1605.0f, 305, 72, 36, true, false, false, true);
 		Item_Add_To_World(53, 443, 14, 127.79f, 14.56f, 1703.03f, 356, 72, 36, true, false, false, true);
-		Item_Add_To_World(54, 443, 14, 136.37f, -6.84f, 1425.4301f, 512, 72, 36, true, false, false, true);
+		Item_Add_To_World(54, 443, 14, 136.37f, -6.84f, 1425.43f, 512, 72, 36, true, false, false, true);
 		Item_Add_To_World(55, 441, 14, 77.83f, -79.8f, 1520.5f, 327, 72, 36, true, false, false, true);
 		Item_Add_To_World(56, 441, 14, 77.83f, -7.8f, 1520.5f, 327, 72, 36, true, false, false, true);
 		Item_Add_To_World(57, 443, 14, -88.0f, -8.8f, 1520.5f, 327, 72, 36, true, false, false, true);
@@ -115,7 +115,7 @@ void SceneScriptPS13::SceneLoaded() {
 	Police_Maze_Target_Track_Add(51, -24.0f, 102.0f, 1625.0f, -24.0f, 138.0f, 1625.0f, 10, track_data_51, false);
 	Police_Maze_Target_Track_Add(52, 180.0f, -72.7f, 1605.0f, 180.0f, -0.7f, 1605.0f, 10, track_data_52, false);
 	Police_Maze_Target_Track_Add(53, 127.79f, 14.56f, 1703.03f, -56.07f, 1.89f, 1589.04f, 6, track_data_53, false);
-	Police_Maze_Target_Track_Add(54, 136.37f, -6.84f, 1425.4301f, 117.55f, -6.84f, 1442.09f, 4, track_data_54, false);
+	Police_Maze_Target_Track_Add(54, 136.37f, -6.84f, 1425.43f, 117.55f, -6.84f, 1442.09f, 4, track_data_54, false);
 	Police_Maze_Target_Track_Add(55, 77.83f, -79.8f, 1520.5f, 77.83f, -7.8f, 1520.5f, 15, track_data_55, false);
 	Police_Maze_Target_Track_Add(56, 77.83f, -7.8f, 1520.5f, -88.0f, -8.8f, 1520.5f, 15, track_data_56, false);
 	Police_Maze_Target_Track_Add(57, -88.0f, -8.8f, 1520.5f, -88.0f, -80.8f, 1520.5f, 15, track_data_57, false);
@@ -216,16 +216,16 @@ bool SceneScriptPS13::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptPS13::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 10, 12, 1, false)) {
-			Game_Flag_Set(19);
+		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 10, 12, true, false)) {
+			Game_Flag_Set(kFlagPS13toPS12);
 			sub_40267C();
-			Set_Enter(14, 75);
+			Set_Enter(kSetPS10_PS11_PS12_PS13, kScenePS12);
 		}
 		return true;
 	}
 	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 11, 12, 1, false)) {
-			Game_Flag_Set(21);
+		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 11, 12, true, false)) {
+			Game_Flag_Set(kFlagPS13toPS05);
 			Player_Set_Combat_Mode(false);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
@@ -237,7 +237,7 @@ bool SceneScriptPS13::ClickedOnExit(int exitId) {
 			Global_Variable_Reset(12);
 			Global_Variable_Reset(13);
 			Global_Variable_Reset(9);
-			Set_Enter(15, 69);
+			Set_Enter(kSetPS05, kScenePS05);
 		}
 		return true;
 	}
@@ -255,7 +255,7 @@ void SceneScriptPS13::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptPS13::PlayerWalkedIn() {
-	Police_Maze_Set_Pause_State(0);
+	Police_Maze_Set_Pause_State(false);
 }
 
 void SceneScriptPS13::PlayerWalkedOut() {

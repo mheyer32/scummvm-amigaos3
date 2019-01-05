@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -89,7 +89,7 @@ bool SceneScriptBB03::ClickedOnExit(int exitId) {
 			Game_Flag_Set(283);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(1, 5);
+			Set_Enter(1, kSceneBB04);
 		}
 		return true;
 	}
@@ -98,13 +98,13 @@ bool SceneScriptBB03::ClickedOnExit(int exitId) {
 			Game_Flag_Set(281);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(1, 3);
+			Set_Enter(1, kSceneBB02);
 		}
 		return true;
 	}
 	if (exitId == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 204.0f, 60.16f, -164.0f, 0, 1, false, 0)) {
-			if (Global_Variable_Query(1) < 4) {
+			if (Global_Variable_Query(kVariableChapter) < 4) {
 				if (Actor_Query_Goal_Number(kActorSebastian) == 200) {
 					Actor_Says(kActorSebastian, 70, 3);
 					Actor_Says(kActorMcCoy, 7010, 13);
@@ -121,7 +121,7 @@ bool SceneScriptBB03::ClickedOnExit(int exitId) {
 				Game_Flag_Set(285);
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
-				Set_Enter(22, 6);
+				Set_Enter(22, kSceneBB05);
 			} else {
 				Actor_Says(kActorMcCoy, 8522, 3);
 			}

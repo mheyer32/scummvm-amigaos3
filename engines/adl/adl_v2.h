@@ -25,10 +25,6 @@
 
 #include "adl/adl.h"
 
-namespace Common {
-class RandomSource;
-}
-
 namespace Adl {
 
 class AdlEngine_v2 : public AdlEngine {
@@ -54,7 +50,6 @@ protected:
 	// Engine
 	bool canSaveGameStateCurrently();
 
-	Common::String getDiskImageName(byte volume) const;
 	void insertDisk(byte volume);
 	virtual DataBlockPtr readDataBlockPtr(Common::ReadStream &f) const;
 	virtual void adjustDataBlockPtr(byte &track, byte &sector, byte &offset, byte &size) const { }
@@ -98,9 +93,6 @@ protected:
 	bool _itemRemoved;
 	byte _roomOnScreen, _picOnScreen, _itemsOnScreen;
 	Common::Array<byte> _brokenRooms;
-
-private:
-	Common::RandomSource *_random;
 };
 
 } // End of namespace Adl

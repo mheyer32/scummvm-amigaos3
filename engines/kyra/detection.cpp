@@ -206,6 +206,10 @@ bool KyraMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGame
 			flags.lang = Common::EN_ANY;
 	}
 
+#ifndef USE_RGB_COLOR
+	flags.useHiColorMode = false;
+#endif
+
 	switch (flags.gameID) {
 	case Kyra::GI_KYRA1:
 		*engine = new Kyra::KyraEngine_LoK(syst, flags);
@@ -228,6 +232,8 @@ bool KyraMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGame
 	case Kyra::GI_EOB2:
 		 if (Common::parseRenderMode(ConfMan.get("render_mode")) == Common::kRenderEGA)
 			 flags.useHiRes = true;
+		 if (platform == Common::kPlatformFMTowns && !flags.useHiColorMode)
+			 error("EOB ÌI FM-TOWNS requires support of 16bit color modes which has not been activated in your ScummVM build (The 'USE_RGB_COLOR' define has not been set).");
 		*engine = new Kyra::DarkMoonEngine(syst, flags);
 		break;
 #endif // ENABLE_EOB
@@ -256,7 +262,7 @@ SaveStateList KyraMetaEngine::listSaves(const char *target) const {
 		if (slotNum >= 0 && slotNum <= 999) {
 			Common::InSaveFile *in = saveFileMan->openForLoading(*file);
 			if (in) {
-				if (Kyra::KyraEngine_v1::readSaveHeader(in, false, header) == Kyra::KyraEngine_v1::kRSHENoError) {
+				if (Kyra::KyraEngine_v1::readSaveHeader(in, header) == Kyra::KyraEngine_v1::kRSHENoError) {
 					// WORKAROUND: Old savegames are using 'German' as description for kyra3 restart game save (slot 0),
 					// since that looks odd we replace it by "New Game".
 					if (slotNum == 0 && header.gameID == Kyra::GI_KYRA3)
@@ -298,7 +304,7 @@ SaveStateDescriptor KyraMetaEngine::querySaveMetaInfos(const char *target, int s
 		Kyra::KyraEngine_v1::SaveHeader header;
 		Kyra::KyraEngine_v1::ReadSaveHeaderError error;
 
-		error = Kyra::KyraEngine_v1::readSaveHeader(in, true, header);
+		error = Kyra::KyraEngine_v1::readSaveHeader(in, header, false);
 		delete in;
 
 		if (error == Kyra::KyraEngine_v1::kRSHENoError) {

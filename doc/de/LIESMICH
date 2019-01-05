@@ -3,7 +3,7 @@ ScummVM – Liesmich-Datei
 
 Für weitere Informationen, Kompatibilitätslisten, Einzelheiten zu Spenden, die
 neusten veröffentlichten Versionen, Fortschrittsberichte und mehr besuchen Sie
-bitte die ScummVM-Website unter der Adresse: http://www.scummvm.org/
+bitte die ScummVM-Website unter der Adresse: https://www.scummvm.org/
 
 
 Inhaltsverzeichnis:
@@ -65,10 +65,10 @@ Inhaltsverzeichnis:
  * 7.3 MT-32-Emulation
  * 7.4 MIDI-Emulation
  * 7.5 Native MIDI-Unterstützung
- * 7.5.1 Native MIDI-Ausgabe mithilfe der MIDI-Optionen anpassen
+ * * 7.5.1 Native MIDI-Ausgabe mithilfe der MIDI-Optionen anpassen
  * 7.6 UNIX-eigene, ALSA- und dmedia-Sequenzer-Unterstützung
- * 7.6.1 ALSA-Sequencer [NUR UNIX]
- * 7.6.2 IRIX dmedia-Sequencer [NUR UNIX]
+ * * 7.6.1 ALSA-Sequencer [NUR UNIX]
+ * * 7.6.2 IRIX dmedia-Sequencer [NUR UNIX]
  * 7.7 TiMidity++-MIDI-Server-Unterstützung
  * 7.8 Komprimierte Audio-Dateien verwenden (MP3, Ogg Vorbis, FLAC)
  * * 7.8.1 MP3-Dateien für CD-Audio verwenden
@@ -155,7 +155,7 @@ bitte die Anleitung in der englischen README-Datei.
 Für die ungeduldigen unter den Anwendern ist hier in fünf einfachen Schritten
 kurz beschrieben, wie man ScummVM lauffähig macht und das Programm verwendet.
 
-1. Laden Sie ScummVM unter der Adresse http://www.scummvm.org/downloads.php
+1. Laden Sie ScummVM unter der Adresse https://www.scummvm.org/downloads/
 herunter und installieren Sie es.
 
 2. Erstellen Sie ein Verzeichnis auf Ihrer Festplatte und kopieren Sie die
@@ -222,7 +222,7 @@ auftritt. Bitte sehen Sie auch auf der Kompatibilitätsliste der ScummVM-Website
 für dieses Spiel nach, um sicherzustellen, dass das Problem nicht bereits
 bekannt ist:
 
-  <http://scummvm.org/compatibility/>
+  <https://www.scummvm.org/compatibility/>
 
 Bitte melden Sie keine Fehler zu Spielen, die nicht als durchspielbar im
 Bereich „Unterstützte Spiele“ oder der Kompatibilitätsliste aufgelistet sind.
@@ -771,7 +771,7 @@ keine Smacker-Videos. Revolution Software hat uns freundlicherweise erlaubt, die
 Zwischensequenzen umgewandelt auf unserer Website als Download zur Verfügung zu
 stellen. Siehe hierfür:
 
-  http://www.scummvm.org/downloads.php
+  https://www.scummvm.org/downloads/
 
 Diese Zwischensequenzen werden im DXA-Format mit FLAC-Audio zur Verfügung
 gestellt. Ihre Qualität ist durch die Verwendung verlustfreier Kompression
@@ -988,6 +988,8 @@ Bild unten: Nach unten sehen
 Leertaste: Spiel pausieren
 ESC: Zwischensequenz überspringen
 F5: Menü
+Strg-o: Spiel laden
+Strg-s: Spiel speichern
 
 
 3.18) Hinweise zu Simon the Sorcerer 1 und 2:
@@ -1005,6 +1007,15 @@ Rechte Maustaste: Bearbeite Raum-Symbole und schnelle Übergänge
 Mausrad: Durch Items (Inventar, etc) und Konversations-Log scrollen
 Pfeiltasten: Bewegung. Pfeil nach unten/zurück ist nur verfügbar, wenn die aktuelle
 Ansicht die Bewegung nach unten explizit verfügbar hat.
+
+Funktionstasten:
+F1: Zum Chat-O-Mat umschalten
+F2: Zum persönlichen Gepäck umschalten
+F3: Zum Remote Thingummy umschalten
+F4: Zum Designer-Raum umschalten (Zeichen-Liste)
+F5: Spiel speichern (GMM)
+F6: Zum echten Leben wechseln
+F7: Spiel laden (GMM)
 
 Steuerung für das Starfield-Puzzle am Ende des Spiels:
 Tab: Zwischen Sternenkarte und Himmelslandschaft umschalten
@@ -1048,7 +1059,7 @@ Amiga- als auch in der Macintosh-Version fehlen. Es heißt
 versions“
 und kann hier heruntergeladen werden:
 
-  http://www.scummvm.org/games/#feeble
+  https://www.scummvm.org/games/#feeble
 
 Windows:
 Wenn Sie die Windows-Version von Floyd – Es gibt noch Helden haben, sind einige
@@ -1270,15 +1281,14 @@ Zork Nemesis: Das verbotene Land
 Alle Versionen
 
 Laden Sie das Liberation(tm)-Schriftartenpaket unter
-https://fedorahosted.org/releases/l/i/liberation-fonts/liberation-fonts-ttf-
-2.00.1.tar.gz
+https://releases.pagure.org/liberation-fonts/liberation-fonts-ttf-2.00.1.tar.gz
 herunter und entpacken Sie alle ttf-Dateien in ScummVMs Extras-Pfad. Alternativ
 können Sie auch das GNU FreeFont TTF-Paket unter
 https://ftp.gnu.org/gnu/freefont/freefont-ttf.zip
 herunterladen und alle ttf-Dateien aus dem sfd-Verzeichnis in ScummVMs Extras-
 Pfad kopieren. Diese Schriftarten können Probleme bei der Textdarstellung
 verursachen. Laden Sie den Untertitel-Patch unter
-http://www.thezorklibrary.com/installguides/znpatch.zip
+https://www.thezorklibrary.com/installguides/znpatch.zip
 herunter und entpacken Sie das Verzeichnis "addon" in das Hauptverzeichnis des
 Spiels.
 
@@ -1319,8 +1329,7 @@ Zork: Der Großinquisitor
 Alle Versionen
 
 Laden Sie das Liberation(tm)-Schriftartenpaket unter
-https://fedorahosted.org/releases/l/i/liberation-fonts/liberation-fonts-ttf-
-2.00.1.tar.gz
+https://releases.pagure.org/liberation-fonts/liberation-fonts-ttf-2.00.1.tar.gz
 herunter und entpacken Sie alle ttf-Dateien in ScummVMs Extras-Pfad.
 Alternativ können Sie auch das GNU FreeFont TTF-Paket unter
 https://ftp.gnu.org/gnu/freefont/freefont-ttf.zip
@@ -1350,7 +1359,7 @@ Spiels.
 Von CD2 kopieren Sie das Verzeichnis "zassets2" in das Hauptverzeichnis des
 Spiels.
 Es wird empfohlen, den hier erhältlichen Patch 1.2 anzuwenden:
-http://www.thezorklibrary.com/installguides/Zpatch.exe
+https://www.thezorklibrary.com/installguides/Zpatch.exe
 Möglicherweise müssen Sie das Spiel zuvor normal installieren, da der Patch ein
 eigenes Installationsprogramm besitzt.
 
@@ -1579,7 +1588,7 @@ gestartet werden -- siehe nächster Abschnitt.
                            (GM-Emulation deaktiviert)
   --enable-gs              Aktiviert Roland-GS-Modus für MIDI-Wiedergabe.
   --output-rate=FREQUENZ   Wählt Ausgabefrequenz in Hz (z. B. 22050).
-  --opl-driver=TREIBER     Wählt AdLib-(OPL-)Emulator (db, mame).
+  --opl-driver=TREIBER     Wählt AdLib-(OPL-)Emulator (db, mame, nuked).
   --aspect-ratio           Aktiviert Seitenverhältniskorrektur.
   --render-mode=MODUS      Aktiviert zusätzlichen Render-Modus (hercGreen,
                            hercAmber, cga, ega, vga, amiga, fmtowns, pc9821,
@@ -2066,7 +2075,9 @@ den Originalversionen verwendet werden.
     - Benennen Sie die Spielstanddatei in „simon2.xxx“ um.
 
   Starship Titanic
-    - Benennen Sie die Spielstanddatei in "titanic-win.xxx" um.
+    - Benennen Sie für Spielstände der englischen Version die Spielstanddatei in "titanic-win.xxx"
+      und für Spielstände der deutschen Version in "titanic-win-de.xxx" um.
+    - Spielstand-Dateien sind nicht zwischen den unterschiedlichen Sprachversionen austauschbar.
 
   Floyd - Es gibt noch Helden
     - Benennen Sie die Spielstanddatei in „feeble.xxx“ um.
@@ -3027,13 +3038,13 @@ Für komprimierte Speicherstände ist zlib erforderlich.
 Von einigen Teilen in ScummVM, insbesondere Grafikwandlern, gibt es stark
 optimierte Versionen, die in Assembler geschrieben sind. Wenn Sie diese
 verwenden möchten, müssen Sie den Assembler nasm installieren
-(siehe http://nasm.sf.net). Beachten Sie, dass wir momentan nur für x86 MMX
+(siehe https://nasm.us/). Beachten Sie, dass wir momentan nur für x86 MMX
 optimierte Versionen haben und diese auf keinem anderen Prozessor kompiliert
 werden können.
 
-Bei Win9x/NT/XP können Sie USE_WINDBG definieren und WinDbg anhängen, um
+Unter Windows können Sie USE_WINDBG definieren und WinDbg anhängen, um
 Debug-Nachrichten zu durchsuchen
-(siehe http://www.sysinternals.com/ntw2k/freeware/debugview.shtml).
+(siehe https://docs.microsoft.com/de-de/windows-hardware/drivers/debugger/index).
 
 
    Windows:
@@ -3125,11 +3136,11 @@ http://wiki.scummvm.org/index.php/Compiling_ScummVM/Mac_OS_X_Crosscompiling
 Eine ausführliche Liste derjenigen, die ScummVM ermöglicht haben, finden Sie
 unter:
 
-  http://www.scummvm.org/credits
+  https://www.scummvm.org/credits/
 
 
 ------------------------------------------------------------------------
 Viel Glück und viel Spaß beim Spielen wünscht
 das ScummVM-Team.
-http://www.scummvm.org/
+https://www.scummvm.org/
 ------------------------------------------------------------------------

@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -41,7 +41,7 @@ void SceneScriptMA07::InitializeScene() {
 	Ambient_Sounds_Add_Sound(375, 60, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(376, 50, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(377, 50, 180, 50, 100, 0, 0, -101, -101, 0, 0);
-	if (Global_Variable_Query(1) > 1) {
+	if (Global_Variable_Query(kVariableChapter) > 1) {
 		Scene_Exit_Add_2D_Exit(1, 0, 200, 50, 479, 3);
 	}
 	if (Game_Flag_Query(665)) {
@@ -73,13 +73,13 @@ bool SceneScriptMA07::ClickedOnItem(int itemId, bool a2) {
 bool SceneScriptMA07::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 104.0f, -162.0f, 56.0f, 12, 1, false, 0)) {
-			if (Global_Variable_Query(1) == 4 && Game_Flag_Query(671)) {
+			if (Global_Variable_Query(kVariableChapter) == 4 && Game_Flag_Query(671)) {
 				Actor_Set_Goal_Number(kActorMcCoy, 400);
 			} else {
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
 				Game_Flag_Set(kFlagMA07toMA06);
-				Set_Enter(52, 52);
+				Set_Enter(52, kSceneMA06);
 			}
 		}
 		return true;
@@ -91,7 +91,7 @@ bool SceneScriptMA07::ClickedOnExit(int exitId) {
 			Game_Flag_Set(672);
 			Game_Flag_Reset(179);
 			Game_Flag_Set(178);
-			Set_Enter(68, 77);
+			Set_Enter(68, kScenePS14);
 		}
 		return true;
 	}
@@ -100,7 +100,7 @@ bool SceneScriptMA07::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(357);
-			Set_Enter(90, 103);
+			Set_Enter(90, kSceneUG19);
 		}
 		return true;
 	}
@@ -128,10 +128,10 @@ void SceneScriptMA07::PlayerWalkedIn() {
 	if (Actor_Query_Goal_Number(kActorRachael) == 300) {
 		Actor_Set_Goal_Number(kActorRachael, 305);
 	}
-	if (Game_Flag_Query(58)) {
-		Game_Flag_Reset(58);
+	if (Game_Flag_Query(kFlagMA06toMA07)) {
+		Game_Flag_Reset(kFlagMA06toMA07);
 	}
-	if (!Game_Flag_Query(648) && Game_Flag_Query(671) && Global_Variable_Query(1) == 4) {
+	if (!Game_Flag_Query(648) && Game_Flag_Query(671) && Global_Variable_Query(kVariableChapter) == 4) {
 		Scene_Exits_Disable();
 		Actor_Set_Goal_Number(kActorGaff, 300);
 	}
@@ -144,7 +144,7 @@ void SceneScriptMA07::PlayerWalkedIn() {
 		Delay(1000);
 		Game_Flag_Reset(666);
 		Game_Flag_Set(kFlagMA06ToMA02);
-		Set_Enter(10, 49);
+		Set_Enter(kSetMA02_MA04, kSceneMA02);
 	}
 	//return false;
 

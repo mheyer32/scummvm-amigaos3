@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -98,7 +98,7 @@ bool SceneScriptUG07::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(427);
-			Set_Enter(82, 94);
+			Set_Enter(82, kSceneUG09);
 			return true;
 		}
 	}
@@ -107,19 +107,19 @@ bool SceneScriptUG07::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(425);
-			Set_Enter(81, 93);
+			Set_Enter(81, kSceneUG08);
 			return true;
 		}
 	}
 	if (exitId == 2) {
-		if (!Game_Flag_Query(607) && Game_Flag_Query(671) && Global_Variable_Query(1) == 4 && !Game_Flag_Query(598)) {
+		if (!Game_Flag_Query(607) && Game_Flag_Query(671) && Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(598)) {
 			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 49.0f, -12.21f, -130.0f, 0, 1, false, 0)) {
 				Game_Flag_Set(598);
 				Actor_Put_In_Set(kActorClovis, 80);
 				Actor_Set_At_XYZ(kActorClovis, 118.02f, -12.21f, -154.0f, 768);
 				Player_Set_Combat_Mode(true);
 				Actor_Face_Actor(kActorMcCoy, kActorClovis, true);
-				Loop_Actor_Walk_To_XYZ(kActorClovis, 98.019997f, -12.21f, -154.0f, 0, 0, false, 0);
+				Loop_Actor_Walk_To_XYZ(kActorClovis, 98.02f, -12.21f, -154.0f, 0, 0, false, 0);
 				Actor_Face_Actor(kActorClovis, kActorMcCoy, true);
 				Actor_Set_Goal_Number(kActorMcCoy, 301);
 				Actor_Face_Heading(kActorMcCoy, 0, true);
@@ -146,7 +146,7 @@ bool SceneScriptUG07::ClickedOnExit(int exitId) {
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
 				Game_Flag_Set(423);
-				Set_Enter(83, 95);
+				Set_Enter(83, kSceneUG10);
 				return true;
 			}
 		}
@@ -165,7 +165,7 @@ void SceneScriptUG07::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptUG07::PlayerWalkedIn() {
-	if (Global_Variable_Query(1) == 4 && !Game_Flag_Query(623)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(623)) {
 		Actor_Set_Goal_Number(kActorOfficerLeary, 307);
 		Actor_Set_Goal_Number(kActorOfficerGrayford, 307);
 	}
@@ -176,7 +176,7 @@ void SceneScriptUG07::PlayerWalkedIn() {
 }
 
 void SceneScriptUG07::PlayerWalkedOut() {
-	if (Global_Variable_Query(1) == 4 && (Actor_Query_Goal_Number(kActorOfficerLeary) == 307 || Actor_Query_Goal_Number(kActorOfficerGrayford) == 307)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && (Actor_Query_Goal_Number(kActorOfficerLeary) == 307 || Actor_Query_Goal_Number(kActorOfficerGrayford) == 307)) {
 		Non_Player_Actor_Combat_Mode_Off(kActorOfficerLeary);
 		Non_Player_Actor_Combat_Mode_Off(kActorOfficerGrayford);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 306);

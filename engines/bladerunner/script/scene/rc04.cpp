@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -105,7 +105,7 @@ void SceneScriptRC04::sub_401DF4() {
 		Actor_Says(kActorBulletBob, 330, 33);
 		Actor_Says(kActorBulletBob, 340, 37);
 		Actor_Says(kActorMcCoy, 5015, 11);
-		if (Game_Flag_Query(44)) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			Actor_Says(kActorBulletBob, 350, 32);
 			Actor_Says(kActorBulletBob, 360, 33);
 			Actor_Says(kActorBulletBob, 370, 30);
@@ -143,7 +143,7 @@ void SceneScriptRC04::sub_401DF4() {
 		Actor_Says(kActorBulletBob, 340, 11);
 		Actor_Says(kActorMcCoy, 5015, 16);
 		Actor_Modify_Friendliness_To_Other(kActorBulletBob, kActorMcCoy, 3);
-		if (Game_Flag_Query(44)) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			Actor_Says(kActorBulletBob, 350, 32);
 			Actor_Says(kActorBulletBob, 360, 30);
 			Actor_Says(kActorBulletBob, 370, 33);
@@ -288,7 +288,7 @@ bool SceneScriptRC04::ClickedOnActor(int actorId) {
 	if (Player_Query_Combat_Mode()) {
 		return false;
 	}
-	if (actorId == 14 && Global_Variable_Query(1) == 2 && !Game_Flag_Query(289)) {
+	if (actorId == 14 && Global_Variable_Query(kVariableChapter) == 2 && !Game_Flag_Query(289)) {
 		Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 104, 0, 0, false);
 		Actor_Face_Actor(kActorMcCoy, kActorBulletBob, true);
 		if (Game_Flag_Query(287) && !Game_Flag_Query(292) && Actor_Query_Friendliness_To_Other(kActorBulletBob, kActorMcCoy) > 45) {
@@ -336,7 +336,7 @@ bool SceneScriptRC04::ClickedOnActor(int actorId) {
 				Delay(3000);
 				Item_Pickup_Spin_Effect(941, 405, 192);
 				Actor_Says(kActorBulletBob, 2030, 30);
-				Game_Flag_Set(487);
+				Game_Flag_Set(kFlagKIAPrivacyAddon);
 			} else {
 				Actor_Says(kActorMcCoy, 8980, 16);
 				Actor_Says(kActorBulletBob, 2040, 30);
@@ -372,7 +372,7 @@ bool SceneScriptRC04::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 45.0f, 0.15f, 68.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(121);
-			Set_Enter(70, 80);
+			Set_Enter(70, kSceneRC03);
 		}
 		return true;
 	}
@@ -391,8 +391,8 @@ void SceneScriptRC04::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 
 void SceneScriptRC04::PlayerWalkedIn() {
 	Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 103, 0, 0, false);
-	if (Global_Variable_Query(1) != 2 || Game_Flag_Query(287) || Player_Query_Combat_Mode()) {
-		if (Global_Variable_Query(1) == 4 && !Game_Flag_Query(289) && !Game_Flag_Query(306)) {
+	if (Global_Variable_Query(kVariableChapter) != 2 || Game_Flag_Query(287) || Player_Query_Combat_Mode()) {
+		if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(289) && !Game_Flag_Query(306)) {
 			Actor_Says(kActorDispatcher, 40, 3);
 			Actor_Says(kActorBulletBob, 890, 37);
 			Actor_Set_Goal_Number(kActorBulletBob, 2);

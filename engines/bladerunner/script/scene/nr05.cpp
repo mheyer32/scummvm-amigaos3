@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -119,7 +119,7 @@ bool SceneScriptNR05::ClickedOnExit(int exitId) {
 			Actor_Face_Heading(kActorMcCoy, 1021, false);
 			Actor_Change_Animation_Mode(kActorMcCoy, 53);
 			Game_Flag_Set(537);
-			Set_Enter(55, 56);
+			Set_Enter(55, kSceneNR03);
 			Scene_Loop_Start_Special(1, 3, 0);
 		}
 		return true;
@@ -127,7 +127,7 @@ bool SceneScriptNR05::ClickedOnExit(int exitId) {
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -777.56f, 0.0f, -166.86f, 0, 1, false, 0)) {
 			Game_Flag_Set(546);
-			Set_Enter(13, 61);
+			Set_Enter(13, kSceneNR08);
 		}
 		return true;
 	}
@@ -148,8 +148,8 @@ void SceneScriptNR05::SceneFrameAdvanced(int frame) {
 	if (frame == 86) {
 		Sound_Play(353, 62, 70, 70, 50);
 	}
-	sub_402A48(48);
-	sub_402A48(0);
+	rotateActorOnGround(kActorHysteriaPatron2);
+	rotateActorOnGround(kActorMcCoy);
 	if (Actor_Query_Goal_Number(kActorEarlyQ) == 224) {
 		Actor_Set_Goal_Number(kActorEarlyQ, 225);
 		if (Player_Query_Current_Scene() == 58) {
@@ -157,7 +157,7 @@ void SceneScriptNR05::SceneFrameAdvanced(int frame) {
 		}
 	}
 	if (frame > 77 && frame <= 134) {
-		sub_401F74(frame - 13);
+		rotateActorOnTable(frame - 13);
 		if (frame == 134 && !Game_Flag_Query(537)) {
 			Actor_Set_Goal_Number(kActorMcCoy, 200);
 		}
@@ -167,7 +167,6 @@ void SceneScriptNR05::SceneFrameAdvanced(int frame) {
 		//return false;
 		return;
 	}
-
 }
 
 void SceneScriptNR05::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bool currentSet) {
@@ -193,7 +192,7 @@ void SceneScriptNR05::PlayerWalkedOut() {
 void SceneScriptNR05::DialogueQueueFlushed(int a1) {
 }
 
-void SceneScriptNR05::sub_401F74(int frame) {
+void SceneScriptNR05::rotateActorOnTable(int frame) {
 	float angle = cos((frame - 65) * (M_PI / 57.0f)) * M_PI_2;
 	float invertedAngle = M_PI - angle;
 	if (!Game_Flag_Query(537)) {
@@ -329,14 +328,16 @@ void SceneScriptNR05::sub_4022DC() {
 	}
 }
 
-void SceneScriptNR05::sub_402A48(int actorId) {
+void SceneScriptNR05::rotateActorOnGround(int actorId) {
 	int animationMode = Actor_Query_Animation_Mode(actorId);
-	if (animationMode == 1 || animationMode == 2 || animationMode == 7 || animationMode == 8) {
+	if (animationMode == kAnimationModeWalk || animationMode == kAnimationModeRun || animationMode == kAnimationModeCombatWalk || animationMode == kAnimationModeCombatRun) {
 		return;
 	}
 	float x, y, z;
 	Actor_Query_XYZ(actorId, &x, &y, &z);
-	if ((x - -542.0f) * (x - -542.0f) + (z - -195.0f) * (z - -195.0f) < 8464.0f) {
+	x -= -542.0f;
+	z -= -195.0f;
+	if (x * x + z * z < 92.0f * 92.0f) {
 		float s = sin(M_PI / 128.0f);
 		float c = cos(M_PI / 128.0f);
 		float newX = x * c - z * s + -542.0f;

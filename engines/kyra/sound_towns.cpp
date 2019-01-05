@@ -236,7 +236,6 @@ void SoundTowns::updateVolumeSettings() {
 		return;
 
 	bool mute = false;
-	_player->driver()->setSoundEffectVolume(ConfMan.getInt("sfx_volume"));
 	if (ConfMan.hasKey("mute"))
 		mute = ConfMan.getBool("mute");
 
@@ -505,7 +504,6 @@ void SoundPC98::updateVolumeSettings() {
 		return;
 
 	bool mute = false;
-	_driver->setSoundEffectVolume(ConfMan.getInt("sfx_volume"));
 	if (ConfMan.hasKey("mute"))
 		mute = ConfMan.getBool("mute");
 
@@ -601,8 +599,8 @@ void SoundTownsPC98_v2::playTrack(uint8 track) {
 	int trackNum = -1;
 	if (_vm->gameFlags().platform == Common::kPlatformFMTowns) {
 		for (uint i = 0; i < res()->cdaTableSize; i++) {
-			if (track == (uint8) READ_LE_UINT16(&res()->cdaTable[i * 2])) {
-				trackNum = (int) READ_LE_UINT16(&res()->cdaTable[i * 2 + 1]) - 1;
+			if (track == (uint8)READ_LE_UINT16(&res()->cdaTable[i * 2])) {
+				trackNum = (int)READ_LE_UINT16(&res()->cdaTable[i * 2 + 1]) - 1;
 				break;
 			}
 		}
@@ -739,7 +737,6 @@ void SoundTownsPC98_v2::updateVolumeSettings() {
 		return;
 
 	bool mute = false;
-	_driver->setSoundEffectVolume(ConfMan.getInt("sfx_volume"));
 	if (ConfMan.hasKey("mute"))
 		mute = ConfMan.getBool("mute");
 

@@ -20,15 +20,15 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
 void SceneScriptUG15::InitializeScene() {
 	if (Game_Flag_Query(353)) {
-		Setup_Scene_Information(-25.0f, 26.309999f, -434.0f, 520);
+		Setup_Scene_Information(-25.0f, 26.31f, -434.0f, 520);
 	} else if (Game_Flag_Query(153)) {
-		Setup_Scene_Information(-17.0f, 26.309999f, -346.0f, 711);
+		Setup_Scene_Information(-17.0f, 26.31f, -346.0f, 711);
 	} else if (Game_Flag_Query(355)) {
 		Setup_Scene_Information(-18.0f, 48.07f, 62.0f, 650);
 	} else {
@@ -108,7 +108,7 @@ bool SceneScriptUG15::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(352);
-			Set_Enter(88, 101);
+			Set_Enter(88, kSceneUG17);
 		}
 		return true;
 	}
@@ -117,7 +117,7 @@ bool SceneScriptUG15::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(152);
-			Set_Enter(19, 100);
+			Set_Enter(19, kSceneUG16);
 		}
 		return true;
 	}
@@ -129,7 +129,7 @@ bool SceneScriptUG15::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(354);
-			Set_Enter(19, 100);
+			Set_Enter(19, kSceneUG16);
 		}
 		return true;
 	}
@@ -138,7 +138,7 @@ bool SceneScriptUG15::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(350);
-			Set_Enter(85, 97);
+			Set_Enter(85, kSceneUG13);
 		}
 		return true;
 	}
@@ -168,7 +168,7 @@ void SceneScriptUG15::SceneFrameAdvanced(int frame) {
 			Game_Flag_Set(724);
 			Game_Flag_Set(682);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 			Actor_Set_Goal_Number(kActorMcCoy, 390);
 			Actor_Query_XYZ(kActorFreeSlotA, &x, &y, &z);
 			if (-200.0f < x && -62.0f > x) {

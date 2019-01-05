@@ -406,10 +406,12 @@ reg_t kTextColors(EngineState *s, int argc, reg_t *argv);
 reg_t kTextFonts(EngineState *s, int argc, reg_t *argv);
 reg_t kShow(EngineState *s, int argc, reg_t *argv);
 reg_t kRemapColors(EngineState *s, int argc, reg_t *argv);
+reg_t kRemapColorsKawa(EngineState *s, int argc, reg_t *argv);
 reg_t kDummy(EngineState *s, int argc, reg_t *argv);
 reg_t kEmpty(EngineState *s, int argc, reg_t *argv);
 reg_t kStub(EngineState *s, int argc, reg_t *argv);
 reg_t kStubNull(EngineState *s, int argc, reg_t *argv);
+reg_t kKawaHacks(EngineState *s, int argc, reg_t *argv);
 
 #ifdef ENABLE_SCI32
 // SCI2 Kernel Functions
@@ -642,6 +644,8 @@ reg_t kFont(EngineState *s, int argc, reg_t *argv);
 reg_t kAddLine(EngineState *s, int argc, reg_t *argv);
 reg_t kUpdateLine(EngineState *s, int argc, reg_t *argv);
 reg_t kDeleteLine(EngineState *s, int argc, reg_t *argv);
+
+reg_t kWinDLL(EngineState *s, int argc, reg_t *argv);
 
 #ifdef ENABLE_SCI32_MAC
 // Phantasmagoria Mac Special Kernel Function

@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -92,7 +92,7 @@ bool SceneScriptBB02::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(263);
-			Set_Enter(20, 2);
+			Set_Enter(20, kSceneBB01);
 		}
 		return true;
 	}
@@ -100,11 +100,11 @@ bool SceneScriptBB02::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -415.06f, -27.0f, 0, 1, false, 0)) {
 			Player_Loses_Control();
 			if (!Game_Flag_Query(493)) {
-				Scene_Loop_Start_Special(kSceneLoopMode2, 0, true);
+				Scene_Loop_Start_Special(kSceneLoopModeOnce, 0, true);
 			}
 			Game_Flag_Set(332);
 			Game_Flag_Reset(493);
-			Set_Enter(1, 5);
+			Set_Enter(1, kSceneBB04);
 			Scene_Loop_Start_Special(1, 3, false);
 		}
 		return true;
@@ -114,7 +114,7 @@ bool SceneScriptBB02::ClickedOnExit(int exitId) {
 			Loop_Actor_Walk_To_XYZ(kActorMcCoy, 179.0f, -415.06f, 274.0f, 0, 0, false, 0);
 			Game_Flag_Set(282);
 			Game_Flag_Reset(493);
-			Set_Enter(21, 4);
+			Set_Enter(21, kSceneBB03);
 		}
 		return true;
 	}

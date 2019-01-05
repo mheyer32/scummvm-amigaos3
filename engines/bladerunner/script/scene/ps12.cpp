@@ -20,12 +20,12 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
 void SceneScriptPS12::InitializeScene() {
-	Police_Maze_Set_Pause_State(1);
+	Police_Maze_Set_Pause_State(true);
 	if (Game_Flag_Query(16)) {
 		Scene_Loop_Start_Special(0, 0, 0);
 		Scene_Loop_Set_Default(1);
@@ -96,9 +96,9 @@ void SceneScriptPS12::SceneLoaded() {
 	}
 	Police_Maze_Target_Track_Add(29, -691.8f, -9.06f, 587.67f, -649.11f, -9.06f, 587.71f, 6, track_data_29, true);
 	Police_Maze_Target_Track_Add(30, -679.6f, -45.4f, 721.05f, -679.6f, -1.4f, 721.05f, 6, track_data_30, true);
-	Police_Maze_Target_Track_Add(31, -414.04f, -8.98f, 711.917f, -459.54f, -8.99f, 707.81f, 6, track_data_31, false);
+	Police_Maze_Target_Track_Add(31, -414.04f, -8.98f, 711.91f, -459.54f, -8.99f, 707.81f, 6, track_data_31, false);
 	Police_Maze_Target_Track_Add(32, -440.0f, -8.97f, 1137.0f, -430.0f, -8.97f, 921.0f, 6, track_data_32, false);
-	Police_Maze_Target_Track_Add(33, -764.92f, -0.84f, 950.21997f, -722.92f, -0.84f, 950.22f, 6, track_data_33, false);
+	Police_Maze_Target_Track_Add(33, -764.92f, -0.84f, 950.22f, -722.92f, -0.84f, 950.22f, 6, track_data_33, false);
 	Police_Maze_Target_Track_Add(34, -696.0f, -5.7f, 1185.0f, -635.0f, -5.7f, 1185.0f, 20, track_data_34, false);
 	Police_Maze_Target_Track_Add(35, -635.0f, -5.7f, 1165.0f, -620.0f, -8.63f, 1366.0f, 10, track_data_35, false);
 	Police_Maze_Target_Track_Add(36, -620.0f, -8.63f, 1366.0f, -595.0f, -8.63f, 1366.0f, 10, track_data_36, false);
@@ -235,7 +235,7 @@ bool SceneScriptPS12::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 8, 12, 1, false)) {
 			Game_Flag_Set(17);
 			sub_4028C4();
-			Set_Enter(14, 74);
+			Set_Enter(14, kScenePS11);
 		}
 		return true;
 	}
@@ -248,7 +248,7 @@ bool SceneScriptPS12::ClickedOnExit(int exitId) {
 			sub_4028C4();
 			Global_Variable_Decrement(9, 20 - Global_Variable_Query(12));
 			Global_Variable_Set(12, 20);
-			Set_Enter(14, 76);
+			Set_Enter(14, kScenePS13);
 		}
 		return true;
 	}
@@ -270,7 +270,7 @@ void SceneScriptPS12::PlayerWalkedIn() {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -546.0f, -9.06f, 570.0f, 0, 1, false, 0);
 		Game_Flag_Reset(16);
 	}
-	Police_Maze_Set_Pause_State(0);
+	Police_Maze_Set_Pause_State(false);
 }
 
 void SceneScriptPS12::PlayerWalkedOut() {

@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -121,7 +121,7 @@ bool SceneScriptNR07::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(442);
-			Set_Enter(56, 59);
+			Set_Enter(56, kSceneNR06);
 		}
 		return true;
 	}
@@ -177,7 +177,7 @@ void SceneScriptNR07::sub_4018D4() {
 	Actor_Change_Animation_Mode(kActorDektora, 71);
 	Actor_Change_Animation_Mode(kActorMcCoy, 21);
 	Loop_Actor_Walk_To_XYZ(kActorDektora, -102.0f, -73.5f, -233.0f, 0, 0, true, 0);
-	if (Game_Flag_Query(47)) {
+	if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 		Actor_Set_Goal_Number(kActorDektora, 245);
 	} else {
 		Actor_Set_Goal_Number(kActorDektora, 295);
@@ -199,7 +199,7 @@ void SceneScriptNR07::sub_401A10() {
 	Async_Actor_Walk_To_XYZ(kActorMcCoy, -193.0f, -73.5f, -13.0f, 0, false);
 	Actor_Says(kActorDektora, 950, 31);
 	Actor_Face_Actor(kActorDektora, kActorMcCoy, true);
-	Actor_Change_Animation_Mode(kActorDektora, 4);
+	Actor_Change_Animation_Mode(kActorDektora, kAnimationModeCombatIdle);
 	Actor_Face_Actor(kActorMcCoy, kActorDektora, true);
 	Actor_Says(kActorMcCoy, 3760, 19);
 	Actor_Says(kActorDektora, 960, 53);
@@ -257,7 +257,7 @@ void SceneScriptNR07::sub_401EF4() {
 	Game_Flag_Set(638);
 	Actor_Clue_Acquire(kActorMcCoy, kClueDragonflyBelt, 1, kActorDektora);
 	int v0 = Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy);
-	if (!Game_Flag_Query(47) && v0 < 40) {
+	if (!Game_Flag_Query(kFlagDektoraIsReplicant) && v0 < 40) {
 		sub_4018D4();
 		return;
 	}
@@ -276,7 +276,7 @@ void SceneScriptNR07::sub_4020F0() {
 	Actor_Says(kActorMcCoy, 3645, 12);
 	Actor_Says(kActorDektora, 620, 30);
 	int v0 = Actor_Query_Friendliness_To_Other(kActorDektora, kActorMcCoy);
-	if (!Game_Flag_Query(47) && v0 < 40) {
+	if (!Game_Flag_Query(kFlagDektoraIsReplicant) && v0 < 40) {
 		sub_4018D4();
 		return;
 	}
@@ -307,8 +307,8 @@ void SceneScriptNR07::sub_402284() {
 	Actor_Says(kActorDektora, 720, 30);
 	Actor_Says(kActorDektora, 730, 30);
 	Actor_Says(kActorMcCoy, 3685, 13);
-	Voight_Kampff_Activate(3, 40);
-	if (Game_Flag_Query(47)) {
+	Voight_Kampff_Activate(kActorDektora, 40);
+	if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 		sub_401A10();
 	} else {
 		sub_4018D4();
@@ -323,7 +323,7 @@ void SceneScriptNR07::sub_402510() {
 	Actor_Face_Actor(kActorDektora, kActorMcCoy, true);
 	Actor_Says(kActorMcCoy, 3695, 15);
 	Actor_Modify_Friendliness_To_Other(kActorDektora, kActorMcCoy, 5);
-	if (Game_Flag_Query(47)) {
+	if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 		sub_401A10();
 	} else {
 		sub_4018D4();
@@ -333,7 +333,7 @@ void SceneScriptNR07::sub_402510() {
 void SceneScriptNR07::sub_402614() {
 	Actor_Says(kActorMcCoy, 3705, 19);
 	Actor_Says(kActorDektora, 760, 53);
-	if (Game_Flag_Query(47)) {
+	if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 		Actor_Modify_Friendliness_To_Other(kActorDektora, kActorMcCoy, -5);
 		Actor_Says(kActorMcCoy, 3710, 18);
 		sub_401A10();

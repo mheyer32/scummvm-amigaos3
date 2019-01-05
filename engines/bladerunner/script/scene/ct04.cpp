@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -72,7 +72,7 @@ bool SceneScriptCT04::ClickedOn3DObject(const char *objectName, bool a2) {
 			Game_Flag_Set(137);
 			Actor_Set_Goal_Number(kActorTransient, 2);
 		}
-		if (Game_Flag_Query(169) && !Game_Flag_Query(170) && !Game_Flag_Query(171) && !Game_Flag_Query(172) && Global_Variable_Query(1) == 1) {
+		if (Game_Flag_Query(169) && !Game_Flag_Query(170) && !Game_Flag_Query(171) && !Game_Flag_Query(172) && Global_Variable_Query(kVariableChapter) == 1) {
 			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -147.41f, -621.3f, 724.57f, 0, 1, false, 0)) {
 				Player_Loses_Control();
 				Actor_Face_Heading(kActorMcCoy, 792, false);
@@ -160,7 +160,7 @@ bool SceneScriptCT04::ClickedOnActor(int actorId) {
 			if (!Loop_Actor_Walk_To_Actor(kActorMcCoy, kActorTransient, 36, 1, false)) {
 				Actor_Face_Actor(kActorMcCoy, kActorTransient, true);
 				if (!Game_Flag_Query(137)) {
-					if (Game_Flag_Query(40)) {
+					if (Game_Flag_Query(kFlagZubenRetired)) {
 						Actor_Says(kActorMcCoy, 435, 3);
 						Actor_Set_Goal_Number(kActorTransient, 2);
 					} else {
@@ -195,7 +195,7 @@ bool SceneScriptCT04::ClickedOnExit(int exitId) {
 				Actor_Set_Goal_Number(kActorTransient, 2);
 			}
 			Game_Flag_Set(74);
-			Set_Enter(28, 17);
+			Set_Enter(28, kSceneCT05);
 		}
 		return true;
 	}
@@ -204,7 +204,7 @@ bool SceneScriptCT04::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(73);
-			Set_Enter(5, 15);
+			Set_Enter(5, kSceneCT03);
 		}
 		return true;
 	}

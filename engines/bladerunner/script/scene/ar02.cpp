@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -62,11 +62,11 @@ void SceneScriptAR02::InitializeScene() {
 	Ambient_Sounds_Add_Sound(375, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(376, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(377, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
-	if (Game_Flag_Query(252) && Game_Flag_Query(320)) {
+	if (Game_Flag_Query(kFlagSpinnerToAR01) && Game_Flag_Query(320)) {
 		Scene_Loop_Start_Special(0, 1, 0);
 		Scene_Loop_Set_Default(2);
 		Game_Flag_Reset(320);
-	} else if (!Game_Flag_Query(252) && Game_Flag_Query(320)) {
+	} else if (!Game_Flag_Query(kFlagSpinnerToAR01) && Game_Flag_Query(320)) {
 		Scene_Loop_Start_Special(0, 0, 0);
 		Scene_Loop_Set_Default(2);
 		Game_Flag_Reset(320);
@@ -80,7 +80,7 @@ void SceneScriptAR02::SceneLoaded() {
 	if (!Game_Flag_Query(374)) {
 		Item_Add_To_World(106, 976, 0, -442.84f, 36.77f, -1144.51f, 360, 36, 36, false, true, false, true);
 	}
-	if (Global_Variable_Query(1) == 4 && !Game_Flag_Query(374)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(374)) {
 		Game_Flag_Set(0);
 		Item_Remove_From_World(106);
 	}
@@ -99,7 +99,7 @@ bool SceneScriptAR02::ClickedOnActor(int actorId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -386.96f, 0.0f, -1078.45f, 12, 1, false, 0)) {
 			Actor_Face_Actor(kActorMcCoy, kActorInsectDealer, true);
 			Actor_Face_Actor(kActorInsectDealer, kActorMcCoy, true);
-			if (Global_Variable_Query(1) == 2) {
+			if (Global_Variable_Query(kVariableChapter) == 2) {
 				if (Game_Flag_Query(329) && !Game_Flag_Query(366)) {
 					Game_Flag_Set(366);
 					Player_Loses_Control();
@@ -122,7 +122,7 @@ bool SceneScriptAR02::ClickedOnActor(int actorId) {
 				} else {
 					sub_402694();
 				}
-			} else if (Global_Variable_Query(1) > 2) {
+			} else if (Global_Variable_Query(kVariableChapter) > 2) {
 				if (Actor_Clue_Query(kActorMcCoy, kCluePeruvianLadyInterview) && !Actor_Clue_Query(kActorMcCoy, kClueDragonflyCollection)) {
 					Actor_Says(kActorMcCoy, 205, 16);
 					Actor_Says(kActorInsectDealer, 290, 12);
@@ -152,7 +152,7 @@ bool SceneScriptAR02::ClickedOnActor(int actorId) {
 			return true;
 		}
 	}
-	if (actorId == 20 && Global_Variable_Query(1) == 2) {
+	if (actorId == 20 && Global_Variable_Query(kVariableChapter) == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -240.79f, 0.0f, -1328.89f, 12, 1, false, 0)) {
 			Actor_Face_Actor(kActorMcCoy, kActorHasan, true);
 			Actor_Face_Actor(kActorHasan, kActorMcCoy, true);
@@ -201,7 +201,7 @@ bool SceneScriptAR02::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -182.0f, 0.0f, -551.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(321);
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -182.0f, 0.0f, -407.0f, 0, false);
-			Set_Enter(0, 0);
+			Set_Enter(0, kSceneAR01);
 		}
 		return true;
 	}
@@ -212,7 +212,7 @@ bool SceneScriptAR02::ClickedOnExit(int exitId) {
 			Game_Flag_Reset(180);
 			Game_Flag_Set(182);
 			Music_Stop(3);
-			Set_Enter(70, 80);
+			Set_Enter(70, kSceneRC03);
 		}
 		return true;
 	}

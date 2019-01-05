@@ -29,26 +29,27 @@
 namespace BladeRunner {
 
 class BladeRunnerEngine;
+class SaveFileReadStream;
+class SaveFileWriteStream;
 
 class ActorWalk {
 	BladeRunnerEngine *_vm;
 
-private:
-	int     _walking;
-	int     _running;
-	Vector3 _destination;
-	Vector3 _originalDestination;
-	Vector3 _current;
-	Vector3 _next;
-	int     _facing;
+	int                        _walking;
+	int                        _running;
+	Vector3                    _destination;
+	Vector3                    _originalDestination;
+	Vector3                    _current;
+	Vector3                    _next;
+	int                        _facing;
 	Common::HashMap<int, bool> _nearActors;
-	int     _status;
+	int                        _status;
 
 public:
 	ActorWalk(BladeRunnerEngine *vm);
 	~ActorWalk();
-	
-	bool setup(int actorId, bool run, const Vector3 &from, const Vector3 &to, bool unk1, bool *arrived);
+
+	bool setup(int actorId, bool runFlag, const Vector3 &from, const Vector3 &to, bool unk1, bool *arrived);
 	void getCurrentPosition(int actorId, Vector3 *pos, int *facing) const;
 	bool tick(int actorId, float stepDistance, bool flag);
 
@@ -59,6 +60,10 @@ public:
 	bool findNearestEmptyPosition(int actorId, const Vector3 &from, int distance, Vector3 &out) const;
 
 	void stop(int actorId, bool immediately, int combatAnimationMode, int animationMode);
+	void run(int actorId);
+
+	void save(SaveFileWriteStream &f);
+	void load(SaveFileReadStream &f);
 
 private:
 	int nextOnPath(int actorId, const Vector3 &from, const Vector3 &to, Vector3 &next) const;

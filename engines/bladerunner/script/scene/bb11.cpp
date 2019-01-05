@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -87,7 +87,7 @@ bool SceneScriptBB11::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(223);
-			Set_Enter(25, 11);
+			Set_Enter(25, kSceneBB10);
 		}
 		return true;
 	}
@@ -113,7 +113,7 @@ void SceneScriptBB11::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptBB11::PlayerWalkedIn() {
-	if (Actor_Query_Goal_Number(kActorSadik) == 102 && Global_Variable_Query(1) == 2) {
+	if (Actor_Query_Goal_Number(kActorSadik) == 102 && Global_Variable_Query(kVariableChapter) == 2) {
 		Actor_Set_Invisible(kActorMcCoy, true);
 		Actor_Set_Goal_Number(kActorSadik, 103);
 		Music_Play(11, 61, 0, 1, -1, 0, 0);

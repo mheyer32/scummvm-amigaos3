@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -72,9 +72,9 @@ void SceneScriptUG10::InitializeScene() {
 
 void SceneScriptUG10::SceneLoaded() {
 	Obstacle_Object("SLUICEGATE_LEVER", true);
-	if (Global_Variable_Query(1) == 4 && !Game_Flag_Query(474) && Game_Flag_Query(172) && !Game_Flag_Query(693)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(474) && Game_Flag_Query(172) && !Game_Flag_Query(693)) {
 		Scene_Loop_Set_Default(1);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 6, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 6, true);
 		Game_Flag_Set(693);
 		//return true;
 	}
@@ -104,7 +104,7 @@ bool SceneScriptUG10::ClickedOnExit(int exitId) {
 		if ((!Game_Flag_Query(474) && x > 125.0f) || Game_Flag_Query(474)) {
 			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 235.0f, 1.15f, 29.0f, 0, 1, false, 0)) {
 				Game_Flag_Set(317);
-				Set_Enter(74, 86);
+				Set_Enter(74, kSceneUG01);
 				return true;
 			}
 		} else if (!Game_Flag_Query(474)) {
@@ -117,7 +117,7 @@ bool SceneScriptUG10::ClickedOnExit(int exitId) {
 				Loop_Actor_Travel_Stairs(kActorMcCoy, 9, 1, 0);
 				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -92.0f, 81.83f, -652.0f, 0, 0, false, 0);
 				Game_Flag_Set(337);
-				Set_Enter(76, 88);
+				Set_Enter(76, kSceneUG03);
 				return true;
 			}
 		} else if (!Game_Flag_Query(474)) {
@@ -129,7 +129,7 @@ bool SceneScriptUG10::ClickedOnExit(int exitId) {
 				Actor_Face_Heading(kActorMcCoy, 1001, false);
 				Loop_Actor_Travel_Ladder(kActorMcCoy, 1, 1, 0);
 				Game_Flag_Set(424);
-				Set_Enter(80, 92);
+				Set_Enter(80, kSceneUG07);
 				return true;
 			}
 		} else if (!Game_Flag_Query(474)) {
@@ -139,7 +139,7 @@ bool SceneScriptUG10::ClickedOnExit(int exitId) {
 		if ((!Game_Flag_Query(474) && x < 120.0f) || Game_Flag_Query(474)) {
 			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 2.5f, 1.15f, 405.0f, 0, 1, false, 0)) {
 				Game_Flag_Set(347);
-				Set_Enter(86, 98);
+				Set_Enter(86, kSceneUG14);
 				return true;
 			}
 		} else if (!Game_Flag_Query(474)) {
@@ -158,13 +158,13 @@ bool SceneScriptUG10::ClickedOn2DRegion(int region) {
 		} else if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 4.98f, 0.38f, 83.15f, 0, 1, false, 0)) {
 			if (Game_Flag_Query(474)) {
 				Scene_Loop_Set_Default(1);
-				Scene_Loop_Start_Special(kSceneLoopMode2, 0, false);
+				Scene_Loop_Start_Special(kSceneLoopModeOnce, 0, false);
 				Game_Flag_Reset(474);
 				Obstacle_Object("BOX01 BRIDGE", true);
 				Player_Loses_Control();
 			} else {
 				Scene_Loop_Set_Default(4);
-				Scene_Loop_Start_Special(kSceneLoopMode2, 3, false);
+				Scene_Loop_Start_Special(kSceneLoopModeOnce, 3, false);
 				Game_Flag_Set(474);
 				Unobstacle_Object("BOX01 BRIDGE", true);
 				Player_Loses_Control();

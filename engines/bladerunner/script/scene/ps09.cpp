@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -179,7 +179,7 @@ bool SceneScriptPS09::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -559.15f, 0.0f, -85.06f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(62, 66);
+			Set_Enter(62, kScenePS02);
 			Game_Flag_Reset(211);
 		}
 		return true;
@@ -215,8 +215,8 @@ void SceneScriptPS09::PlayerWalkedIn() {
 		Player_Gains_Control();
 		Game_Flag_Set(211);
 	}
-	if (Game_Flag_Query(133)) {
-		Game_Flag_Reset(133);
+	if (Game_Flag_Query(kFlagPS02toPS09)) {
+		Game_Flag_Reset(kFlagPS02toPS09);
 		//return true;
 		return;
 	}
@@ -250,7 +250,7 @@ void SceneScriptPS09::sub_402090() {
 		Actor_Says(kActorGrigorian, 50, 13);
 		Actor_Says(kActorMcCoy, 4275, 18);
 		Actor_Says(kActorMcCoy, 4280, 19);
-		if (Game_Flag_Query(44)) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			Actor_Says(kActorGrigorian, 60, 14);
 			Actor_Says(kActorMcCoy, 4285, 13);
 			Actor_Says(kActorGrigorian, 70, 12);
@@ -262,7 +262,7 @@ void SceneScriptPS09::sub_402090() {
 			Actor_Says(kActorMcCoy, 4300, 17);
 			return;
 		}
-		if (!Game_Flag_Query(44)) {
+		if (!Game_Flag_Query(kFlagIzoIsReplicant)) {
 			Actor_Says(kActorGrigorian, 130, 15);
 			Actor_Says(kActorGrigorian, 140, 13);
 			Actor_Says(kActorMcCoy, 4305, 13);
@@ -340,7 +340,7 @@ void SceneScriptPS09::sub_402090() {
 		Actor_Says(kActorGrigorian, 410, 16);
 		Actor_Says(kActorMcCoy, 4405, 14);
 		Actor_Says(kActorMcCoy, 4410, 15);
-		Voight_Kampff_Activate(11, 20);
+		Voight_Kampff_Activate(kActorGrigorian, 20);
 		Actor_Modify_Friendliness_To_Other(kActorGrigorian, kActorMcCoy, -10);
 		break;
 	case 210:

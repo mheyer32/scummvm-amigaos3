@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -104,7 +104,7 @@ bool SceneScriptUG09::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(432);
-			Set_Enter(4, 24);
+			Set_Enter(4, kSceneCT12);
 		}
 		return true;
 	}
@@ -113,7 +113,7 @@ bool SceneScriptUG09::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(428);
-			Set_Enter(80, 92);
+			Set_Enter(80, kSceneUG07);
 		}
 		return true;
 	}
@@ -132,13 +132,13 @@ void SceneScriptUG09::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptUG09::PlayerWalkedIn() {
-	if (Global_Variable_Query(1) == 4 && Game_Flag_Query(623)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && Game_Flag_Query(623)) {
 		Game_Flag_Set(630);
 	}
 }
 
 void SceneScriptUG09::PlayerWalkedOut() {
-	if (Global_Variable_Query(1) == 4 && Global_Variable_Query(1) != 5) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && Global_Variable_Query(kVariableChapter) != 5) {
 		Game_Flag_Reset(630);
 	}
 	if (Game_Flag_Query(432)) {

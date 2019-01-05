@@ -26,6 +26,7 @@
 #include "common/array.h"
 #include "common/mutex.h"
 #include "common/str.h"
+
 #include "audio/audiostream.h"
 
 namespace BladeRunner {
@@ -60,13 +61,19 @@ public:
 	}
 	~AudioCache();
 
-	bool  canAllocate(uint32 size);
+	bool  canAllocate(uint32 size) const;
 	bool  dropOldest();
 	byte *findByHash(int32 hash);
 	void  storeByHash(int32 hash, Common::SeekableReadStream *stream);
 
 	void  incRef(int32 hash);
 	void  decRef(int32 hash);
+};
+
+
+enum AudioPlayerFlags {
+	kAudioPlayerLoop = 1,
+	kAudioPlayerOverrideVolume = 2
 };
 
 class AudioPlayer {
@@ -80,8 +87,6 @@ class AudioPlayer {
 		int                 volume;
 		int                 pan;
 		Audio::AudioStream *stream;
-
-		Track() : isActive(false) {}
 	};
 
 	BladeRunnerEngine *_vm;
@@ -95,17 +100,16 @@ public:
 	AudioPlayer(BladeRunnerEngine *vm);
 	~AudioPlayer();
 
-	enum {
-		LOOP = 1,
-		OVERRIDE_VOLUME = 2
-	};
-
 	int playAud(const Common::String &name, int volume, int panStart, int panEnd, int priority, byte flags = 0);
-	bool isActive(int track);
+	bool isActive(int track) const;
 	void stop(int track, bool immediately);
 	void stopAll();
 	void adjustVolume(int track, int volume, int delay, bool overrideVolume);
 	void adjustPan(int track, int pan, int delay);
+
+	void setVolume(int volume);
+	int getVolume() const;
+	void playSample();
 
 private:
 	void remove(int channel);

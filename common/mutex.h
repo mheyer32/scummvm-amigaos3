@@ -100,6 +100,6 @@ public:
 	inline ~StackLock() { unlock(); }
 };
 
-}  // End of namespace Common
+} // End of namespace Common
 
 #endif

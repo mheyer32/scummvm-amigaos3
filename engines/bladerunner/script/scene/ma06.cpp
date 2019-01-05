@@ -20,16 +20,23 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
+
+// Appears that names for "open" and "close" are switched
+enum kMA06Loops {
+	kMA06LoopDoorOpen  = 0,
+	kMA06LoopMain      = 1,
+	kMA06LoopDoorClose = 3
+};
 
 void SceneScriptMA06::InitializeScene() {
 	Setup_Scene_Information(40.0f, 1.0f, -20.0f, 400);
 	Ambient_Sounds_Add_Looping_Sound(210, 50, 0, 1);
 	Ambient_Sounds_Add_Looping_Sound(408, 33, 0, 1);
-	Scene_Loop_Start_Special(kSceneLoopModeLoseControl, 0, false);
-	Scene_Loop_Set_Default(1);
+	Scene_Loop_Start_Special(kSceneLoopModeLoseControl, kMA06LoopDoorOpen, false);
+	Scene_Loop_Set_Default(kMA06LoopMain);
 	Sound_Play(209, 100, 50, 50, 100);
 }
 
@@ -83,13 +90,13 @@ void SceneScriptMA06::PlayerWalkedIn() {
 	Game_Flag_Reset(kFlagMA07toMA06);
 
 	if (Game_Flag_Query(kFlagMA06toMA01)) {
-		Set_Enter(49, 48);
+		Set_Enter(kSetMA01, kSceneMA01);
 	} else if (Game_Flag_Query(kFlagMA06ToMA02)) {
-		Set_Enter(10, 49);
-	} else { // kFlagMA06ToMA07
-		Set_Enter(53, 53);
+		Set_Enter(kSetMA02_MA04, kSceneMA02);
+	} else {
+		Set_Enter(kSetMA07, kSceneMA07);
 	}
-	Scene_Loop_Start_Special(kSceneLoopModeChangeSet, 3, true);
+	Scene_Loop_Start_Special(kSceneLoopModeChangeSet, kMA06LoopDoorClose, true);
 	Sound_Play(208, 100, 50, 50, 50);
 	//return true;
 }
@@ -125,22 +132,22 @@ void SceneScriptMA06::activateElevator() {
 		}
 		Actor_Says(kActorAnsweringMachine, 80, 3);
 		Player_Gains_Control();
-		int floor = Elevator_Activate(1);
+		int floor = Elevator_Activate(kElevatorMA);
 		Player_Loses_Control();
-		Scene_Loop_Start_Special(kSceneLoopMode2, 1, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, kMA06LoopMain, true);
 		if (floor > 1) {
 			Game_Flag_Set(kFlagMA06toMA07);
 		} else if (floor == 1) {
-			if (Game_Flag_Query(kFlagMA01Locked)) {
+			if (Game_Flag_Query(kFlagSpinnerToMA01)) {
 				Game_Flag_Set(kFlagMA06toMA01);
 			} else {
 				Sound_Play(412, 100, 0, 0, 50);
 				Delay(500);
 				Actor_Says(kActorAnsweringMachine, 610, 3);
 			}
-		} else {
+		} else { // floor == 0
 			Actor_Says(kActorMcCoy, 2940, 18);
-			if (Global_Variable_Query(1) == 4 && Game_Flag_Query(655)) {
+			if (Global_Variable_Query(kVariableChapter) == 4 && Game_Flag_Query(655)) {
 				Sound_Play(412, 100, 0, 0, 50);
 				Delay(500);
 				Actor_Says(kActorAnsweringMachine, 610, 3);

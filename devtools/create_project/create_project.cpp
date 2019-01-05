@@ -300,7 +300,7 @@ int main(int argc, char *argv[]) {
 		for (EngineDescList::iterator j = setup.engines.begin(); j != setup.engines.end(); ++j)
 			j->enable = false;
 	}
-	
+
 	// Disable engines for which we are missing dependencies
 	for (EngineDescList::const_iterator i = setup.engines.begin(); i != setup.engines.end(); ++i) {
 		if (i->enable) {
@@ -312,6 +312,11 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
+	}
+
+	// HACK: Vorbis and Tremor can not be enabled simultaneously
+	if (getFeatureBuildState("tremor", setup.features)) {
+		setFeatureBuildState("vorbis", setup.features, false);
 	}
 
 	// Print status
@@ -705,7 +710,7 @@ void displayHelp(const char *exe) {
 	        "                           The default is \"12\", thus \"Visual Studio 2013\"\n"
 	        " --build-events           Run custom build events as part of the build\n"
 	        "                          (default: false)\n"
-	        " --installer              Create NSIS installer after the build (implies --build-events)\n"
+	        " --installer              Create installer after the build (implies --build-events)\n"
 	        "                          (default: false)\n"
 	        " --tools                  Create project files for the devtools\n"
 	        "                          (ignores --build-events and --installer, as well as engine settings)\n"
@@ -1027,7 +1032,9 @@ const Feature s_features[] = {
 	// Libraries
 	{      "libz",        "USE_ZLIB", "zlib",             true,  "zlib (compression) support" },
 	{       "mad",         "USE_MAD", "libmad",           true,  "libmad (MP3) support" },
-	{    "vorbis",      "USE_VORBIS", "libvorbisfile_static libvorbis_static libogg_static", true, "Ogg Vorbis support" },
+	{       "ogg",         "USE_OGG", "libogg_static",    true,  "Ogg support" },
+	{    "vorbis",      "USE_VORBIS", "libvorbisfile_static libvorbis_static", true, "Vorbis support" },
+	{    "tremor",      "USE_TREMOR", "libtremor", false, "Tremor support" },
 	{      "flac",        "USE_FLAC", "libFLAC_static win_utf8_io_static",   true, "FLAC support" },
 	{       "png",         "USE_PNG", "libpng16",         true,  "libpng support" },
 	{      "faad",        "USE_FAAD", "libfaad",          false, "AAC support" },
@@ -1056,17 +1063,20 @@ const Feature s_features[] = {
 	{       "keymapper",     "ENABLE_KEYMAPPER",         "", false, "Keymapper support"},
 	{   "eventrecorder", "ENABLE_EVENTRECORDER",         "", false, "Event recorder support"},
 	{         "updates",          "USE_UPDATES",         "", false, "Updates support"},
+	{         "dialogs",       "USE_SYSDIALOGS",         "", true,  "System dialogs support"},
 	{      "langdetect",       "USE_DETECTLANG",         "", true,  "System language detection support" } // This feature actually depends on "translation", there
 	                                                                                                      // is just no current way of properly detecting this...
 };
 
 const Tool s_tools[] = {
+	{ "create_cryo",         true},
 	{ "create_drascula",     true},
 	{ "create_hugo",         true},
 	{ "create_kyradat",      true},
 	{ "create_lure",         true},
 	{ "create_neverhood",    true},
 	{ "create_teenagent",    true},
+	{ "create_titanic",      true},
 	{ "create_tony",         true},
 	{ "create_toon",         true},
 	{ "create_translations", true},
@@ -1113,6 +1123,15 @@ bool setFeatureBuildState(const std::string &name, FeatureList &features, bool e
 	if (i != features.end()) {
 		i->enable = enable;
 		return true;
+	} else {
+		return false;
+	}
+}
+
+bool getFeatureBuildState(const std::string &name, FeatureList &features) {
+	FeatureList::iterator i = std::find(features.begin(), features.end(), name);
+	if (i != features.end()) {
+		return i->enable;
 	} else {
 		return false;
 	}

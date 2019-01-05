@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -33,7 +33,7 @@ void SceneScriptHF05::InitializeScene() {
 		Setup_Scene_Information(483.0f, 40.63f, -189.0f, 600);
 	}
 	Scene_Exit_Add_2D_Exit(0, 443, 270, 515, 350, 0);
-	if (Global_Variable_Query(1) > 3) {
+	if (Global_Variable_Query(kVariableChapter) > 3) {
 		Scene_Exit_Add_2D_Exit(1, 367, 298, 399, 349, 2);
 	}
 	Scene_Exit_Add_2D_Exit(2, 589, 0, 639, 479, 1);
@@ -92,7 +92,7 @@ bool SceneScriptHF05::ClickedOn3DObject(const char *objectName, bool a2) {
 				Actor_Face_Heading(kActorMcCoy, 0, false);
 				Actor_Change_Animation_Mode(kActorMcCoy, 23);
 				Scene_Loop_Set_Default(5);
-				Scene_Loop_Start_Special(kSceneLoopMode2, 4, true);
+				Scene_Loop_Start_Special(kSceneLoopModeOnce, 4, true);
 				if (sub_4048C0()) {
 					if (sub_4048C0() == 3) {
 						Actor_Face_Heading(kActorDektora, 0, false);
@@ -114,7 +114,7 @@ bool SceneScriptHF05::ClickedOn3DObject(const char *objectName, bool a2) {
 					ADQ_Add(kActorVoiceOver, 940, -1);
 					Ambient_Sounds_Play_Sound(147, 50, 99, 0, 0);
 					Delay(1500);
-					Loop_Actor_Walk_To_XYZ(kActorMcCoy, 181.53999f, 40.630001f, 388.09f, 0, 0, true, 0);
+					Loop_Actor_Walk_To_XYZ(kActorMcCoy, 181.54f, 40.63f, 388.09f, 0, 0, true, 0);
 					Actor_Face_Heading(kActorMcCoy, 0, false);
 					Actor_Change_Animation_Mode(kActorMcCoy, 23);
 					Actor_Clue_Lose(kActorMcCoy, kClueBomb);
@@ -146,7 +146,7 @@ bool SceneScriptHF05::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 483.0f, 40.63f, -189.0f, 0, 1, false, 0) && !Game_Flag_Query(684)) {
 			Game_Flag_Set(313);
-			Set_Enter(37, 34);
+			Set_Enter(37, kSceneHF01);
 		}
 		return true;
 	}
@@ -158,14 +158,14 @@ bool SceneScriptHF05::ClickedOnExit(int exitId) {
 				Actor_Says(kActorMcCoy, 1810, 16);
 			}
 			Game_Flag_Set(359);
-			Set_Enter(43, 40);
+			Set_Enter(43, kSceneHF07);
 		}
 		return true;
 	}
 	if (exitId == 2) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 277.0f, 40.631f, 410.0f, 0, 1, false, 0) && !Game_Flag_Query(684)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 277.0f, 40.63f, 410.0f, 0, 1, false, 0) && !Game_Flag_Query(684)) {
 			Game_Flag_Set(529);
-			Set_Enter(42, 39);
+			Set_Enter(42, kSceneHF06);
 		}
 		return true;
 	}
@@ -273,7 +273,7 @@ void SceneScriptHF05::PlayerWalkedIn() {
 	}
 	if (Actor_Query_In_Set(kActorCrazylegs, 41)) {
 		if (Game_Flag_Query(562)) {
-			if (!Game_Flag_Query(563) && Global_Variable_Query(1) == 3) {
+			if (!Game_Flag_Query(563) && Global_Variable_Query(kVariableChapter) == 3) {
 				sub_402970();
 				Game_Flag_Set(563);
 			}
@@ -317,7 +317,7 @@ void SceneScriptHF05::sub_402970() {
 
 void SceneScriptHF05::sub_402AE4() {
 	Dialogue_Menu_Clear_List();
-	if (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansNote) == 1 && Global_Variable_Query(1) == 3) {
+	if (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansNote) == 1 && Global_Variable_Query(kVariableChapter) == 3) {
 		DM_Add_To_List_Never_Repeat_Once_Selected(1180, 3, 6, 7);
 	}
 	if (Actor_Clue_Query(kActorMcCoy, kClueCrazylegsInterview1) == 1) {
@@ -329,7 +329,7 @@ void SceneScriptHF05::sub_402AE4() {
 	if (Actor_Clue_Query(kActorMcCoy, kClueLucy) == 1 && Actor_Query_Goal_Number(kActorLucy) != 599) {
 		DM_Add_To_List_Never_Repeat_Once_Selected(1210, 4, 6, 2);
 	}
-	if (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansResources) == 1 || (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansNote) == 1 && Global_Variable_Query(1) == 3)) {
+	if (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansResources) == 1 || (Actor_Clue_Query(kActorMcCoy, kClueGrigoriansNote) == 1 && Global_Variable_Query(kVariableChapter) == 3)) {
 		DM_Add_To_List_Never_Repeat_Once_Selected(1220, -1, 2, 8);
 	}
 	if (Actor_Clue_Query(kActorMcCoy, kClueCarRegistration1) == 1 || Actor_Clue_Query(kActorMcCoy, kClueCarRegistration3) == 1) {
@@ -468,11 +468,11 @@ void SceneScriptHF05::sub_403738() {
 		Actor_Set_At_XYZ(kActorCrazylegs, -315.15f, 0.0f, 241.06f, 583);
 		Actor_Set_Goal_Number(kActorCrazylegs, 699);
 		Game_Flag_Set(652);
-		if (Game_Flag_Query(255)) {
-			Set_Enter(54, 54);
+		if (Game_Flag_Query(kFlagSpinnerToNR01)) {
+			Set_Enter(54, kSceneNR01);
 		} else {
 			Game_Flag_Set(313);
-			Set_Enter(37, 34);
+			Set_Enter(37, kSceneHF01);
 		}
 	} else if (answer == 1260) {
 		Actor_Says(kActorMcCoy, 1965, 12);
@@ -483,10 +483,10 @@ void SceneScriptHF05::sub_403738() {
 }
 
 int SceneScriptHF05::sub_404858() {
-	if (Global_Variable_Query(45) == 2 && Actor_Query_Goal_Number(kActorDektora) != 599) {
+	if (Global_Variable_Query(kVariableAffectionTowards) == 2 && Actor_Query_Goal_Number(kActorDektora) != 599) {
 		return kActorDektora;
 	}
-	if (Global_Variable_Query(45) == 3 && Actor_Query_Goal_Number(kActorLucy) != 599) {
+	if (Global_Variable_Query(kVariableAffectionTowards) == 3 && Actor_Query_Goal_Number(kActorLucy) != 599) {
 		return kActorLucy;
 	}
 	return -1;
@@ -494,15 +494,15 @@ int SceneScriptHF05::sub_404858() {
 
 void SceneScriptHF05::sub_4042E4() {
 	Actor_Force_Stop_Walking(kActorMcCoy);
-	Actor_Put_In_Set(kActorOfficerLeary, 41);
-	Actor_Set_At_XYZ(kActorOfficerLeary, 430.39999f, 40.630001f, -258.17999f, 300);
-	Actor_Put_In_Set(kActorOfficerGrayford, 41);
-	Actor_Set_At_XYZ(kActorOfficerGrayford, 526.40002f, 37.18f, -138.17999f, 300);
+	Actor_Put_In_Set(kActorOfficerLeary, kSetHF05);
+	Actor_Set_At_XYZ(kActorOfficerLeary, 430.4f, 40.63f, -258.18f, 300);
+	Actor_Put_In_Set(kActorOfficerGrayford, kSetHF05);
+	Actor_Set_At_XYZ(kActorOfficerGrayford, 526.4f, 37.18f, -138.18f, 300);
 	ADQ_Flush();
 	ADQ_Add(kActorOfficerGrayford, 260, -1);
 	Player_Loses_Control();
-	Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 3, 1, kActorMcCoy, 4, 4, 7, 8, 0, 0, 100, 100, 1200, 1);
-	return Non_Player_Actor_Combat_Mode_On(kActorOfficerGrayford, 3, 1, kActorMcCoy, 4, 4, 7, 8, 0, 0, 100, 100, 300, 1);
+	Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, kActorCombatStateUncover, true, kActorMcCoy, 4, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 100, 1200, true);
+	Non_Player_Actor_Combat_Mode_On(kActorOfficerGrayford, kActorCombatStateUncover, true, kActorMcCoy, 4, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 100, 300, true);
 }
 
 void SceneScriptHF05::sub_403F0C() {
@@ -588,13 +588,13 @@ void SceneScriptHF05::sub_403A34(int actorId) {
 		Async_Actor_Walk_To_XYZ(actorId, 309.0f, 40.63f, 402.0f, 0, false);
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 277.0f, 40.63f, 410.0f, 0, 0, false, 0);
 		Game_Flag_Set(529);
-		Set_Enter(42, 39);
+		Set_Enter(42, kSceneHF06);
 	}
 }
 
 void SceneScriptHF05::sub_402370() {
 	Player_Loses_Control();
-	if (Global_Variable_Query(1) == 3) {
+	if (Global_Variable_Query(kVariableChapter) == 3) {
 		ADQ_Flush();
 		ADQ_Add(kActorCrazylegs, 130, 18);
 		ADQ_Add(kActorCrazylegs, 140, 18);

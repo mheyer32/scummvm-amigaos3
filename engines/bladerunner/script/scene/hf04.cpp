@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -84,7 +84,7 @@ bool SceneScriptHF04::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(567);
-			Set_Enter(38, 35);
+			Set_Enter(38, kSceneHF02);
 		}
 		return true;
 	}
@@ -108,14 +108,14 @@ void SceneScriptHF04::SceneFrameAdvanced(int frame) {
 	if (Game_Flag_Query(585)) {
 		Game_Flag_Reset(585);
 		Scene_Loop_Set_Default(3);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		//return true;
 		return;
 	}
 	if (Game_Flag_Query(586)) {
 		Game_Flag_Reset(586);
 		Scene_Loop_Set_Default(0);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 5, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 5, true);
 		//return true;
 		return;
 	}

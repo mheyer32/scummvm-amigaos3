@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -46,7 +46,7 @@ void SceneScriptUG13::InitializeScene() {
 	Ambient_Sounds_Add_Sound(369, 2, 120, 11, 12, -100, 100, -100, 100, 0, 0);
 	Ambient_Sounds_Add_Sound(397, 2, 120, 11, 12, -100, 100, -100, 100, 0, 0);
 	Ambient_Sounds_Add_Sound(398, 2, 120, 11, 12, -100, 100, -100, 100, 0, 0);
-	if (Global_Variable_Query(1) == 4 && !Game_Flag_Query(169)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(169)) {
 		Actor_Set_Goal_Number(kActorTransient, 390);
 	}
 	if (Actor_Query_Goal_Number(kActorTransient) == 599) {
@@ -72,7 +72,7 @@ void SceneScriptUG13::SceneLoaded() {
 	Clickable_Object("BASKET");
 	Clickable_Object("BOLLARD");
 	Unclickable_Object("BASKET");
-	if (Global_Variable_Query(1) >= 3 && !Actor_Clue_Query(kActorMcCoy, kClueOriginalRequisitionForm) && Game_Flag_Query(169) && (Actor_Clue_Query(kActorMcCoy, kClueShippingForm) || Actor_Clue_Query(kActorMcCoy, kClueWeaponsOrderForm))) {
+	if (Global_Variable_Query(kVariableChapter) >= 3 && !Actor_Clue_Query(kActorMcCoy, kClueOriginalRequisitionForm) && Game_Flag_Query(169) && (Actor_Clue_Query(kActorMcCoy, kClueShippingForm) || Actor_Clue_Query(kActorMcCoy, kClueWeaponsOrderForm))) {
 		Item_Add_To_World(111, 958, 85, -209.01f, 70.76f, -351.79f, 0, 16, 12, false, true, false, true);
 	}
 }
@@ -87,13 +87,13 @@ bool SceneScriptUG13::ClickedOn3DObject(const char *objectName, bool a2) {
 		Actor_Face_Object(kActorMcCoy, "BOLLARD", true);
 		if (Game_Flag_Query(431)) {
 			Scene_Loop_Set_Default(1);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 0, false);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 0, false);
 			Game_Flag_Reset(431);
 			Game_Flag_Set(436);
 			return true;
 		} else {
 			Scene_Loop_Set_Default(4);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 3, false);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 3, false);
 			Game_Flag_Set(431);
 			Scene_Exit_Remove(0);
 			return true;
@@ -103,7 +103,7 @@ bool SceneScriptUG13::ClickedOn3DObject(const char *objectName, bool a2) {
 }
 
 bool SceneScriptUG13::ClickedOnActor(int actorId) {
-	if (actorId == 12 && Global_Variable_Query(1) == 4 && !Loop_Actor_Walk_To_XYZ(kActorMcCoy, -248.0f, 44.0f, -390.0f, 12, 1, false, 0)) {
+	if (actorId == 12 && Global_Variable_Query(kVariableChapter) == 4 && !Loop_Actor_Walk_To_XYZ(kActorMcCoy, -248.0f, 44.0f, -390.0f, 12, 1, false, 0)) {
 		Actor_Face_Actor(kActorMcCoy, kActorTransient, true);
 		if (Actor_Query_Goal_Number(kActorTransient) != 6 && Actor_Query_Goal_Number(kActorTransient) != 599) {
 			if (!Game_Flag_Query(554)) {
@@ -156,7 +156,7 @@ bool SceneScriptUG13::ClickedOnExit(int exitId) {
 			Player_Loses_Control();
 			Game_Flag_Set(430);
 			Game_Flag_Set(431);
-			Set_Enter(81, 93);
+			Set_Enter(81, kSceneUG08);
 			Scene_Loop_Start_Special(1, 3, 0);
 		}
 		return true;
@@ -164,7 +164,7 @@ bool SceneScriptUG13::ClickedOnExit(int exitId) {
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 39.0f, 52.94f, -528.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(351);
-			Set_Enter(87, 99);
+			Set_Enter(87, kSceneUG15);
 		}
 		return true;
 	}
@@ -177,7 +177,7 @@ bool SceneScriptUG13::ClickedOnExit(int exitId) {
 			if (!sub_402AD0()) {
 				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -477.0f, 141.9f, -870.0f, 0, 0, false, 0);
 				Game_Flag_Set(434);
-				Set_Enter(89, 102);
+				Set_Enter(89, kSceneUG18);
 				return true;
 			}
 			Actor_Face_Heading(kActorMcCoy, 325, false);

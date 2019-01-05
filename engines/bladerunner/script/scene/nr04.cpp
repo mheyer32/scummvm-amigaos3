@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -137,7 +137,7 @@ bool SceneScriptNR04::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(437);
-			Set_Enter(55, 56);
+			Set_Enter(55, kSceneNR03);
 		}
 		return true;
 	}
@@ -187,7 +187,7 @@ void SceneScriptNR04::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 			Delay(2500);
 			Actor_Says(kActorEarlyQ, 290, 3);
 			sub_401DB0();
-			//return true;			
+			//return true;
 			break;
 		case 213:
 			Actor_Clue_Acquire(kActorMcCoy, kClueDektorasDressingRoom, 0, kActorEarlyQ);
@@ -320,7 +320,7 @@ void SceneScriptNR04::sub_402860(int frame) {
 		0.0f, 0.0f, 1.0f,
 		0.5f, 0.0f, 0.8f};
 
-	float v3 = (frame - 60) / 10;
+	float v3 = (frame - 60) * 0.1f;
 	float v4 = (frame % 10) * 0.1f;
 	float coef = 1.0f;
 	if (frame > 100) {

@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -68,21 +68,21 @@ bool SceneScriptUG17::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(353);
-			Set_Enter(87, 99);
+			Set_Enter(87, kSceneUG15);
 		}
 		return true;
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 1013.0f, 67.96f, -1892.0f, 0, 1, false, 0)) {
 			Actor_Face_Heading(kActorMcCoy, 89, false);
-			if (Global_Variable_Query(1) == 5) {
+			if (Global_Variable_Query(kVariableChapter) == 5) {
 				Actor_Says(kActorMcCoy, 8522, 14);
 			} else {
 				Loop_Actor_Travel_Ladder(kActorMcCoy, 10, 1, 0);
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
 				Game_Flag_Set(448);
-				Set_Enter(17, 83);
+				Set_Enter(17, kSceneTB03);
 			}
 		}
 		return true;

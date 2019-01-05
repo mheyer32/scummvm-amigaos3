@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -67,7 +67,7 @@ void SceneScriptUG02::SceneLoaded() {
 	Clickable_Object("CRATE_3");
 	Footstep_Sounds_Set(0, 0);
 	Footstep_Sounds_Set(8, 2);
-	if (!Game_Flag_Query(656) && Game_Flag_Query(44)) {
+	if (!Game_Flag_Query(656) && Game_Flag_Query(kFlagIzoIsReplicant)) {
 		Item_Add_To_World(88, 963, 75, -300.37f, 120.16f, -81.31f, 0, 8, 8, false, true, false, true);
 	}
 }
@@ -91,7 +91,7 @@ bool SceneScriptUG02::MouseClick(int x, int y) {
 bool SceneScriptUG02::ClickedOn3DObject(const char *objectName, bool a2) {
 	if (Object_Query_Click("GUN_1", objectName) || Object_Query_Click("GUN_2", objectName) || Object_Query_Click("CRATE_3", objectName)) {
 		Actor_Face_Object(kActorMcCoy, "GUN_1", true);
-		if (!Game_Flag_Query(449) && Global_Variable_Query(1) < 4) {
+		if (!Game_Flag_Query(449) && Global_Variable_Query(kVariableChapter) < 4) {
 			Actor_Voice_Over(2430, kActorVoiceOver);
 			Actor_Voice_Over(2440, kActorVoiceOver);
 			Actor_Voice_Over(2450, kActorVoiceOver);
@@ -100,7 +100,7 @@ bool SceneScriptUG02::ClickedOn3DObject(const char *objectName, bool a2) {
 			Actor_Clue_Acquire(kActorMcCoy, kClueWeaponsCache, 1, -1);
 			return true;
 		}
-		if (Global_Variable_Query(1) <= 3) {
+		if (Global_Variable_Query(kVariableChapter) <= 3) {
 			Actor_Says(kActorMcCoy, 8580, 14);
 			return false;
 		}
@@ -153,11 +153,11 @@ bool SceneScriptUG02::ClickedOnExit(int exitId) {
 				Loop_Actor_Travel_Stairs(kActorMcCoy, 4, 0, 0);
 				Footstep_Sound_Override_Off();
 				int v3 = Player_Query_Combat_Mode();
-				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -96.57f, 74.870003f, -271.28f, 0, 0, v3, 0);
+				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -96.57f, 74.87f, -271.28f, 0, 0, v3, 0);
 				int v4 = Player_Query_Combat_Mode();
-				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -95.0f, 74.870003f, -503.0f, 0, 0, v4, 0);
+				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -95.0f, 74.87f, -503.0f, 0, 0, v4, 0);
 				Game_Flag_Set(315);
-				Set_Enter(74, 86);
+				Set_Enter(74, kSceneUG01);
 			}
 		}
 		return true;
@@ -181,7 +181,7 @@ bool SceneScriptUG02::ClickedOnExit(int exitId) {
 			Game_Flag_Set(403);
 			Item_Remove_From_World(121);
 		}
-		Set_Enter(8, 33);
+		Set_Enter(8, kSceneHC03);
 		return true;
 	}
 	return false;

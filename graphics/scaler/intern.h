@@ -46,8 +46,8 @@ static inline uint32 interpolate32_1_1(uint32 p1, uint32 p2) {
  */
 template<typename ColorMask>
 static inline uint32 interpolate32_3_1(uint32 p1, uint32 p2) {
-	register uint32 x = ((p1 & ColorMask::qhighBits) >> 2) * 3 + ((p2 & ColorMask::qhighBits) >> 2);
-	register uint32 y = ((p1 & ColorMask::qlowBits) * 3 + (p2 & ColorMask::qlowBits)) >> 2;
+	uint32 x = ((p1 & ColorMask::qhighBits) >> 2) * 3 + ((p2 & ColorMask::qhighBits) >> 2);
+	uint32 y = ((p1 & ColorMask::qlowBits) * 3 + (p2 & ColorMask::qlowBits)) >> 2;
 
 	y &= ColorMask::qlowBits;
 	return x + y;
@@ -195,18 +195,18 @@ static inline bool diffYUV(int yuv1, int yuv2) {
 	int mask;
 
 	diff = ((yuv1 & Umask) - (yuv2 & Umask));
-	mask = diff >> 31; // -1 if value < 0, 0 otherwise
-	diff = (diff ^ mask) - mask; //-1: ~value + 1; 0: value
+	mask = diff >> 31;           // -1 if value < 0, 0 otherwise
+	diff = (diff ^ mask) - mask; // -1: ~value + 1; 0: value
 	if (diff > trU) return true;
 
 	diff = ((yuv1 & Vmask) - (yuv2 & Vmask));
-	mask = diff >> 31; // -1 if value < 0, 0 otherwise
-	diff = (diff ^ mask) - mask; //-1: ~value + 1; 0: value
+	mask = diff >> 31;           // -1 if value < 0, 0 otherwise
+	diff = (diff ^ mask) - mask; // -1: ~value + 1; 0: value
 	if (diff > trV) return true;
 
 	diff = ((yuv1 & Ymask) - (yuv2 & Ymask));
-	mask = diff >> 31; // -1 if value < 0, 0 otherwise
-	diff = (diff ^ mask) - mask; //-1: ~value + 1; 0: value
+	mask = diff >> 31;           // -1 if value < 0, 0 otherwise
+	diff = (diff ^ mask) - mask; // -1: ~value + 1; 0: value
 	if (diff > trY) return true;
 
 	return false;

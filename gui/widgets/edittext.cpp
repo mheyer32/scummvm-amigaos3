@@ -64,7 +64,6 @@ void EditTextWidget::reflowLayout() {
 	EditableWidget::reflowLayout();
 }
 
-
 void EditTextWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 	if (!isEnabled())
 		return;
@@ -87,7 +86,7 @@ void EditTextWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 		last = cur;
 	}
 	if (setCaretPos(i))
-		draw();
+		markAsDirty();
 
 #ifdef TIZEN
 	// Display the virtual keypad to allow text entry. Samsung app-store testers expected
@@ -97,7 +96,8 @@ void EditTextWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 }
 
 void EditTextWidget::drawWidget() {
-	g_gui.theme()->drawWidgetBackgroundClip(Common::Rect(_x, _y, _x+_w, _y+_h), getBossClipRect(), 0, ThemeEngine::kWidgetBackgroundEditText);
+	g_gui.theme()->drawWidgetBackground(Common::Rect(_x, _y, _x + _w, _y + _h), 0,
+	                                    ThemeEngine::kWidgetBackgroundEditText);
 
 	// Draw the text
 	adjustOffset();
@@ -105,7 +105,10 @@ void EditTextWidget::drawWidget() {
 	const Common::Rect &r = Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 8, _y + _h);
 	setTextDrawableArea(r);
 
-	g_gui.theme()->drawTextClip(Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 2, _y + _h), getBossClipRect(), _editString, _state, Graphics::kTextAlignLeft, ThemeEngine::kTextInversionNone, -_editScrollOffset, false, _font, ThemeEngine::kFontColorNormal, true, _textDrawableArea);
+	g_gui.theme()->drawText(
+			Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 2, _y + _h),
+			_editString, _state, Graphics::kTextAlignLeft, ThemeEngine::kTextInversionNone,
+			-_editScrollOffset, false, _font, ThemeEngine::kFontColorNormal, true, _textDrawableArea);
 }
 
 Common::Rect EditTextWidget::getEditRect() const {
@@ -135,6 +138,7 @@ void EditTextWidget::endEditMode() {
 void EditTextWidget::abortEditMode() {
 	setEditString(_backupString);
 	sendCommand(_cmd, 0);
+
 	releaseFocus();
 }
 

@@ -179,9 +179,9 @@ public:
 			//unloadPlugin();
 	}
 
-//	virtual bool isLoaded() const = 0;	// TODO
-	virtual bool loadPlugin() = 0;	// TODO: Rename to load() ?
-	virtual void unloadPlugin() = 0;	// TODO: Rename to unload() ?
+//	virtual bool isLoaded() const = 0; // TODO
+	virtual bool loadPlugin() = 0;     // TODO: Rename to load() ?
+	virtual void unloadPlugin() = 0;   // TODO: Rename to unload() ?
 
 	/**
 	 * The following functions query information from the plugin object once
@@ -189,6 +189,19 @@ public:
 	 **/
 	PluginType getType() const;
 	const char *getName() const;
+
+	template <class T>
+	T &get() const {
+#ifndef __amigaos3__
+		T *pluginObject = dynamic_cast<T *>(_pluginObject);
+		if (!pluginObject) {
+			error("Invalid cast of plugin %s", getName());
+		}
+#else
+	T *pluginObject = static_cast<T *>(_pluginObject);
+#endif
+		return *pluginObject;
+	}
 
 	/**
 	 * The getFileName() function gets the name of the plugin file for those
@@ -200,25 +213,6 @@ public:
 
 /** List of Plugin instances. */
 typedef Common::Array<Plugin *> PluginList;
-
-/**
- * Convenience template to make it easier defining normal Plugin
- * subclasses. Namely, the PluginSubclass will manage PluginObjects
- * of a type specified via the PO_t template parameter.
- */
-template<class PO_t>
-class PluginSubclass : public Plugin {
-public:
-	PO_t &operator*() const {
-		return *(PO_t *)_pluginObject;
-	}
-
-	PO_t *operator->() const {
-		return (PO_t *)_pluginObject;
-	}
-
-	typedef Common::Array<PluginSubclass *> List;
-};
 
 /**
  * Abstract base class for Plugin factories. Subclasses of this

@@ -64,6 +64,7 @@
 #include "scumm/players/player_v3m.h"
 #include "scumm/players/player_v4a.h"
 #include "scumm/players/player_v5m.h"
+#include "scumm/players/player_he.h"
 #include "scumm/resource.h"
 #include "scumm/he/resource_he.h"
 #include "scumm/he/moonbase/moonbase.h"
@@ -1954,6 +1955,10 @@ void ScummEngine::setupMusic(int midi) {
 		// support this with the Player_AD code at the moment. The reason here
 		// is that multi MIDI is supported internally by our iMuse output.
 		_musicEngine = new Player_AD(this);
+#ifdef ENABLE_HE
+	} else if (_game.platform == Common::kPlatformDOS && _sound->_musicType == MDT_ADLIB && _game.heversion >= 60) {
+		_musicEngine = new Player_HE(this);
+#endif
 	} else if (_game.version >= 3 && _game.heversion <= 62) {
 		MidiDriver *nativeMidiDriver = 0;
 		MidiDriver *adlibMidiDriver = 0;
@@ -2430,6 +2435,9 @@ void ScummEngine::scummLoop_handleSaveLoad() {
 
 			if (success && _saveTemporaryState && VAR_GAME_LOADED != 0xFF && _game.version <= 7)
 				VAR(VAR_GAME_LOADED) = 201;
+
+			if (!_saveTemporaryState)
+				_lastSaveTime = _system->getMillis();
 		} else {
 			success = loadState(_saveLoadSlot, _saveTemporaryState, filename);
 			if (!success)
@@ -2453,7 +2461,6 @@ void ScummEngine::scummLoop_handleSaveLoad() {
 			clearClickedStatus();
 
 		_saveLoadFlag = 0;
-		_lastSaveTime = _system->getMillis();
 	}
 }
 

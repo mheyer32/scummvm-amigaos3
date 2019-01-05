@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -37,7 +37,7 @@ void SceneScriptTB07::InitializeScene() {
 	Ambient_Sounds_Add_Sound(214, 1, 20, 20, 25, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(215, 1, 15, 20, 25, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(216, 1, 15, 20, 25, -100, 100, -101, -101, 0, 0);
-	if (Global_Variable_Query(1) == 4 && !Actor_Clue_Query(kActorMcCoy, kClueDNATyrell)) {
+	if (Global_Variable_Query(kVariableChapter) == 4 && !Actor_Clue_Query(kActorMcCoy, kClueDNATyrell)) {
 		Item_Add_To_World(83, 941, 18, 9.7f, 48.7f, -174.22f, 0, 12, 12, false, true, false, true);
 	}
 	if (Game_Flag_Query(661)) {
@@ -81,9 +81,9 @@ bool SceneScriptTB07::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 68.0f, 12.0f, 288.0f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			if (Global_Variable_Query(1) == 4) {
+			if (Global_Variable_Query(kVariableChapter) == 4) {
 				Game_Flag_Set(608);
-				Set_Enter(17, 82);
+				Set_Enter(17, kSceneTB02);
 			} else {
 				Game_Flag_Reset(176);
 				Game_Flag_Reset(182);
@@ -96,57 +96,57 @@ bool SceneScriptTB07::ClickedOnExit(int exitId) {
 				switch (Spinner_Interface_Choose_Dest(-1, 0)) {
 				case 9:
 					Game_Flag_Set(257);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(256);
-					Set_Enter(37, 34);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToHF01);
+					Set_Enter(37, kSceneHF01);
 					break;
 				case 8:
 					Game_Flag_Set(181);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(255);
-					Set_Enter(54, 54);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToNR01);
+					Set_Enter(54, kSceneNR01);
 					break;
 				case 7:
 					Game_Flag_Set(258);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(254);
-					Set_Enter(20, 2);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToBB01);
+					Set_Enter(20, kSceneBB01);
 					break;
 				case 6:
 					Game_Flag_Set(177);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(253);
-					Set_Enter(7, 25);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToDR01);
+					Set_Enter(7, kSceneDR01);
 					break;
 				case 4:
 					Game_Flag_Set(180);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(252);
-					Set_Enter(0, 0);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToAR01);
+					Set_Enter(0, kSceneAR01);
 					break;
 				case 3:
 					Game_Flag_Set(176);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(248);
-					Set_Enter(4, 13);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToCT01);
+					Set_Enter(4, kSceneCT01);
 					break;
 				case 2:
 					Game_Flag_Set(182);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(249);
-					Set_Enter(69, 78);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToRC01);
+					Set_Enter(69, kSceneRC01);
 					break;
 				case 1:
 					Game_Flag_Set(179);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(250);
-					Set_Enter(49, 48);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToMA01);
+					Set_Enter(49, kSceneMA01);
 					break;
 				case 0:
 					Game_Flag_Set(178);
-					Game_Flag_Reset(307);
-					Game_Flag_Set(251);
-					Set_Enter(61, 65);
+					Game_Flag_Reset(kFlagSpinnerToTB02);
+					Game_Flag_Set(kFlagSpinnerToPS01);
+					Set_Enter(61, kScenePS01);
 					break;
 				default:
 					Game_Flag_Set(261);
@@ -175,7 +175,7 @@ void SceneScriptTB07::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptTB07::PlayerWalkedIn() {
-	int v0 = Global_Variable_Query(1);
+	int v0 = Global_Variable_Query(kVariableChapter);
 	Loop_Actor_Walk_To_XYZ(kActorMcCoy, 44.0f, 12.0f, 176.0f, 0, 0, false, 0);
 	if ((v0 == 2 || v0 == 3) && !Game_Flag_Query(612)) {
 		Player_Set_Combat_Mode(false);
@@ -198,7 +198,7 @@ void SceneScriptTB07::sub_401B0C() {
 	Actor_Put_In_Set(kActorRachael, 18);
 	Actor_Set_At_XYZ(kActorRachael, -260.15f, 12.0f, -19.16f, 256);
 	Actor_Change_Animation_Mode(kActorRachael, 0);
-	Outtake_Play(39, 1, -1);
+	Outtake_Play(kOuttakeRachel, true, -1);
 	Loop_Actor_Walk_To_XYZ(kActorRachael, -146.15f, 12.0f, -5.84f, 0, 0, false, 0);
 	Actor_Face_Actor(kActorRachael, kActorMcCoy, true);
 	Actor_Says(kActorRachael, 480, 14);
@@ -254,7 +254,7 @@ void SceneScriptTB07::sub_401B0C() {
 	Actor_Set_At_XYZ(kActorTyrell, 68.0f, 12.0f, 288.0f, 0);
 	Actor_Change_Animation_Mode(kActorTyrell, 0);
 	Scene_Loop_Set_Default(3);
-	Scene_Loop_Start_Special(kSceneLoopMode2, 2, false);
+	Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, false);
 	Actor_Start_Speech_Sample(kActorTyrell, 0);
 	Loop_Actor_Walk_To_XYZ(kActorTyrell, 44.0f, 12.0f, 176.0f, 0, 0, false, 0);
 	Actor_Face_Actor(kActorTyrell, kActorMcCoy, true);

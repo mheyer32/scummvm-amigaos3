@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -97,7 +97,7 @@ bool SceneScriptNR08::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -1102.88f, 0.0f, 107.43f, 0, 1, false, 0)) {
 			Game_Flag_Set(547);
-			Set_Enter(13, 58);
+			Set_Enter(13, kSceneNR05);
 		}
 		return true;
 	}
@@ -106,7 +106,7 @@ bool SceneScriptNR08::ClickedOnExit(int exitId) {
 			Actor_Face_Heading(kActorMcCoy, 505, false);
 			Loop_Actor_Travel_Stairs(kActorMcCoy, 4, 1, 0);
 			Game_Flag_Set(440);
-			Set_Enter(56, 59);
+			Set_Enter(56, kSceneNR06);
 		}
 		return true;
 	}
@@ -117,7 +117,7 @@ bool SceneScriptNR08::ClickedOnExit(int exitId) {
 			Loop_Actor_Travel_Stairs(kActorMcCoy, 6, 1, 0);
 			Footstep_Sound_Override_Off();
 			Game_Flag_Set(614);
-			Set_Enter(58, 62);
+			Set_Enter(58, kSceneNR09);
 		}
 	}
 	return false;
@@ -150,7 +150,7 @@ void SceneScriptNR08::SceneFrameAdvanced(int frame) {
 		Game_Flag_Set(636);
 		Scene_Exits_Disable();
 		Scene_Loop_Set_Default(1);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 3, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 3, true);
 	}
 	if (frame == 95) {
 		Actor_Put_In_Set(kActorDektora, 91);
@@ -175,7 +175,7 @@ void SceneScriptNR08::PlayerWalkedIn() {
 	} else {
 		Game_Flag_Set(729);
 		Ambient_Sounds_Play_Sound(566, 27, 0, 99, 0);
-		Outtake_Play(40, 1, -1);
+		Outtake_Play(kOuttakeDektora, true, -1);
 	}
 	if (Actor_Query_Goal_Number(kActorDektora) == 245) {
 		Actor_Face_Heading(kActorDektora, 790, false);
@@ -184,7 +184,7 @@ void SceneScriptNR08::PlayerWalkedIn() {
 	}
 	if (Actor_Query_Goal_Number(kActorSteele) == 231) {
 		Actor_Says(kActorSteele, 1640, 12);
-		if (!Game_Flag_Query(378)) {
+		if (!Game_Flag_Query(kFlagDirectorsCut)) {
 			Actor_Says(kActorMcCoy, 3790, 13);
 			Actor_Says(kActorSteele, 1650, 14);
 		}

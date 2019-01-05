@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -83,7 +83,7 @@ bool SceneScriptKP01::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(415);
-			Set_Enter(47, 44);
+			Set_Enter(47, kSceneKP04);
 		}
 		return true;
 	}
@@ -92,7 +92,7 @@ bool SceneScriptKP01::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(417);
-			Set_Enter(46, 43);
+			Set_Enter(46, kSceneKP03);
 		}
 		return true;
 	}
@@ -101,7 +101,7 @@ bool SceneScriptKP01::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(414);
-			Set_Enter(45, 42);
+			Set_Enter(45, kSceneKP02);
 		}
 		return true;
 	}
@@ -119,7 +119,7 @@ void SceneScriptKP01::SceneFrameAdvanced(int frame) {
 void SceneScriptKP01::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bool currentSet) {
 	if (actorId == 1) {
 		if (newGoal == 422) {
-			if (Game_Flag_Query(378) == 1) {
+			if (Game_Flag_Query(kFlagDirectorsCut) == 1) {
 				Delay(500);
 				Actor_Change_Animation_Mode(kActorMcCoy, 75);
 				Delay(4500);
@@ -136,7 +136,7 @@ void SceneScriptKP01::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(417);
-			Set_Enter(46, 43);
+			Set_Enter(46, kSceneKP03);
 			//return true;
 		}
 	}

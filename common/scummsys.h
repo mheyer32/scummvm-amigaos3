@@ -117,11 +117,6 @@
 
 		#endif
 
-		#if defined(ARRAYSIZE)
-		// VS2005beta2 introduces new stuff in winnt.h
-		#undef ARRAYSIZE
-		#endif
-
 	#endif
 
 	#if defined(__QNXNTO__)
@@ -284,7 +279,6 @@
 	#if defined(__DC__) || \
 		  defined(__DS__) || \
 		  defined(__3DS__) || \
-		  defined(__GP32__) || \
 		  defined(IPHONE) || \
 		  defined(__PLAYSTATION2__) || \
 		  defined(__PSP__) || \
@@ -344,6 +338,9 @@
 
 #endif
 
+#if defined(USE_TREMOR) && !defined(USE_VORBIS)
+#define USE_VORBIS // make sure this one is defined together with USE_TREMOR!
+#endif
 
 //
 // Fallbacks / default values for various special macros
@@ -395,6 +392,18 @@
 		#define NORETURN_POST __attribute__((__noreturn__))
 	#else
 		#define NORETURN_POST
+	#endif
+#endif
+
+#ifndef WARN_UNUSED_RESULT
+	#if __cplusplus >= 201703L
+		#define WARN_UNUSED_RESULT [[nodiscard]]
+	#elif GCC_ATLEAST(3, 4)
+		#define WARN_UNUSED_RESULT __attribute__((__warn_unused_result__))
+	#elif defined(_Check_return_)
+		#define WARN_UNUSED_RESULT _Check_return_
+	#else
+		#define WARN_UNUSED_RESULT
 	#endif
 #endif
 

@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -35,7 +35,7 @@ void SceneScriptUG04::InitializeScene() {
 		Game_Flag_Reset(334);
 	}
 	Scene_Exit_Add_2D_Exit(0, 123, 308, 159, 413, 3);
-	if (Global_Variable_Query(1) > 3) {
+	if (Global_Variable_Query(kVariableChapter) > 3) {
 		Scene_Exit_Add_2D_Exit(1, 256, 333, 290, 373, 0);
 	}
 	Scene_Exit_Add_2D_Exit(2, 344, 298, 451, 390, 1);
@@ -88,21 +88,21 @@ bool SceneScriptUG04::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -172.0f, 16.29f, -735.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(335);
-			Set_Enter(76, 88);
+			Set_Enter(76, kSceneUG03);
 		}
 		return true;
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 0.0f, -1.74f, -2400.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(338);
-			Set_Enter(78, 90);
+			Set_Enter(78, kSceneUG05);
 		}
 		return true;
 	}
 	if (exitId == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 164.0f, 11.87f, -1013.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(340);
-			Set_Enter(79, 91);
+			Set_Enter(79, kSceneUG06);
 		}
 		return true;
 	}

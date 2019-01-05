@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -35,7 +35,7 @@ void SceneScriptCT06::InitializeScene() {
 	}
 	Scene_Exit_Add_2D_Exit(0, 0, 440, 639, 479, 2);
 	Scene_Exit_Add_2D_Exit(1, 401, 162, 536, 317, 0);
-	if (Game_Flag_Query(40) && Actor_Query_In_Set(kActorZuben, 30)) {
+	if (Game_Flag_Query(kFlagZubenRetired) && Actor_Query_In_Set(kActorZuben, 30)) {
 		Actor_Put_In_Set(kActorZuben, 29);
 		Actor_Set_At_XYZ(kActorZuben, 58.41f, -58.23f, -24.97f, 240);
 		Actor_Retired_Here(kActorZuben, 72, 36, 1, kActorMcCoy);
@@ -99,7 +99,7 @@ bool SceneScriptCT06::ClickedOnActor(int actorId) {
 		Actor_Voice_Over(350, kActorVoiceOver);
 		Actor_Voice_Over(360, kActorVoiceOver);
 		Actor_Voice_Over(370, kActorVoiceOver);
-		if (!Game_Flag_Query(378)) {
+		if (!Game_Flag_Query(kFlagDirectorsCut)) {
 			Actor_Voice_Over(380, kActorVoiceOver);
 			Actor_Voice_Over(390, kActorVoiceOver);
 			Actor_Voice_Over(400, kActorVoiceOver);
@@ -121,7 +121,7 @@ bool SceneScriptCT06::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(78);
-			Set_Enter(28, 17);
+			Set_Enter(28, kSceneCT05);
 			Game_Flag_Reset(212);
 		}
 		return true;
@@ -140,14 +140,14 @@ bool SceneScriptCT06::ClickedOnExit(int exitId) {
 			return true;
 		}
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 203.91f, -58.02f, 0.47f, 0, 1, false, 0)) {
-			if (Global_Variable_Query(1) < 3) {
+			if (Global_Variable_Query(kVariableChapter) < 3) {
 				Actor_Face_Object(kActorMcCoy, "DOOR", true);
 				Actor_Says(kActorMcCoy, 8522, 12);
 			} else {
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
 				Game_Flag_Set(79);
-				Set_Enter(6, 20);
+				Set_Enter(6, kSceneCT08);
 				Game_Flag_Reset(212);
 			}
 		}

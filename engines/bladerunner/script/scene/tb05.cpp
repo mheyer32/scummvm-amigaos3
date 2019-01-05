@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -52,10 +52,10 @@ void SceneScriptTB05::SceneLoaded() {
 	Clickable_Object("MONITOR05");
 	Unclickable_Object("SMUDGE_GLASS01");
 	if (!Actor_Clue_Query(kActorMcCoy, kClueDragonflyEarring)) {
-		Item_Add_To_World(76, 940, 72, 76.160004f, 147.36f, -235.14999f, 0, 6, 6, false, true, false, true);
+		Item_Add_To_World(76, 940, 72, 76.16f, 147.36f, -235.15f, 0, 6, 6, false, true, false, true);
 	}
-	if (!Actor_Clue_Query(kActorMcCoy, kClueTyrellSalesPamphlet1) && !Actor_Clue_Query(kActorMcCoy, kClueTyrellSalesPamphlet2) && (Game_Flag_Query(45) || Game_Flag_Query(46))) {
-		Item_Add_To_World(119, 972, 72, 129.00999f, 147.12f, -162.98f, 0, 8, 8, false, true, false, true);
+	if (!Actor_Clue_Query(kActorMcCoy, kClueTyrellSalesPamphlet1) && !Actor_Clue_Query(kActorMcCoy, kClueTyrellSalesPamphlet2) && (Game_Flag_Query(kFlagGordoIsReplicant) || Game_Flag_Query(kFlagLucyIsReplicant))) {
+		Item_Add_To_World(119, 972, 72, 129.01f, 147.12f, -162.98f, 0, 8, 8, false, true, false, true);
 	}
 }
 
@@ -136,7 +136,7 @@ bool SceneScriptTB05::ClickedOnItem(int itemId, bool a2) {
 		Item_Remove_From_World(119);
 		Item_Pickup_Spin_Effect(972, 449, 431);
 		Actor_Voice_Over(4280, kActorVoiceOver);
-		if (Game_Flag_Query(45)) {
+		if (Game_Flag_Query(kFlagGordoIsReplicant)) {
 			Actor_Voice_Over(4290, kActorVoiceOver);
 			Actor_Clue_Acquire(kActorMcCoy, kClueTyrellSalesPamphlet1, 1, -1);
 		} else {
@@ -151,7 +151,7 @@ bool SceneScriptTB05::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 23.0f, 151.53f, -205.0f, 12, 1, false, 0)) {
 			Game_Flag_Set(97);
-			Set_Enter(73, 85);
+			Set_Enter(73, kSceneTB06);
 			Scene_Loop_Start_Special(1, 2, 1);
 		}
 		return true;
@@ -159,7 +159,7 @@ bool SceneScriptTB05::ClickedOnExit(int exitId) {
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 14.0f, 147.12f, 123.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(95);
-			Set_Enter(17, 82);
+			Set_Enter(17, kSceneTB02);
 		}
 		return true;
 	}

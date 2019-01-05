@@ -56,6 +56,10 @@ template<typename T> inline T CLIP(T v, T amin, T amax)
  */
 template<typename T> inline void SWAP(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
+#ifdef ARRAYSIZE
+#undef ARRAYSIZE
+#endif
+
 /**
  * Macro which determines the number of entries in a fixed size array.
  */
@@ -123,7 +127,7 @@ bool isAlnum(int c);
  * false is returned.
  *
  * @param c		the character to test
- * @return		true if the character is TODO, false otherwise.
+ * @return		true if the character is alphabetic, false otherwise.
  */
 bool isAlpha(int c);
 

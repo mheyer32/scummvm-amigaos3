@@ -29,6 +29,8 @@
 #define FORBIDDEN_SYMBOL_EXCEPTION_mkdir
 #define FORBIDDEN_SYMBOL_EXCEPTION_getenv
 #define FORBIDDEN_SYMBOL_EXCEPTION_exit		//Needed for IRIX's unistd.h
+#define FORBIDDEN_SYMBOL_EXCEPTION_random
+#define FORBIDDEN_SYMBOL_EXCEPTION_srandom
 
 #include "backends/fs/posix/posix-fs.h"
 #include "backends/fs/stdiostream.h"
@@ -61,6 +63,16 @@ void POSIXFilesystemNode::setFlags() {
 
 POSIXFilesystemNode::POSIXFilesystemNode(const Common::String &p) {
 	assert(p.size() > 0);
+
+#ifdef PSP2
+	if (p == "/") {
+		_isDirectory = true;
+		_isValid = false;
+		_path = p;
+		_displayName = p;
+		return;
+	}
+#endif
 
 	// Expand "~/" to the value of the HOME env variable
 	if (p.hasPrefix("~/")) {
@@ -152,6 +164,15 @@ bool POSIXFilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, boo
 		return true;
 	}
 #endif
+#ifdef PSP2
+	if (_path == "/") {
+		POSIXFilesystemNode *entry1 = new POSIXFilesystemNode("ux0:");
+		myList.push_back(entry1);
+		POSIXFilesystemNode *entry2 = new POSIXFilesystemNode("uma0:");
+		myList.push_back(entry2);
+		return true;
+	}
+#endif
 
 	DIR *dirp = opendir(_path.c_str());
 	struct dirent *dp;
@@ -229,6 +250,10 @@ AbstractFSNode *POSIXFilesystemNode::getParent() const {
     if (_path.size() == 3 && _path.hasSuffix(":/"))
         // This is a root directory of a drive
         return makeNode("/");   // return a virtual root for a list of drives
+#endif
+#ifdef PSP2
+	if (_path.hasSuffix(":"))
+		return makeNode("/");
 #endif
 
 	const char *start = _path.c_str();

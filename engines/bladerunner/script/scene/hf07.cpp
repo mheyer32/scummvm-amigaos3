@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -83,7 +83,7 @@ bool SceneScriptHF07::ClickedOnExit(int exitId) {
 			}
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(41, 38);
+			Set_Enter(41, kSceneHF05);
 		}
 		return true;
 	}
@@ -97,7 +97,7 @@ bool SceneScriptHF07::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(360);
-			Set_Enter(78, 90);
+			Set_Enter(78, kSceneUG05);
 		}
 		return true;
 	}
@@ -142,11 +142,11 @@ void SceneScriptHF07::DialogueQueueFlushed(int a1) {
 }
 
 int SceneScriptHF07::sub_401864() {
-	if (Global_Variable_Query(45) == 2 && Actor_Query_Goal_Number(3) != 599) {
-		return 3;
+	if (Global_Variable_Query(kVariableAffectionTowards) == 2 && Actor_Query_Goal_Number(3) != 599) {
+		return kActorDektora;
 	}
-	if (Global_Variable_Query(45) == 3 && Actor_Query_Goal_Number(6) != 599) {
-		return 6;
+	if (Global_Variable_Query(kVariableAffectionTowards) == 3 && Actor_Query_Goal_Number(6) != 599) {
+		return kActorLucy;
 	}
 	return -1;
 }

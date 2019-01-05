@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -105,7 +105,7 @@ bool SceneScriptCT02::ClickedOn3DObject(const char *objectName, bool a2) {
 	return false;
 }
 
-void SceneScriptCT02::sub_401ACC() {
+void SceneScriptCT02::dialogueWithZuben() {
 	Dialogue_Menu_Clear_List();
 	if (Actor_Clue_Query(kActorMcCoy, kClueLucy)) {
 		DM_Add_To_List_Never_Repeat_Once_Selected(270, 8, 5, 3);
@@ -152,7 +152,7 @@ void SceneScriptCT02::sub_401ACC() {
 			Actor_Set_Goal_Number(kActorZuben, 8);
 			Game_Flag_Set(293);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		}
 		break;
 	case 280:
@@ -165,7 +165,7 @@ void SceneScriptCT02::sub_401ACC() {
 			Actor_Set_Goal_Number(kActorZuben, 8);
 			Game_Flag_Set(293);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		}
 		break;
 	case 290:
@@ -181,7 +181,7 @@ void SceneScriptCT02::sub_401ACC() {
 			Actor_Set_Goal_Number(kActorZuben, 8);
 			Game_Flag_Set(293);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		}
 		break;
 	case 300:
@@ -192,7 +192,7 @@ void SceneScriptCT02::sub_401ACC() {
 			Actor_Set_Goal_Number(kActorZuben, 8);
 			Game_Flag_Set(293);
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 		}
 		break;
 	}
@@ -209,7 +209,7 @@ bool SceneScriptCT02::ClickedOnActor(int actorId) {
 				Actor_Says(kActorMcCoy, 375, 9);
 				Game_Flag_Set(59);
 			}
-			sub_401ACC();
+			dialogueWithZuben();
 			return true;
 		}
 	}
@@ -227,7 +227,7 @@ bool SceneScriptCT02::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(234);
 			Game_Flag_Set(68);
-			Set_Enter(4, 13);
+			Set_Enter(4, kSceneCT01);
 		}
 		return true;
 	}
@@ -242,7 +242,7 @@ bool SceneScriptCT02::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(69);
-			Set_Enter(5, 15);
+			Set_Enter(5, kSceneCT03);
 		}
 		return true;
 	}

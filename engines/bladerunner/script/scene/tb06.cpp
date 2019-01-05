@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -79,7 +79,7 @@ bool SceneScriptTB06::ClickedOnActor(int actorId) {
 		Actor_Voice_Over(2310, kActorVoiceOver);
 		Item_Pickup_Spin_Effect(974, 66, 397);
 		Actor_Voice_Over(2320, kActorVoiceOver);
-		if (Game_Flag_Query(48)) {
+		if (Game_Flag_Query(kFlagSadikIsReplicant)) {
 			Actor_Voice_Over(2330, kActorVoiceOver);
 			Actor_Voice_Over(2340, kActorVoiceOver);
 		}
@@ -128,7 +128,7 @@ bool SceneScriptTB06::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -16.0f, 149.0f, -427.0f, 12, 1, false, 0)) {
 			Game_Flag_Set(98);
-			Set_Enter(72, 84);
+			Set_Enter(72, kSceneTB05);
 			Scene_Loop_Start_Special(1, 2, 1);
 		}
 		return true;

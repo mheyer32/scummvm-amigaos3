@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -88,7 +88,7 @@ bool SceneScriptKP05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(420);
-			Set_Enter(46, 43);
+			Set_Enter(46, kSceneKP03);
 		}
 		return true;
 	}
@@ -97,7 +97,7 @@ bool SceneScriptKP05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(575);
-			Set_Enter(47, 44);
+			Set_Enter(47, kSceneKP04);
 		}
 		return true;
 	}
@@ -107,7 +107,7 @@ bool SceneScriptKP05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(576);
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -868.0f, 0.0f, -216.0f, 0, false);
-			Set_Enter(9, 46);
+			Set_Enter(9, kSceneKP06);
 		}
 		return true;
 	}
@@ -132,7 +132,7 @@ void SceneScriptKP05::PlayerWalkedIn() {
 		Game_Flag_Reset(574);
 	} else {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -846.0f, 0.0f, 972.0f, 0, 0, false, 0);
-		Game_Flag_Query(419);
+		Game_Flag_Query(419); // bug in game?
 	}
 	if (Actor_Query_Goal_Number(kActorMaggie) == 411) {
 		Actor_Set_Goal_Number(kActorMaggie, 412);
@@ -158,7 +158,7 @@ void SceneScriptKP05::PlayerWalkedIn() {
 		Actor_Says(kActorMcCoy, 2220, 3);
 		Actor_Says(kActorSteele, 620, 15);
 		Actor_Says(kActorSteele, 630, 17);
-		Non_Player_Actor_Combat_Mode_On(kActorSteele, 0, 1, kActorMcCoy, 9, 4, 7, 8, 0, -1, -1, 20, 240, 0);
+		Non_Player_Actor_Combat_Mode_On(kActorSteele, kActorCombatStateIdle, true, kActorMcCoy, 9, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, -1, -1, 20, 240, false);
 	}
 }
 

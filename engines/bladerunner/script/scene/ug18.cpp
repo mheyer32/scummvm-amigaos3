@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -55,7 +55,7 @@ void SceneScriptUG18::InitializeScene() {
 	Ambient_Sounds_Add_Sound(198, 5, 50, 27, 37, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(199, 5, 50, 27, 37, -100, 100, -101, -101, 0, 0);
 	Scene_Loop_Set_Default(4);
-	if (Game_Flag_Query(670) && !Game_Flag_Query(671) && Global_Variable_Query(1) == 4) {
+	if (Game_Flag_Query(670) && !Game_Flag_Query(671) && Global_Variable_Query(kVariableChapter) == 4) {
 		Actor_Set_Goal_Number(kActorGuzza, 300);
 		Actor_Set_Goal_Number(kActorClovis, 300);
 		Actor_Set_Goal_Number(kActorSadik, 300);
@@ -77,7 +77,7 @@ void SceneScriptUG18::SceneLoaded() {
 			Actor_Set_At_Waypoint(kActorSadik, 33, 0);
 		}
 	}
-	if (Game_Flag_Query(670) && !Game_Flag_Query(671) && Global_Variable_Query(1) == 4) {
+	if (Game_Flag_Query(670) && !Game_Flag_Query(671) && Global_Variable_Query(kVariableChapter) == 4) {
 		Item_Add_To_World(91, 987, 89, -55.21f, 0.0f, -302.17f, 0, 12, 12, false, true, false, true);
 	}
 }
@@ -110,11 +110,11 @@ bool SceneScriptUG18::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptUG18::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -684.712f, 0.0f, 171.59f, 0, 1, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -684.71f, 0.0f, 171.59f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(435);
-			Set_Enter(85, 97);
+			Set_Enter(85, kSceneUG13);
 		}
 		return true;
 	}
@@ -323,9 +323,8 @@ void SceneScriptUG18::sub_402734() {
 }
 
 void SceneScriptUG18::sub_402DE8() {
-
 	if (Player_Query_Agenda()) {
-		if (Global_Variable_Query(45) > 1 || Player_Query_Agenda() == 2) {
+		if (Global_Variable_Query(kVariableAffectionTowards) > 1 || Player_Query_Agenda() == 2) {
 			sub_403114();
 		} else {
 			sub_402F8C();

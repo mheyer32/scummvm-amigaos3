@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -66,13 +66,13 @@ bool SceneScriptPS06::ClickedOn3DObject(const char *objectName, bool a2) {
 			Delay(2000);
 			Actor_Voice_Over(3780, kActorVoiceOver);
 			Actor_Voice_Over(3790, kActorVoiceOver);
-			if (Game_Flag_Query(47)) {
+			if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
 				Actor_Voice_Over(3800, kActorVoiceOver);
 				Actor_Voice_Over(3810, kActorVoiceOver);
 				Actor_Voice_Over(3820, kActorVoiceOver);
 				Actor_Voice_Over(3830, kActorVoiceOver);
 				Actor_Clue_Acquire(kActorMcCoy, kClueCarRegistration1, 1, -1);
-			} else if (Game_Flag_Query(45)) {
+			} else if (Game_Flag_Query(kFlagGordoIsReplicant)) {
 				Actor_Voice_Over(3840, kActorVoiceOver);
 				Actor_Voice_Over(3850, kActorVoiceOver);
 				Actor_Voice_Over(3860, kActorVoiceOver);
@@ -103,10 +103,10 @@ bool SceneScriptPS06::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptPS06::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		Game_Flag_Set(23);
+		Game_Flag_Set(kFlagPS06toPS05);
 		Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 		Ambient_Sounds_Remove_All_Looping_Sounds(1);
-		Set_Enter(15, 69);
+		Set_Enter(kSetPS05, kScenePS05);
 		return true;
 	}
 	return false;
@@ -123,8 +123,8 @@ void SceneScriptPS06::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptPS06::PlayerWalkedIn() {
-	if (Game_Flag_Query(136)) {
-		Game_Flag_Reset(136);
+	if (Game_Flag_Query(kFlagPS05toPS06)) {
+		Game_Flag_Reset(kFlagPS05toPS06);
 	}
 }
 

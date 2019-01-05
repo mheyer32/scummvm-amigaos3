@@ -37,6 +37,14 @@ public:
 	Vector2(float ax, float ay) : x(ax), y(ay) {}
 };
 
+inline bool operator==(const Vector2 &a, const Vector2 &b) {
+	return a.x == b.x && a.y == b.y;
+}
+
+inline bool operator!=(const Vector2 &a, const Vector2 &b) {
+	return !(a == b);
+}
+
 class Vector3 {
 public:
 	float x;
@@ -47,7 +55,7 @@ public:
 
 	Vector3(float ax, float ay, float az) : x(ax), y(ay), z(az) {}
 
-	float length() { return sqrtf(x * x + y * y + z * z); }
+	float length() { return sqrt(x * x + y * y + z * z); }
 	Vector3 normalize() {
 		float len = length();
 		if (len == 0) {
@@ -132,17 +140,30 @@ inline float distance(float x1, float z1, float x2, float z2) {
 	return int_part + frac_part;
 }
 
+inline float distance(const Vector2 &v1, const Vector2 &v2) {
+	return distance(v1.x, v1.y, v2.x, v2.y);
+}
+
 inline float distance(const Vector3 &v1, const Vector3 &v2) {
 	return distance(v1.x, v1.z, v2.x, v2.z);
 }
 
-inline float cos_1024(int angle1024) {
-	return cos(angle1024 * (M_PI / 512.0f));
+inline bool lineIntersection(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2, Vector2 *intersection) {
+	Vector2 s1(a2.x - a1.x, a2.y - a1.y);
+	Vector2 s2(b2.x - b1.x, b2.y - b1.y);
+
+	float s = (s1.x * (a1.y - b1.y) - s1.y * (a1.x - b1.x)) / (s1.x * s2.y - s2.x * s1.y);
+	float t = (s2.x * (a1.y - b1.y) - s2.y * (a1.x - b1.x)) / (s1.x * s2.y - s2.x * s1.y);
+
+	if (s >= 0.0f && s <= 1.0f && t >= 0.0f && t <= 1.0f) {
+		intersection->x = a1.x + (t * s1.x);
+		intersection->y = a1.y + (t * s1.y);
+		return true;
+	}
+
+	return false; // No collision
 }
 
-inline float sin_1024(int angle1024) {
-	return sin(angle1024 * (M_PI / 512.0f));
-}
 } // End of namespace BladeRunner
 
 #endif

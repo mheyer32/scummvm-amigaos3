@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -32,7 +32,7 @@ void SceneScriptDR02::InitializeScene() {
 	} else if (Game_Flag_Query(264)) {
 		Setup_Scene_Information(-1258.0f, 7.18f, -314.0f, 400);
 	} else {
-		Setup_Scene_Information(168.78f, 0.16f, -775.71997f, 193);
+		Setup_Scene_Information(168.78f, 0.16f, -775.72f, 193);
 	}
 	Scene_Exit_Add_2D_Exit(0, 605, 0, 639, 479, 1);
 	Scene_Exit_Add_2D_Exit(1, 222, 176, 279, 314, 0);
@@ -120,7 +120,7 @@ bool SceneScriptDR02::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -835.0f, -0.04f, -118.0f, 0, 1, false, 0)) {
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -727.0f, -0.04f, -118.0f, 0, false);
 			Game_Flag_Set(225);
-			Set_Enter(7, 25);
+			Set_Enter(7, kSceneDR01);
 		}
 		Ambient_Sounds_Adjust_Looping_Sound(219, 12, -101, 1);
 		Ambient_Sounds_Adjust_Looping_Sound(98, 14, -101, 1);
@@ -128,11 +128,11 @@ bool SceneScriptDR02::ClickedOnExit(int exitId) {
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -1162.0f, 7.18f, -322.0f, 0, 1, false, 0)) {
-			if (Global_Variable_Query(1) > 2) {
+			if (Global_Variable_Query(kVariableChapter) > 2) {
 				Actor_Says(kActorMcCoy, 8522, 15);
 			} else {
 				Game_Flag_Set(226);
-				Set_Enter(34, 27);
+				Set_Enter(34, kSceneDR03);
 			}
 		}
 		return true;
@@ -142,7 +142,7 @@ bool SceneScriptDR02::ClickedOnExit(int exitId) {
 			Game_Flag_Set(265);
 			Game_Flag_Reset(177);
 			Game_Flag_Set(258);
-			Set_Enter(20, 2);
+			Set_Enter(20, kSceneBB01);
 		}
 		return true;
 	}

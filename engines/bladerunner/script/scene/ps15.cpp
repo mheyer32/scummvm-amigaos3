@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -42,7 +42,7 @@ void SceneScriptPS15::InitializeScene() {
 
 void SceneScriptPS15::SceneLoaded() {
 	Obstacle_Object("E.ARCH", true);
-	if (Global_Variable_Query(1) == 2) {
+	if (Global_Variable_Query(kVariableChapter) == 2) {
 		Item_Add_To_World(110, 983, 101, -208.0f, -113.43f, 30.28f, 750, 16, 12, false, true, false, true);
 	}
 }
@@ -107,8 +107,8 @@ bool SceneScriptPS15::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -360.0f, -113.43f, 50.0f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Game_Flag_Set(204);
-			Set_Enter(15, 69);
+			Game_Flag_Set(kFlagPS15toPS05);
+			Set_Enter(kSetPS05, kScenePS05);
 		}
 		return true;
 	}
@@ -119,7 +119,7 @@ bool SceneScriptPS15::ClickedOnExit(int exitId) {
 			Sound_Play(155, 90, 0, 0, 50);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(14, 73);
+			Set_Enter(kSetPS10_PS11_PS12_PS13, kScenePS10);
 		}
 		return true;
 	}

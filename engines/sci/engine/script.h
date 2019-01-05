@@ -200,16 +200,19 @@ public:
 	}
 #else
 	Object *getObject(Offset offset) {
-		assert(_objects[offset]);
+		assert(offset < _objects.size() && _objects[offset]);
 		return _objects[offset];
 	}
 
 	const Object *getObject(Offset offset) const {
-		assert(_objects[offset]);
+		assert(offset < _objects.size() && _objects[offset]);
 		return _objects[offset];
 	}
 
 	const Object *findObject(Offset offset) const {
+		if (offset >= _objects.size()) {
+			return NULL;
+		}
 		return _objects[offset];
 	}
 #endif

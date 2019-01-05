@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -34,11 +34,11 @@ void SceneScriptPS03::InitializeScene() {
 		Game_Flag_Reset(135);
 	} else {
 		Setup_Scene_Information(-569.54f, -354.62f, -1076.15f, 475);
-		Game_Flag_Reset(132);
+		Game_Flag_Reset(kFlagPS02toPS03);
 	}
 	Scene_Exit_Add_2D_Exit(0, 0, 460, 639, 479, 2);
 	Scene_Exit_Add_2D_Exit(1, 449, 273, 508, 329, 0);
-	if (Global_Variable_Query(1) > 1) {
+	if (Global_Variable_Query(kVariableChapter) > 1) {
 		Scene_Exit_Add_2D_Exit(2, 358, 245, 411, 288, 0);
 	}
 	Ambient_Sounds_Remove_All_Non_Looping_Sounds(0);
@@ -79,7 +79,7 @@ bool SceneScriptPS03::ClickedOnExit(int exitId) {
 			Game_Flag_Set(42);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(64, 68);
+			Set_Enter(64, kScenePS04);
 		}
 		return true;
 	}
@@ -87,9 +87,9 @@ bool SceneScriptPS03::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -569.54f, -354.62f, -1076.15f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(62, 66);
+			Set_Enter(62, kScenePS02);
 			Game_Flag_Reset(478);
-			if (Global_Variable_Query(1) < 4) {
+			if (Global_Variable_Query(kVariableChapter) < 4) {
 				Actor_Set_Goal_Number(kActorGuzza, 100);
 			}
 		}
@@ -100,7 +100,7 @@ bool SceneScriptPS03::ClickedOnExit(int exitId) {
 			Game_Flag_Set(134);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(68, 77);
+			Set_Enter(68, kScenePS14);
 		}
 		return true;
 	}

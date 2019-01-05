@@ -616,7 +616,7 @@ void SciEngine::initGraphics() {
 	} else {
 #endif
 		_gfxPalette16 = new GfxPalette(_resMan, _gfxScreen);
-		if (getGameId() == GID_QFG4DEMO)
+		if (getGameId() == GID_QFG4DEMO || getGameId() == GID_CATDATE)
 			_gfxRemap16 = new GfxRemap(_gfxPalette16);
 #ifdef ENABLE_SCI32
 	}
@@ -848,6 +848,11 @@ void SciEngine::sleep(uint32 msecs) {
 	for (;;) {
 		// let backend process events and update the screen
 		_eventMan->getSciEvent(kSciEventPeek);
+
+		// There is no point in waiting any more if we are just waiting to quit
+		if (g_engine->shouldQuit()) {
+			return;
+		}
 
 #ifdef ENABLE_SCI32
 		// If a game is in a wait loop, kFrameOut is not called, but mouse

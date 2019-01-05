@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -41,7 +41,7 @@ void SceneScriptCT11::InitializeScene() {
 	Ambient_Sounds_Add_Sound(378, 5, 80, 50, 100, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(379, 5, 80, 50, 100, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(380, 5, 80, 50, 100, -100, 100, -101, -101, 0, 0);
-	if (Global_Variable_Query(1) <= 3) {
+	if (Global_Variable_Query(kVariableChapter) <= 3) {
 		Scene_Loop_Set_Default(0);
 	} else {
 		Scene_Loop_Set_Default(2);
@@ -52,9 +52,9 @@ void SceneScriptCT11::SceneLoaded() {
 	Obstacle_Object("TRASH CAN", true);
 	Unobstacle_Object("BOX NORTHWEST 1", true);
 	Unobstacle_Object("BOX SOUTH 1", true);
-	if (Global_Variable_Query(1) < 4) {
+	if (Global_Variable_Query(kVariableChapter) < 4) {
 		if (!Game_Flag_Query(645)) {
-			Item_Add_To_World(115, 951, 33, 640.21002f, 30.0f, 470.0f, 512, 12, 12, false, true, false, true);
+			Item_Add_To_World(115, 951, 33, 640.21f, 30.0f, 470.0f, 512, 12, 12, false, true, false, true);
 			Scene_2D_Region_Add(0, 505, 316, 513, 321);
 			Game_Flag_Set(725);
 		}
@@ -99,17 +99,17 @@ bool SceneScriptCT11::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptCT11::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 121.0f, 9.6800003f, -42.0f, 0, 1, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 121.0f, 9.68f, -42.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(304);
-			Set_Enter(31, 21);
+			Set_Enter(31, kSceneCT09);
 		}
 		return true;
 	}
 	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -300.0f, 9.6800003f, 66.0f, 0, 1, false, 0)) {
-			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -400.0f, 9.6800003f, -70.0f, 0, 1, false, 0);
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -300.0f, 9.68f, 66.0f, 0, 1, false, 0)) {
+			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -400.0f, 9.68f, -70.0f, 0, 1, false, 0);
 			Game_Flag_Set(86);
-			Set_Enter(4, 24);
+			Set_Enter(4, kSceneCT12);
 		}
 		return true;
 	}
@@ -118,7 +118,7 @@ bool SceneScriptCT11::ClickedOnExit(int exitId) {
 			Game_Flag_Set(531);
 			Game_Flag_Reset(176);
 			Game_Flag_Set(177);
-			Set_Enter(7, 25);
+			Set_Enter(7, kSceneDR01);
 		}
 		return true;
 	}

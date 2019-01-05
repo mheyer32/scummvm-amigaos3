@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -71,7 +71,7 @@ bool SceneScriptNR10::ClickedOn3DObject(const char *objectName, bool a2) {
 		Ambient_Sounds_Remove_Looping_Sound(452, true);
 		Sound_Play(453, 52, 0, 0, 50);
 		Scene_Loop_Set_Default(0);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 0, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 0, true);
 		Un_Combat_Target_Object("BOX18");
 		Scene_Exits_Enable();
 		return true;
@@ -91,7 +91,7 @@ bool SceneScriptNR10::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -152.78f, 2.84f, -238.43f, 0, 1, false, 0)) {
 			Game_Flag_Set(476);
-			Set_Enter(58, 62);
+			Set_Enter(58, kSceneNR09);
 			return true;
 		}
 	}
@@ -100,7 +100,7 @@ bool SceneScriptNR10::ClickedOnExit(int exitId) {
 			Actor_Face_Heading(kActorMcCoy, 55, false);
 			Loop_Actor_Travel_Ladder(kActorMcCoy, 8, 1, 0);
 			Game_Flag_Set(641);
-			Set_Enter(60, 64);
+			Set_Enter(60, kSceneNR11);
 			return true;
 		}
 	}

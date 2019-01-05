@@ -44,4 +44,4 @@ void Mutex::unlock() {
 
 #pragma mark -
 
-}  // End of namespace Common
+} // End of namespace Common

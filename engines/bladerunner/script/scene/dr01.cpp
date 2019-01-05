@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -36,10 +36,10 @@ void SceneScriptDR01::InitializeScene() {
 	}
 	Scene_Exit_Add_2D_Exit(0, 240, 60, 450, 250, 0);
 	Scene_Exit_Add_2D_Exit(1, 0, 0, 30, 479, 3);
-	if (Game_Flag_Query(253) && Global_Variable_Query(1) < 4) {
+	if (Game_Flag_Query(kFlagSpinnerToDR01) && Global_Variable_Query(kVariableChapter) < 4) {
 		Scene_Exit_Add_2D_Exit(2, 610, 0, 639, 479, 1);
 	}
-	if (Global_Variable_Query(1) >= 3) {
+	if (Global_Variable_Query(kVariableChapter) >= 3) {
 		Scene_Exit_Add_2D_Exit(3, 0, 45, 142, 201, 0);
 	}
 	Ambient_Sounds_Remove_All_Non_Looping_Sounds(0);
@@ -110,7 +110,7 @@ bool SceneScriptDR01::ClickedOnExit(int exitId) {
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -911.0f, -0.04f, -118.0f, 0, false);
 			Ambient_Sounds_Adjust_Looping_Sound(112, 10, -100, 1);
 			Game_Flag_Set(224);
-			Set_Enter(7, 26);
+			Set_Enter(7, kSceneDR02);
 		}
 		return true;
 	}
@@ -118,7 +118,7 @@ bool SceneScriptDR01::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -711.0f, -0.04f, 70.0f, 0, 1, false, 0)) {
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -796.0f, -0.04f, 166.0f, 0, false);
 			Game_Flag_Set(10);
-			Set_Enter(7, 28);
+			Set_Enter(7, kSceneDR04);
 		}
 		return true;
 	}
@@ -136,57 +136,57 @@ bool SceneScriptDR01::ClickedOnExit(int exitId) {
 			switch (spinnerDest) {
 			case 2:
 				Game_Flag_Set(182);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(249);
-				Set_Enter(69, 78);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToRC01);
+				Set_Enter(69, kSceneRC01);
 				break;
 			case 3:
 				Game_Flag_Set(176);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(248);
-				Set_Enter(4, 13);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToCT01);
+				Set_Enter(4, kSceneCT01);
 				break;
 			case 1:
 				Game_Flag_Set(179);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(250);
-				Set_Enter(49, 48);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToMA01);
+				Set_Enter(49, kSceneMA01);
 				break;
 			case 0:
 				Game_Flag_Set(178);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(251);
-				Set_Enter(61, 65);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToPS01);
+				Set_Enter(61, kScenePS01);
 				break;
 			case 5:
 				Game_Flag_Set(261);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(307);
-				Set_Enter(17, 82);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToTB02);
+				Set_Enter(17, kSceneTB02);
 				break;
 			case 4:
 				Game_Flag_Set(180);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(252);
-				Set_Enter(0, 0);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToAR01);
+				Set_Enter(0, kSceneAR01);
 				break;
 			case 7:
 				Game_Flag_Set(258);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(254);
-				Set_Enter(20, 2);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToBB01);
+				Set_Enter(20, kSceneBB01);
 				break;
 			case 8:
 				Game_Flag_Set(181);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(255);
-				Set_Enter(54, 54);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToNR01);
+				Set_Enter(54, kSceneNR01);
 				break;
 			case 9:
 				Game_Flag_Set(257);
-				Game_Flag_Reset(253);
-				Game_Flag_Set(256);
-				Set_Enter(37, 34);
+				Game_Flag_Reset(kFlagSpinnerToDR01);
+				Game_Flag_Set(kFlagSpinnerToHF01);
+				Set_Enter(37, kSceneHF01);
 				break;
 			default:
 				Player_Loses_Control();
@@ -210,7 +210,7 @@ bool SceneScriptDR01::ClickedOnExit(int exitId) {
 			Game_Flag_Set(558);
 			Game_Flag_Set(176);
 			Game_Flag_Reset(177);
-			Set_Enter(33, 23);
+			Set_Enter(33, kSceneCT11);
 		}
 		return true;
 	}
@@ -252,7 +252,7 @@ void SceneScriptDR01::PlayerWalkedOut() {
 	if (!Game_Flag_Query(10) && !Game_Flag_Query(224) && !Game_Flag_Query(558)) {
 		Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 		Ambient_Sounds_Remove_All_Looping_Sounds(1);
-		Outtake_Play(35, 1, -1);
+		Outtake_Play(kOuttakeInside2, true, -1);
 	}
 }
 

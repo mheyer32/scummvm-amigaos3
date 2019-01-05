@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -126,7 +126,7 @@ bool SceneScriptHF06::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(530);
-			Set_Enter(41, 38);
+			Set_Enter(41, kSceneHF05);
 		}
 		return true;
 	}
@@ -180,12 +180,13 @@ void SceneScriptHF06::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 
 void SceneScriptHF06::PlayerWalkedIn() {
 	if (Game_Flag_Query(662)) {
-		int actorId;
-		if (Global_Variable_Query(45) == 3 && Actor_Query_Goal_Number(kActorLucy) != 599) {
+		int actorId = -1;
+		if (Global_Variable_Query(kVariableAffectionTowards) == 3 && Actor_Query_Goal_Number(kActorLucy) != 599) {
 			actorId = kActorLucy;
-		} else {
-			actorId = Global_Variable_Query(45) == 2 && Actor_Query_Goal_Number(kActorDektora) != 599 ? kActorDektora : -1;
-		}
+		} else if (Global_Variable_Query(kVariableAffectionTowards) == 2 && Actor_Query_Goal_Number(kActorDektora) != 599) {
+			actorId = kActorDektora;
+		} 
+
 		if (actorId != -1) {
 			Actor_Put_In_Set(actorId, 42);
 			if (Game_Flag_Query(559)) {
@@ -244,7 +245,7 @@ void SceneScriptHF06::sub_401EF4() {
 	Actor_Change_Animation_Mode(kActorSteele, 7);
 	Loop_Actor_Walk_To_XYZ(kActorSteele, 92.0f, 367.93f, 107.0f, 0, 0, false, 0);
 	Actor_Face_Actor(kActorSteele, kActorMcCoy, true);
-	Actor_Change_Animation_Mode(kActorSteele, 4);
+	Actor_Change_Animation_Mode(kActorSteele, kAnimationModeCombatIdle);
 	Actor_Says(kActorSteele, 290, 58);
 	Actor_Says(kActorMcCoy, 2130, -1);
 	Actor_Says(kActorSteele, 300, 59);
@@ -256,18 +257,18 @@ void SceneScriptHF06::sub_401EF4() {
 	Actor_Says(kActorSteele, 330, 58);
 	Actor_Says(kActorSteele, 340, 58);
 	Actor_Says(kActorSteele, 350, 58);
-	Actor_Change_Animation_Mode(kActorSteele, 4);
+	Actor_Change_Animation_Mode(kActorSteele, kAnimationModeCombatIdle);
 	Game_Flag_Set(644);
 	Actor_Set_Goal_Number(kActorSteele, 402);
 	Actor_Face_Actor(kActorSteele, actorId, true);
 	Actor_Change_Animation_Mode(kActorSteele, 6);
 	Delay(500);
 	Scene_Loop_Set_Default(3);
-	Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+	Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 	Sound_Play(562, 50, 0, 0, 50);
 	Game_Flag_Set(559);
 	Scene_Exits_Disable();
-	Non_Player_Actor_Combat_Mode_On(kActorSteele, 3, 1, actorId, 15, 4, 7, 8, 0, 0, 100, 10, 300, 0);
+	Non_Player_Actor_Combat_Mode_On(kActorSteele, kActorCombatStateUncover, true, actorId, 15, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 }
 
 void SceneScriptHF06::sub_4023E0() {

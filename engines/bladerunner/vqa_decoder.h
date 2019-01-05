@@ -53,15 +53,17 @@ enum VQADecoderSkipFlags {
 };
 
 class VQADecoder {
+	friend class Debugger;
+
 public:
-	VQADecoder(Graphics::Surface *surface);
+	VQADecoder();
 	~VQADecoder();
 
 	bool loadStream(Common::SeekableReadStream *s);
 
 	void readFrame(int frame, uint readFlags = kVQAReadAll);
 
-	void                        decodeVideoFrame(int frame, bool forceDraw = false);
+	void                        decodeVideoFrame(Graphics::Surface *surface, int frame, bool forceDraw = false);
 	void                        decodeZBuffer(ZBuffer *zbuffer);
 	Audio::SeekableAudioStream *decodeAudioFrame();
 	void                        decodeView(View *view);
@@ -123,7 +125,7 @@ private:
 		uint32  flags;
 		Loop   *loops;
 
-		LoopInfo() : loopCount(0), loops(nullptr) {}
+		LoopInfo() : loopCount(0), loops(nullptr), flags(0) {}
 		~LoopInfo() {
 			delete[] loops;
 		}
@@ -139,7 +141,7 @@ private:
 	class VQAAudioTrack;
 
 	Common::SeekableReadStream *_s;
-	Graphics::Surface *_surface;
+	// Graphics::Surface *_surface;
 
 	Header   _header;
 	int      _readingFrame;
@@ -172,7 +174,7 @@ private:
 
 	class VQAVideoTrack {
 	public:
-		VQAVideoTrack(VQADecoder *vqaDecoder, Graphics::Surface *surface);
+		VQAVideoTrack(VQADecoder *vqaDecoder);
 		~VQAVideoTrack();
 
 		uint16 getWidth() const;
@@ -180,7 +182,7 @@ private:
 
 		int getFrameCount() const;
 
-		void decodeVideoFrame(bool forceDraw);
+		void decodeVideoFrame(Graphics::Surface *surface, bool forceDraw);
 		void decodeZBuffer(ZBuffer *zbuffer);
 		void decodeView(View *view);
 		void decodeScreenEffects(ScreenEffects *aesc);
@@ -202,7 +204,7 @@ private:
 
 	private:
 		VQADecoder        *_vqaDecoder;
-		Graphics::Surface *_surface;
+
 		bool _hasNewFrame;
 
 		uint16 _numFrames;
@@ -218,7 +220,6 @@ private:
 
 		uint8   *_codebook;
 		uint8   *_cbfz;
-		bool     _zbufChunkComplete;
 		uint32   _zbufChunkSize;
 		uint8   *_zbufChunk;
 
@@ -234,8 +235,8 @@ private:
 		uint8   *_screenEffectsData;
 		uint32   _screenEffectsDataSize;
 
-		void VPTRWriteBlock(uint16 *frame, unsigned int dstBlock, unsigned int srcBlock, int count, bool alpha = false);
-		bool decodeFrame(uint16 *frame);
+		void VPTRWriteBlock(Graphics::Surface *surface, unsigned int dstBlock, unsigned int srcBlock, int count, bool alpha = false);
+		bool decodeFrame(Graphics::Surface *surface);
 	};
 
 	class VQAAudioTrack {

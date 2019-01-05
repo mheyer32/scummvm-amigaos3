@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -111,7 +111,7 @@ bool SceneScriptDR04::ClickedOnActor(int actorId) {
 			Actor_Says(kActorMoraji, 20, 3);
 			Actor_Says(kActorMoraji, 30, 3);
 			Actor_Says(kActorMcCoy, 955, 13);
-			Actor_Says_With_Pause(kActorMoraji, 40, 0, 3);
+			Actor_Says_With_Pause(kActorMoraji, 40, 0.0f, 3);
 			Actor_Says(kActorMoraji, 50, 3);
 			Actor_Clue_Acquire(kActorMcCoy, kClueMorajiInterview, 1, kActorMoraji);
 			Actor_Set_Goal_Number(kActorMoraji, 22);
@@ -138,7 +138,7 @@ bool SceneScriptDR04::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -761.0f, -0.04f, 97.0f, 0, 1, false, 0)) {
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -683.0f, -0.04f, 43.0f, 0, false);
 			Game_Flag_Set(11);
-			Set_Enter(7, 25);
+			Set_Enter(7, kSceneDR01);
 		}
 		return true;
 	}
@@ -146,7 +146,7 @@ bool SceneScriptDR04::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -1067.0f, 7.18f, 421.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(232);
 			Game_Flag_Set(228);
-			Set_Enter(35, 29);
+			Set_Enter(35, kSceneDR05);
 		}
 		return true;
 	}
@@ -162,7 +162,7 @@ bool SceneScriptDR04::ClickedOnExit(int exitId) {
 			Actor_Set_Immunity_To_Obstacles(kActorMcCoy, false);
 			Footstep_Sound_Override_Off();
 			Game_Flag_Set(230);
-			Set_Enter(36, 30);
+			Set_Enter(36, kSceneDR06);
 		}
 		return true;
 	}
@@ -184,7 +184,7 @@ void SceneScriptDR04::SceneFrameAdvanced(int frame) {
 		Game_Flag_Reset(515);
 		Game_Flag_Reset(271);
 		Scene_Loop_Set_Default(1);
-		Scene_Loop_Start_Special(kSceneLoopMode2, 6, true);
+		Scene_Loop_Start_Special(kSceneLoopModeOnce, 6, true);
 		Music_Stop(4);
 		Actor_Set_Goal_Number(kActorMoraji, 99);
 	} else {
@@ -192,7 +192,7 @@ void SceneScriptDR04::SceneFrameAdvanced(int frame) {
 			Game_Flag_Reset(271);
 			Game_Flag_Set(272);
 			Scene_Loop_Set_Default(1);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 6, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 6, true);
 			Item_Remove_From_World(78);
 		}
 		switch (frame) {
@@ -247,7 +247,7 @@ void SceneScriptDR04::PlayerWalkedIn() {
 			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -851.0f, 71.64f, 647.0f, 0, 0, false, 0);
 			Actor_Face_Heading(kActorMcCoy, 0, false);
 			Loop_Actor_Travel_Stairs(kActorMcCoy, 7, 0, 0);
-			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -774.85f, 7.18f, 386.67001f, 0, 0, false, 0);
+			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -774.85f, 7.18f, 386.67f, 0, 0, false, 0);
 			Actor_Set_Immunity_To_Obstacles(kActorMcCoy, false);
 			Footstep_Sound_Override_Off();
 		}

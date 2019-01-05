@@ -20,7 +20,7 @@
  *
  */
 
-#include "bladerunner/script/scene.h"
+#include "bladerunner/script/scene_script.h"
 
 namespace BladeRunner {
 
@@ -34,7 +34,7 @@ void SceneScriptHC03::InitializeScene() {
 		Game_Flag_Reset(386);
 	}
 	Scene_Exit_Add_2D_Exit(0, 0, 0, 30, 479, 3);
-	if (Game_Flag_Query(403) || Global_Variable_Query(1) > 3) {
+	if (Game_Flag_Query(403) || Global_Variable_Query(kVariableChapter) > 3) {
 		Item_Remove_From_World(121);
 		Game_Flag_Set(403);
 		Scene_Exit_Add_2D_Exit(1, 400, 275, 515, 375, 2);
@@ -67,7 +67,7 @@ void SceneScriptHC03::InitializeScene() {
 	Ambient_Sounds_Add_Sound(195, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
 	if (Game_Flag_Query(388)) {
 		Scene_Loop_Set_Default(6);
-	} else if (Game_Flag_Query(403) || Global_Variable_Query(1) > 3) {
+	} else if (Game_Flag_Query(403) || Global_Variable_Query(kVariableChapter) > 3) {
 		Scene_Loop_Set_Default(3);
 	} else {
 		Scene_Loop_Set_Default(0);
@@ -76,7 +76,7 @@ void SceneScriptHC03::InitializeScene() {
 
 void SceneScriptHC03::SceneLoaded() {
 	Obstacle_Object("GUITAR01", true);
-	if (Game_Flag_Query(403) || Game_Flag_Query(388) || Global_Variable_Query(1) > 3) {
+	if (Game_Flag_Query(403) || Game_Flag_Query(388) || Global_Variable_Query(kVariableChapter) > 3) {
 		Unobstacle_Object("GPscisGate", true);
 	} else {
 		Obstacle_Object("GPscisGate", true);
@@ -100,7 +100,7 @@ bool SceneScriptHC03::ClickedOnItem(int itemId, bool a2) {
 	if (itemId == 121) {
 		if (a2) {
 			Scene_Loop_Set_Default(3);
-			Scene_Loop_Start_Special(kSceneLoopMode2, 2, true);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 2, true);
 			Game_Flag_Set(403);
 			Item_Remove_From_World(121);
 			Unobstacle_Object("GPscisGate", true);
@@ -131,7 +131,7 @@ bool SceneScriptHC03::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 607.0f, 0.14f, 9.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(387);
-			Set_Enter(8, 31);
+			Set_Enter(8, kSceneHC01);
 		}
 		return true;
 	}
@@ -143,10 +143,10 @@ bool SceneScriptHC03::ClickedOnExit(int exitId) {
 				Game_Flag_Set(259);
 				Game_Flag_Set(388);
 				Music_Stop(2);
-				Set_Enter(75, 87);
+				Set_Enter(75, kSceneUG02);
 			} else {
 				Scene_Loop_Set_Default(6);
-				Scene_Loop_Start_Special(kSceneLoopMode2, 5, true);
+				Scene_Loop_Start_Special(kSceneLoopModeOnce, 5, true);
 				Game_Flag_Set(388);
 			}
 		}
