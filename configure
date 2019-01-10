@@ -3224,7 +3224,7 @@ if test -n "$_host"; then
 			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
 			# try producing smaller executable
-			append_var CXXFLAGS "-fno-exceptions"
+			append_var CXXFLAGS "-fno-exceptions -fshort-enums -fstack-reuse=all"
 			append_var CXXFLAGS "-fno-rtti"
 
 			append_var CXXFLAGS "-noixemul"
@@ -3239,6 +3239,10 @@ if test -n "$_host"; then
 					append_var CXXFLAGS "-fomit-frame-pointer"
 				fi
 			fi
+			# in general, profiling requires frame pointer
+			if test "$_enable_prof" = yes; then
+				append_var CXXFLAGS "-fno-omit-frame-pointer"
+			fi
 
 			_backend="amigaos3"
 			_build_scalers=no
@@ -3250,7 +3254,7 @@ if test -n "$_host"; then
 			_updates=no
 			# Use -O3 on the Amiga for optimized builds.
 			if test "$_optimizations" = yes; then
-				_optimization_level=-Ofast
+				_optimization_level="-Ofast"
 			else
 				append_var CXXFLAGS "-Og"
 			fi
