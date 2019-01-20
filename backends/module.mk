@@ -131,6 +131,7 @@ MODULE_OBJS += \
 	events/amigaos3/amigaos3-events.o \
 	fs/amigaos3/amigaos3-fs-node.o \
 	fs/amigaos3/amigaos3-fs-factory.o \
+	fs/amigaos3/amigaos3-fs-file.o \
 	mixer/amigaos3/amigaos3-mixer.o \
 	midi/amigaos3/amigaos3-camd.o \
 	timer/amigaos3/amigaos3-timer.o
