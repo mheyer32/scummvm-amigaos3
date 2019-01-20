@@ -109,12 +109,12 @@ bool SceneScriptNR02::ClickedOnItem(int itemId, bool a2) {
 		if (itemId == 89) {
 			Item_Remove_From_World(89);
 			Item_Pickup_Spin_Effect(953, 214, 380);
-			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter1, 1, -1);
+			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter1, true, -1);
 		}
 		if (itemId == 90) {
 			Item_Remove_From_World(90);
 			Item_Pickup_Spin_Effect(954, 214, 380);
-			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter2, 1, -1);
+			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter2, true, -1);
 		}
 	}
 	return false;
@@ -129,7 +129,7 @@ bool SceneScriptNR02::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(533);
-			Set_Enter(54, kSceneNR01);
+			Set_Enter(kSetNR01, kSceneNR01);
 		}
 		return true;
 	}

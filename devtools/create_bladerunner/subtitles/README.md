@@ -1,50 +1,104 @@
-# Blade Runner Subtitles
+# Blade Runner (Westwood Studios, 1997) Subtitles Support
+Some tools written in __Python 2.7__ to help add support for subtitles in Westwood's point and click adventure game Blade Runner (1997) for PC.
+The official English, German, French, Italian and Spanish versions of the game should be supported.
 
-# Blade Runner (1997) Subtitles Support
-Some tools written in Python 2.7 to help add support for subtitles in Westwood's point and click adventure game Blade Runner (1997) for PC.
-
-## quotesSpreadsheetCreator (sortBladeRunnerWavs##)
+## Building and installing a SUBTITLES.MIX file with a "make" command
+You need to follow these instructions:
+1. Download the online Excel transcript and save it as "englishTranscript.xls" into the "devtools\create_bladerunner\subtitles\sampleInput" folder.
+__The online Excel file is available here:__
+https://docs.google.com/spreadsheets/d/17ew0YyhSwqcqZg6bXrIgz0GkA62dhgViHN15lOu5Hj8/edit?usp=sharing
+2. Edit your font glyphs PNG file (or use the provided one in the sampleInput folder). This file should be stored as "subtitlesFont.png" into the "devtools\create_bladerunner\subtitles\sampleInput" folder.
+3. Create an overrideEncodingSUBLTS.txt file in the sampleInput folder. This is a configuration file for the font file creation. A sample is provided in the sampleInput folder and documentation about this is below in this document (see "override encoding text file" in fontCreator).
+4. Create a configureFontsTranslation.txt in the sampleInput folder. A configuration file for the MIX file creation. A sample is provided in the sampleInput folder and documentation about this is below in this document (see "text configuration file" in mixResourceCreator).  
+5. From the ScummVM root folder run:
+```
+make devtools/create_bladerunner/subtitles
+```
+6. Copy the output file "SUBTITLES.MIX", created in the ScummVM root folder, into your Blade Runner game directory.
+7. Launch the Blade Runner game using ScummVM.
+ 
+## quotesSpreadsheetCreator (quoteSpreadsheetCreator.py)
 (requires python lib *xlwt*, *wave*)
 A tool to gather all the speech audio filenames in an Excel file which will include a column with links to the audio file location on the PC. By Ctrl+MouseClick on that column's entries you should be able to listen to the corresponding wav file.
-The output excel file *out.xls* should help with the transcription of all the spoken *in-game* quotes. It also provides extra quote information such as the corresponding actor ID and quote ID per quote.
+The output Excel file *out.xls* should help with the transcription of all the spoken *in-game* quotes. It also provides extra quote information such as the corresponding actor ID and quote ID per quote.
 
-Note 1: A lot of extra information has been added to the output Excel file maintained for the English transcription, such as whether a quote is unused or untriggered, the person a quote refers to (when applicable), as well as extra quotes that are not separate Audio files (AUD) in the game's archives but are part of a video file (VQA) or were text resources (TRE) for dialogue menus, UI etc. Therefore, this tool is provided here mostly for archiving purposes.
+Note 1: A lot of extra information has been added to the output Excel file maintained for the English transcription, such as whether a quote is unused or untriggered, the person a quote refers to (when applicable), as well as extra quotes that are not separate Audio files (AUD) in the game's archives but are part of a video file (VQA) or were text resources (TRx) for dialogue menus, UI etc. Therefore, this tool is provided here mostly for archiving purposes.
 __The online Excel file is available here:__
 https://docs.google.com/spreadsheets/d/17ew0YyhSwqcqZg6bXrIgz0GkA62dhgViHN15lOu5Hj8/edit?usp=sharing
 
-Note 2: Using the "-xwav" switch, this tool will export __ALL__ game's audio files (that are either speech or speech-related) in a WAV format. This is expected to take up quite a lot of your HDD space.
+Syntax Notes: 
+1. The "-op" switch should be followed by the path to the folder where the WAV files should be exported; This folder path will also be used as input when the output Excel will be created (for the "INGQUO_x.TRx" sheet with the in-game quotes).
+2. The "-ip" switch should be followed by the path to the game's folder, where the TLK and MIX files reside.
+3. The "-ian" optional switch is followed by the path to the actornames.txt file -- if this is omitted then the file is assumed to reside in the current working directory.
+4. The "-ld" optional switch is followed by a language description for the language of the game you are exporting Text Resources from. This switch is meaningful when you also use the "-xtre" switch to export Text Resource files.
+    * Valid language values are: EN_ANY, DE_DEU, FR_FRA, IT_ITA, ES_ESP, RU_RUS 
+    * Default language value is: EN_ANY (English)
+5. The "-xwav" optional switch will export __ALL__ game's audio files (AUD) (that are either speech or speech-related) in a WAV format. This is expected to run for a few minutes and take up quite a lot of your HDD space (about 650MB).
+6. The "-xtre" optional switch will add extra sheets to the output Excel with the contents of each of the game's Text Resource files (TRx) (on sheet per TRx file).
+7. The "-xdevs" optional switch will add a sheet for Developer Commentary text and some additional voice-overs from SFX.MIX.
+8. The "-xpogo" optional switch will add a sheet for the POGO text.
+9. You may use all, a subset or none of the "-xwav", "-xtre", "-xpogo", "-xdevs" switches, depending on what you need to do.
+10. The "--trace" optional switch enables extra debug messages to be printed. 
 
 Usage:
 ```
-python2.7 sortBladeRunnerWavs02.py -ip <folderpath_for_TLK_Files> -op <folderpath_for_extracted_wav_Files> -m <stringPathToReplaceFolderpathInExcelLinks> [-xwav] [-xtre]
+python2.7 quoteSpreadsheetCreator.py -op folderpath_for_exported_wav_Files [-ip folderpath_for_TLK_Files] [-ian pathToActorNamesTxt] [-m stringPathToReplaceFolderpathInExcelLinks] [-ld languageDescription] [-xwav] [-xtre] [--trace]
 ```
-The tool __requires__ the actornames.txt file, which is included in the samples folder, to be in the same folder as the tool's source (.py) file.
+The tool __requires__ a valid path to the actornames.txt file; this file is included in the samples folder.
 
 
-## mixResourceCreator (packBladeRunnerMIXFromPCTLKXLS-##)
+## mixResourceCreator (mixResourceCreator.py)
 (requires python lib *xlrd*)
-A tool to process the aforementioned Excel file with the dialogue transcriptions and output text resource files (TRE) that will be packed along with the external font (see fontCreator tool) into a SUBTITLES.MIX file. Currently, a modified version of the ScummVM's BladeRunner engine is required for this MIX file to work in-game. Multiple TRE files will be created intermediately in order to fully support subtitles in the game. One TRE file includes all in-game spoken quotes and the rest of them correspond to any VQA video sequence that contain voice acting.
+A tool to process the aforementioned Excel file with the dialogue transcriptions and output text resource files (TRx) that will be packed along with the external font (see fontCreator tool) into a SUBTITLES.MIX file. Multiple TRx files will be created intermediately in order to fully support subtitles in the game. One TRx file includes all in-game spoken quotes and the rest of them correspond to any VQA video sequence that contain voice acting.
 Usage:
 ```
-python2.7 packBladeRunnerMIXFromPCTLKXLS-04.py -x <excelWithTranscriptSheets.xls>
+python2.7 mixResourceCreator.py -x excelWithTranscriptSheets.xls [-ian pathToActorNamesTxt] [-cft pathToConfigureFontsTranslationTxt] [--trace]
 ```
-The tool __requires__ the actornames.txt file, which is included in the samples folder, to be in the same folder as the tool's source (.py) file.
+The tool __requires__ a valid path to the actornames.txt file, which is included in the samples folder.
 
-## fontCreator (grabberFromPNG##BR)
-(requires python image library *PIL*)
-A tool to support __both__ the extraction of fonts from the game __and__ the creation of a font file (FON) for use with (currently) a modified version of ScummVM's BladeRunner engine (WIP) in order to resolve various issues with the available fonts (included in the game's own resource files). These issues include alignment, kerning, corrupted format, limited charset and unsupported characters -- especially for languages with too many non-Latin symbols in their alphabet.
+Syntax Notes: 
+1. The "-x" switch is followed by the path to the input Excel file (xls) which should contain the transcript sheet(s).
+2. The "-ian" optional switch is followed by the path to the actornames.txt file -- if this is omitted then the file is assumed to reside in the current working directory.
+3. The "-cft" optional switch is followed by the path to the text configuration file "configureFontsTranslation.txt" -- if this is omitted then the file is assumed to reside in the current working directory.
+4. The "-ld" optional switch is followed by a language description for the language of the game you are exporting Text Resources from. This switch is meaningful when you also use the "-xtre" switch to export Text Resource files.
+    * Valid language values are: EN_ANY, DE_DEU, FR_FRA, IT_ITA, ES_ESP, RU_RUS 
+    * Default language value is: EN_ANY (English)
+5. The "--trace" optional switch enables extra debug messages to be printed. 
+
+The __text configuration file "configureFontsTranslation.txt"__ a __text file that should be saved in a UTF-8 encoding (no BOM)__, that contains the following:
+1. Multiple lines (practically one per imported Font type) with the key "fontNameAndOutOfOrderGlyphs" and a '#'-separated value that contains:
+    * the name of an in-game Font "type" that will be included in the SUBTITLES.MIX resource archive. You could also have lines for Font "types" not imported in the SUBTITLES.MIX, but are already Font types used by the game (eg. KIA6PT) especially when you intend to add translated/ updated TRx files in the SUBTITLES.MIX (however even in that case, there are default settings for those fonts that the script will use if you don't specify alternative settings in this file to override them). Valid values can be: SUBTLS_E (for all subtitles), KIA6PT, TAHOMA (for both TAHOMA18 and TAHOMA24), SYSTEM (this is basically for the ERRORMSG.TRx).
+    * a '#' character after the font type
+    * the name of the 8-bit string encoding (codepage) (eg. cp437 or windows-1252) that should be used to store the texts that uses this particular font "type" in the game's TRx text resource files. Valid values can be the standard encodings listed in python's page:
+	https://docs.python.org/2.7/library/codecs.html#standard-encodings
+    * a '#' character after the target Encoding
+	* a list of comma separated tuples that specify the mapping of special (out of order) character to placeholder characters from the selected codepage. See fontCreator section for more details on this.
+	* eg. 
+	````
+	fontNameAndOutOfOrderGlyphs=SUBTLS_E#windows-1253#í:Ά,ñ:¥,â:¦,é:§,Ά:£
+	fontNameAndOutOfOrderGlyphs=KIA6PT#cp437#
+	fontNameAndOutOfOrderGlyphs=TAHOMA#cp437#
+	fontNameAndOutOfOrderGlyphs=SYSTEM#latin-1#
+	````
+	* Note: for font files (FON) that you have created or edited with the fontCreator tool (e.g for the SUBTLS_E file for subtitles, or another in-game font file eg. KIA6PT, TAHOMA) you __should copy the 8-bit encoding and the comma separated out of order character tuples from the respective "override encoding" text file that you used with the fontCreator tool for each new/ edited font in the configureFontsTranslation.txt fields__. Additionally, __all the new and edited fonts (FON files that were output by the fontCreator script) should be in your working directory__ in order to include them in the SUBTITLES.MIX. It's important to keep the naming of those files unchanged. __Supported name values for imported FON files__ are:
+	SUBTLS_E.FON, KIA6PT.FON, TAHOMA18.FON, TAHOMA24.FON and SYSTEM.FON (practically you won't be using the last one). 
+	
+## fontCreator (fontCreator.py)
+(requires python Image library *PIL*)
+A tool to support __both__ the exporting of fonts from the game (to PNG images) __and__ the creation of a font file (FON) in order to resolve various issues with the available fonts (included in the game's own resource files). These issues include alignment, kerning, corrupted format, limited charset and unsupported characters -- especially for languages with too many non-Latin symbols in their alphabet.
 This font tool's code is based off the Monkey Island Special Edition's Translator (https://github.com/ShadowNate/MISETranslator).
 Usage:
 ```
-Syntax A - To export game fonts:
-python2.7 grabberFromPNG17BR.py -ip <folderpathForMIXFiles>
+Syntax A - To export game fonts to PNG images:
+python2.7 fontCreator.py -ip folderpathForMIXFiles
 
-Syntax B - To create subtitle font:
-python2.7 grabberFromPNG17BR.py -im <imageRowPNGFilename> -om <targetFONfilename> -pxLL <minSpaceBetweenLettersInRowLeftToLeft> -pxTT <minSpaceBetweenLettersInColumnTopToTop> -pxKn <kerningForFirstDummyFontLetter> -pxWS <whiteSpaceWidthInPixels>
+Syntax B - To create the subtitle's font:
+python2.7 fontCreator.py -im imageRowPNGFilename -om targetFONfilename [-oe pathToOverrideEncodingTxt] -pxLL minSpaceBetweenLettersInRowLeftToLeft -pxTT minSpaceBetweenLettersInColumnTopToTop -pxKn kerningForFirstDummyFontLetter -pxWS whiteSpaceWidthInPixels [--trace]
 ```
-This tool also __requires__ an overrideEncoding.txt file to be in the same folder as the tool's source (.py) file.
-The overrideEncoding.txt is a __text file that should be saved in a UTF-8 encoding (no BOM)__, that contains the following:
-1. A key "targetEncoding" with a value of the name of the ASCII codepage that should be used for the character fonts (eg windows-1253).
+This tool __requires an override encoding text file__ in its Syntax B mode (subtitle font creation). You can specify the path to this file after a "-oe" switch. If you don't provide this path, the script will search for an "overrideEncoding.txt" file in the current working directory.
+The override encoding file is a __text file that should be saved in a UTF-8 encoding (no BOM)__, that contains the following:
+1. A key "targetEncoding" with a value of the name of the ASCII codepage (8-bit encoding) that should be used for the character fonts (eg windows-1253). Valid values can be the standard encodings listed in python's page:
+	https://docs.python.org/2.7/library/codecs.html#standard-encodings
 2. A key "asciiCharList" with value the "all-characters" string with all the printable characters that will be used in-game, from the specified codepage. Keep in mind that:
     * The first such character (typically this is the '!' character) should be repeated twice!
     * All characters must belong to the specified codepage.
@@ -64,25 +118,25 @@ The overrideEncoding.txt is a __text file that should be saved in a UTF-8 encodi
     * Example: specialOutOfOrderGlyphsUTF8ToAsciiTargetEncoding=í:Ά,ñ:¥,â:¦,é:§,Ά:£
     * Don't use space(s) between the tuples!
 There is a sample of such file in the source folder for the fontCreator tool.
-
 	
-__For the exporting the game fonts mode__, the valid syntax expects only one (1) argument:
-1. folderpathForMIXFiles: is the path where the game's MIX files are located (STARTUP.MIX is required). The exported font files will be: 10PT.FON, TAHOMA18.FON, TAHOMA24.FON and KIA6PT.FON.
+__For the exporting of the game fonts (to PNG) mode__, the valid syntax expects only one (1) argument:
+1. folderpathForMIXFiles: is the path where the game's MIX files are located (STARTUP.MIX is required). The exported font files will be: 10PT.FON.PNG, TAHOMA18.FON.PNG, TAHOMA24.FON.PNG and KIA6PT.FON.PNG.
 
 __For the creation of subtitles' font mode__, there are six (6) mandatory launch arguments for the fontCreator tool:
 1. imageRowPNGFilename: is the filename of the input PNG image file which should contain a row of (preferably) tab separated glyphs. Example: "Tahoma_18ShdwTranspThreshZero003-G5.png". Keep in mind that:
-    * The first glyph should be repeated here too, as in the overrideEncoding.txt file.
+    * The first glyph should be repeated here too, as in the override encoding text file.
 	* Background should be transparent.
 	* All colors used in the character glyphs should not have any transparency value (eg from Gimp 2, set Layer->Transparency->Threshold alpha to 0). There's no partial transparency supported by the game. A pixel will either by fully transparent or fully opaque.
-    * If you use special glyphs that are not in the specified ASCII codepage (eg ñ, é, í, â don't appear in the Greek codepage), then in this image file you should use the actual special glyphs - put them at the position of the placeholder characters in your "all-characters" string that you've specified in the overrideEncoding.txt file.
-2. targetFONfilename: Example: "SUBTLS_E.FON". Keep in mind that:
-    * As of yet, only the SUBTLS_E.FON is supported by a modified (non-official) version of the BladeRunner ScummVM engine.
+    * If you use special glyphs that are not in the specified ASCII codepage (eg ñ, é, í, â don't appear in the Greek codepage), then in this image file you should use the actual special glyphs - put them at the position of the placeholder characters in your "all-characters" string that you've specified in the override encoding text file.
+2. targetFONfilename: Example: "SUBTLS_E.FON" for the subtitles.
 3. minSpaceBetweenLettersInRowLeftToLeft: This is a length (positive integer) in pixels that indicates the __minimum__ distance between the left-most side of a glyph and the left-most side of the immediate subsequent glyph in the input image PNG (row of glyphs) file.
 This basically tells the tool how far (in the x axis) it can search for pixels that belong to the same glyph). You can input an approximate value here and adjust it based on the output of the tool (the tool should be able to detect ALL the glyphs in the PNG row image file and it will report how many it detected in its output)
 4. minSpaceBetweenLettersInColumnTopToTop: This is a positive integer in pixels that indicates the __minimum__ distance between the top-most pixel of a glyph and the top-most pixel of a glyph on another row of the input image file.
 It is highly recommended, though, that the input image file should contain only a single row of glyphs and this value should be higher than the maximum height among the glyphs, typically this should be set to approximately double the maximum height of glyph.
 5. kerningForFirstDummyFontGlyph: This is an integer that explicitly indicates the kerning, ie. offset in pixels (on the x-axis) of the first glyph (the one that is repeated twice). This can be measured by observing the indent that your image processing app adds when you enter the first glyph (typically it should be only a few pixels)
 6. whiteSpaceWidthInPixels: This is a positive integer value that sets the width in pixels for the single white space between words for the subtitles in-game.
+
+The "--trace" optional switch enables extra debug messages to be printed. 
 
 A suggested method of creating decent looking PNG with the row of glyphs for your subtitles' font is the following:
 1. Create the font row in __GIMP__ 

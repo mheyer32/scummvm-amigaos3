@@ -184,10 +184,10 @@ void AIScriptSadik::Retired(int byActorId) {
 		Scene_Exits_Enable();
 	}
 	if (Actor_Query_In_Set(kActorSadik, kSetKP07)) {
-		Global_Variable_Decrement(51, 1);
+		Global_Variable_Decrement(kVariableReplicants, 1);
 		Actor_Set_Goal_Number(kActorSadik, 599);
 
-		if (!Global_Variable_Query(51)) {
+		if (Global_Variable_Query(kVariableReplicants) == 0) {
 			Player_Loses_Control();
 			Delay(2000);
 			Player_Set_Combat_Mode(0);
@@ -196,7 +196,7 @@ void AIScriptSadik::Retired(int byActorId) {
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(579);
 			Game_Flag_Reset(653);
-			Set_Enter(kSetKP05_KP06, kSetKP03);
+			Set_Enter(kSetKP05_KP06, kSceneKP06);
 			return; //true;
 		}
 	}

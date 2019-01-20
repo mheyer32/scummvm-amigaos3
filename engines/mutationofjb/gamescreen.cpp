@@ -28,6 +28,7 @@
 #include "mutationofjb/gamedata.h"
 #include "mutationofjb/mutationofjb.h"
 #include "mutationofjb/inventory.h"
+#include "mutationofjb/room.h"
 #include "mutationofjb/util.h"
 #include "mutationofjb/widgets/conversationwidget.h"
 #include "mutationofjb/widgets/gamewidget.h"
@@ -220,7 +221,7 @@ void GameScreen::refreshAfterSceneChanged() {
 	event.mouse = _game.getEngine().getEventManager()->getMousePos();
 	_gameWidget->handleEvent(event);
 
-	_gameWidget->markDirty();
+	_gameWidget->markDirty(GameWidget::DIRTY_AFTER_SCENE_CHANGE);
 	_gameWidget->update(*_screen); // Force immediate update.
 }
 
@@ -405,6 +406,7 @@ void GameScreen::onGameStaticClicked(GameWidget *, Static *stat) {
 
 				_game.getGameData().getInventory().addItem(inventoryName);
 				stat->_active = 0;
+				_game.getRoom().drawStatic(stat);
 			}
 		}
 	}

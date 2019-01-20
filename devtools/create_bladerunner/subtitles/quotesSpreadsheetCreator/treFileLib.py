@@ -1,8 +1,46 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
-import os, sys, shutil
-import struct
+osLibFound = False
+sysLibFound = False
+shutilLibFound = False
+structLibFound = False
+
+try:
+	import os 
+except ImportError:
+	print "[Error] os python library is required to be installed!" 
+else:
+	osLibFound = True
+	
+try:
+	import sys 
+except ImportError:
+	print "[Error] sys python library is required to be installed!" 
+else:
+	sysLibFound = True
+
+try:
+	import shutil 
+except ImportError:
+	print "[Error] Shutil python library is required to be installed!" 
+else:
+	shutilLibFound = True
+
+try:
+	import struct 
+except ImportError:
+	print "[Error] struct python library is required to be installed!" 
+else:
+	structLibFound = True
+
+if 	(not osLibFound) \
+	or (not sysLibFound) \
+	or (not shutilLibFound) \
+	or (not structLibFound):
+	sys.stdout.write("[Error] Errors were found when trying to import required python libraries\n")
+	sys.exit(1)
+	
 from struct import *
 
 my_module_version = "0.50"
@@ -17,14 +55,21 @@ class TreHeader:
 
 class treFile:
 	m_header = TreHeader()
+	simpleTextResourceFileName = 'GENERIC.TRE'
 	stringEntriesLst = []  # list of two-value tuples. First value is ID, second value is String content
 	stringOffsets = []
-	def __init__(self):
+	m_traceModeEnabled = False
+	
+	# traceModeEnabled is bool to enable more printed debug messages	
+	def __init__(self, traceModeEnabled = True):
 		del self.stringEntriesLst[:]
 		del self.stringOffsets[:]
+		self.simpleTextResourceFileName = 'GENERIC.TRE'
+		self.m_traceModeEnabled = traceModeEnabled
 		return
 
-	def loadTreFile(self, treBytesBuff, maxLength):
+	def loadTreFile(self, treBytesBuff, maxLength, treFileName):
+		self.simpleTextResourceFileName = treFileName
 		offsInTreFile = 0
 		#
 		# parse TRE file fields for header
@@ -36,7 +81,8 @@ class treFile:
 			#
 			# string IDs table (each entry is unsigned integer 4 bytes)
 			#
-			print "Total texts in TRE: %d" % (self.header().numOfTextResources)
+			if self.m_traceModeEnabled:
+				print "[Info] Total texts in Text Resource file: %d" % (self.header().numOfTextResources)
 			for idx in range(0, self.header().numOfTextResources):
 				tmpTuple = struct.unpack_from('I', treBytesBuff, offsInTreFile)  # unsigned integer 4 bytes
 				self.stringEntriesLst.append( (tmpTuple[0], '') )
@@ -54,7 +100,7 @@ class treFile:
 			#absStartOfOffsetTable = absStartOfIndexTable + (self.header().numOfTextResources * 4)
 			#absStartOfStringTable = absStartOfOffsetTable + ((self.header().numOfTextResources+1) * 4)
 
-			#print "buffer type " , type(treBytesBuff) # it is str
+			#print "[Debug] buffer type: " , type(treBytesBuff) # it is str
 
 			for idx in range(0, self.header().numOfTextResources):
 				currOffset = self.stringOffsets[idx] + absStartOfIndexTable
@@ -64,16 +110,16 @@ class treFile:
 				# This works ok.
 				#
 				allTextsFound = treBytesBuff[currOffset:].split('\x00')
-				# check "problematic" character cases:
-				if  currOffset == 5982 or currOffset == 6050 or currOffset == 2827  or currOffset == 2880:
-				 	print "Offs: %d\tFound String: %s" % ( currOffset,''.join(allTextsFound[0]) )
-					 #print "Offs: %d\tFound String: %s" % ( currOffset,''.join(allTextsFound[0]) )
+				## check "problematic" character cases:
+				if self.m_traceModeEnabled:
+					if  currOffset == 5982 or currOffset == 6050 or currOffset == 2827  or currOffset == 2880:
+						print "[Debug] Offs: %d\tFound String: %s" % ( currOffset,''.join(allTextsFound[0]) )
 				(theId, stringOfIdx) = self.stringEntriesLst[idx]
 				self.stringEntriesLst[idx] = (theId, ''.join(allTextsFound[0]))
-				#print "ID: %d\tFound String: %s" % ( theId,''.join(allTextsFound[0]) )
+				#print "[Debug] ID: %d\tFound String: %s" % ( theId,''.join(allTextsFound[0]) )
 			return True
   		except:
-			print "Loading failure!"
+			print "[Error] Loading Text Resource %s failed!" % (self.simpleTextResourceFileName)
 			return False
 
 	def header(self):
@@ -83,25 +129,29 @@ class treFile:
 #
 if __name__ == '__main__':
 	#	 main()
-	print "Running %s as main module" % (my_module_name)
+	print "[Debug] Running %s as main module" % (my_module_name)
 	# assumes a file of name ACTORS.TRE in same directory
 	inTREFile = None
+	inTREFileName =  'ACTORS.TRE'
+
 	errorFound = False
+	
 	try:
-		inTREFile = open(os.path.join('.','ACTORS.TRE'), 'rb')
+		print "[Info] Opening %s" % (inTREFileName)
+		inTREFile = open(os.path.join('.',inTREFileName), 'rb')
 	except:
 		errorFound = True
-		print "Unexpected error:", sys.exc_info()[0]
+		print "[Error] Unexpected event: ", sys.exc_info()[0]
 		raise
 	if not errorFound:
 		allOfTreFileInBuffer = inTREFile.read()
-		treFileInstance = treFile()
-		if (treFileInstance.loadTreFile(allOfTreFileInBuffer, len(allOfTreFileInBuffer))):
-			print "TRE file loaded successfully!"
+		treFileInstance = treFile(True)
+		if (treFileInstance.loadTreFile(allOfTreFileInBuffer, len(allOfTreFileInBuffer, inTREFileName))):
+			print "[Info] Text Resource file loaded successfully!"
 		else:
-			print "Error while loading TRE file!"
+			print "[Error] Error while loading Text Resource file!"
 		inTREFile.close()
 else:
 	#debug
-	#print "Running	 %s imported from another module" % (my_module_name)
+	#print "[Debug] Running	 %s imported from another module" % (my_module_name)
 	pass

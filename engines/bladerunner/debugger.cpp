@@ -63,7 +63,6 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	_viewZBuffer = false;
 
 	registerCmd("anim", WRAP_METHOD(Debugger, cmdAnimation));
-	registerCmd("chapter", WRAP_METHOD(Debugger, cmdChapter));
 	registerCmd("draw", WRAP_METHOD(Debugger, cmdDraw));
 	registerCmd("flag", WRAP_METHOD(Debugger, cmdFlag));
 	registerCmd("goal", WRAP_METHOD(Debugger, cmdGoal));
@@ -72,6 +71,7 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("say", WRAP_METHOD(Debugger, cmdSay));
 	registerCmd("scene", WRAP_METHOD(Debugger, cmdScene));
 	registerCmd("var", WRAP_METHOD(Debugger, cmdVariable));
+	registerCmd("clue", WRAP_METHOD(Debugger, cmdClue));
 	registerCmd("load", WRAP_METHOD(Debugger, cmdLoad));
 	registerCmd("save", WRAP_METHOD(Debugger, cmdSave));
 }
@@ -140,23 +140,6 @@ bool Debugger::cmdDraw(int argc, const char **argv) {
 		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
 		debugPrintf("Drawing UI elements = %i\n", _viewUI);
 		debugPrintf("Drawing Z buffer = %i\n", _viewZBuffer);
-	}
-
-	return true;
-}
-
-bool Debugger::cmdChapter(int argc, const char **argv) {
-	if (argc != 2) {
-		debugPrintf("Changes chapter of the game without changing scene.\n");
-		debugPrintf("Usage: %s <chapter>\n", argv[0]);
-		return true;
-	}
-
-	int chapter = atoi(argv[1]);
-	if (chapter >= 1 && chapter <= 5) {
-		_vm->_settings->setChapter(chapter);
-	} else {
-		debugPrintf("Chapter must be between 1 and 5\n");
 	}
 
 	return true;
@@ -247,7 +230,7 @@ bool Debugger::cmdLoop(int argc, const char **argv) {
 bool Debugger::cmdPosition(int argc, const char **argv) {
 	if (argc != 2 && argc != 3 && argc != 7) {
 		debugPrintf("Get or set position of the actor.\n");
-		debugPrintf("Usage: %s <actorId> [(<setId> <x> <y> <z> <facing>)|<otherActorId>]\n", argv[0]);
+		debugPrintf("Usage: %s <actorId> [(<setId> <x> <y> <z> <facing>) | <otherActorId>]\n", argv[0]);
 		return true;
 	}
 
@@ -310,7 +293,7 @@ bool Debugger::cmdSay(int argc, const char **argv) {
 	int sentenceId = atoi(argv[2]);
 
 	Actor *actor = nullptr;
-	if (actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) {
+	if ((actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) || (actorId == kActorVoiceOver)) {
 		actor = _vm->_actors[actorId];
 	}
 
@@ -389,29 +372,48 @@ const struct SceneList {
 };
 
 bool Debugger::cmdScene(int argc, const char **argv) {
-	if (argc != 0 && argc > 3) {
+	if (argc != 0 && argc > 4) {
 		debugPrintf("Changes set and scene.\n");
-		debugPrintf("Usage: %s [<setId> <sceneId>] | [[<chapterId>] <sceneName>]\n", argv[0]);
+		debugPrintf("Usage: %s [(<chapterId> <setId> <sceneId>) | (<chapterId> <sceneName>) | <sceneName>]\n", argv[0]);
 		return true;
 	}
 
-	// scene <setId> <sceneId>
-	if (argc == 3 && Common::isDigit(*argv[1]) && Common::isDigit(*argv[2])) {
-		int setId = atoi(argv[1]);
-		int sceneId = atoi(argv[2]);
-		// Sanity check
-		uint i;
-		for (i = 0; sceneList[i].chapter != 0; i++) {
-			if (sceneList[i].chapter == _vm->_settings->getChapter() && sceneList[i].set == setId
-					&& sceneList[i].scene == sceneId)
-				break;
-		}
+	// scene <chapterId> <setId> <sceneId>
+	if (argc == 4 && Common::isDigit(*argv[1]) && Common::isDigit(*argv[2]) && Common::isDigit(*argv[3])) {
+		int chapterId = atoi(argv[1]);
+		int setId = atoi(argv[2]);
+		int sceneId = atoi(argv[3]);
 
-		if (sceneList[i].chapter == 0) {	// end of list
-			debugPrintf("Scene does not exist in this chapter.\n");
+		if (chapterId < 1 || chapterId > 5) {
+			debugPrintf("chapterID must be between 1 and 5\n");
 			return true;
 		}
 
+		int chapterIdNormalized = chapterId;
+
+		if (chapterId == 3 || chapterId == 5) {
+			chapterIdNormalized = chapterId - 1;
+		}
+
+		// Sanity check
+		uint i;
+		for (i = 0; sceneList[i].chapter != 0; i++) {
+			if (sceneList[i].chapter == chapterIdNormalized &&
+			    sceneList[i].set == setId &&
+			    sceneList[i].scene == sceneId
+			) {
+				break;
+			}
+		}
+
+		if (sceneList[i].chapter == 0) { // end of list
+			debugPrintf("chapterId, setId and sceneId combination is not valid.\n");
+			return true;
+		}
+
+		if (chapterId != _vm->_settings->getChapter()) {
+			_vm->_settings->setChapter(chapterId);
+		}
 		_vm->_settings->setNewSetAndScene(setId, sceneId);
 		return false;
 	} else if (argc > 1) {
@@ -423,7 +425,7 @@ bool Debugger::cmdScene(int argc, const char **argv) {
 			chapterId = atoi(argv[1]);
 
 			if (chapterId < 1 || chapterId > 5) {
-				debugPrintf("Chapter must be between 1 and 5\n");
+				debugPrintf("chapterId must be between 1 and 5\n");
 				return true;
 			}
 
@@ -464,7 +466,7 @@ bool Debugger::cmdScene(int argc, const char **argv) {
 			break;
 	}
 
-	debugPrintf("chapter = %i\nset = %i\nscene = %i '%s'\n", _vm->_settings->getChapter(), _vm->_scene->getSetId(),
+	debugPrintf("chapterID = %i\nsetId = %i\nsceneId = %i\nsceneName = '%s'\n", _vm->_settings->getChapter(), _vm->_scene->getSetId(),
 				_vm->_scene->getSceneId(), sceneList[i].name);
 	return true;
 }
@@ -486,6 +488,42 @@ bool Debugger::cmdVariable(int argc, const char **argv) {
 	} else {
 		debugPrintf("Variable id must be between 0 and %i\n", variableCount - 1);
 	}
+	return true;
+}
+
+bool Debugger::cmdClue(int argc, const char **argv) {
+	if (argc != 3 && argc != 4) {
+		debugPrintf("Get or changes clue for an actor.\n");
+		debugPrintf("Usage: %s <actorId> <clueId> [<value>]\n", argv[0]);
+		return true;
+	}
+
+	int actorId = atoi(argv[1]);
+
+	Actor *actor = nullptr;
+	if ((actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) || (actorId == kActorVoiceOver)) {
+		actor = _vm->_actors[actorId];
+	}
+
+	if (actor == nullptr) {
+		debugPrintf("Unknown actor %i\n", actorId);
+		return true;
+	}
+
+	int clueId = atoi(argv[2]);
+
+	// TODO: check clueId
+
+	if (argc == 4) {
+		int value = atoi(argv[3]);
+		if (value != 0) {
+			actor->acquireClue(clueId, true, -1);
+		} else {
+			actor->loseClue(clueId);
+		}
+	}
+	debugPrintf("actorClue(%i, %i) = %i\n", actorId, clueId, actor->hasClue(clueId));
+
 	return true;
 }
 

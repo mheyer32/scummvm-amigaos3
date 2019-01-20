@@ -24,6 +24,7 @@
 
 #include "bladerunner/bladerunner.h"
 #include "bladerunner/font.h"
+#include "bladerunner/game_constants.h"
 #include "bladerunner/mouse.h"
 #include "bladerunner/savefile.h"
 #include "bladerunner/settings.h"
@@ -144,6 +145,22 @@ bool DialogueMenu::addToListNeverRepeatOnceSelected(int answer, int priorityPoli
 	_neverRepeatWasSelected[_neverRepeatListSize] = false;
 	++_neverRepeatListSize;
 	return addToList(answer, false, priorityPolite, priorityNormal, prioritySurly);
+}
+
+bool DialogueMenu::removeFromList(int answer) {
+	int index = getAnswerIndex(answer);
+	if (index != -1) {
+		return false;
+	}
+	if (index < _listSize - 1) {
+		for (int i = index; i < _listSize; ++i) {
+			_items[index] = _items[index + 1];
+		}
+	}
+	--_listSize;
+
+	calculatePosition();
+	return true;
 }
 
 int DialogueMenu::queryInput() {

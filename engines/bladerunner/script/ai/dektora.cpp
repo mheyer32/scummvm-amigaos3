@@ -284,10 +284,10 @@ void AIScriptDektora::Retired(int byActorId) {
 	}
 
 	if (Actor_Query_In_Set(kActorDektora, kSetKP07)) {
-		Global_Variable_Decrement(51, 1);
+		Global_Variable_Decrement(kVariableReplicants, 1);
 		Actor_Set_Goal_Number(kActorDektora, 599);
 
-		if (!Global_Variable_Query(51)) {
+		if (Global_Variable_Query(kVariableReplicants) == 0) {
 			Player_Loses_Control();
 			Delay(2000);
 			Player_Set_Combat_Mode(false);
@@ -296,7 +296,7 @@ void AIScriptDektora::Retired(int byActorId) {
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(579);
 			Game_Flag_Reset(653);
-			Set_Enter(kSetKP05_KP06, kSetKP03);
+			Set_Enter(kSetKP05_KP06, kSceneKP06);
 
 			return; //true;
 		}
@@ -422,7 +422,7 @@ bool AIScriptDektora::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Set_At_XYZ(kActorDektora, -177.0f, 23.88f, -373.0f, 300);
 		_animationState = 36;
 		_animationFrame = 0;
-		Set_Enter(kSetNR01, kSetNR01);
+		Set_Enter(kSetNR01, kSceneNR01);
 		break;
 
 	case 279:
@@ -1091,9 +1091,10 @@ double AIScriptDektora::comp_distance(int actorId, float x1, float y1, float z1)
 }
 
 void AIScriptDektora::checkCombat() {
-	if (Actor_Query_In_Set(kActorDektora, kSetHF01) == 1
-			&& Global_Variable_Query(kVariableChapter) == 5
-			&& Actor_Query_Goal_Number(kActorDektora) != 450) {
+	if (Actor_Query_In_Set(kActorDektora, kSetHF01)
+	 && Global_Variable_Query(kVariableChapter) == 5
+	 && Actor_Query_Goal_Number(kActorDektora) != 450
+	) {
 		if (Global_Variable_Query(kVariableAffectionTowards) == 2) {
 			Global_Variable_Set(kVariableAffectionTowards, 0);
 		}

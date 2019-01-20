@@ -37,108 +37,155 @@ void AIScriptOfficerLeary::Initialize() {
 	var_45D5BC = 0;
 	_animationNext = 0;
 
-	Actor_Put_In_Set(kActorOfficerLeary, 69);
+	Actor_Put_In_Set(kActorOfficerLeary, kSetRC01);
 	Actor_Set_At_XYZ(kActorOfficerLeary, -261.80f, 6.00f, 79.58f, 512);
-	Actor_Set_Goal_Number(kActorOfficerLeary, 0);
+	Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyDefault);
 	Actor_Set_Frame_Rate_FPS(kActorOfficerLeary, 8);
 }
 
 bool AIScriptOfficerLeary::Update() {
-	if (Global_Variable_Query(kVariableChapter) == 4 && Actor_Query_Goal_Number(kActorOfficerLeary) < 300) {
+	if (Global_Variable_Query(kVariableChapter) == 4
+	 && Actor_Query_Goal_Number(kActorOfficerLeary) < 300
+	) {
 		AI_Movement_Track_Flush(kActorOfficerLeary);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 300);
-	} else if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_Goal_Number(kActorOfficerLeary) < 400) {
+		return false;
+	}
+
+	if (Global_Variable_Query(kVariableChapter) == 5
+	 && Actor_Query_Goal_Number(kActorOfficerLeary) < 400
+	) {
 		AI_Movement_Track_Flush(kActorOfficerLeary);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 400);
-	} else if (!Game_Flag_Query(182) && Game_Flag_Query(147) == 1 && Game_Flag_Query(kFlagChromeDebrisTaken) == 1 && Player_Query_Current_Scene() != 78 && Global_Variable_Query(kVariableChapter) < 3) {
+		return false;
+	}
+
+	if (!Game_Flag_Query(kFlagMcCoyAtRCxx)
+	 &&  Game_Flag_Query(kFlagChopstickWrapperTaken)
+	 &&  Game_Flag_Query(kFlagChromeDebrisTaken)
+	 &&  Player_Query_Current_Scene() != kSceneRC01
+	 &&  Global_Variable_Query(kVariableChapter) < 3
+	) {
 		Game_Flag_Set(kFlagRC01PoliceDone);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 3);
-	} else if (Actor_Query_Goal_Number(kActorOfficerLeary) != 1 && Actor_Query_Goal_Number(kActorOfficerLeary) != 2 && Game_Flag_Query(199) == 1) {
-		Game_Flag_Reset(199);
-	} else if (Global_Variable_Query(15) > 4 && !Actor_Clue_Query(kActorOfficerLeary, kClueMcCoyIsStupid)) {
-		Actor_Clue_Acquire(kActorOfficerLeary, kClueMcCoyIsStupid, 1, -1);
-	} else if (Game_Flag_Query(629) == 1) {
+		return false;
+	}
+
+	if (Actor_Query_Goal_Number(kActorOfficerLeary) != kGoalOfficerLearyRC01WalkToCrowd
+	 && Actor_Query_Goal_Number(kActorOfficerLeary) != kGoalOfficerLearyRC01CrowdInterrogation
+	 && Game_Flag_Query(kFlagOfficerLearyTakingNotes)
+	) {
+		Game_Flag_Reset(kFlagOfficerLearyTakingNotes);
+		return false;
+	}
+
+	if ( Global_Variable_Query(15) > 4
+	 && !Actor_Clue_Query(kActorOfficerLeary, kClueMcCoyIsStupid)
+	) {
+		Actor_Clue_Acquire(kActorOfficerLeary, kClueMcCoyIsStupid, true, -1);
+		return false;
+	}
+
+	if (Game_Flag_Query(629)) {
 		Game_Flag_Reset(629);
-	} else if (Game_Flag_Query(623) == 1 && !Game_Flag_Query(664)) {
+		return false;
+	}
+
+	if ( Game_Flag_Query(623)
+	 && !Game_Flag_Query(664)
+	) {
 		Game_Flag_Set(664);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 305);
-	} else if (Actor_Query_Goal_Number(kActorOfficerLeary) == 310 && Actor_Query_Which_Set_In(kActorOfficerLeary) != Player_Query_Current_Set()) {
+		return false;
+	}
+
+	if (Actor_Query_Goal_Number(kActorOfficerLeary) == 310
+	 && Actor_Query_Which_Set_In(kActorOfficerLeary) != Player_Query_Current_Set()
+	) {
 		Non_Player_Actor_Combat_Mode_Off(kActorOfficerLeary);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 305);
-	} else if (Actor_Query_Goal_Number(kActorOfficerLeary) == 599 && Actor_Query_Which_Set_In(kActorOfficerLeary) != Player_Query_Current_Set()) {
+		return false;
+	}
+
+	if (Actor_Query_Goal_Number(kActorOfficerLeary) == 599
+	 && Actor_Query_Which_Set_In(kActorOfficerLeary) != Player_Query_Current_Set()
+	) {
 		Actor_Set_Health(kActorOfficerLeary, 40, 40);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 305);
-	} else if (Actor_Query_Goal_Number(kActorOfficerLeary) == 305) {
+		return false;
+	}
+
+	if (Actor_Query_Goal_Number(kActorOfficerLeary) == 305) {
 		switch (Actor_Query_Which_Set_In(kActorOfficerLeary)) {
-		case 7:
+		case kSetDR01_DR02_DR04:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 0, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 20:
+		case kSetBB01:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 1, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 33:
+		case kSetCT11:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 5, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 53:
+		case kSetMA07:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 7, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 54:
+		case kSetNR01:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 3, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 70:
+		case kSetRC03:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 18, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 74:
+		case kSetUG01:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 11, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 77:
-		case 78:
-		case 79:
+		case kSetUG04:
+		case kSetUG05:
+		case kSetUG06:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 10, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 81:
+		case kSetUG08:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 13, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 83:
+		case kSetUG10:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 14, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 84:
+		case kSetUG12:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 16, 4, 7, 8, -1, -1, -1, 10, 300, 0);
 			}
 			break;
-		case 86:
+		case kSetUG14:
 			if (Actor_Query_Which_Set_In(kActorOfficerLeary) == Player_Query_Current_Set()) {
 				Actor_Set_Goal_Number(kActorOfficerLeary, 310);
 				Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 17, 4, 7, 8, -1, -1, -1, 10, 300, 0);
@@ -152,7 +199,7 @@ bool AIScriptOfficerLeary::Update() {
 void AIScriptOfficerLeary::TimerExpired(int timer) {
 	if (timer == 1) {
 		AI_Countdown_Timer_Reset(kActorOfficerLeary, 1);
-		if (Actor_Query_In_Set(kActorMcCoy, 41)) {
+		if (Actor_Query_In_Set(kActorMcCoy, kSetHF05)) {
 			Actor_Set_Goal_Number(kActorOfficerLeary, 430);
 			Actor_Set_Goal_Number(kActorOfficerGrayford, 430);
 		} else {
@@ -160,37 +207,31 @@ void AIScriptOfficerLeary::TimerExpired(int timer) {
 		}
 	} else if (timer == 2) {
 		AI_Countdown_Timer_Reset(kActorOfficerLeary, 2);
-		sub_431420();
+		Game_Flag_Reset(kFlagOfficerLearyTakingNotes);
 	}
 }
 
 void AIScriptOfficerLeary::CompletedMovementTrack() {
-	int v0;
-	unsigned int v1;
-
-	v0 = Actor_Query_Goal_Number(kActorOfficerLeary);
-	if (v0 == 1) {
-		Actor_Set_Goal_Number(kActorOfficerLeary, 2);
+	int goal = Actor_Query_Goal_Number(kActorOfficerLeary);
+	if (goal == kGoalOfficerLearyRC01WalkToCrowd) {
+		Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyRC01CrowdInterrogation);
 		return;
 	}
-	//todo: tidyup
-	v1 = v0 - 305;
-	if (v1 > 3) {
+	if (goal > 308) {
 		return;
 	}
-	if (!v1) {
+	if (goal == 305) {
 		Actor_Set_Goal_Number(kActorOfficerLeary, 306);
 		return;
 	}
-	if (v1 != 2) {
-		if (v1 == 3) {
-			Actor_Change_Animation_Mode(kActorOfficerLeary, 4);
-			Actor_Face_Actor(kActorOfficerLeary, kActorMcCoy, true);
-			Actor_Set_Goal_Number(kActorOfficerLeary, 309);
-		}
-		return;
+	if (goal == 307) {
+		Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 12, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, -1, -1, 15, 300, 0);
 	}
-	Non_Player_Actor_Combat_Mode_On(kActorOfficerLeary, 0, 1, kActorMcCoy, 12, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, -1, -1, 15, 300, 0);
+	if (goal == 308) {
+		Actor_Change_Animation_Mode(kActorOfficerLeary, 4);
+		Actor_Face_Actor(kActorOfficerLeary, kActorMcCoy, true);
+		Actor_Set_Goal_Number(kActorOfficerLeary, 309);
+	}
 }
 
 void AIScriptOfficerLeary::ReceivedClue(int clueId, int fromActorId) {
@@ -259,7 +300,7 @@ int AIScriptOfficerLeary::GetFriendlinessModifierIfGetsClue(int otherActorId, in
 
 bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	switch (newGoalNumber) {
-	case 1:
+	case kGoalOfficerLearyRC01WalkToCrowd:
 		AI_Movement_Track_Flush(kActorOfficerLeary);
 		if (Random_Query(1, 2) == 1) {
 			AI_Movement_Track_Append(kActorOfficerLeary, 57, 7);
@@ -270,22 +311,26 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 		}
 		AI_Movement_Track_Repeat(kActorOfficerLeary);
 		return true;
-	case 2:
+	case kGoalOfficerLearyRC01CrowdInterrogation:
 		if (Random_Query(1, 3) == 1) {
-			if (Random_Query(1, 2) == 1 && !Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA)) {
-				Actor_Clue_Acquire(kActorOfficerLeary, kClueCrowdInterviewA, 0, -1);
+			if ( Random_Query(1, 2) == 1
+			 && !Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA)
+			) {
+				Actor_Clue_Acquire(kActorOfficerLeary, kClueCrowdInterviewA, false, -1);
 			} else if (!Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewB)) {
-				Actor_Clue_Acquire(kActorOfficerLeary, kClueCrowdInterviewB, 0, -1);
+				Actor_Clue_Acquire(kActorOfficerLeary, kClueCrowdInterviewB, false, -1);
 			}
 		}
-		if (Game_Flag_Query(182)) {
-			if (Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA) && Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewB)) {
-				Actor_Set_Goal_Number(kActorOfficerLeary, 0);
+		if (Game_Flag_Query(kFlagMcCoyAtRCxx)) {
+			if (Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA)
+			 && Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewB)
+			) {
+				Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyDefault);
 			} else {
-				Actor_Set_Goal_Number(kActorOfficerLeary, 1);
+				Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyRC01WalkToCrowd);
 			}
 		} else {
-			Actor_Set_Goal_Number(kActorOfficerLeary, 0);
+			Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyDefault);
 		}
 		return true;
 	case 3:
@@ -807,11 +852,11 @@ bool AIScriptOfficerLeary::UpdateAnimation(int *animation, int *frame) {
 		*frame = _animationFrame;
 		return true;
 	case 2:
-		if (Game_Flag_Query(199)) {
+		if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 			*animation = 603;
 			_animationFrame++;
-			if (_animationFrame > Slice_Animation_Query_Number_Of_Frames(603) - 1) {
-				Game_Flag_Reset(199);
+			if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(603)) {
+				Game_Flag_Reset(kFlagOfficerLearyTakingNotes);
 				_animationFrame = 0;
 				_animationState = _animationStateNext;
 				*animation = _animationNext;
@@ -852,7 +897,7 @@ bool AIScriptOfficerLeary::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(601)) {
 			_animationFrame = 0;
 		}
-		if (!Game_Flag_Query(199)) {
+		if (!Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 			_animationState = 32;
 			_animationFrame = 0;
 			*animation = 603;
@@ -860,7 +905,8 @@ bool AIScriptOfficerLeary::UpdateAnimation(int *animation, int *frame) {
 		*frame = _animationFrame;
 		return true;
 	case 0:
-		if (Game_Flag_Query(199) && !Game_Flag_Query(KFlagMcCoyAndOfficerLearyTalking)) {
+		if ( Game_Flag_Query(kFlagOfficerLearyTakingNotes)
+		 && !Game_Flag_Query(KFlagMcCoyAndOfficerLearyTalking)) {
 			_animationState = 31;
 			_animationFrame = 0;
 			*animation = 604;
@@ -908,7 +954,7 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			break;
 		case 20:
 			v1 = _animationFrame;
-			Actor_Change_Animation_Mode(kActorOfficerLeary, 4);
+			Actor_Change_Animation_Mode(kActorOfficerLeary, kAnimationModeCombatIdle);
 			_animationFrame = v1;
 			_animationState = 21;
 			break;
@@ -946,7 +992,7 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 11;
 			_animationNext = 592;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
 		}
@@ -996,11 +1042,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 12;
 			_animationNext = 593;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 12;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1011,11 +1056,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 13;
 			_animationNext = 594;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 13;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1026,11 +1070,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 14;
 			_animationNext = 595;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 14;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1041,11 +1084,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 15;
 			_animationNext = 596;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 15;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1056,11 +1098,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 16;
 			_animationNext = 597;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 16;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1071,11 +1112,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 17;
 			_animationNext = 598;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
-		}
-		else if (_animationState > 19) {
+		} else if (_animationState > 19) {
 			_animationState = 17;
 			_animationFrame = 0;
 			var_45D5BC = 0;
@@ -1086,7 +1126,7 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 18;
 			_animationNext = 599;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
 		} else if (_animationState > 19) {
@@ -1100,7 +1140,7 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 			_animationState = 2;
 			_animationStateNext = 19;
 			_animationNext = 600;
-			if (Game_Flag_Query(199) == 1) {
+			if (Game_Flag_Query(kFlagOfficerLearyTakingNotes)) {
 				_animationFrame = 0;
 			}
 		} else if (_animationState > 19) {
@@ -1135,10 +1175,10 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 		_animationFrame = 0;
 		break;
 	case 27:
-		Game_Flag_Reset(199);
+		Game_Flag_Reset(kFlagOfficerLearyTakingNotes);
 		break;
 	case 28:
-		Game_Flag_Set(199);
+		Game_Flag_Set(kFlagOfficerLearyTakingNotes);
 		break;
 	case kAnimationModeWalkUp:
 		_animationState = 5;
@@ -1156,7 +1196,7 @@ bool AIScriptOfficerLeary::ChangeAnimationMode(int mode) {
 		_animationState = 10;
 		_animationFrame = 0;
 		break;
-	case 48:
+	case kAnimationModeDie:
 		if (_animationState == 24) {
 			_animationState = 28;
 			_animationFrame = 0;
@@ -1189,7 +1229,7 @@ void AIScriptOfficerLeary::SetAnimationState(int animationState, int animationFr
 
 bool AIScriptOfficerLeary::ReachedMovementTrackWaypoint(int waypointId) {
 	if (waypointId == 57 || waypointId == 58) {
-		sub_431408();
+		Game_Flag_Set(kFlagOfficerLearyTakingNotes);
 		AI_Countdown_Timer_Reset(kActorOfficerLeary, 2);
 		AI_Countdown_Timer_Start(kActorOfficerLeary, 2, 6);
 	}
@@ -1200,13 +1240,4 @@ void AIScriptOfficerLeary::FledCombat() {
 	Actor_Set_Goal_Number(kActorOfficerLeary, 300);
 }
 
-bool AIScriptOfficerLeary::sub_431408() {
-	Game_Flag_Set(199);
-	return true;
-}
-
-bool AIScriptOfficerLeary::sub_431420() {
-	Game_Flag_Reset(199);
-	return true;
-}
 } // End of namespace BladeRunner

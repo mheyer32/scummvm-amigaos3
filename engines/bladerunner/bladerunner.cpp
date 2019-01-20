@@ -81,6 +81,7 @@
 #include "common/events.h"
 #include "common/savefile.h"
 #include "common/system.h"
+#include "common/debug-channels.h"
 
 #include "engines/util.h"
 #include "engines/advancedDetector.h"
@@ -92,6 +93,8 @@ namespace BladeRunner {
 BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *desc)
 	: Engine(syst),
 	  _rnd("bladerunner") {
+
+	DebugMan.addDebugChannel(kDebugScript, "Script", "Debug the scripts");
 
 	_windowIsActive = true;
 	_gameIsRunning  = true;
@@ -832,7 +835,10 @@ bool BladeRunnerEngine::isMouseButtonDown() const {
 void BladeRunnerEngine::gameLoop() {
 	_gameIsRunning = true;
 	do {
-		/* TODO: check player death */
+		if (_playerDead) {
+			playerDied();
+			_playerDead = false;
+		}
 		gameTick();
 	} while (_gameIsRunning);
 }
@@ -908,7 +914,6 @@ void BladeRunnerEngine::gameTick() {
 			_sceneScript->sceneFrameAdvanced(frame);
 			backgroundChanged = true;
 		}
-		(void)backgroundChanged;
 		blit(_surfaceBack, _surfaceFront);
 
 		_overlays->tick();
@@ -1109,8 +1114,16 @@ void BladeRunnerEngine::handleKeyUp(Common::Event &event) {
 
 void BladeRunnerEngine::handleKeyDown(Common::Event &event) {
 	if ((event.kbd.keycode == Common::KEYCODE_d) && (event.kbd.flags & Common::KBD_CTRL)) {
+		_time->pause();
 		getDebugger()->attach();
 		getDebugger()->onFrame();
+
+		_time->resume();
+
+		if (!_kia->isOpen() && !_spinner->isOpen() && !_elevator->isOpen() && !_esper->isOpen() && !_dialogueMenu->isOpen() && !_scores->isOpen()) {
+			_scene->resume();
+		}
+
 		return;
 	}
 
@@ -1274,7 +1287,11 @@ void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool bu
 		}
 	} else if (buttonDown) {
 		if (_playerActor->inWalkLoop()) {
+			if (!_isWalkingInterruptible) {
+				return;
+			}
 			_playerActor->stopWalking(false);
+			_interruptWalking = true;
 		}
 		_combat->change();
 	}
@@ -1753,6 +1770,24 @@ void BladeRunnerEngine::playerGainsControl() {
 	if (_playerLosesControlCounter == 0) {
 		_mouse->enable();
 	}
+}
+
+void BladeRunnerEngine::playerDied() {
+	playerLosesControl();
+
+	int timeWaitEnd = _time->current() + 5000;
+	while (_time->current() < timeWaitEnd) {
+		gameTick();
+	}
+
+	_actorDialogueQueue->flush(1, false);
+
+	while (_playerLosesControlCounter > 0) {
+		playerGainsControl();
+	}
+
+	_kia->_forceOpen = true;
+	_kia->open(kKIASectionLoad);
 }
 
 bool BladeRunnerEngine::saveGame(Common::WriteStream &stream, const Graphics::Surface &thumbnail) {

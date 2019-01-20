@@ -350,13 +350,11 @@ void GlkInterface::gos_update_height() {
 
 void GlkInterface::reset_status_ht() {
 	uint height;
-	if (_wp._upper) {
+	if (_wp._upper && h_version != 6) {
 		glk_window_get_size(_wp._upper, nullptr, &height);
 		if ((uint)mach_status_ht != height) {
-			glk_window_set_arrangement(
-				glk_window_get_parent(_wp._upper),
-				winmethod_Above | winmethod_Fixed,
-				mach_status_ht, nullptr);
+			glk_window_set_arrangement(glk_window_get_parent(_wp._upper),
+				winmethod_Above | winmethod_Fixed, mach_status_ht, nullptr);
 		}
 	}
 }
@@ -490,19 +488,28 @@ void GlkInterface::showBeyondZorkTitle() {
 
 	if (saveSlot == -1) {
 		winid_t win = glk_window_open(0, 0, 0, wintype_Graphics, 0);
-		glk_image_draw_scaled(win, 1, 0, 0, g_vm->_screen->w, g_vm->_screen->h);
+		if (glk_image_draw_scaled(win, 1, 0, 0, g_vm->_screen->w, g_vm->_screen->h))
+			_events->waitForPress();
 
-		_events->waitForPress();
 		glk_window_close(win, nullptr);
 	}
 }
 
 void GlkInterface::os_draw_picture(int picture, const Common::Point &pos) {
-	glk_image_draw(_wp._background, picture, pos.x - 1, pos.y - 1);
+	if (cwin == 0) {
+		// Picture embedded within the lower text area
+		glk_image_draw(_wp._lower, picture, imagealign_MarginLeft, 0);
+	} else {
+		glk_image_draw(_wp._background, picture,
+			(pos.x - 1) * g_conf->_monoInfo._cellW,
+			(pos.y - 1) * g_conf->_monoInfo._cellH);
+	}
 }
 
 void GlkInterface::os_draw_picture(int picture, const Common::Rect &r) {
-	glk_image_draw_scaled(_wp._background, picture, r.left, r.top, r.width(), r.height());
+	Point cell(g_conf->_monoInfo._cellW, g_conf->_monoInfo._cellH);
+	glk_image_draw_scaled(_wp._background, picture, (r.left - 1) * cell.x, (r.top - 1) * cell.y,
+		r.width() * cell.x, r.height() * cell.y);
 }
 
 zchar GlkInterface::os_read_key(int timeout, bool show_cursor) {

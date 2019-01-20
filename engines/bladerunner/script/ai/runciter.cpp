@@ -120,7 +120,7 @@ void AIScriptRunciter::OtherAgentEnteredCombatMode(int otherActorId, int combatM
 				Actor_Says(kActorMcCoy, 4790, -1);
 				Actor_Says(kActorRunciter, 650, 18);
 				Actor_Says(kActorRunciter, 660, 19);
-				Actor_Clue_Acquire(kActorMcCoy, kClueRuncitersConfession1, 1, kActorRunciter);
+				Actor_Clue_Acquire(kActorMcCoy, kClueRuncitersConfession1, true, kActorRunciter);
 			} else {
 				Actor_Says(kActorRunciter, 670, 18);
 				Actor_Says(kActorMcCoy, 4795, -1);
@@ -172,7 +172,7 @@ int AIScriptRunciter::GetFriendlinessModifierIfGetsClue(int otherActorId, int cl
 
 bool AIScriptRunciter::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	if (newGoalNumber == 0) {
-		Actor_Put_In_Set(kActorRunciter, 16);
+		Actor_Put_In_Set(kActorRunciter, kSetRC02_RC51);
 		Actor_Set_At_Waypoint(kActorRunciter, 92, 567);
 		return false;
 	}
@@ -202,7 +202,7 @@ bool AIScriptRunciter::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		return false;
 	}
 	if (newGoalNumber == 300) {
-		Actor_Put_In_Set(kActorRunciter, 16);
+		Actor_Put_In_Set(kActorRunciter, kSetRC02_RC51);
 		Actor_Set_At_Waypoint(kActorRunciter, 93, 1007);
 		return false;
 	}

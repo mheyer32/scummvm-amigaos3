@@ -25,9 +25,9 @@
 namespace BladeRunner {
 
 void SceneScriptPS14::InitializeScene() {
-	if (Game_Flag_Query(134)) {
+	if (Game_Flag_Query(kFlagPS03toPS14)) {
 		Setup_Scene_Information(-1119.61f, 508.14f, -1208.22f, 315);
-		Game_Flag_Reset(134);
+		Game_Flag_Reset(kFlagPS03toPS14);
 	} else {
 		Setup_Scene_Information(-785.45f, 508.14f, -1652.0f, 315);
 	}
@@ -69,7 +69,7 @@ bool SceneScriptPS14::ClickedOnExit(int exitId) {
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -2101.0f, 508.14f, -1361.0f, 0, 1, false, 0)) {
 			Actor_Face_Heading(kActorMcCoy, 819, false);
-			Loop_Actor_Travel_Stairs(kActorMcCoy, 3, 1, 0);
+			Loop_Actor_Travel_Stairs(kActorMcCoy, 3, 1, kAnimationModeIdle);
 			if (Global_Variable_Query(kVariableChapter) == 4 && Game_Flag_Query(671)) {
 				if (Actor_Clue_Query(kActorMcCoy, kClueBriefcase)) {
 					Game_Flag_Set(666);
@@ -80,10 +80,10 @@ bool SceneScriptPS14::ClickedOnExit(int exitId) {
 			} else if (Global_Variable_Query(kVariableChapter) > 3) {
 				Actor_Says(kActorMcCoy, 8522, 12);
 				Actor_Face_Heading(kActorMcCoy, 307, false);
-				Loop_Actor_Travel_Stairs(kActorMcCoy, 3, 0, 0);
+				Loop_Actor_Travel_Stairs(kActorMcCoy, 3, false, kAnimationModeIdle);
 			} else {
-				Game_Flag_Set(135);
-				Set_Enter(63, kScenePS03);
+				Game_Flag_Set(kFlagPS14toPS03);
+				Set_Enter(kSetPS03, kScenePS03);
 			}
 		}
 		return true;
@@ -91,9 +91,9 @@ bool SceneScriptPS14::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -785.45f, 508.14f, -1652.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(673);
-			Game_Flag_Reset(178);
-			Game_Flag_Set(179);
-			Set_Enter(53, kSceneMA07);
+			Game_Flag_Reset(kFlagMcCoyAtPSxx);
+			Game_Flag_Set(kFlagMcCoyAtMAxx);
+			Set_Enter(kSetMA07, kSceneMA07);
 		}
 		return true;
 	}

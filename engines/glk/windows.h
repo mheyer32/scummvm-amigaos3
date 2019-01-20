@@ -328,7 +328,7 @@ struct Attributes {
 	/**
 	 * Equality comparison
 	 */
-	bool operator==(const Attributes &src) {
+	bool operator==(const Attributes &src) const {
 		return fgset == src.fgset && bgset == src.bgset && reverse == src.reverse
 			   && style == src.style && fgcolor == src.fgcolor && bgcolor == src.bgcolor
 			   && hyper == src.hyper;
@@ -336,7 +336,7 @@ struct Attributes {
 	/**
 	 * Inequality comparison
 	 */
-	bool operator!=(const Attributes &src) {
+	bool operator!=(const Attributes &src) const {
 		return fgset != src.fgset || bgset != src.bgset || reverse != src.reverse
 			   || style != src.style || fgcolor != src.fgcolor || bgcolor != src.bgcolor
 			   || hyper != src.hyper;
@@ -345,17 +345,17 @@ struct Attributes {
 	/**
 	 * Return the background color for the current font style
 	 */
-	byte *attrBg(WindowStyle *styles);
+	const byte *attrBg(const WindowStyle *styles);
 
 	/**
 	 * Return the foreground color for the current font style
 	 */
-	byte *attrFg(WindowStyle *styles);
+	const byte *attrFg(const WindowStyle *styles);
 
 	/**
 	 * Get the font for the current font style
 	 */
-	FACES attrFont(WindowStyle *styles) const {
+	FACES attrFont(const WindowStyle *styles) const {
 		return styles[style].font;
 	}
 };
@@ -432,6 +432,7 @@ public:
 	virtual void setSize(const Point &newSize) {
 		_bbox.setWidth(newSize.x);
 		_bbox.setHeight(newSize.y);
+		rearrange(_bbox);
 	}
 
 	/**
@@ -439,6 +440,7 @@ public:
 	 */
 	virtual void setPosition(const Point &newPos) {
 		_bbox.moveTo(newPos);
+		rearrange(_bbox);
 	}
 
 	/**

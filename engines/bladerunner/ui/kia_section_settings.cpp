@@ -56,7 +56,7 @@ KIASectionSettings::KIASectionSettings(BladeRunnerEngine *vm)
 	_speechVolume         = new UISlider(_vm, sliderCallback, this, Common::Rect(180, 235, 460, 245), 101, 0);
 	_gammaCorrection      = new UISlider(_vm, sliderCallback, this, Common::Rect(180, 260, 460, 270), 101, 0);
 	_directorsCut         = new UICheckBox(_vm, checkBoxCallback, this, Common::Rect(180, 364, 270, 374), 0, false);
-	_subtitlesEnable = new UICheckBox(_vm, checkBoxCallback, this, Common::Rect(291, 364, 360, 374), 0, false);
+	_subtitlesEnable      = new UICheckBox(_vm, checkBoxCallback, this, Common::Rect(311, 364, 380, 374), 0, false); // moved further to the right to avoid overlap with 'Designer's Cut' in some language versions (ESP)
 	_playerAgendaSelector = new UIImagePicker(_vm, 5);
 
 	_uiContainer->add(_musicVolume);
@@ -122,8 +122,29 @@ void KIASectionSettings::draw(Graphics::Surface &surface) {
 	const char *textDark = _vm->_textOptions->getText(14);
 	const char *textLight = _vm->_textOptions->getText(15);
 	const char *textDesignersCut = _vm->_textOptions->getText(18);
+
 	// Allow this to be loading as an extra text item in the resource for text options
-	const char *textSubtitles  = strcmp(_vm->_textOptions->getText(42), "") == 0? "Subtitles" : _vm->_textOptions->getText(42); // +1 to the max of original index of textOptions which is 41
+	const char *subtitlesTranslation = "Subtitles";
+	if (_vm->_languageCode == "E") {
+		subtitlesTranslation = "Subtitles"; // EN_ANY
+	}
+	else if (_vm->_languageCode == "G") {
+		subtitlesTranslation = "Untertitel"; // DE_DEU
+	}
+	else if (_vm->_languageCode == "F") {
+		subtitlesTranslation = "Sous-titres"; // FR_FRA
+	}
+	else if (_vm->_languageCode == "I") {
+		subtitlesTranslation = "Sottotitoli"; // IT_ITA
+	}
+	else if (_vm->_languageCode == "R") {
+		subtitlesTranslation = "Subtitry";  // RU_RUS
+	}
+	else if (_vm->_languageCode == "S") {
+		subtitlesTranslation = "Subtitulos"; // ES_ESP
+	}
+
+	const char *textSubtitles  = strcmp(_vm->_textOptions->getText(42), "") == 0? subtitlesTranslation : _vm->_textOptions->getText(42); // +1 to the max of original index of textOptions which is 41
 
 	int posConversationChoices = 320 - _vm->_mainFont->getTextWidth(textConversationChoices) / 2;
 	int posMusic = 320 - _vm->_mainFont->getTextWidth(textMusic) / 2;
@@ -160,7 +181,7 @@ void KIASectionSettings::draw(Graphics::Surface &surface) {
 	_vm->_mainFont->drawColor(textLight, surface, 462, 261, 0x6EEE);
 
 	_vm->_mainFont->drawColor(textDesignersCut, surface, 192, 365, 0x7751);
-	_vm->_mainFont->drawColor(textSubtitles, surface, 303, 365, 0x7751);
+	_vm->_mainFont->drawColor(textSubtitles, surface, 323, 365, 0x7751); // moved further to the right to avoid overlap with 'Designer's Cut' in some language versions (ESP)
 
 	_playerAgendaSelector->drawTooltip(surface, _mouseX, _mouseY);
 }

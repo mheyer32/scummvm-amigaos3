@@ -101,24 +101,24 @@ bool SceneScriptCT11::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 121.0f, 9.68f, -42.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(304);
-			Set_Enter(31, kSceneCT09);
+			Set_Enter(kSetCT09, kSceneCT09);
 		}
 		return true;
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -300.0f, 9.68f, 66.0f, 0, 1, false, 0)) {
 			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -400.0f, 9.68f, -70.0f, 0, 1, false, 0);
-			Game_Flag_Set(86);
-			Set_Enter(4, kSceneCT12);
+			Game_Flag_Set(kFlagCT11toCT12);
+			Set_Enter(kSetCT01_CT12, kSceneCT12);
 		}
 		return true;
 	}
 	if (exitId == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 290.0f, 0.0f, 635.0f, 0, 1, false, 0)) {
 			Game_Flag_Set(531);
-			Game_Flag_Reset(176);
-			Game_Flag_Set(177);
-			Set_Enter(7, kSceneDR01);
+			Game_Flag_Reset(kFlagMcCoyAtCTxx);
+			Game_Flag_Set(kFlagMcCoyAtDRxx);
+			Set_Enter(kSetDR01_DR02_DR04, kSceneDR01);
 		}
 		return true;
 	}
@@ -130,7 +130,7 @@ bool SceneScriptCT11::ClickedOn2DRegion(int region) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 686.0f, 0.0f, 658.0f, 12, 1, false, 0)) {
 			Actor_Face_Heading(kActorMcCoy, 47, false);
 			Item_Remove_From_World(115);
-			Actor_Clue_Acquire(kActorMcCoy, kClueLichenDogWrapper, 0, -1);
+			Actor_Clue_Acquire(kActorMcCoy, kClueLichenDogWrapper, false, -1);
 			Item_Pickup_Spin_Effect(951, 510, 319);
 			Game_Flag_Reset(725);
 			Game_Flag_Set(645);
@@ -170,7 +170,7 @@ bool SceneScriptCT11::ClickedOn2DRegion(int region) {
 				Actor_Voice_Over(520, kActorVoiceOver);
 				Actor_Voice_Over(530, kActorVoiceOver);
 				Actor_Voice_Over(540, kActorVoiceOver);
-				Actor_Clue_Acquire(kActorMcCoy, kClueCar, 0, -1);
+				Actor_Clue_Acquire(kActorMcCoy, kClueCar, false, -1);
 				Scene_2D_Region_Remove(1);
 			}
 		}
@@ -198,7 +198,7 @@ void SceneScriptCT11::PlayerWalkedIn() {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 125.0f, 9.68f, 74.0f, 0, 0, false, 0);
 		Actor_Set_Immunity_To_Obstacles(kActorMcCoy, false);
 		Player_Gains_Control();
-		Game_Flag_Reset(83);
+		Game_Flag_Reset(kFlagCT09toCT11);
 	}
 }
 

@@ -26,11 +26,11 @@ namespace BladeRunner {
 
 void SceneScriptBB03::InitializeScene() {
 	Setup_Scene_Information(20.0f, 60.16f, 0.0f, 0);
-	Game_Flag_Reset(282);
-	if (Game_Flag_Query(284)) {
+	Game_Flag_Reset(kFlagBB02toBB03);
+	if (Game_Flag_Query(kFlagBB04toBB03)) {
 		Setup_Scene_Information(176.0f, 60.16f, 0.0f, 900);
 	}
-	if (Game_Flag_Query(286)) {
+	if (Game_Flag_Query(kFlagBB05toBB03)) {
 		Setup_Scene_Information(204.0f, 60.16f, -164.0f, 740);
 	}
 	Scene_Exit_Add_2D_Exit(0, 589, 0, 639, 479, 1);
@@ -86,19 +86,19 @@ bool SceneScriptBB03::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 176.0f, 60.16f, -64.0f, 0, 1, false, 0)) {
 			Loop_Actor_Walk_To_XYZ(kActorMcCoy, 176.0f, 60.16f, 0.0f, 0, 0, false, 0);
-			Game_Flag_Set(283);
+			Game_Flag_Set(kFlagBB03toBB04);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(1, kSceneBB04);
+			Set_Enter(kSetBB02_BB04_BB06_BB51, kSceneBB04);
 		}
 		return true;
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 20.0f, 60.16f, 0.0f, 0, 1, false, 0)) {
-			Game_Flag_Set(281);
+			Game_Flag_Set(kFlagBB03toBB02);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Set_Enter(1, kSceneBB02);
+			Set_Enter(kSetBB02_BB04_BB06_BB51, kSceneBB02);
 		}
 		return true;
 	}
@@ -118,10 +118,10 @@ bool SceneScriptBB03::ClickedOnExit(int exitId) {
 					Actor_Set_Targetable(kActorBryant, false);
 					Actor_Set_Targetable(kActorGeneralDoll, false);
 				}
-				Game_Flag_Set(285);
+				Game_Flag_Set(kFlagBB03toBB05);
 				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
-				Set_Enter(22, kSceneBB05);
+				Set_Enter(kSetBB05, kSceneBB05);
 			} else {
 				Actor_Says(kActorMcCoy, 8522, 3);
 			}
@@ -142,13 +142,13 @@ void SceneScriptBB03::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptBB03::PlayerWalkedIn() {
-	if (Game_Flag_Query(286)) {
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 164.0f, 60.16f, -164.0f, 0, 0, false, 0);
-		Game_Flag_Reset(286);
+	if (Game_Flag_Query(kFlagBB05toBB03)) {
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 164.0f, 60.16f, -164.0f, 0, false, false, 0);
+		Game_Flag_Reset(kFlagBB05toBB03);
 	}
-	if (Game_Flag_Query(284)) {
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 176.0f, 60.16f, -64.0f, 0, 0, false, 0);
-		Game_Flag_Reset(284);
+	if (Game_Flag_Query(kFlagBB04toBB03)) {
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, 176.0f, 60.16f, -64.0f, 0, false, false, 0);
+		Game_Flag_Reset(kFlagBB04toBB03);
 	}
 }
 

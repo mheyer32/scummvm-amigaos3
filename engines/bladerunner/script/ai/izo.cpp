@@ -106,7 +106,7 @@ void AIScriptIzo::CompletedMovementTrack() {
 		return; //true;
 
 	case 120:
-		Game_Flag_Set(164);
+		Game_Flag_Set(kFlagIzoArrested);
 		Actor_Set_Goal_Number(kActorIzo, 180);
 		Scene_Exits_Enable();
 		return; //true;
@@ -142,7 +142,7 @@ void AIScriptIzo::ClickedByPlayer() {
 		return; //true;
 	}
 
-	if (Actor_Query_Goal_Number(kActorIzo) == 101 && Player_Query_Current_Set() == 75) {
+	if (Actor_Query_Goal_Number(kActorIzo) == 101 && Player_Query_Current_Set() == kSetUG02) {
 		Player_Loses_Control();
 		Actor_Set_Goal_Number(kActorIzo, 100);
 		Actor_Face_Actor(kActorMcCoy, kActorIzo, 1);
@@ -179,7 +179,7 @@ void AIScriptIzo::OtherAgentExitedThisScene(int otherActorId) {
 
 void AIScriptIzo::OtherAgentEnteredCombatMode(int otherActorId, int combatMode) {
 	if (Actor_Query_Goal_Number(kActorIzo) == 110) {
-		Game_Flag_Query(44);
+		Game_Flag_Query(kFlagIzoIsReplicant);
 	}
 	return; //false;
 }
@@ -223,24 +223,23 @@ void AIScriptIzo::Retired(int byActorId) {
 		return; //false;
 	}
 
-	Global_Variable_Decrement(51, 1);
+	Global_Variable_Decrement(kVariableReplicants, 1);
 	Actor_Set_Goal_Number(kActorIzo, 599);
 
-	if (Global_Variable_Query(51)) {
-		return; //false;
+	if (Global_Variable_Query(kVariableReplicants) == 0) {
+		Player_Loses_Control();
+		Delay(2000);
+		Player_Set_Combat_Mode(0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -41.58f, 72.0f, 0, 1, 0, 0);
+		Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+		Ambient_Sounds_Remove_All_Looping_Sounds(1);
+		Game_Flag_Set(579);
+		Game_Flag_Reset(653);
+		Set_Enter(kSetKP05_KP06, kSceneKP06);
+		return; //true;
 	}
 
-	Player_Loses_Control();
-	Delay(2000);
-	Player_Set_Combat_Mode(0);
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -41.58f, 72.0f, 0, 1, 0, 0);
-	Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
-	Ambient_Sounds_Remove_All_Looping_Sounds(1);
-	Game_Flag_Set(579);
-	Game_Flag_Reset(653);
-	Set_Enter(kSetKP05_KP06, kSetKP03);
-
-	return; //true;
+	return; //false;
 }
 
 int AIScriptIzo::GetFriendlinessModifierIfGetsClue(int otherActorId, int clueId) {
@@ -253,7 +252,7 @@ bool AIScriptIzo::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		|| newGoalNumber == 198
 		|| newGoalNumber == 180
 		|| newGoalNumber == 103) {
-			Spinner_Set_Selectable_Destination_Flag(6, 1);
+			Spinner_Set_Selectable_Destination_Flag(kSpinnerDestinationDNARow, true);
 		}
 
 	switch (newGoalNumber) {
@@ -329,7 +328,7 @@ bool AIScriptIzo::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	case 115:
 		AI_Movement_Track_Flush(kActorIzo);
 		AI_Movement_Track_Append(kActorIzo, 39, 60);
-		if (Game_Flag_Query(44)) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			AI_Movement_Track_Append(kActorIzo, 33, 0);
 		} else {
 			AI_Movement_Track_Append(kActorIzo, 34, 0);
@@ -357,7 +356,7 @@ bool AIScriptIzo::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	case 155:
 		AI_Movement_Track_Flush(kActorIzo);
 		AI_Movement_Track_Append(kActorIzo, 149, 0);
-		if (Game_Flag_Query(44)) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			AI_Movement_Track_Append(kActorIzo, 39, 5);
 			AI_Movement_Track_Append(kActorIzo, 34, Random_Query(10, 20));
 			AI_Movement_Track_Append(kActorIzo, 39, 5);
@@ -447,16 +446,17 @@ bool AIScriptIzo::UpdateAnimation(int *animation, int *frame) {
 			} else {
 				_animationFrame += _var2;
 				if (_animationFrame < 0) {
-					_animationFrame--;
+					_animationFrame = Slice_Animation_Query_Number_Of_Frames(297) - 1;
 				} else if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(297)) {
 					_animationFrame = 0;
 				}
-				if (!--_var1) {
+				--_var1;
+				if (_var1 == 0) {
 					_var2 = 2 * Random_Query(0, 1) - 1;
 					_var1 = Random_Query(6, 14);
 					_var3 = Random_Query(0, 2);
 				}
-				if (!_animationFrame) {
+				if (_animationFrame == 0) {
 					if (!Random_Query(0, 5)) {
 						_var4 = 1;
 					}
@@ -1013,7 +1013,7 @@ void AIScriptIzo::someDialog() {
 		break;
 
 	case 10:
-		if (Game_Flag_Query(44) == 1) {
+		if (Game_Flag_Query(kFlagIzoIsReplicant)) {
 			Actor_Says(kActorMcCoy, 5475, 18);
 			Actor_Says(kActorIzo, 720, 12);
 			Actor_Says(kActorMcCoy, 5485, 13);

@@ -51,6 +51,10 @@ struct ADGameDescription;
 
 namespace BladeRunner {
 
+enum DebugLevels {
+	kDebugScript = 1 << 0
+};
+
 class Actor;
 class ActorDialogueQueue;
 class ScreenEffects;
@@ -281,6 +285,7 @@ public:
 	bool playerHasControl();
 	void playerLosesControl();
 	void playerGainsControl();
+	void playerDied();
 
 	bool saveGame(Common::WriteStream &stream, const Graphics::Surface &thumbnail);
 	bool loadGame(Common::SeekableReadStream &stream);

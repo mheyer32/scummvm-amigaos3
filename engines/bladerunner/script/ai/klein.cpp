@@ -31,7 +31,7 @@ void AIScriptKlein::Initialize() {
 	_animationState = 0;
 	_animationFrame = 0;
 	_animationStateNext = 0;
-	Actor_Put_In_Set(kActorKlein, 66);
+	Actor_Put_In_Set(kActorKlein, kSetPS07);
 	Actor_Set_At_XYZ(kActorKlein, 338.0f, 0.22f, -612.0f, 768);
 	Actor_Set_Goal_Number(kActorKlein, 0);
 }
@@ -48,26 +48,39 @@ bool AIScriptKlein::Update() {
 		Actor_Set_Goal_Number(kActorKlein, 1);
 		return true;
 	}
-	if (Actor_Clue_Query(kActorMcCoy, kClueOfficersStatement) && !Game_Flag_Query(kFlagPlayerHasOfficersStatement)) {
-		Game_Flag_Set(kFlagPlayerHasOfficersStatement);
+	if ( Actor_Clue_Query(kActorMcCoy, kClueOfficersStatement)
+	 && !Game_Flag_Query(kFlagMcCoyHasOfficersStatement)
+	) {
+		Game_Flag_Set(kFlagMcCoyHasOfficersStatement);
 	}
-	if (Actor_Clue_Query(kActorMcCoy, kCluePaintTransfer) && !Game_Flag_Query(kFlagPlayerHasPaintTransfer)) {
-		Game_Flag_Set(kFlagPlayerHasPaintTransfer);
+	if ( Actor_Clue_Query(kActorMcCoy, kCluePaintTransfer)
+	 && !Game_Flag_Query(kFlagMcCoyHasPaintTransfer)
+	) {
+		Game_Flag_Set(kFlagMcCoyHasPaintTransfer);
 	}
-	if (Actor_Clue_Query(kActorMcCoy, kClueShellCasings) && !Game_Flag_Query(kFlagPlayerHasShellCasings)) {
-		Game_Flag_Set(kFlagPlayerHasShellCasings);
+	if ( Actor_Clue_Query(kActorMcCoy, kClueShellCasings)
+	 && !Game_Flag_Query(kFlagMcCoyHasShellCasings)
+	) {
+		Game_Flag_Set(kFlagMcCoyHasShellCasings);
 	}
-	if (Actor_Clue_Query(kActorMcCoy, kClueChromeDebris) && !Game_Flag_Query(kFlagPlayerHasChromeDebris)) {
-		Game_Flag_Set(kFlagPlayerHasChromeDebris);
+	if ( Actor_Clue_Query(kActorMcCoy, kClueChromeDebris)
+	 && !Game_Flag_Query(kFlagMcCoyHasChromeDebris)
+	) {
+		Game_Flag_Set(kFlagMcCoyHasChromeDebris);
 	}
-	if (Player_Query_Current_Scene() == kScenePS07 && Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) < 35 && !Game_Flag_Query(kFlagKleinInsulted)) {
+	if ( Player_Query_Current_Scene() == kScenePS07
+	 &&  Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) < 35
+	 && !Game_Flag_Query(kFlagKleinInsulted)
+	) {
 		AI_Countdown_Timer_Reset(kActorKlein, 2);
 		AI_Countdown_Timer_Start(kActorKlein, 2, 5);
 		Game_Flag_Set(kFlagKleinInsulted);
 		return true;
 	}
 	if (Actor_Query_Goal_Number(kActorKlein) == 7) {
-		if (Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) > 20 && Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) < 40) {
+		if (Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) > 20
+		 && Actor_Query_Friendliness_To_Other(kActorKlein, kActorMcCoy) < 40
+		) {
 			Actor_Modify_Friendliness_To_Other(kActorKlein, kActorMcCoy, 2);
 		}
 		AI_Movement_Track_Flush(kActorKlein);
@@ -79,7 +92,10 @@ bool AIScriptKlein::Update() {
 
 void AIScriptKlein::TimerExpired(int timer) {
 	if (timer == 2) {
-		if (Game_Flag_Query(kFlagKleinInsulted) && !Game_Flag_Query(kFlagKleinInsultedTalk) && Actor_Query_Is_In_Current_Set(kActorKlein)) {
+		if ( Game_Flag_Query(kFlagKleinInsulted)
+		 && !Game_Flag_Query(kFlagKleinInsultedTalk)
+		 &&  Actor_Query_Is_In_Current_Set(kActorKlein)
+		) {
 			Actor_Face_Actor(kActorKlein, kActorMcCoy, true);
 			Actor_Says(kActorKlein, 10, kAnimationModeTalk);
 			Actor_Says(kActorMcCoy, 4120, kAnimationModeTalk);
@@ -208,23 +224,29 @@ bool AIScriptKlein::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 bool AIScriptKlein::UpdateAnimation(int *animation, int *frame) {
 	switch (_animationState) {
 	case 0:
-		if (Actor_Query_Goal_Number(kActorKlein) == 1 || Actor_Query_Goal_Number(kActorKlein) == 2) {
+		if (Actor_Query_Goal_Number(kActorKlein) == 1
+		 || Actor_Query_Goal_Number(kActorKlein) == 2
+		) {
 			*animation = 691;
 			_animationFrame++;
 			if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(691)) {
 				_animationFrame = 0;
 			}
-		} else if (!Game_Flag_Query(196) && Actor_Query_Goal_Number(kActorKlein) == 3) {
+		} else if (!Game_Flag_Query(kFlagKleinAnimation1)
+		        &&  Actor_Query_Goal_Number(kActorKlein) == 3
+		) {
 			*animation = 689;
 			_animationFrame++;
 			if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(689)) {
 				_animationFrame = 0;
 				if (Random_Query(1, 10) == 1) {
-					Game_Flag_Set(196);
+					Game_Flag_Set(kFlagKleinAnimation1);
 				}
 			}
 		} else {
-			if (Game_Flag_Query(198) && Actor_Query_Goal_Number(kActorKlein) == 3) {
+			if (Game_Flag_Query(kFlagKleinAnimation3)
+			 && Actor_Query_Goal_Number(kActorKlein) == 3
+			) {
 				_animationFrame--;
 				if (_animationFrame < 0) {
 					_animationFrame = 0;
@@ -235,24 +257,24 @@ bool AIScriptKlein::UpdateAnimation(int *animation, int *frame) {
 
 			*animation = 690;
 			if (_animationFrame <= 9) {
-				if (Game_Flag_Query(198)) {
-					Game_Flag_Reset(198);
+				if (Game_Flag_Query(kFlagKleinAnimation3)) {
+					Game_Flag_Reset(kFlagKleinAnimation3);
 				}
 			}
 			if (_animationFrame == 14) {
 				if (Random_Query(1, 5) == 1) {
-					Game_Flag_Set(197);
+					Game_Flag_Set(kFlagKleinAnimation2);
 				}
 			}
 			if (_animationFrame == 15) {
-				if (Game_Flag_Query(197) == 1) {
-					Game_Flag_Reset(197);
-					Game_Flag_Set(198);
+				if (Game_Flag_Query(kFlagKleinAnimation2)) {
+					Game_Flag_Reset(kFlagKleinAnimation2);
+					Game_Flag_Set(kFlagKleinAnimation3);
 				}
 			}
 			if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(690)) {
 				_animationFrame = 0;
-				Game_Flag_Reset(196);
+				Game_Flag_Reset(kFlagKleinAnimation1);
 			}
 		}
 		break;

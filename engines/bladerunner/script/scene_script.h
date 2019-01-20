@@ -130,7 +130,7 @@ DECLARE_SCRIPT(CT03)
 END_SCRIPT
 
 DECLARE_SCRIPT(CT04)
-	void sub_401D4C();
+	void dialogueWithHomeless();
 END_SCRIPT
 
 DECLARE_SCRIPT(CT05)
@@ -364,7 +364,7 @@ DECLARE_SCRIPT(PS03)
 END_SCRIPT
 
 DECLARE_SCRIPT(PS04)
-	void sub_4017E4();
+	void dialogueWithGuzza();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS05)
@@ -381,7 +381,7 @@ END_SCRIPT
 // PS08 does not exits
 
 DECLARE_SCRIPT(PS09)
-	void sub_402090();
+	void dialogueWithGregorian();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS10)
@@ -407,7 +407,7 @@ DECLARE_SCRIPT(PS15)
 END_SCRIPT
 
 DECLARE_SCRIPT(RC01)
-	void investigateCrowd();
+	void interrogateCrowd();
 	void walkToCenter();
 END_SCRIPT
 
@@ -420,15 +420,15 @@ DECLARE_SCRIPT(RC03)
 END_SCRIPT
 
 DECLARE_SCRIPT(RC04)
-	void sub_401DF4();
+	void dialogueWithBulletBob();
 END_SCRIPT
 
 DECLARE_SCRIPT(RC51)
 END_SCRIPT
 
 DECLARE_SCRIPT(TB02)
-	void sub_402644();
-	void sub_402B50();
+	void dialogueWithTyrellGuard();
+	void dialogueWithSteele();
 END_SCRIPT
 
 DECLARE_SCRIPT(TB03)

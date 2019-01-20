@@ -60,7 +60,7 @@ bool SceneScriptCT51::ClickedOn3DObject(const char *objectName, bool a2) {
 			return false;
 		}
 		Item_Pickup_Spin_Effect(970, 203, 200);
-		Actor_Clue_Acquire(kActorMcCoy, kClueHysteriaToken, 1, -1);
+		Actor_Clue_Acquire(kActorMcCoy, kClueHysteriaToken, true, -1);
 		Actor_Voice_Over(420, kActorVoiceOver);
 		return true;
 	}
@@ -73,14 +73,14 @@ bool SceneScriptCT51::ClickedOnActor(int actorId) {
 
 bool SceneScriptCT51::ClickedOnItem(int itemId, bool a2) {
 	if (itemId == 85) {
-		Actor_Clue_Acquire(kActorMcCoy, kClueRagDoll, 1, -1);
+		Actor_Clue_Acquire(kActorMcCoy, kClueRagDoll, true, -1);
 		Item_Pickup_Spin_Effect(943, 260, 200);
 		Ambient_Sounds_Play_Sound(563, 40, 99, 0, 0);
 		Item_Remove_From_World(85);
 		return true;
 	}
 	if (itemId == 120) {
-		Actor_Clue_Acquire(kActorMcCoy, kClueMoonbus1, 1, -1);
+		Actor_Clue_Acquire(kActorMcCoy, kClueMoonbus1, true, -1);
 		Item_Pickup_Spin_Effect(984, 490, 307);
 		Item_Remove_From_World(120);
 		Actor_Says(kActorMcCoy, 8527, 3);
@@ -96,7 +96,7 @@ bool SceneScriptCT51::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(380);
-			Set_Enter(6, kSceneCT08);
+			Set_Enter(kSetCT08_CT51_UG12, kSceneCT08);
 		}
 		return true;
 	}

@@ -36,6 +36,7 @@ namespace MutationOfJB {
 
 class EncryptedFile;
 class Game;
+class Static;
 
 class Room {
 public:
@@ -45,9 +46,27 @@ public:
 	Room(Game *game, Graphics::Screen *screen);
 	bool load(uint8 roomNumber, bool roomB);
 	void drawObjectAnimation(uint8 objectId, int animOffset);
+
+	/**
+	 * Draws an object.
+	 * By default, object's current frame is used, but that can be overridden.
+	 *
+	 * @param objectId ID of object to draw.
+	 * @param overrideFrame Optional frame override.
+	 */
+	void drawObject(uint8 objectId, uint8 overrideFrame = 0);
 	void drawBitmap(uint8 bitmapId);
+
+	/**
+	 * Draws a static.
+	 * Only statics that allow implicit pickup are drawable.
+	 *
+	 * @param stat Static.
+	 */
+	void drawStatic(Static *stat);
 	void drawFrames(uint8 fromFrame, uint8 toFrame, const Common::Rect &area = Common::Rect(), uint8 threshold = 0xFF);
-	void redraw();
+	void initialDraw();
+	void redraw(bool useBackgroundBuffer = true);
 private:
 	Game *_game;
 	Graphics::Screen *_screen;

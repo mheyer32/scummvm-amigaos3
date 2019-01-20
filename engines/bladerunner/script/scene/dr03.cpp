@@ -25,17 +25,17 @@
 namespace BladeRunner {
 
 void SceneScriptDR03::InitializeScene() {
-	if (Game_Flag_Query(226)) {
-		Game_Flag_Reset(226);
+	if (Game_Flag_Query(kFlagDR02toDR03)) {
+		Game_Flag_Reset(kFlagDR02toDR03);
 		Setup_Scene_Information(330.31f, 4.27f, -910.91f, 297);
 	}
 	Setup_Scene_Information(330.31f, 4.27f, -910.91f, 297);
 	Scene_Exit_Add_2D_Exit(0, 377, 122, 445, 266, 0);
 	if (Global_Variable_Query(kVariableChapter) == 3) {
-		Actor_Put_In_Set(kActorChew, 34);
+		Actor_Put_In_Set(kActorChew, kSetDR03);
 		Actor_Set_At_XYZ(kActorChew, 431.21f, 4.27f, -776.26f, 0);
 	} else {
-		Actor_Put_In_Set(kActorChew, 34);
+		Actor_Put_In_Set(kActorChew, kSetDR03);
 		Actor_Set_At_XYZ(kActorChew, 360.77f, 4.4f, -806.67f, 126);
 	}
 	Ambient_Sounds_Remove_All_Looping_Sounds(1);
@@ -59,21 +59,22 @@ bool SceneScriptDR03::ClickedOn3DObject(const char *objectName, bool a2) {
 }
 
 bool SceneScriptDR03::ClickedOnActor(int actorId) {
-	if (actorId == 52) {
+	if (actorId == kActorChew) {
 		Actor_Face_Actor(kActorMcCoy, kActorChew, true);
 		Actor_Face_Actor(kActorChew, kActorMcCoy, true);
-		if (!Game_Flag_Query(267)) {
+		if (!Game_Flag_Query(kFlagDR03ChewTalk1)) {
 			Actor_Says(kActorMcCoy, 755, 18);
 			Actor_Says(kActorChew, 10, 14);
 			Actor_Says(kActorMcCoy, 760, 18);
 			Actor_Says(kActorChew, 20, 14);
 			Actor_Says(kActorMcCoy, 765, 18);
 			Actor_Says(kActorChew, 30, 14);
-			Game_Flag_Set(267);
+			Game_Flag_Set(kFlagDR03ChewTalk1);
 			return true;
 		}
 		if (Actor_Clue_Query(kActorMcCoy, kClueChewInterview)) {
-			if (Game_Flag_Query(266) && Game_Flag_Query(267)) {
+			if (Game_Flag_Query(kFlagMorajiExploded)
+			 && Game_Flag_Query(kFlagDR03ChewTalk1)) {
 				Actor_Says(kActorMcCoy, 815, 18);
 				Actor_Says(kActorChew, 60, 14);
 				Actor_Says(kActorChew, 70, 14);
@@ -82,7 +83,7 @@ bool SceneScriptDR03::ClickedOnActor(int actorId) {
 				Actor_Says(kActorChew, 90, 14);
 				Actor_Says(kActorMcCoy, 825, 18);
 				Actor_Says(kActorChew, 100, 14);
-				Game_Flag_Reset(266);
+				Game_Flag_Reset(kFlagMorajiExploded);
 				Game_Flag_Set(505);
 				return true;
 			}
@@ -114,7 +115,7 @@ bool SceneScriptDR03::ClickedOnActor(int actorId) {
 			Actor_Says(kActorMcCoy, 855, 18);
 			Actor_Says(kActorChew, 210, 12);
 		}
-		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, 1, kActorChew);
+		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, true, kActorChew);
 		return true;
 	}
 	return false;
@@ -127,8 +128,8 @@ bool SceneScriptDR03::ClickedOnItem(int itemId, bool a2) {
 bool SceneScriptDR03::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 330.31f, 4.27f, -910.91f, 24, 1, false, 0)) {
-			Game_Flag_Set(227);
-			Set_Enter(7, kSceneDR02);
+			Game_Flag_Set(kFlagDR03toDR02);
+			Set_Enter(kSetDR01_DR02_DR04, kSceneDR02);
 		}
 		return true;
 	}
@@ -153,7 +154,7 @@ void SceneScriptDR03::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptDR03::PlayerWalkedIn() {
-	if (!Game_Flag_Query(226)) {
+	if (!Game_Flag_Query(kFlagDR02toDR03)) {
 		if (Random_Query(1, 2) == 1) {
 			Actor_Says(kActorChew, 660, 14);
 			Actor_Says(kActorChew, 680, 14);
@@ -216,7 +217,7 @@ void SceneScriptDR03::sub_401B18() {
 			Actor_Says(kActorMcCoy, 855, 18);
 			Actor_Says(kActorChew, 210, 12);
 		}
-		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, 1, kActorChew);
+		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, true, kActorChew);
 		break;
 	case 650:
 		Actor_Says(kActorMcCoy, 775, 11);
@@ -239,11 +240,11 @@ void SceneScriptDR03::sub_401B18() {
 			Actor_Says(kActorChew, 280, 12);
 			Actor_Says(kActorMcCoy, 870, 18);
 			Actor_Says(kActorChew, 290, 15);
-			if (!Game_Flag_Query(266)) {
+			if (!Game_Flag_Query(kFlagMorajiExploded)) {
 				Actor_Says(kActorChew, 300, 12);
 			}
 		}
-		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, 1, kActorChew);
+		Actor_Clue_Acquire(kActorMcCoy, kClueChewInterview, true, kActorChew);
 		break;
 	case 670:
 		Actor_Says(kActorMcCoy, 765, 12);

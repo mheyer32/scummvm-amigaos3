@@ -280,7 +280,7 @@ bool AIScriptHanoi::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Put_In_Set(kActorHanoi, kSetNR01);
 		Actor_Set_At_XYZ(kActorHanoi, -444.0f, 24.0f, -845.0f, 512);
 		Actor_Change_Animation_Mode(kActorHanoi, 78);
-		Set_Enter(kSetNR01, kSetNR01);
+		Set_Enter(kSetNR01, kSceneNR01);
 		break;
 
 	case 230:
@@ -424,7 +424,7 @@ bool AIScriptHanoi::UpdateAnimation(int *animation, int *frame) {
 			Actor_Face_Actor(kActorMcCoy, kActorHanoi, 1);
 			Actor_Set_Invisible(kActorMcCoy, 0);
 
-			if (Actor_Query_In_Set(kActorHanoi, kSetNR01) == 1) {
+			if (Actor_Query_In_Set(kActorHanoi, kSetNR01)) {
 				AI_Movement_Track_Flush(kActorHanoi);
 				AI_Movement_Track_Append(kActorHanoi, 350, 0);
 				AI_Movement_Track_Append(kActorHanoi, 39, 0);

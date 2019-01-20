@@ -74,7 +74,7 @@ void SceneScriptBB05::SceneLoaded() {
 	Unclickable_Object("BOX14");
 	if (Actor_Query_Goal_Number(kActorSebastian) == 200) {
 		Actor_Set_Goal_Number(kActorGeneralDoll, 299);
-		Actor_Put_In_Set(kActorGeneralDoll, 97);
+		Actor_Put_In_Set(kActorGeneralDoll, kSetFreeSlotG);
 		Actor_Set_At_Waypoint(kActorGeneralDoll, 39, 0);
 	}
 }
@@ -100,8 +100,8 @@ bool SceneScriptBB05::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -212.0f, -60.31f, 131.0f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Game_Flag_Set(286);
-			Set_Enter(21, kSceneBB03);
+			Game_Flag_Set(kFlagBB05toBB03);
+			Set_Enter(kSetBB03, kSceneBB03);
 		}
 		return true;
 	}
@@ -110,7 +110,7 @@ bool SceneScriptBB05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(297);
-			Set_Enter(2, kSceneBB06);
+			Set_Enter(kSetBB06_BB07, kSceneBB06);
 		}
 		return true;
 	}
@@ -119,7 +119,7 @@ bool SceneScriptBB05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(299);
-			Set_Enter(3, kSceneBB07);
+			Set_Enter(kSetBB07, kSceneBB07);
 		}
 		return true;
 	}
@@ -128,7 +128,7 @@ bool SceneScriptBB05::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(301);
-			Set_Enter(102, kSceneBB12);
+			Set_Enter(kSetBB12, kSceneBB12);
 		}
 		return true;
 	}
@@ -157,7 +157,7 @@ void SceneScriptBB05::PlayerWalkedIn() {
 		Game_Flag_Reset(302);
 	} else {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -76.0f, -60.31f, 131.0f, 0, 0, false, 0);
-		Game_Flag_Reset(285);
+		Game_Flag_Reset(kFlagBB03toBB05);
 	}
 	if (Actor_Query_Goal_Number(kActorSebastian) == 200) {
 		Actor_Face_Actor(kActorSebastian, kActorMcCoy, true);
@@ -180,7 +180,7 @@ void SceneScriptBB05::PlayerWalkedIn() {
 			Actor_Says_With_Pause(kActorSebastian, 210, 1.5f, 14);
 			Actor_Says(kActorMcCoy, 7055, 15);
 		} else {
-			Actor_Put_In_Set(kActorGeneralDoll, 22);
+			Actor_Put_In_Set(kActorGeneralDoll, kSetBB05);
 			Actor_Set_At_Waypoint(kActorGeneralDoll, 134, 0);
 			Loop_Actor_Walk_To_Waypoint(kActorGeneralDoll, 135, 0, 0, false);
 			Actor_Says(kActorGeneralDoll, 0, 3);

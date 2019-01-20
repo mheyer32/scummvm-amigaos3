@@ -24,13 +24,18 @@
 
 namespace BladeRunner {
 
+enum kCT03Loops {
+	kCT03LoopInshoot = 0,
+	kCT03LoopMain    = 1
+};
+
 void SceneScriptCT04::InitializeScene() {
-	if (Game_Flag_Query(72)) {
-		Scene_Loop_Start_Special(0, 0, 0);
-		Scene_Loop_Set_Default(1);
+	if (Game_Flag_Query(kFlagCT03toCT04)) {
+		Scene_Loop_Start_Special(kSceneLoopModeLoseControl, kCT03LoopInshoot, false);
+		Scene_Loop_Set_Default(kCT03LoopMain);
 		Setup_Scene_Information(-150.0f, -621.3f, 357.0f, 533);
 	} else {
-		Scene_Loop_Set_Default(1);
+		Scene_Loop_Set_Default(kCT03LoopMain);
 		Setup_Scene_Information(-82.86f, -621.3f, 769.03f, 1020);
 	}
 	Scene_Exit_Add_2D_Exit(0, 590, 0, 639, 479, 1);
@@ -54,10 +59,10 @@ void SceneScriptCT04::SceneLoaded() {
 	Obstacle_Object("BACK-BLDNG", true);
 	Clickable_Object("DUMPSTER");
 	Footstep_Sounds_Set(0, 1);
-	if (Game_Flag_Query(72)) {
-		Game_Flag_Reset(72);
+	if (Game_Flag_Query(kFlagCT03toCT04)) {
+		Game_Flag_Reset(kFlagCT03toCT04);
 	}
-	if (!Actor_Query_Goal_Number(kActorTransient)) {
+	if (Actor_Query_Goal_Number(kActorTransient) == kGoalTransientDefault) {
 		Actor_Change_Animation_Mode(kActorTransient, 38);
 	}
 }
@@ -67,113 +72,132 @@ bool SceneScriptCT04::MouseClick(int x, int y) {
 }
 
 bool SceneScriptCT04::ClickedOn3DObject(const char *objectName, bool a2) {
-	if (objectName) {
-		if (!Game_Flag_Query(137) && !Game_Flag_Query(169) && !Actor_Query_Goal_Number(kActorTransient)) {
-			Game_Flag_Set(137);
-			Actor_Set_Goal_Number(kActorTransient, 2);
+	if (objectName) { // this can be only "DUMPSTER"
+		if (!Game_Flag_Query(kFlagHomelessTalkedTo)
+		 && !Game_Flag_Query(kFlagMcCoyKilledHomeless)
+		 &&  Actor_Query_Goal_Number(kActorTransient) == kGoalTransientDefault
+		) {
+			Game_Flag_Set(kFlagHomelessTalkedTo);
+			Actor_Set_Goal_Number(kActorTransient, kGoalTransientCT04Leave);
 		}
-		if (Game_Flag_Query(169) && !Game_Flag_Query(170) && !Game_Flag_Query(171) && !Game_Flag_Query(172) && Global_Variable_Query(kVariableChapter) == 1) {
-			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -147.41f, -621.3f, 724.57f, 0, 1, false, 0)) {
+
+		if ( Game_Flag_Query(kFlagMcCoyKilledHomeless)
+		 && !Game_Flag_Query(kFlagHomelessBodyInDumpster)
+		 && !Game_Flag_Query(kFlagHomelessBodyFound)
+		 && !Game_Flag_Query(kFlagDumpsterEmptied)
+		 &&  Global_Variable_Query(kVariableChapter) == 1
+		) {
+			if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -147.41f, -621.3f, 724.57f, 0, true, false, 0)) {
 				Player_Loses_Control();
 				Actor_Face_Heading(kActorMcCoy, 792, false);
-				Actor_Put_In_Set(kActorTransient, 99);
+				Actor_Put_In_Set(kActorTransient, kSetFreeSlotI);
 				Actor_Set_At_XYZ(kActorTransient, 0, 0, 0, 0);
 				Actor_Change_Animation_Mode(kActorMcCoy, 40);
 				Actor_Voice_Over(320, kActorVoiceOver);
 				Actor_Voice_Over(330, kActorVoiceOver);
 				Actor_Voice_Over(340, kActorVoiceOver);
-				Game_Flag_Set(170);
-				Game_Flag_Set(173);
+				Game_Flag_Set(kFlagHomelessBodyInDumpster);
+				Game_Flag_Set(kFlagHomelessBodyInDumpsterNotChecked);
 			}
 			return false;
 		}
-		if (Game_Flag_Query(170)) {
-			if (Game_Flag_Query(172)) {
+
+		if (Game_Flag_Query(kFlagHomelessBodyInDumpster)) {
+			if (Game_Flag_Query(kFlagDumpsterEmptied)) {
 				Actor_Voice_Over(270, kActorVoiceOver);
 				Actor_Voice_Over(280, kActorVoiceOver);
-			} else if (Game_Flag_Query(171)) {
+			} else if (Game_Flag_Query(kFlagHomelessBodyFound)) {
 				Actor_Voice_Over(250, kActorVoiceOver);
 				Actor_Voice_Over(260, kActorVoiceOver);
 			} else {
 				Actor_Voice_Over(230, kActorVoiceOver);
 				Actor_Voice_Over(240, kActorVoiceOver);
-				Game_Flag_Reset(173);
+				Game_Flag_Reset(kFlagHomelessBodyInDumpsterNotChecked);
 			}
 			return true;
 		}
-		if (Game_Flag_Query(174)) {
-			if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 75, 0, 1, false)) {
+
+		if (!Game_Flag_Query(kFlagLicensePlaceFound)) {
+			if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 75, 0, true, false)) {
 				Actor_Face_Heading(kActorMcCoy, 707, false);
 				Actor_Change_Animation_Mode(kActorMcCoy, 38);
-				Ambient_Sounds_Play_Sound(553, 45, 30, 30, 0);
-				Actor_Voice_Over(1810, kActorVoiceOver);
-				Actor_Voice_Over(1820, kActorVoiceOver);
+				Actor_Clue_Acquire(kActorMcCoy, kClueLicensePlate, true, -1);
+				Item_Pickup_Spin_Effect(952, 392, 225);
+				Game_Flag_Set(kFlagLicensePlaceFound);
 				return true;
 			}
-			return false;
 		}
-		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 75, 0, 1, false)) {
+
+		if (!Loop_Actor_Walk_To_Waypoint(kActorMcCoy, 75, 0, true, false)) {
 			Actor_Face_Heading(kActorMcCoy, 707, false);
 			Actor_Change_Animation_Mode(kActorMcCoy, 38);
-			Actor_Clue_Acquire(kActorMcCoy, kClueLicensePlate, 1, -1);
-			Item_Pickup_Spin_Effect(952, 392, 225);
-			Game_Flag_Set(174);
+			Ambient_Sounds_Play_Sound(553, 45, 30, 30, 0);
+			Actor_Voice_Over(1810, kActorVoiceOver);
+			Actor_Voice_Over(1820, kActorVoiceOver);
 			return true;
 		}
 	}
 	return false;
 }
 
-void SceneScriptCT04::sub_401D4C() {
+void SceneScriptCT04::dialogueWithHomeless() {
 	Dialogue_Menu_Clear_List();
-	if (Global_Variable_Query(2) > 10 || Query_Difficulty_Level() == 0) {
-		DM_Add_To_List_Never_Repeat_Once_Selected(410, 8, 4, -1);
+	if (Global_Variable_Query(kVariableChinyen) > 10
+	 || Query_Difficulty_Level() == 0
+	) {
+		DM_Add_To_List_Never_Repeat_Once_Selected(410, 8, 4, -1); // YES
 	}
-	DM_Add_To_List_Never_Repeat_Once_Selected(420, 2, 6, 8);
+	DM_Add_To_List_Never_Repeat_Once_Selected(420, 2, 6, 8); // NO
+
 	Dialogue_Menu_Appear(320, 240);
 	int answer = Dialogue_Menu_Query_Input();
 	Dialogue_Menu_Disappear();
-	if (answer == 410) {
+
+	switch (answer) {
+	case 410: // YES
 		Actor_Says(kActorTransient, 10, 14);
 		Actor_Says(kActorTransient, 20, 14);
 		Actor_Modify_Friendliness_To_Other(kActorTransient, kActorMcCoy, 5);
 		if (Query_Difficulty_Level() != 0) {
-			Global_Variable_Decrement(2, 10);
+			Global_Variable_Decrement(kVariableChinyen, 10);
 		}
-	} else if (answer == 420) {
+		break;
+
+	case 420: // NO
 		Actor_Says(kActorMcCoy, 430, 3);
 		Actor_Says(kActorTransient, 30, 14);
 		Actor_Modify_Friendliness_To_Other(kActorTransient, kActorMcCoy, -5);
+		break;
 	}
 }
 
 bool SceneScriptCT04::ClickedOnActor(int actorId) {
-	if (actorId == 12) {
-		if (Game_Flag_Query(169)) {
-			if (!Loop_Actor_Walk_To_Actor(kActorMcCoy, kActorTransient, 36, 1, false)) {
+	if (actorId == kActorTransient) {
+		if (Game_Flag_Query(kFlagMcCoyKilledHomeless)) {
+			if (!Loop_Actor_Walk_To_Actor(kActorMcCoy, kActorTransient, 36, true, false)) {
 				Actor_Voice_Over(290, kActorVoiceOver);
 				Actor_Voice_Over(300, kActorVoiceOver);
 				Actor_Voice_Over(310, kActorVoiceOver);
 			}
 		} else {
 			Actor_Set_Targetable(kActorTransient, false);
-			if (!Loop_Actor_Walk_To_Actor(kActorMcCoy, kActorTransient, 36, 1, false)) {
+			if (!Loop_Actor_Walk_To_Actor(kActorMcCoy, kActorTransient, 36, true, false)) {
 				Actor_Face_Actor(kActorMcCoy, kActorTransient, true);
-				if (!Game_Flag_Query(137)) {
+				if (!Game_Flag_Query(kFlagHomelessTalkedTo)) {
 					if (Game_Flag_Query(kFlagZubenRetired)) {
-						Actor_Says(kActorMcCoy, 435, 3);
-						Actor_Set_Goal_Number(kActorTransient, 2);
+						Actor_Says(kActorMcCoy, 435, kAnimationModeTalk);
+						Actor_Set_Goal_Number(kActorTransient, kGoalTransientCT04Leave);
 					} else {
 						Music_Stop(3);
-						Actor_Says(kActorMcCoy, 425, 3);
+						Actor_Says(kActorMcCoy, 425, kAnimationModeTalk);
 						Actor_Says(kActorTransient, 0, 13);
-						sub_401D4C();
-						Actor_Set_Goal_Number(kActorTransient, 2);
+						dialogueWithHomeless();
+						Actor_Set_Goal_Number(kActorTransient, kGoalTransientCT04Leave);
 					}
-					Game_Flag_Set(137);
+					Game_Flag_Set(kFlagHomelessTalkedTo);
 				} else {
 					Actor_Face_Actor(kActorMcCoy, kActorTransient, true);
-					Actor_Says(kActorMcCoy, 435, 3);
+					Actor_Says(kActorMcCoy, 435, kAnimationModeTalk);
 				}
 			}
 		}
@@ -189,22 +213,22 @@ bool SceneScriptCT04::ClickedOnItem(int itemId, bool a2) {
 bool SceneScriptCT04::ClickedOnExit(int exitId) {
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -82.86f, -621.3f, 769.03f, 0, 1, false, 0)) {
-			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+			Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			if (!Actor_Query_Goal_Number(kActorTransient)) {
-				Actor_Set_Goal_Number(kActorTransient, 2);
+			if (Actor_Query_Goal_Number(kActorTransient) == kGoalTransientDefault) {
+				Actor_Set_Goal_Number(kActorTransient, kGoalTransientCT04Leave);
 			}
-			Game_Flag_Set(74);
-			Set_Enter(28, kSceneCT05);
+			Game_Flag_Set(kFlagCT04toCT05);
+			Set_Enter(kSetCT05, kSceneCT05);
 		}
 		return true;
 	}
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -187.0f, -621.3f, 437.0f, 0, 1, false, 0)) {
-			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+			Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Game_Flag_Set(73);
-			Set_Enter(5, kSceneCT03);
+			Game_Flag_Set(kFlagCT04toCT03);
+			Set_Enter(kSetCT03_CT04, kSceneCT03);
 		}
 		return true;
 	}

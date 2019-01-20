@@ -26,7 +26,7 @@ namespace BladeRunner {
 
 void SceneScriptAR02::InitializeScene() {
 	Music_Play(0, 22, 0, 2, -1, 1, 2);
-	if (Game_Flag_Query(116)) {
+	if (Game_Flag_Query(kFlagRC03toAR02)) {
 		Setup_Scene_Information(-560.0f, 0.0f, -799.0f, 333);
 	} else {
 		Setup_Scene_Information(-182.0f, 0.0f, -551.0f, 973);
@@ -62,14 +62,16 @@ void SceneScriptAR02::InitializeScene() {
 	Ambient_Sounds_Add_Sound(375, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(376, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(377, 10, 180, 50, 100, 0, 0, -101, -101, 0, 0);
-	if (Game_Flag_Query(kFlagSpinnerToAR01) && Game_Flag_Query(320)) {
-		Scene_Loop_Start_Special(0, 1, 0);
+	if (Game_Flag_Query(kFlagSpinnerAtAR01)
+	 && Game_Flag_Query(kFlagAR01toAR02)) {
+		Scene_Loop_Start_Special(kSceneLoopModeLoseControl, 1, false);
 		Scene_Loop_Set_Default(2);
-		Game_Flag_Reset(320);
-	} else if (!Game_Flag_Query(kFlagSpinnerToAR01) && Game_Flag_Query(320)) {
-		Scene_Loop_Start_Special(0, 0, 0);
+		Game_Flag_Reset(kFlagAR01toAR02);
+	} else if (!Game_Flag_Query(kFlagSpinnerAtAR01)
+	        &&  Game_Flag_Query(kFlagAR01toAR02)) {
+		Scene_Loop_Start_Special(kSceneLoopModeLoseControl, 0, false);
 		Scene_Loop_Set_Default(2);
-		Game_Flag_Reset(320);
+		Game_Flag_Reset(kFlagAR01toAR02);
 	} else {
 		Scene_Loop_Set_Default(2);
 	}
@@ -81,7 +83,7 @@ void SceneScriptAR02::SceneLoaded() {
 		Item_Add_To_World(106, 976, 0, -442.84f, 36.77f, -1144.51f, 360, 36, 36, false, true, false, true);
 	}
 	if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(374)) {
-		Game_Flag_Set(0);
+		Game_Flag_Set(kFlagNotUsed0);
 		Item_Remove_From_World(106);
 	}
 }
@@ -139,9 +141,9 @@ bool SceneScriptAR02::ClickedOnActor(int actorId) {
 						Actor_Says(kActorInsectDealer, 340, 13);
 						Actor_Says(kActorInsectDealer, 350, 12);
 						Actor_Says(kActorMcCoy, 235, 16);
-						Actor_Clue_Acquire(kActorMcCoy, kCluePurchasedScorpions, 0, kActorInsectDealer);
+						Actor_Clue_Acquire(kActorMcCoy, kCluePurchasedScorpions, false, kActorInsectDealer);
 					}
-					Actor_Clue_Acquire(kActorMcCoy, kClueDragonflyCollection, 0, kActorInsectDealer);
+					Actor_Clue_Acquire(kActorMcCoy, kClueDragonflyCollection, false, kActorInsectDealer);
 				} else {
 					Actor_Says(kActorMcCoy, 240, 17);
 					Actor_Says(kActorInsectDealer, 360, 13);
@@ -199,20 +201,20 @@ bool SceneScriptAR02::ClickedOnItem(int itemId, bool a2) {
 bool SceneScriptAR02::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -182.0f, 0.0f, -551.0f, 0, 1, false, 0)) {
-			Game_Flag_Set(321);
+			Game_Flag_Set(kFlagAR02toAR01);
 			Async_Actor_Walk_To_XYZ(kActorMcCoy, -182.0f, 0.0f, -407.0f, 0, false);
-			Set_Enter(0, kSceneAR01);
+			Set_Enter(kSetAR01_AR02, kSceneAR01);
 		}
 		return true;
 	}
 	if (exitId == 1) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -465.0f, 0.0f, -799.0f, 0, 1, false, 0)) {
 			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -560.0f, 0.0f, -799.0f, 0, 0, false, 0);
-			Game_Flag_Set(117);
-			Game_Flag_Reset(180);
-			Game_Flag_Set(182);
+			Game_Flag_Set(kFlagAR02toRC03);
+			Game_Flag_Reset(kFlagMcCoyAtARxx);
+			Game_Flag_Set(kFlagMcCoyAtRCxx);
 			Music_Stop(3);
-			Set_Enter(70, kSceneRC03);
+			Set_Enter(kSetRC03, kSceneRC03);
 		}
 		return true;
 	}
@@ -230,9 +232,9 @@ void SceneScriptAR02::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptAR02::PlayerWalkedIn() {
-	if (Game_Flag_Query(116) == 1) {
+	if (Game_Flag_Query(kFlagRC03toAR02)) {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -465.0f, 0.0f, -799.0f, 0, 0, false, 0);
-		Game_Flag_Reset(116);
+		Game_Flag_Reset(kFlagRC03toAR02);
 	}
 	Game_Flag_Set(726);
 }
@@ -283,7 +285,7 @@ void SceneScriptAR02::sub_402694() {
 		Actor_Says(kActorMcCoy, 100, 16);
 		Actor_Says(kActorInsectDealer, 180, 13);
 		Game_Flag_Set(329);
-		Actor_Clue_Acquire(kActorMcCoy, kCluePeruvianLadyInterview, 1, kActorInsectDealer);
+		Actor_Clue_Acquire(kActorMcCoy, kCluePeruvianLadyInterview, true, kActorInsectDealer);
 		break;
 	case 510:
 		Actor_Says(kActorMcCoy, 8475, 12);
@@ -311,7 +313,7 @@ void SceneScriptAR02::sub_402AE0() {
 		if (Query_Difficulty_Level() != 0) {
 			Global_Variable_Decrement(2, 15);
 		}
-		Actor_Clue_Acquire(kActorMcCoy, kClueMaggieBracelet, 1, kActorInsectDealer);
+		Actor_Clue_Acquire(kActorMcCoy, kClueMaggieBracelet, true, kActorInsectDealer);
 		Actor_Modify_Friendliness_To_Other(kActorInsectDealer, kActorMcCoy, 5);
 	} else if (answerValue == 540) {
 		Actor_Says(kActorMcCoy, 125, 13);
@@ -379,7 +381,7 @@ void SceneScriptAR02::sub_402CE4() {
 			Actor_Says(kActorHasan, 110, 12);
 			Actor_Says(kActorHasan, 120, 13);
 			Actor_Modify_Friendliness_To_Other(kActorHasan, kActorMcCoy, -1);
-			Actor_Clue_Acquire(kActorMcCoy, kClueHasanInterview, 0, kActorHasan);
+			Actor_Clue_Acquire(kActorMcCoy, kClueHasanInterview, false, kActorHasan);
 		}
 		break;
 	}

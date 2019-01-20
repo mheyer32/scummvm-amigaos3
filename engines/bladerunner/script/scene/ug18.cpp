@@ -70,10 +70,10 @@ void SceneScriptUG18::SceneLoaded() {
 	Clickable_Object("MACHINE_01");
 	Unclickable_Object("MACHINE_01");
 	if (Game_Flag_Query(671)) {
-		Actor_Put_In_Set(kActorGuzza, 99);
+		Actor_Put_In_Set(kActorGuzza, kSetFreeSlotI);
 		Actor_Set_At_Waypoint(kActorGuzza, 41, 0);
 		if (Actor_Query_Which_Set_In(kActorSadik) == 89) {
-			Actor_Put_In_Set(kActorSadik, 91);
+			Actor_Put_In_Set(kActorSadik, kSetFreeSlotA);
 			Actor_Set_At_Waypoint(kActorSadik, 33, 0);
 		}
 	}
@@ -102,7 +102,7 @@ bool SceneScriptUG18::ClickedOnItem(int itemId, bool a2) {
 			Item_Pickup_Spin_Effect(987, 368, 243);
 			Item_Remove_From_World(itemId);
 			Game_Flag_Set(703);
-			Actor_Clue_Acquire(kActorMcCoy, kClueBriefcase, 1, kActorGuzza);
+			Actor_Clue_Acquire(kActorMcCoy, kClueBriefcase, true, kActorGuzza);
 		}
 	}
 	return false;
@@ -114,7 +114,7 @@ bool SceneScriptUG18::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(435);
-			Set_Enter(85, kSceneUG13);
+			Set_Enter(kSetUG13, kSceneUG13);
 		}
 		return true;
 	}
@@ -323,8 +323,8 @@ void SceneScriptUG18::sub_402734() {
 }
 
 void SceneScriptUG18::sub_402DE8() {
-	if (Player_Query_Agenda()) {
-		if (Global_Variable_Query(kVariableAffectionTowards) > 1 || Player_Query_Agenda() == 2) {
+	if (Player_Query_Agenda() != kPlayerAgendaPolite) {
+		if (Global_Variable_Query(kVariableAffectionTowards) > 1 || Player_Query_Agenda() == kPlayerAgendaSurly) {
 			sub_403114();
 		} else {
 			sub_402F8C();

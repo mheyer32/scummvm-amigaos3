@@ -53,7 +53,9 @@ void SceneScriptHF04::SceneLoaded() {
 		Unobstacle_Object("HIDE_WALL_B", true);
 	}
 	if (Actor_Query_Goal_Number(kActorLucy) == 213) {
-		if (Actor_Clue_Query(kActorLucy, kClueMcCoyHelpedLucy) && Global_Variable_Query(40) != 3) {
+		if (Actor_Clue_Query(kActorLucy, kClueMcCoyHelpedLucy)
+		 && Global_Variable_Query(40) != 3
+		) {
 			Game_Flag_Set(593);
 		} else {
 			Actor_Set_Goal_Number(kActorLucy, 230);
@@ -84,7 +86,7 @@ bool SceneScriptHF04::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(567);
-			Set_Enter(38, kSceneHF02);
+			Set_Enter(kSetHF02, kSceneHF02);
 		}
 		return true;
 	}

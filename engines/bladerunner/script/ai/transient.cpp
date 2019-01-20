@@ -35,26 +35,47 @@ void AIScriptTransient::Initialize() {
 
 	Actor_Put_In_Set(kActorTransient, kSetCT03_CT04);
 	Actor_Set_At_XYZ(kActorTransient, -171.41f, -621.3f, 736.52f, 580);
-	Actor_Set_Goal_Number(kActorTransient, 0);
+	Actor_Set_Goal_Number(kActorTransient, kGoalTransientDefault);
 	Actor_Set_Targetable(kActorTransient, true);
 }
 
 bool AIScriptTransient::Update() {
-	if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_Which_Set_In(kActorTransient) != kSetFreeSlotG) {
+	if (Global_Variable_Query(kVariableChapter) == 5
+	 && Actor_Query_Which_Set_In(kActorTransient) != kSetFreeSlotG
+	) {
 		Actor_Put_In_Set(kActorTransient, kSetFreeSlotG);
 		Actor_Set_At_Waypoint(kActorTransient, 39, false);
 	}
-	if (Global_Variable_Query(kVariableChapter) == 2 && (Actor_Query_Goal_Number(kActorTransient) == 0 || Actor_Query_Goal_Number(kActorTransient) == 10)) {
+
+	if (Global_Variable_Query(kVariableChapter) == 2
+	 && (Actor_Query_Goal_Number(kActorTransient) == kGoalTransientDefault
+	  || Actor_Query_Goal_Number(kActorTransient) == 10
+	 )
+	) {
 		Actor_Set_Goal_Number(kActorTransient, 200);
 	}
-	if (Global_Variable_Query(kVariableChapter) == 3 && Game_Flag_Query(169) && Game_Flag_Query(170) && !Game_Flag_Query(171) && !Game_Flag_Query(172)) {
-		Game_Flag_Set(172);
+
+	if ( Global_Variable_Query(kVariableChapter) == 3
+	 &&  Game_Flag_Query(kFlagMcCoyKilledHomeless)
+	 &&  Game_Flag_Query(kFlagHomelessBodyInDumpster)
+	 && !Game_Flag_Query(kFlagHomelessBodyFound)
+	 && !Game_Flag_Query(kFlagDumpsterEmptied)
+	) {
+		Game_Flag_Set(kFlagDumpsterEmptied);
 	}
-	if (Global_Variable_Query(kVariableChapter) < 4 && Game_Flag_Query(171) && Actor_Query_Goal_Number(kActorTransient) != 6 && Actor_Query_Goal_Number(kActorTransient) != 599) {
+
+	if (Global_Variable_Query(kVariableChapter) < 4
+	 && Game_Flag_Query(kFlagHomelessBodyFound)
+	 && Actor_Query_Goal_Number(kActorTransient) != 6
+	 && Actor_Query_Goal_Number(kActorTransient) != 599
+	) {
 		Actor_Set_Goal_Number(kActorTransient, 6);
 	}
-	if (Player_Query_Current_Scene() == kSceneCT04 && !Game_Flag_Query(492)) {
-		Game_Flag_Set(492);
+
+	if ( Player_Query_Current_Scene() == kSceneCT04
+	 && !Game_Flag_Query(kFlagCT04HomelessTrashFinish)
+	) {
+		Game_Flag_Set(kFlagCT04HomelessTrashFinish);
 		AI_Countdown_Timer_Reset(kActorTransient, 1);
 		AI_Countdown_Timer_Start(kActorTransient, 1, 12);
 	}
@@ -83,7 +104,7 @@ void AIScriptTransient::TimerExpired(int timer) {
 		}
 	}
 	if (timer == 1) {
-		if (Actor_Query_Goal_Number(kActorTransient) == 0) {
+		if (Actor_Query_Goal_Number(kActorTransient) == kGoalTransientDefault) { // stop diggin the trash
 			Actor_Set_Goal_Number(kActorTransient, 10);
 			Actor_Change_Animation_Mode(kActorTransient, kAnimationModeIdle);
 		}
@@ -142,7 +163,7 @@ bool AIScriptTransient::ShotAtAndHit() {
 		Actor_Set_Goal_Number(kActorTransient, 599);
 	}
 
-	Game_Flag_Set(169);
+	Game_Flag_Set(kFlagMcCoyKilledHomeless);
 
 	return false;
 }
@@ -161,7 +182,7 @@ int AIScriptTransient::GetFriendlinessModifierIfGetsClue(int otherActorId, int c
 
 bool AIScriptTransient::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	switch (newGoalNumber) {
-	case 2:
+	case kGoalTransientCT04Leave:
 		AI_Movement_Track_Flush(kActorTransient);
 		AI_Movement_Track_Append(kActorTransient, 51, 0);
 		AI_Movement_Track_Append(kActorTransient, 105, 0);
@@ -312,7 +333,7 @@ bool AIScriptTransient::UpdateAnimation(int *animation, int *frame) {
 			Actor_Set_Goal_Number(kActorTransient, 3);
 			_animationState = 15;
 			_animationFrame = Slice_Animation_Query_Number_Of_Frames(489) - 1;
-			Actor_Set_Targetable(kActorTransient, 0);
+			Actor_Set_Targetable(kActorTransient, false);
 			Actor_Retired_Here(kActorTransient, 120, 24, 1, -1);
 		}
 		break;

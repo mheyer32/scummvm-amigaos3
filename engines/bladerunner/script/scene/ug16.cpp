@@ -28,9 +28,9 @@ void SceneScriptUG16::InitializeScene() {
 	if (Game_Flag_Query(552)) {
 		Setup_Scene_Information(-270.76f, -34.88f, -504.02f, 404);
 		Game_Flag_Reset(552);
-	} else if (Game_Flag_Query(152)) {
+	} else if (Game_Flag_Query(kFlagUG15toUG16)) {
 		Setup_Scene_Information(-322.0f, -34.0f, -404.0f, 345);
-		Game_Flag_Reset(152);
+		Game_Flag_Reset(kFlagUG15toUG16);
 	} else {
 		Setup_Scene_Information(-318.0f, -34.0f, -216.0f, 340);
 		Game_Flag_Reset(354);
@@ -89,7 +89,7 @@ bool SceneScriptUG16::ClickedOn3DObject(const char *objectName, bool a2) {
 			Actor_Voice_Over(2750, kActorVoiceOver);
 			Actor_Voice_Over(2760, kActorVoiceOver);
 			Actor_Voice_Over(2770, kActorVoiceOver);
-			Actor_Clue_Acquire(kActorMcCoy, kClueFolder, 1, -1);
+			Actor_Clue_Acquire(kActorMcCoy, kClueFolder, true, -1);
 		} else {
 			Actor_Says(kActorMcCoy, 8523, 12);
 			Actor_Says(kActorMcCoy, 8635, 12);
@@ -109,7 +109,7 @@ bool SceneScriptUG16::ClickedOn3DObject(const char *objectName, bool a2) {
 		Actor_Says(kActorMcCoy, 5725, 14);
 		Delay(1000);
 		Item_Pickup_Spin_Effect(941, 418, 305);
-		Actor_Clue_Acquire(kActorMcCoy, kClueDNALutherLance, 1, -1);
+		Actor_Clue_Acquire(kActorMcCoy, kClueDNALutherLance, true, -1);
 		return true;
 	}
 	return false;
@@ -133,7 +133,7 @@ bool SceneScriptUG16::ClickedOnExit(int exitId) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(355);
-			Set_Enter(87, kSceneUG15);
+			Set_Enter(kSetUG15, kSceneUG15);
 		}
 		return true;
 	}
@@ -141,19 +141,19 @@ bool SceneScriptUG16::ClickedOnExit(int exitId) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -322.0f, -34.0f, -404.0f, 0, 1, false, 0)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Game_Flag_Set(153);
-			Set_Enter(87, kSceneUG15);
+			Game_Flag_Set(kFlagUG16toUG15);
+			Set_Enter(kSetUG15, kSceneUG15);
 		}
 		return true;
 	}
 	if (exitId == 2) {
 		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -316.78f, -34.88f, -533.27f, 0, 1, false, 0)) {
 			Actor_Face_Heading(kActorMcCoy, 0, false);
-			Loop_Actor_Travel_Stairs(kActorMcCoy, 13, 1, 0);
+			Loop_Actor_Travel_Stairs(kActorMcCoy, 13, 1, kAnimationModeIdle);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(551);
-			Set_Enter(36, kSceneDR06);
+			Set_Enter(kSetDR06, kSceneDR06);
 		}
 		return true;
 	}
@@ -289,7 +289,7 @@ void SceneScriptUG16::sub_401D78() {
 		Actor_Says(kActorMcCoy, 5810, 13);
 		Actor_Says(kActorLance, 220, 14);
 		Actor_Says(kActorLance, 230, 17);
-		Actor_Clue_Acquire(kActorMcCoy, kClueLutherLanceInterview, 1, kActorLuther);
+		Actor_Clue_Acquire(kActorMcCoy, kClueLutherLanceInterview, true, kActorLuther);
 		break;
 	case 1430:
 		Actor_Says(kActorMcCoy, 5745, 13);
@@ -358,7 +358,7 @@ void SceneScriptUG16::sub_401D78() {
 		Actor_Says(kActorMcCoy, 5855, 13);
 		Actor_Says(kActorLuther, 410, 14);
 		Game_Flag_Set(597);
-		Actor_Clue_Acquire(kActorMcCoy, kClueFolder, 1, kActorLuther);
+		Actor_Clue_Acquire(kActorMcCoy, kClueFolder, true, kActorLuther);
 		break;
 	case 1480:
 		Actor_Says(kActorMcCoy, 4595, 14);
