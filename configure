@@ -3221,15 +3221,14 @@ if test -n "$_host"; then
 			append_var DEFINES "-DREGPARM=__attribute__\(\(regparm\(3\)\)\)"
 			#append_var DEFINES "-DREGPARM=__regargs"
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
-			append_var CXXFLAGS "-m68030"
 			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
-			# try producing smaller executable
-			append_var CXXFLAGS "-fno-exceptions -fshort-enums -fstack-reuse=all"
-			append_var CXXFLAGS "-fno-rtti"
+			_machine_flags="-noixemul -m68030 -flto"
+			append_var CXXFLAGS "$_machine_flags"
+			append_var LDFLAGS  "$_machine_flags"
 
-			append_var CXXFLAGS "-noixemul"
-			append_var LDFLAGS "-noixemul"
+			# try producing smaller,faster executable
+			append_var CXXFLAGS "-fno-rtti -fno-exceptions -fshort-enums -fstack-reuse=all"
 
 			if test "$_debug_build" != yes; then
 				# no logging, warning etc...
@@ -3887,10 +3886,19 @@ fi
 if test "$_optimizations" = yes ; then
 	# Enable optimizations. This also
 	# makes it possible to use -Wuninitialized, so let's do that.
+	append_var _optimization_level "-Wuninitialized"
 	append_var CXXFLAGS "$_optimization_level"
-	append_var CXXFLAGS "-Wuninitialized"
 fi
 
+#
+# With Link Time Optimization, provide the same flags to the linker
+# I wish, I could be more specific here, but better safe than sorry.
+#
+case "${CXXFLAGS}" in
+	*"-flto"*)
+	append_var LDFLAGS ${CXXFLAGS}
+	;;
+esac
 #
 # Check whether plugin support is requested and possible
 #
