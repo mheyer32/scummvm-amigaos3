@@ -37,6 +37,7 @@ protected:
 	BPTR _handle;
 	LONG _error;
 	LONG _size;
+	bool _eof;
 };
 
 #endif // AMIGAOS3FSFILE_H

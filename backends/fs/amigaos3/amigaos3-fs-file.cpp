@@ -26,7 +26,7 @@
 #include <proto/dos.h>
 #include <dos/stdio.h>
 
-AmigaOS3File::AmigaOS3File(BPTR handle) : _handle(handle), _size(0), _error(0) {
+AmigaOS3File::AmigaOS3File(BPTR handle) : _handle(handle), _size(0), _error(0), _eof(false) {
 	assert(_handle);
 
 	// remember current position
@@ -55,7 +55,7 @@ void AmigaOS3File::clearErr() {
 }
 
 bool AmigaOS3File::eos() const {
-	return pos() == _size;
+	return _eof;
 }
 
 int32 AmigaOS3File::pos() const {
@@ -75,6 +75,7 @@ bool AmigaOS3File::seek(int32 offs, int whence) {
 	if (success == -1) {
 		_error = IoErr();
 	}
+	_eof = false;
 	return success != -1;
 }
 
@@ -82,6 +83,7 @@ uint32 AmigaOS3File::read(void *ptr, uint32 len) {
 	LONG blocksRead = FRead(_handle, ptr, len, 1);
 	if (blocksRead == 0) {
 		_error = IoErr();
+		_eof = true;
 		return 0;
 	}
 	assert(blocksRead == 1);
@@ -89,7 +91,7 @@ uint32 AmigaOS3File::read(void *ptr, uint32 len) {
 }
 
 uint32 AmigaOS3File::write(const void *ptr, uint32 len) {
-	LONG blocksWritten = FWrite(_handle, (void*)ptr, len, 1);
+	LONG blocksWritten = FWrite(_handle, const_cast<void*>(ptr), len, 1);
 	if (blocksWritten == 0) {
 		_error = IoErr();
 		return 0;
