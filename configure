@@ -2873,11 +2873,11 @@ if test -n "$_host"; then
 			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
 			# try producing smaller executable
-			append_var CXXFLAGS "-fno-exceptions"
+			append_var CXXFLAGS "-fno-exceptions -flto"
 			append_var CXXFLAGS "-fno-rtti"
 
 			append_var CXXFLAGS "-noixemul"
-			append_var LDFLAGS "-noixemul"
+			append_var LDFLAGS "-noixemul -flto"
 			if test "$_debug_build" != yes; then
 				# throw away all debug info and symbols
 				append_var CXXFLAGS "-s"

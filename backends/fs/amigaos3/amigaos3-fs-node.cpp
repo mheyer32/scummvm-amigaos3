@@ -24,6 +24,7 @@
  */
 
 #include "backends/fs/amigaos3/amigaos3-fs-node.h"
+#include "backends/fs/amigaos3/amigaos3-fs-file.h"
 #include "backends/fs/stdiostream.h"
 
 #include "common/debug.h"
@@ -524,11 +525,11 @@ bool AmigaOS3FilesystemNode::isWritable() const {
 }
 
 Common::SeekableReadStream *AmigaOS3FilesystemNode::createReadStream() {
-	return StdioStream::makeFromPath(getPath().c_str(), false);
+	return AmigaOS3File::makeFromPath(getPath().c_str(), false);
 }
 
 Common::WriteStream *AmigaOS3FilesystemNode::createWriteStream() {
-	return StdioStream::makeFromPath(getPath().c_str(), true);
+	return AmigaOS3File::makeFromPath(getPath().c_str(), true);
 }
 
 Common::String AmigaOS3FilesystemNode::getName() const {
