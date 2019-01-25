@@ -398,8 +398,15 @@ public:
 	typedef T *iterator;
 	typedef uint size_type;
 
-	SortedArray(int (*comparator)(const void *, const void *)) {
+	typedef int REGPARM(*Comparator)(const void *, const void *);
+
+	SortedArray(Comparator comparator) {
 		_comparator = comparator;
+	}
+
+	SortedArray(const SortedArray &other)
+		: Array<T>(other)
+		, _comparator(other._comparator) {
 	}
 
 	/**
@@ -428,6 +435,12 @@ public:
 		return Array<T>::operator [] (idx);
 	}
 
+	SortedArray& operator = (const SortedArray &other) {
+		this->Array<T>::operator = (other);
+		_comparator = other._comparator;
+		return *this;
+	}
+
 private:
 	T &operator[](size_type idx);
 
@@ -444,7 +457,7 @@ private:
 	// Based on code Copyright (C) 2008-2009 Ksplice, Inc.
 	// Author: Tim Abbott <tabbott@ksplice.com>
 	// Licensed under GPLv2+
-	T *bsearchMin(const void * key) const {
+	T * REGPARM bsearchMin(const void * key) const {
 		uint start_ = 0, end_ = this->_size;
 		int result;
 
@@ -463,7 +476,8 @@ private:
 		return &this->_storage[start_];
 	}
 
-	int (*_comparator)(const void *, const void *);
+	Comparator _comparator;
+
 };
 
 } // End of namespace Common

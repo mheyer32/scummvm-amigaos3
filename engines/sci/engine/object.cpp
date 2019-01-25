@@ -29,6 +29,8 @@
 #include "sci/engine/features.h"
 #endif
 
+#include <climits>
+
 namespace Sci {
 
 extern bool relocateBlock(Common::Array<reg_t> &block, int block_location, SegmentId segment, int location, uint32 heapOffset);
@@ -56,8 +58,11 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 		if (infoSelector & kInfoFlagClass) {
 			_baseVars.reserve(_variables.size());
 			uint baseVarsOffset = _variables.size() * sizeof(uint16);
-			for (uint i = 0; i < _variables.size(); ++i) {
-				_baseVars.push_back(data.getUint16SEAt(baseVarsOffset));
+
+			assert(_variables.size() < USHRT_MAX);
+			const uint16 numVars = (uint16)_variables.size();
+			for (uint16 i = 0; i < numVars; ++i) {
+				_baseVars.insert({data.getUint16SEAt(baseVarsOffset), i});
 				baseVarsOffset += sizeof(uint16);
 			}
 		}
@@ -98,8 +103,11 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 		if (infoSelector & kInfoFlagClass) {
 			_baseVars.reserve(_variables.size());
 			uint baseVarsOffset = data.getUint16SEAt(4);
-			for (uint i = 0; i < _variables.size(); ++i) {
-				_baseVars.push_back(buf.getUint16SEAt(baseVarsOffset));
+
+			assert(_variables.size() < USHRT_MAX);
+			const uint16 numVars = (uint16)_variables.size();
+			for (uint16 i = 0; i < numVars; ++i) {
+				_baseVars.insert({buf.getUint16SEAt(baseVarsOffset), i});
 				baseVarsOffset += sizeof(uint16);
 			}
 		}
@@ -186,8 +194,8 @@ const Object *Object::getClass(SegManager *segMan) const {
 }
 
 int Object::locateVarSelector(SegManager *segMan, Selector slc) const {
-	const Common::Array<uint16> *buf;
-	uint varCount;
+	const BaseVars *buf;
+	uint16 varCount;
 
 #ifdef ENABLE_SCI32
 	if (getSciVersion() == SCI_VERSION_3) {
@@ -201,10 +209,26 @@ int Object::locateVarSelector(SegManager *segMan, Selector slc) const {
 		varCount = obj->getVarCount();
 	}
 
-	for (uint i = 0; i < varCount; i++)
-		if ((*buf)[i] == slc) // Found it?
-			return i; // report success
+	const BaseVars &baseVars = *buf;
 
+	if (varCount <= 8)
+	{
+		// use linear search for small number of vars
+		for (uint16 i = 0; i < varCount; i++) {
+			const uint16 selector = baseVars[i].selector;
+			if (selector  == slc)			// Found it?
+				return baseVars[i].propIdx;	// report success
+			else if (selector > slc)
+				break; // fail, all following selectors will be even larger
+		}
+	}
+	else {
+		// bisect-search with larger number
+		uint16 idx = baseVars.find({slc, 0});
+		if ((idx < varCount) && (baseVars[idx].selector == slc)) {
+			return baseVars[idx].propIdx;
+		}
+	}
 	return -1; // Failed
 }
 
@@ -241,11 +265,17 @@ int Object::propertyOffsetToId(SegManager *segMan, int propertyOffset) const {
 		const SciSpan<const byte> selectoroffset = _baseObj.subspan(kOffsetSelectorSegment + selectors * 2);
 		return selectoroffset.getUint16SEAt(propertyOffset);
 	} else {
-		const Object *obj = this;
-		if (!isClass())
-			obj = segMan->getObject(getSuperClassSelector());
+		const Object *obj = getClass(segMan);
 
-		return obj->_baseVars[propertyOffset >> 1];
+		const int propertyIndex = propertyOffset >> 1;
+		const BaseVars &basevars = obj->_baseVars;
+		for (uint16 i = 0; i < selectors; ++i) {
+			if (basevars[i].propIdx == propertyIndex) {
+				return basevars[i].selector;
+			}
+		}
+		assert(!"Should not get here");
+		return -1;
 	}
 }
 
@@ -432,7 +462,7 @@ void Object::initSelectorsSci3(const SciSpan<const byte> &buf, const bool initVa
 
 	_methodCount = numMethods;
 	_variables.resize(numProperties);
-	_baseVars.resize(numProperties);
+	_baseVars.reserve(numProperties);
 	_propertyOffsetsSci3.resize(numProperties);
 
 	// Go through the whole thing again to get the property values
@@ -450,7 +480,7 @@ void Object::initSelectorsSci3(const SciSpan<const byte> &buf, const bool initVa
 			for (int bit = 2; bit < kGroupSize; ++bit) {
 				int value = seeker.getUint16SEAt(bit * sizeof(uint16));
 				if (typeMask & (1 << bit)) { // Property
-					_baseVars[propertyCounter] = groupBaseId + bit;
+					_baseVars.insert({groupBaseId + bit, propertyCounter});
 					if (initVariables) {
 						_variables[propertyCounter] = make_reg(0, value);
 					}

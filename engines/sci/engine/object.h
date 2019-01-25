@@ -67,6 +67,7 @@ enum ObjectOffsets {
 	kOffsetNamePointerSci11 = 16
 };
 
+
 class Object : public Common::Serializable {
 public:
 	Object() :
@@ -74,7 +75,7 @@ public:
 		_offset(getSciVersion() < SCI_VERSION_1_1 ? 0 : 5),
 		_isFreed(false),
 		_baseObj(),
-		_baseVars(),
+		_baseVars(compareSelectors),
 		_methodCount(0)
 #ifdef ENABLE_SCI32
 		,
@@ -227,7 +228,16 @@ public:
 			_variables[4] = value;
 	}
 
-	Selector getVarSelector(uint16 i) const { return _baseVars[i]; }
+	Selector getVarSelector(uint16 i) const {
+		uint numVars = getVarCount();
+		for (uint v = 0; v < numVars ; ++v) {
+			if (_baseVars[v].propIdx == i) {
+				return _baseVars[v].selector;
+			}
+		}
+		assert(!"Should not get here");
+		return -1;
+	}
 
 	/**
 	 * @returns A pointer to the code for the method at the given index.
@@ -285,7 +295,7 @@ public:
 		_name = obj ? obj->_name : NULL_REG;
 		_baseObj = obj ? obj->_baseObj : SciSpan<const byte>();
 		_baseMethod = obj ? obj->_baseMethod : Common::Array<uint32>();
-		_baseVars = obj ? obj->_baseVars : Common::Array<uint16>();
+		_baseVars = obj ? obj->_baseVars : BaseVars(compareSelectors);
 #ifdef ENABLE_SCI32
 		if (getSciVersion() == SCI_VERSION_3) {
 			_mustSetViewVisible = obj ? obj->_mustSetViewVisible : Common::Array<bool>();
@@ -327,8 +337,17 @@ private:
 	 * A lookup table from a property index to its corresponding selector
 	 * number.
 	 */
-	Common::Array<uint16> _baseVars;
+	struct BaseVar {
+		uint16 selector;
+		uint16 propIdx;
+	};
+	typedef Common::SortedArray<BaseVar> BaseVars;
 
+	BaseVars _baseVars;
+
+	static int REGPARM compareSelectors(const void *key, const void *element) {
+		return (int)(((const BaseVar*)key)->selector) - (int)(((const BaseVar*)element)->selector);
+	}
 	/**
 	 * A lookup table from a method index to its corresponding selector number
 	 * or offset to code. The table contains selector + offset in pairs.
