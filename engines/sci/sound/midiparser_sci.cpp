@@ -813,7 +813,16 @@ bool MidiParser_SCI::processEvent(const EventInfo &info, bool fireEvents) {
 			// (e.g. song 110, during the intro). The original interpreter
 			// treats this case as an infinite loop (bug #3311911).
 			if (_pSnd->loop || _pSnd->hold > 0) {
-				jumpToTick(_loopTick);
+
+				if (_loopTick != _position._playTick) {
+					jumpToTick(_loopTick);
+				} else {
+					// this is an infinite loop, SQ4 CD seems to use it.
+					// We don't want to actually parse this and hammer the MIDI
+					// driver with AllNotesOff.
+					debugC(4, kDebugLevelSound, "infinite loop detected, stopping music");
+					stopPlaying();
+				}
 
 				// Done with this event.
 				return true;
