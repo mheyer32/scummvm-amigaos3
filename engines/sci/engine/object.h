@@ -229,8 +229,8 @@ public:
 	}
 
 	Selector getVarSelector(uint16 i) const {
-		uint numVars = getVarCount();
-		for (uint v = 0; v < numVars ; ++v) {
+		uint16 numVars = getVarCount();
+		for (uint16 v = 0; v < numVars ; ++v) {
 			if (_baseVars[v].propIdx == i) {
 				return _baseVars[v].selector;
 			}
@@ -279,7 +279,7 @@ public:
 	void markAsFreed() { _isFreed = true; }
 	bool isFreed() const { return _isFreed; }
 
-	uint getVarCount() const { return _variables.size(); }
+	uint16 getVarCount() const { return _variables.size(); }
 
 	void init(const Script &owner, reg_t obj_pos, bool initVariables = true);
 

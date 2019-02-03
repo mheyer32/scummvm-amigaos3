@@ -1304,7 +1304,7 @@ Common::Array<reg_t> Script::listAllOutgoingReferences(reg_t addr) const {
 			if (_localsSegment)
 				tmp.push_back(make_reg(_localsSegment, 0));
 
-			for (uint i = 0; i < obj->getVarCount(); i++)
+			for (uint16 i = 0; i < obj->getVarCount(); i++)
 				tmp.push_back(obj->getVariable(i));
 		} else {
 			error("Request for outgoing script-object reference at %04x:%04x failed in script %d", PRINT_REG(addr), _nr);

@@ -253,7 +253,7 @@ bool Object::relocateSci3(SegmentId segment, uint32 location, int offset, uint32
 #endif
 
 int Object::propertyOffsetToId(SegManager *segMan, int propertyOffset) const {
-	int selectors = getVarCount();
+	uint16 selectors = getVarCount();
 
 	if (propertyOffset < 0 || (propertyOffset >> 1) >= selectors) {
 		error("Applied propertyOffsetToId to invalid property offset %x (property #%d not in [0..%d])",

@@ -50,7 +50,7 @@ const reg_t TRUE_REG = {0, 1};
 
 // validation functionality
 
-static reg_t &validate_property(EngineState *s, Object *obj, int index) {
+static reg_t &validate_property(EngineState *s, Object *obj, uint16 index) {
 	// A static dummy reg_t, which we return if obj or index turn out to be
 	// invalid. Note that we cannot just return NULL_REG, because client code
 	// may modify the value of the returned reg_t.
@@ -69,8 +69,7 @@ static reg_t &validate_property(EngineState *s, Object *obj, int index) {
 	{
 		index >>= 1;
 	}
-
-	if (index < 0 || (uint)index >= obj->getVarCount()) {
+	if (index >= obj->getVarCount()) {
 		// This is same way sierra does it and there are some games, that contain such scripts like
 		//  iceman script 998 (fred::canBeHere, executed right at the start)
 		debugC(kDebugLevelVM, "[VM] Invalid property #%d (out of [0..%d]) requested from object %04x:%04x (%s)",
