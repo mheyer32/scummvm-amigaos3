@@ -227,7 +227,7 @@
 //
 // Moreover, we activate this code for GCC >= 3.3 but *only* if unaligned access
 // is allowed.
-#if GCC_ATLEAST(4, 0) || (GCC_ATLEAST(3, 3) && !defined(SCUMM_NEED_ALIGNMENT))
+#if !defined(__amigaos3__) && (GCC_ATLEAST(4, 0) || (GCC_ATLEAST(3, 3) && !defined(SCUMM_NEED_ALIGNMENT)))
 
 	FORCEINLINE uint16 READ_UINT16(const void *ptr) {
 		struct Unaligned16 { uint16 val; } __attribute__ ((__packed__, __may_alias__));
