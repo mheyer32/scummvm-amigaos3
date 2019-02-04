@@ -35,19 +35,19 @@ namespace Sci {
 
 // Wrappers for reading/writing 16-bit values in the endianness
 // of the original game platform.
-extern uint16 (*READ_SCIENDIAN_UINT16)(const void *ptr);
-extern void (*WRITE_SCIENDIAN_UINT16)(void *ptr, uint16 val);
+extern uint16 REGPARM (*READ_SCIENDIAN_UINT16)(const void *ptr);
+extern void REGPARM (*WRITE_SCIENDIAN_UINT16)(void *ptr, uint16 val);
 
 // Wrappers for reading integer values for SCI1.1+.
 // Mac versions have big endian data for some fields.
-extern uint16 (*READ_SCI11ENDIAN_UINT16)(const void *ptr);
-extern uint32 (*READ_SCI11ENDIAN_UINT32)(const void *ptr);
-extern void (*WRITE_SCI11ENDIAN_UINT16)(void *ptr, uint16 val);
+extern uint16 REGPARM (*READ_SCI11ENDIAN_UINT16)(const void *ptr);
+extern uint32 REGPARM (*READ_SCI11ENDIAN_UINT32)(const void *ptr);
+extern void REGPARM (*WRITE_SCI11ENDIAN_UINT16)(void *ptr, uint16 val);
 // Wrappers for reading integer values in resources that are
 // LE in SCI1.1 Mac, but BE in SCI32 Mac
-extern uint16 (*READ_SCI32ENDIAN_UINT16)(const void *ptr);
+extern uint16 REGPARM (*READ_SCI32ENDIAN_UINT16)(const void *ptr);
 #ifdef ENABLE_SCI32
-extern void (*WRITE_SCI11ENDIAN_UINT32)(void *ptr, uint32 val);
+extern void REGPARM (*WRITE_SCI11ENDIAN_UINT32)(void *ptr, uint32 val);
 #endif
 
 void InitSciReadWriteFunctions();

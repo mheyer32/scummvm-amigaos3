@@ -25,46 +25,46 @@
 
 namespace Sci {
 
-uint16 (*READ_SCIENDIAN_UINT16)(const void *ptr) = NULL;
-void (*WRITE_SCIENDIAN_UINT16)(void *ptr, uint16 val) = NULL;
-uint16 (*READ_SCI11ENDIAN_UINT16)(const void *ptr) = NULL;
-uint32 (*READ_SCI11ENDIAN_UINT32)(const void *ptr) = NULL;
-void (*WRITE_SCI11ENDIAN_UINT16)(void *ptr, uint16 val) = NULL;
-uint16 (*READ_SCI32ENDIAN_UINT16)(const void *ptr) = NULL;
+uint16 REGPARM (*READ_SCIENDIAN_UINT16)(const void *ptr) = NULL;
+void REGPARM (*WRITE_SCIENDIAN_UINT16)(void *ptr, uint16 val) = NULL;
+uint16 REGPARM (*READ_SCI11ENDIAN_UINT16)(const void *ptr) = NULL;
+uint32 REGPARM (*READ_SCI11ENDIAN_UINT32)(const void *ptr) = NULL;
+void REGPARM (*WRITE_SCI11ENDIAN_UINT16)(void *ptr, uint16 val) = NULL;
+uint16 REGPARM (*READ_SCI32ENDIAN_UINT16)(const void *ptr) = NULL;
 #ifdef ENABLE_SCI32
-void (*WRITE_SCI11ENDIAN_UINT32)(void *ptr, uint32 val) = NULL;
+void REGPARM (*WRITE_SCI11ENDIAN_UINT32)(void *ptr, uint32 val) = NULL;
 #endif
 
 namespace {
-uint16 SCI_READ_LE_UINT16(const void *ptr) {
+uint16 REGPARM SCI_READ_LE_UINT16(const void *ptr) {
 	return READ_LE_UINT16(ptr);
 }
 
-uint16 SCI_READ_BE_UINT16(const void *ptr) {
+uint16 REGPARM SCI_READ_BE_UINT16(const void *ptr) {
 	return READ_BE_UINT16(ptr);
 }
 
-uint32 SCI_READ_LE_UINT32(const void *ptr) {
+uint32 REGPARM SCI_READ_LE_UINT32(const void *ptr) {
 	return READ_LE_UINT32(ptr);
 }
 
-uint32 SCI_READ_BE_UINT32(const void *ptr) {
+uint32 REGPARM SCI_READ_BE_UINT32(const void *ptr) {
 	return READ_BE_UINT32(ptr);
 }
 
-void SCI_WRITE_LE_UINT16(void *ptr, uint16 value) {
+void REGPARM SCI_WRITE_LE_UINT16(void *ptr, uint16 value) {
 	WRITE_LE_UINT16(ptr, value);
 }
 
-void SCI_WRITE_BE_UINT16(void *ptr, uint16 value) {
+void REGPARM SCI_WRITE_BE_UINT16(void *ptr, uint16 value) {
 	WRITE_BE_UINT16(ptr, value);
 }
 
-void SCI_WRITE_LE_UINT32(void *ptr, uint32 value) {
+void REGPARM SCI_WRITE_LE_UINT32(void *ptr, uint32 value) {
 	WRITE_LE_UINT32(ptr, value);
 }
 
-void SCI_WRITE_BE_UINT32(void *ptr, uint32 value) {
+void REGPARM SCI_WRITE_BE_UINT32(void *ptr, uint32 value) {
 	WRITE_BE_UINT32(ptr, value);
 }
 
