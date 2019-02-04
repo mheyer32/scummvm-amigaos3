@@ -778,7 +778,7 @@ void GfxView::unditherBitmap(SciSpan<byte> &bitmapPtr, int16 width, int16 height
 	}
 }
 
-void GfxView::draw(const Common::Rect &rect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated,
+void GfxView::draw(const Common::Rect &celRect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated,
 			int16 loopNo, int16 celNo, byte priority, uint16 EGAmappingNr, bool upscaledHires, uint16 scaleSignal) {
 	const Palette *palette = _embeddedPal ? &_viewPalette : &_palette->_sysPalette;
 	const CelInfo *celInfo = getCelInfo(loopNo, celNo);
@@ -799,7 +799,7 @@ void GfxView::draw(const Common::Rect &rect, const Common::Rect &clipRect, const
 		return;
 	}
 
-	const byte *bitmapData = bitmap.getUnsafeDataAt((clipRect.top - rect.top) * celWidth + (clipRect.left - rect.left), celWidth * (height - 1) + width);
+	const byte *bitmapData = bitmap.getUnsafeDataAt((clipRect.top - celRect.top) * celWidth + (clipRect.left - celRect.left), celWidth * (height - 1) + width);
 
 	if (_EGAmapping) {
 		const SciSpan<const byte> EGAmapping = _EGAmapping.subspan(EGAmappingNr * SCI_VIEW_EGAMAPPING_SIZE, SCI_VIEW_EGAMAPPING_SIZE);
@@ -824,21 +824,37 @@ void GfxView::draw(const Common::Rect &rect, const Common::Rect &clipRect, const
 			}
 		}
 	} else {
-		for (int y = 0; y < height; y++, bitmapData += celWidth) {
-			for (int x = 0; x < width; x++) {
-				const byte color = bitmapData[x];
-				if (color != clearKey) {
-					const int x2 = clipRectTranslated.left + x;
-					const int y2 = clipRectTranslated.top + y;
-					if (priority >= _screen->getPriority(x2, y2)) {
-						byte outputColor = palette->mapping[color];
-						// SCI16 remapping (QFG4 demo)
-						if (g_sci->_gfxRemap16 && g_sci->_gfxRemap16->isRemapped(outputColor))
-							outputColor = g_sci->_gfxRemap16->remapColor(outputColor, _screen->getVisual(x2, y2));
-						// SCI11+ remapping (Catdate)
-						if ((scaleSignal & 0x200) && g_sci->_gfxRemap16)
-							outputColor = g_sci->_gfxRemap16->remapColor(253, outputColor);
-						_screen->putPixel(x2, y2, drawMask, outputColor, priority, 0);
+//		debug(1, "GfxView::draw 3");
+		if (g_sci->_gfxRemap16 ) {
+			for (int16 y = 0; y < height; y++, bitmapData += celWidth) {
+				for (int16 x = 0; x < width; x++) {
+					const byte color = bitmapData[x];
+					if (color != clearKey) {
+						const int16 x2 = clipRectTranslated.left + x;
+						const int16 y2 = clipRectTranslated.top + y;
+						if (priority >= _screen->getPriority(x2, y2)) {
+							byte outputColor = palette->mapping[color];
+							// SCI16 remapping (QFG4 demo)
+							if (g_sci->_gfxRemap16->isRemapped(outputColor))
+								outputColor = g_sci->_gfxRemap16->remapColor(outputColor, _screen->getVisual(x2, y2));
+							// SCI11+ remapping (Catdate)
+							if (scaleSignal & 0x200)
+								outputColor = g_sci->_gfxRemap16->remapColor(253, outputColor);
+							_screen->putPixel(x2, y2, drawMask, outputColor, priority, 0);
+						}
+					}
+				}
+			}
+		} else {
+			for (int16 y = clipRectTranslated.top; y < clipRectTranslated.top + height; y++, bitmapData += celWidth) {
+				for (int16 x = 0; x < width; x++) {
+					const byte color = bitmapData[x];
+					if (color != clearKey) {
+						const int16 x2 = x + clipRectTranslated.left;
+						if (priority >= _screen->getPriority(x2, y)) {
+							byte outputColor = palette->mapping[color];
+							_screen->putPixel(x2, y, drawMask, outputColor, priority, 0);
+						}
 					}
 				}
 			}
@@ -919,20 +935,37 @@ void GfxView::drawScaled(const Common::Rect &rect, const Common::Rect &clipRect,
 	assert(scaledHeight + offsetY <= ARRAYSIZE(scalingY));
 	assert(scaledWidth + offsetX <= ARRAYSIZE(scalingX));
 	const byte *bitmapData = bitmap.getUnsafeDataAt(0, celWidth * celHeight);
-	for (int y = 0; y < scaledHeight; y++) {
-		for (int x = 0; x < scaledWidth; x++) {
-			const byte color = bitmapData[scalingY[y + offsetY] * celWidth + scalingX[x + offsetX]];
-			const int x2 = clipRectTranslated.left + x;
-			const int y2 = clipRectTranslated.top + y;
-			if (color != clearKey && priority >= _screen->getPriority(x2, y2)) {
-				byte outputColor = palette->mapping[color];
-				// SCI16 remapping (QFG4 demo)
-				if (g_sci->_gfxRemap16 && g_sci->_gfxRemap16->isRemapped(outputColor))
-					outputColor = g_sci->_gfxRemap16->remapColor(outputColor, _screen->getVisual(x2, y2));
-				// SCI11+ remapping (Catdate)
-				if ((scaleSignal & 0x200) && g_sci->_gfxRemap16)
-					outputColor = g_sci->_gfxRemap16->remapColor(253, outputColor);
-				_screen->putPixel(x2, y2, drawMask, outputColor, priority, 0);
+
+	if (!g_sci->_gfxRemap16) {
+		for (int16 y = 0; y < scaledHeight; y++) {
+			const byte *bitMapRow = &bitmapData[scalingY[y + offsetY] * celWidth];
+			for (int16 x = 0; x < scaledWidth; x++) {
+				const byte color = bitMapRow[scalingX[x + offsetX]];
+				const int16 x2 = clipRectTranslated.left + x;
+				const int16 y2 = clipRectTranslated.top + y;
+				if (color != clearKey && priority >= _screen->getPriority(x2, y2)) {
+					byte outputColor = palette->mapping[color];
+					_screen->putPixel(x2, y2, drawMask, outputColor, priority, 0);
+				}
+			}
+		}
+	} else {
+		for (int16 y = 0; y < scaledHeight; y++) {
+			const byte *bitMapRow = &bitmapData[scalingY[y + offsetY] * celWidth];
+			for (int16 x = 0; x < scaledWidth; x++) {
+				const byte color = bitMapRow[scalingX[x + offsetX]];
+				const int16 x2 = clipRectTranslated.left + x;
+				const int16 y2 = clipRectTranslated.top + y;
+				if (color != clearKey && priority >= _screen->getPriority(x2, y2)) {
+					byte outputColor = palette->mapping[color];
+					// SCI16 remapping (QFG4 demo)
+					if (g_sci->_gfxRemap16 && g_sci->_gfxRemap16->isRemapped(outputColor))
+						outputColor = g_sci->_gfxRemap16->remapColor(outputColor, _screen->getVisual(x2, y2));
+					// SCI11+ remapping (Catdate)
+					if ((scaleSignal & 0x200) && g_sci->_gfxRemap16)
+						outputColor = g_sci->_gfxRemap16->remapColor(253, outputColor);
+					_screen->putPixel(x2, y2, drawMask, outputColor, priority, 0);
+				}
 			}
 		}
 	}
