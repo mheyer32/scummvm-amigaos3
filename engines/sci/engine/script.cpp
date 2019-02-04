@@ -1155,9 +1155,12 @@ void Script::initializeObjectsSci0(SegManager *segMan, SegmentId segmentId) {
 #else
 								// FIXME: have a deleteObject function?
 								const auto offset = addr.toUint16() - SCRIPT_OBJECT_MAGIC_OFFSET;
-								delete _objects[offset];
-								_objects[offset] = NULL;
-								--_numObjects;
+								debug(1, "initializeObjectsSci0 got KQV offset %d, numObjects %d", offset, _numObjects);
+								if (offset < _numObjects) {
+									delete _objects[offset];
+									_objects[offset] = NULL;
+									--_numObjects;
+								}
 #endif
 							} else {
 								error("Failed to locate base object for object at %04x:%04x in script %d", PRINT_REG(addr), _nr);
