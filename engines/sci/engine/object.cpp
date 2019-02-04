@@ -60,8 +60,8 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 			uint baseVarsOffset = _variables.size() * sizeof(uint16);
 
 			assert(_variables.size() < USHRT_MAX);
-			const uint16 numVars = (uint16)_variables.size();
-			for (uint16 i = 0; i < numVars; ++i) {
+			const int16 numVars = (int16)_variables.size();
+			for (int16 i = 0; i < numVars; ++i) {
 				_baseVars.insert({data.getUint16SEAt(baseVarsOffset), i});
 				baseVarsOffset += sizeof(uint16);
 			}
@@ -105,8 +105,8 @@ void Object::init(const Script &owner, reg_t obj_pos, bool initVariables) {
 			uint baseVarsOffset = data.getUint16SEAt(4);
 
 			assert(_variables.size() < USHRT_MAX);
-			const uint16 numVars = (uint16)_variables.size();
-			for (uint16 i = 0; i < numVars; ++i) {
+			const int16 numVars = (int16)_variables.size();
+			for (int16 i = 0; i < numVars; ++i) {
 				_baseVars.insert({buf.getUint16SEAt(baseVarsOffset), i});
 				baseVarsOffset += sizeof(uint16);
 			}
@@ -193,7 +193,7 @@ const Object *Object::getClass(SegManager *segMan) const {
 	return isClass() ? this : segMan->getObject(getSuperClassSelector());
 }
 
-int Object::locateVarSelector(SegManager *segMan, Selector slc) const {
+int16 Object::locateVarSelector(SegManager *segMan, Selector slc) const {
 	const BaseVars *buf;
 	uint16 varCount;
 

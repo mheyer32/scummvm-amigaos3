@@ -259,7 +259,7 @@ public:
 	 * superclasses, i.e. failure may be returned even if one of the
 	 * superclasses defines the funcselector
 	 */
-	int funcSelectorPosition(Selector sel) const {
+	int16 funcSelectorPosition(Selector sel) const {
 		for (uint i = 0; i < _methodCount; i++)
 			if (getFuncSelector(i) == sel)
 				return i;
@@ -271,7 +271,7 @@ public:
 	 * Determines if the object explicitly defines slc as a varselector.
 	 * Returns -1 if not found.
 	 */
-	int locateVarSelector(SegManager *segMan, Selector slc) const;
+	int16 locateVarSelector(SegManager *segMan, Selector slc) const;
 
 	bool isClass() const { return (getInfoSelector().getOffset() & kInfoFlagClass); }
 	const Object *getClass(SegManager *segMan) const;
@@ -283,8 +283,8 @@ public:
 
 	void init(const Script &owner, reg_t obj_pos, bool initVariables = true);
 
-	reg_t getVariable(uint var) const { return _variables[var]; }
-	reg_t &getVariableRef(uint var) { return _variables[var]; }
+	reg_t getVariable(uint16 var) const { return _variables[var]; }
+	reg_t &getVariableRef(uint16 var) { return _variables[var]; }
 
 	uint16 getMethodCount() const { return _methodCount; }
 	reg_t getPos() const { return _pos; }

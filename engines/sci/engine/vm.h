@@ -60,7 +60,7 @@ struct Class {
 // The object is stored as a reg_t, the variable as an index into _variables
 struct ObjVarRef {
 	reg_t obj;
-	int varindex;
+	int16 varindex;
 
 	reg_t* getPointer(SegManager *segMan) const;
 };
