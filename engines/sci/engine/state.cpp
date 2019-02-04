@@ -291,7 +291,7 @@ kLanguage SciEngine::getSciLanguage() {
 
 	lang = K_LANG_ENGLISH;
 
-	if (SELECTOR(printLang) != -1) {
+	if (SELECTOR(printLang) != NULL_SELECTOR) {
 		lang = (kLanguage)readSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(printLang));
 
 		if ((getSciVersion() >= SCI_VERSION_1_1) || (lang == K_LANG_NONE)) {
@@ -332,7 +332,7 @@ kLanguage SciEngine::getSciLanguage() {
 }
 
 void SciEngine::setSciLanguage(kLanguage lang) {
-	if (SELECTOR(printLang) != -1)
+	if (SELECTOR(printLang) != NULL_SELECTOR)
 		writeSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(printLang), lang);
 }
 
@@ -344,7 +344,7 @@ Common::String SciEngine::strSplitLanguage(const char *str, uint16 *languageSpli
 	kLanguage activeLanguage = getSciLanguage();
 	kLanguage subtitleLanguage = K_LANG_NONE;
 
-	if (SELECTOR(subtitleLang) != -1)
+	if (SELECTOR(subtitleLang) != NULL_SELECTOR)
 		subtitleLanguage = (kLanguage)readSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(subtitleLang));
 
 	kLanguage foundLanguage;
@@ -366,7 +366,7 @@ Common::String SciEngine::strSplitLanguage(const char *str, uint16 *languageSpli
 
 void SciEngine::checkVocabularySwitch() {
 	uint16 parserLanguage = 1;
-	if (SELECTOR(parseLang) != -1)
+	if (SELECTOR(parseLang) != NULL_SELECTOR)
 		parserLanguage = readSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(parseLang));
 
 	if (parserLanguage != _vocabularyLanguage) {
@@ -390,13 +390,13 @@ SciCallOrigin EngineState::getCurrentCallOrigin() const {
 	Selector debugSelector = xs->debugSelector;
 	int debugExportId = xs->debugExportId;
 
-	if (xs->debugLocalCallOffset != -1) {
+	if (xs->debugLocalCallOffset != NULL_SELECTOR) {
 		// if lastcall was actually a local call search back for a real call
 		Common::List<ExecStack>::const_iterator callIterator = _executionStack.end();
 		while (callIterator != _executionStack.begin()) {
 			callIterator--;
 			const ExecStack &loopCall = *callIterator;
-			if (loopCall.debugSelector != -1 || loopCall.debugExportId != -1) {
+			if (loopCall.debugSelector != NULL_SELECTOR || loopCall.debugExportId != -1) {
 				debugSelector = loopCall.debugSelector;
 				debugExportId = loopCall.debugExportId;
 				break;
@@ -405,7 +405,7 @@ SciCallOrigin EngineState::getCurrentCallOrigin() const {
 	}
 
 	if (xs->type == EXEC_STACK_TYPE_CALL) {
-		if (debugSelector != -1) {
+		if (debugSelector != NULL_SELECTOR) {
 			curMethodName = g_sci->getKernel()->getSelectorName(debugSelector);
 		} else if (debugExportId != -1) {
 			curObjectName = "";

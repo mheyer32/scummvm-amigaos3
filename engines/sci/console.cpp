@@ -489,7 +489,7 @@ bool Console::cmdGetVersion(int argc, const char **argv) {
 	debugPrintf("Resource volume version: %s\n", g_sci->getResMan()->getVolVersionDesc());
 	debugPrintf("Resource map version: %s\n", g_sci->getResMan()->getMapVersionDesc());
 	debugPrintf("Contains selector vocabulary (vocab.997): %s\n", hasVocab997 ? "yes" : "no");
-	debugPrintf("Has CantBeHere selector: %s\n", g_sci->getKernel()->_selectorCache.cantBeHere != -1 ? "yes" : "no");
+	debugPrintf("Has CantBeHere selector: %s\n", g_sci->getKernel()->_selectorCache.cantBeHere != NULL_SELECTOR ? "yes" : "no");
 
 #ifdef ENABLE_SCI32
 	if (getSciVersion() >= SCI_VERSION_2) {
@@ -3219,12 +3219,12 @@ bool Console::cmdViewObject(int argc, const char **argv) {
 			}
 
 			const Selector selector = _engine->getKernel()->findSelector(argv[i]);
-			if (selector == -1) {
+			if (selector == NULL_SELECTOR) {
 				debugPrintf("Invalid selector '%s'.\n", argv[i]);
 				break;
 			}
 
-			const int index = obj->locateVarSelector(_engine->_gamestate->_segMan, selector);
+			const int16 index = obj->locateVarSelector(_engine->_gamestate->_segMan, selector);
 			if (index == -1) {
 				debugPrintf("Selector '%s' is not valid for object %04x:%04x.\n", argv[i], PRINT_REG(addr));
 				break;

@@ -467,20 +467,20 @@ void Object::initSelectorsSci3(const SciSpan<const byte> &buf, const bool initVa
 
 	// Go through the whole thing again to get the property values
 	// and method pointers
-	int propertyCounter = 0;
-	for (int groupNr = 0; groupNr < numGroups; ++groupNr) {
+	int16 propertyCounter = 0;
+	for (uint16 groupNr = 0; groupNr < numGroups; ++groupNr) {
 		byte groupLocation = groupInfo[groupNr];
 		const SciSpan<const byte> seeker = selectorBase.subspan(groupLocation * kGroupSize * sizeof(uint16));
 
 		if (groupLocation != 0)	{
 			// This object actually has selectors belonging to this group
 			int typeMask = seeker.getUint32SEAt(0);
-			int groupBaseId = groupNr * kGroupSize;
+			uint16 groupBaseId = groupNr * kGroupSize;
 
-			for (int bit = 2; bit < kGroupSize; ++bit) {
+			for (uint16 bit = 2; bit < kGroupSize; ++bit) {
 				int value = seeker.getUint16SEAt(bit * sizeof(uint16));
 				if (typeMask & (1 << bit)) { // Property
-					_baseVars.insert({groupBaseId + bit, propertyCounter});
+					_baseVars.insert({Selector(groupBaseId + bit), propertyCounter});
 					if (initVariables) {
 						_variables[propertyCounter] = make_reg(0, value);
 					}

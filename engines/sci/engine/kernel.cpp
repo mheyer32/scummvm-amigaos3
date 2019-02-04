@@ -102,7 +102,7 @@ int Kernel::findKernelFuncPos(Common::String kernelFuncName) {
 	return -1;
 }
 
-int Kernel::findSelector(const char *selectorName) const {
+Selector Kernel::findSelector(const char *selectorName) const {
 	for (uint pos = 0; pos < _selectorNames.size(); ++pos) {
 		if (_selectorNames[pos] == selectorName)
 			return pos;
@@ -110,7 +110,7 @@ int Kernel::findSelector(const char *selectorName) const {
 
 	debugC(kDebugLevelVM, "Could not map '%s' to any selector", selectorName);
 
-	return -1;
+	return NULL_SELECTOR;
 }
 
 // used by Script patcher to figure out, if it's okay to initialize signature/patch-table
@@ -735,7 +735,7 @@ void Kernel::loadKernelNames(GameFeatures *features) {
 
 		// Some (later) SCI versions replaced CanBeHere by CantBeHere
 		// If vocab.999 exists, the kernel function is still named CanBeHere
-		if (_selectorCache.cantBeHere != -1)
+		if (_selectorCache.cantBeHere != NULL_SELECTOR)
 			_kernelNames[0x4d] = "CantBeHere";
 	}
 

@@ -1091,7 +1091,7 @@ void logBacktrace() {
 		case EXEC_STACK_TYPE_CALL: // Normal function
 			if (call.type == EXEC_STACK_TYPE_CALL)
 			con->debugPrintf(" %x: script %d - ", i, s->_segMan->getScript(call.addr.pc.getSegment())->getScriptNumber());
-			if (call.debugSelector != -1) {
+			if (call.debugSelector != NULL_SELECTOR) {
 				con->debugPrintf("%s::%s(", objname, g_sci->getKernel()->getSelectorName(call.debugSelector).c_str());
 			} else if (call.debugExportId != -1) {
 				con->debugPrintf("export %d (", call.debugExportId);

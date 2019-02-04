@@ -442,7 +442,7 @@ void GuestAdditions::patchGameSaveRestoreTorin(Script &script) const {
 	memcpy(patchPtr, SRTorinPatch, sizeof(SRTorinPatch));
 
 	const Selector newSelector = SELECTOR(new_);
-	assert(newSelector != -1);
+	assert(newSelector != NULL_SELECTOR);
 	patchPtr[1] = newSelector & 0xFF;
 	patchPtr[2] = (newSelector >> 8) & 0xFF;
 
@@ -461,7 +461,7 @@ void GuestAdditions::patchGameSaveRestorePhant2(Script &script) const {
 			continue;
 		}
 
-		int methodIndex = obj.funcSelectorPosition(SELECTOR(init));
+		int16 methodIndex = obj.funcSelectorPosition(SELECTOR(init));
 		if (methodIndex == -1) {
 			continue;
 		}

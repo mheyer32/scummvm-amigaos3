@@ -259,10 +259,12 @@ void updateInfoFlagViewVisible(Object *obj, int index, bool fromPropertyOp) {
 void writeSelector(SegManager *segMan, const reg_t &object, Selector selectorId, reg_t value) {
 	ObjVarRef address;
 
-	if ((selectorId < 0) || (selectorId > (int)g_sci->getKernel()->getSelectorNamesSize())) {
+#ifndef NDEBUG
+	if ((selectorId == NULL_SELECTOR) || (selectorId > (int)g_sci->getKernel()->getSelectorNamesSize())) {
 		const SciCallOrigin origin = g_sci->getEngineState()->getCurrentCallOrigin();
 		error("Attempt to write to invalid selector %d. Address %04x:%04x, %s", selectorId, PRINT_REG(object), origin.toString().c_str());
 	}
+#endif
 
 	if (lookupSelector(segMan, object, selectorId, &address, NULL) != kSelectorVariable) {
 		const SciCallOrigin origin = g_sci->getEngineState()->getCurrentCallOrigin();
@@ -275,7 +277,7 @@ void writeSelector(SegManager *segMan, const reg_t &object, Selector selectorId,
 #endif
 }
 
-void invokeSelector(EngineState *s, const reg_t& object, int selectorId,
+void invokeSelector(EngineState *s, const reg_t& object, Selector selectorId,
 	int k_argc, StackPtr k_argp, int argc, const reg_t *argv) {
 	int i;
 	int framesize = 2 + 1 * argc;

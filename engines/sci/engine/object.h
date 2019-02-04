@@ -236,7 +236,7 @@ public:
 			}
 		}
 		assert(!"Should not get here");
-		return -1;
+		return NULL_SELECTOR;
 	}
 
 	/**
@@ -338,8 +338,8 @@ private:
 	 * number.
 	 */
 	struct BaseVar {
-		uint16 selector;
-		uint16 propIdx;
+		Selector selector;
+		int16 propIdx;
 	};
 	typedef Common::SortedArray<BaseVar> BaseVars;
 

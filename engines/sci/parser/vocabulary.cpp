@@ -345,7 +345,7 @@ void Vocabulary::freeAltInputs() {
 bool Vocabulary::checkAltInput(Common::String &text, uint16 &cursorPos) {
 	if (_altInputs.empty())
 		return false;
-	if (SELECTOR(parseLang) == -1)
+	if (SELECTOR(parseLang) == NULL_SELECTOR)
 		return false;
 	if (readSelectorValue(g_sci->getEngineState()->_segMan, g_sci->getGameObject(), SELECTOR(parseLang)) == 1)
 		return false;

@@ -229,7 +229,7 @@ void writeSelector(SegManager *segMan, const reg_t &object, Selector selectorId,
 /**
  * Invokes a selector from an object.
  */
-void invokeSelector(EngineState *s, const reg_t &object, int selectorId,
+void invokeSelector(EngineState *s, const reg_t &object, Selector selectorId,
 	int k_argc, StackPtr k_argp, int argc = 0, const reg_t *argv = 0);
 
 #ifdef ENABLE_SCI32

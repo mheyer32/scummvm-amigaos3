@@ -11193,7 +11193,7 @@ int32 ScriptPatcher::findSignature(const SciScriptPatcherEntry *patchEntry, cons
 
 // Attention: Magic DWord is returned using platform specific byte order. This is done on purpose for performance.
 void ScriptPatcher::calculateMagicDWordAndVerify(const char *signatureDescription, const uint16 *signatureData, bool magicDWordIncluded, uint32 &calculatedMagicDWord, int &calculatedMagicDWordOffset) {
-	Selector curSelector = -1;
+	Selector curSelector = NULL_SELECTOR;
 	int magicOffset;
 	byte magicDWord[4];
 	int magicDWordLeft = 0;
@@ -11247,7 +11247,7 @@ void ScriptPatcher::calculateMagicDWordAndVerify(const char *signatureDescriptio
 			}
 			case SIG_CODE_SELECTOR16: {
 				curSelector = _selectorIdTable[curValue];
-				if (curSelector == -1) {
+				if (curSelector == NULL_SELECTOR) {
 					curSelector = g_sci->getKernel()->findSelector(selectorNameTable[curValue]);
 					_selectorIdTable[curValue] = curSelector;
 				}
@@ -11281,10 +11281,10 @@ void ScriptPatcher::calculateMagicDWordAndVerify(const char *signatureDescriptio
 		case SIG_CODE_SELECTOR8: {
 			if (curCommand == SIG_CODE_SELECTOR8) {
 				curSelector = _selectorIdTable[curValue];
-				if (curSelector == -1) {
+				if (curSelector == NULL_SELECTOR) {
 					curSelector = g_sci->getKernel()->findSelector(selectorNameTable[curValue]);
 					_selectorIdTable[curValue] = curSelector;
-					if (curSelector != -1) {
+					if (curSelector != NULL_SELECTOR) {
 						if (curSelector & 0xFF00)
 							error("Script-Patcher: 8 bit selector required, game uses 16 bit selector\nFaulty patch: '%s'", signatureDescription);
 					}

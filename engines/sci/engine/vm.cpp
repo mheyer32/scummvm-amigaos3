@@ -237,7 +237,7 @@ ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct, StackP
 
 	assert(argp[0].toUint16() == argc); // The first argument is argc
 	ExecStack xstack(calling_obj, calling_obj, sp, argc, argp,
-						seg, make_reg32(seg, exportAddr), -1, -1, -1, pubfunct, -1,
+						seg, make_reg32(seg, exportAddr), NULL_SELECTOR, -1, -1, pubfunct, -1,
 						s->_executionStack.size() - 1, EXEC_STACK_TYPE_CALL);
 	s->_executionStack.push_back(xstack);
 	return &(s->_executionStack.back());

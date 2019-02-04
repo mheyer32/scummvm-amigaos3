@@ -255,23 +255,23 @@ void Kernel::findSpecificSelectors(Common::StringArray &selectorNames) {
 			if (actorClass) {
 				// Find the xLast and yLast selectors, used in kDoBresen
 
-				int offset = (getSciVersion() < SCI_VERSION_1_1) ? 3 : 0;
+				uint16 offset = (getSciVersion() < SCI_VERSION_1_1) ? 3 : 0;
 #ifdef ENABLE_SCI32
 				if (getSciVersion() >= SCI_VERSION_2) {
 					offset += 12;
 				}
 #endif
 				// xLast and yLast always come between illegalBits and xStep
-				int illegalBitsSelectorPos = actorClass->locateVarSelector(_segMan, 15 + offset);	// illegalBits
-				int xStepSelectorPos = actorClass->locateVarSelector(_segMan, 51 + offset);	// xStep
+				int16 illegalBitsSelectorPos = actorClass->locateVarSelector(_segMan, 15 + offset);	// illegalBits
+				int16 xStepSelectorPos = actorClass->locateVarSelector(_segMan, 51 + offset);	// xStep
 				if (xStepSelectorPos - illegalBitsSelectorPos != 3) {
 					error("illegalBits and xStep selectors aren't found in "
 							"known locations. illegalBits = %d, xStep = %d",
 							illegalBitsSelectorPos, xStepSelectorPos);
 				}
 
-				int xLastSelectorPos = actorClass->getVarSelector(illegalBitsSelectorPos + 1);
-				int yLastSelectorPos = actorClass->getVarSelector(illegalBitsSelectorPos + 2);
+				Selector xLastSelectorPos = actorClass->getVarSelector(illegalBitsSelectorPos + 1);
+				Selector yLastSelectorPos = actorClass->getVarSelector(illegalBitsSelectorPos + 2);
 
 				if (selectorNames.size() < (uint32)yLastSelectorPos + 1)
 					selectorNames.resize((uint32)yLastSelectorPos + 1);

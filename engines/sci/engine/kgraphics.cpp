@@ -898,7 +898,7 @@ void _k_GenericDrawControl(EngineState *s, reg_t controlObject, bool hilite) {
 
 		maxChars = readSelectorValue(s->_segMan, controlObject, SELECTOR(x)); // max chars per entry
 		cursorOffset = readSelectorValue(s->_segMan, controlObject, SELECTOR(cursor));
-		if (SELECTOR(topString) != -1) {
+		if (SELECTOR(topString) != NULL_SELECTOR) {
 			// Games from early SCI1 onwards use topString
 			upperOffset = readSelectorValue(s->_segMan, controlObject, SELECTOR(topString));
 		} else {

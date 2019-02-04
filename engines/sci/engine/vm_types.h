@@ -237,12 +237,9 @@ extern const reg_t SIGNAL_REG;
 extern const reg_t TRUE_REG;
 
 // Selector ID
-typedef int Selector;
+typedef uint16 Selector;
 
-enum {
-	/** Special 'selector' value, used when calling add_exec_stack_entry. */
-	NULL_SELECTOR = -1
-};
+static const Selector NULL_SELECTOR = -1;
 
 // Opcode formats
 enum opcode_format : byte {

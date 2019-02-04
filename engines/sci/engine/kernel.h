@@ -168,7 +168,7 @@ public:
 	 * @param selectorName Name of the selector to look up
 	 * @return The appropriate selector ID, or -1 on error
 	 */
-	int findSelector(const char *selectorName) const;
+	Selector findSelector(const char *selectorName) const;
 
 	bool selectorNamesAvailable();
 

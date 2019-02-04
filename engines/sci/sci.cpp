@@ -896,9 +896,9 @@ void SciEngine::setLauncherLanguage() {
 		}
 
 		if (languageToSet) {
-			if (SELECTOR(printLang) != -1) // set text language
+			if (SELECTOR(printLang) != NULL_SELECTOR) // set text language
 				writeSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(printLang), languageToSet);
-			if (SELECTOR(parseLang) != -1) // and set parser language as well
+			if (SELECTOR(parseLang) != NULL_SELECTOR) // and set parser language as well
 				writeSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(parseLang), languageToSet);
 		}
 	}

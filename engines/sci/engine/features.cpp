@@ -155,7 +155,7 @@ SciVersion GameFeatures::detectDoSoundType() {
 		} else if (getSciVersion() >= SCI_VERSION_2) {
 			_doSoundType = SCI_VERSION_2;
 #endif
-		} else if (SELECTOR(nodePtr) == -1) {
+		} else if (SELECTOR(nodePtr) == NULL_SELECTOR) {
 			// No nodePtr selector, so this game is definitely using newer
 			// SCI0 sound code (i.e. SCI_VERSION_0_LATE)
 			_doSoundType = SCI_VERSION_0_LATE;
@@ -228,7 +228,7 @@ SciVersion GameFeatures::detectSetCursorType() {
 
 bool GameFeatures::autoDetectLofsType(Common::String gameSuperClassName, int methodNum) {
 	// Look up the script address
-	reg_t addr = getDetectionAddr(gameSuperClassName.c_str(), -1, methodNum);
+	reg_t addr = getDetectionAddr(gameSuperClassName.c_str(), NULL_SELECTOR, methodNum);
 
 	if (!addr.getSegment())
 		return false;
@@ -382,7 +382,7 @@ SciVersion GameFeatures::detectGfxFunctionsType() {
 			bool searchRoomObj = false;
 			reg_t rmObjAddr = _segMan->findObjectByName("Rm");
 
-			if (SELECTOR(overlay) != -1) {
+			if (SELECTOR(overlay) != NULL_SELECTOR) {
 				// The game has an overlay selector, check how it calls kDrawPic
 				// to determine the graphics functions type used
 				if (lookupSelector(_segMan, rmObjAddr, SELECTOR(overlay), NULL, NULL) == kSelectorMethod) {
@@ -392,7 +392,7 @@ SciVersion GameFeatures::detectGfxFunctionsType() {
 						// Try detecting the graphics function types from the
 						// existence of the motionCue selector (which is a bit
 						// of a hack)
-						if (_kernel->findSelector("motionCue") != -1)
+						if (_kernel->findSelector("motionCue") != NULL_SELECTOR)
 							_gfxFunctionsType = SCI_VERSION_0_LATE;
 						else
 							_gfxFunctionsType = SCI_VERSION_0_EARLY;
