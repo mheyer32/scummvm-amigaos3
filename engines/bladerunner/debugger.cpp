@@ -27,6 +27,7 @@
 #include "bladerunner/boundingbox.h"
 #include "bladerunner/combat.h"
 #include "bladerunner/font.h"
+#include "bladerunner/fog.h"
 #include "bladerunner/game_constants.h"
 #include "bladerunner/game_flags.h"
 #include "bladerunner/game_info.h"
@@ -36,9 +37,12 @@
 #include "bladerunner/savefile.h"
 #include "bladerunner/scene.h"
 #include "bladerunner/scene_objects.h"
+#include "bladerunner/screen_effects.h"
 #include "bladerunner/settings.h"
 #include "bladerunner/set.h"
+#include "bladerunner/set_effects.h"
 #include "bladerunner/text_resource.h"
+#include "bladerunner/time.h"
 #include "bladerunner/vector.h"
 #include "bladerunner/view.h"
 #include "bladerunner/vqa_decoder.h"
@@ -56,10 +60,18 @@ namespace BladeRunner {
 Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	_vm = vm;
 
-	_viewSceneObjects = false;
+	_isDebuggerOverlay = false;
+
 	_viewActorsOnly = false;
+	_viewLights = false;
+	_viewFogs = false;
+	_viewSceneObjects = false;
+	_viewScreenEffects = false;
 	_viewObstacles = false;
+	_viewRegions = false;
 	_viewUI = false;
+	_viewWaypoints = false;
+	_viewWalkboxes = false;
 	_viewZBuffer = false;
 
 	registerCmd("anim", WRAP_METHOD(Debugger, cmdAnimation));
@@ -72,6 +84,8 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("scene", WRAP_METHOD(Debugger, cmdScene));
 	registerCmd("var", WRAP_METHOD(Debugger, cmdVariable));
 	registerCmd("clue", WRAP_METHOD(Debugger, cmdClue));
+	registerCmd("timer", WRAP_METHOD(Debugger, cmdTimer));
+	registerCmd("friend", WRAP_METHOD(Debugger, cmdFriend));
 	registerCmd("load", WRAP_METHOD(Debugger, cmdLoad));
 	registerCmd("save", WRAP_METHOD(Debugger, cmdSave));
 }
@@ -101,7 +115,7 @@ bool Debugger::cmdAnimation(int argc, const char **argv) {
 	if (argc == 3) {
 		int animationMode = atoi(argv[2]);
 		debugPrintf("actorAnimationMode(%i) = %i\n", actorId, animationMode);
-		actor->changeAnimationMode(animationMode);
+		actor->changeAnimationMode(animationMode, true);
 		return false;
 	}
 
@@ -111,37 +125,72 @@ bool Debugger::cmdAnimation(int argc, const char **argv) {
 
 bool Debugger::cmdDraw(int argc, const char **argv) {
 	if (argc != 2) {
-		debugPrintf("Enables debug rendering of scene objects, obstacles, ui elements, zbuffer or disables debug rendering.\n");
-		debugPrintf("Usage: %s (obj | actors | obstacles | ui | zbuf | reset)\n", argv[0]);
+		debugPrintf("Enables debug rendering of actors, screen effect, fogs, lights, scene objects, obstacles, regsions, ui elements, walk boxes, waypoints, zbuffer or disables debug rendering.\n");
+		debugPrintf("Usage: %s (act | eff | fog | lit | obj | obstacles | reg | ui | walk | way | zbuf | reset)\n", argv[0]);
 		return true;
 	}
 
 	Common::String arg = argv[1];
-	if (arg == "obj") {
-		_viewSceneObjects = !_viewSceneObjects;
-		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
-	} else if (arg == "actors") {
+	if (arg == "act") {
 		_viewSceneObjects = !_viewSceneObjects;
 		_viewActorsOnly = _viewSceneObjects;
-		debugPrintf("Drawing scene actors = %i\n", _viewSceneObjects);
+		debugPrintf("Drawing actors = %i\n", _viewSceneObjects);
+	} else if (arg == "eff") {
+		_viewScreenEffects = !_viewScreenEffects;
+		debugPrintf("Drawing screen effects = %i\n", _viewScreenEffects);
+	} else if (arg == "fog") {
+		_viewFogs = !_viewFogs;
+		debugPrintf("Drawing fogs = %i\n", _viewFogs);
+	} else if (arg == "lit") {
+		_viewLights = !_viewLights;
+		debugPrintf("Drawing lights = %i\n", _viewLights);
+	} else if (arg == "reg") {
+		_viewRegions = !_viewRegions;
+		debugPrintf("Drawing regions = %i\n", _viewRegions);
+	}else if (arg == "obj") {
+		_viewSceneObjects = !_viewSceneObjects;
+		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
 	} else if (arg == "obstacles") {
 		_viewObstacles = !_viewObstacles;
 		debugPrintf("Drawing obstacles = %i\n", _viewObstacles);
 	} else if (arg == "ui") {
 		_viewUI = !_viewUI;
 		debugPrintf("Drawing UI elements = %i\n", _viewUI);
+	} else if (arg == "way") {
+		_viewWaypoints = !_viewWaypoints;
+		debugPrintf("Drawing waypoints = %i\n", _viewWaypoints);
+	} else if (arg == "walk") {
+		_viewWalkboxes = !_viewWalkboxes;
+		debugPrintf("Drawing walk boxes = %i\n", _viewWalkboxes);
 	} else if (arg == "zbuf") {
 		_viewZBuffer = !_viewZBuffer;
 		debugPrintf("Drawing Z buffer = %i\n", _viewZBuffer);
 	} else if (arg == "reset") {
+		_viewActorsOnly = false;
+		_viewScreenEffects = false;
+		_viewFogs = false;
+		_viewLights = false;
+		_viewObstacles = false;
+		_viewRegions = false;
 		_viewSceneObjects = false;
 		_viewUI = false;
+		_viewWaypoints = false;
+		_viewWalkboxes = false;
 		_viewZBuffer = false;
+
+		debugPrintf("Drawing screen effects = %i\n", _viewScreenEffects);
+		debugPrintf("Drawing fogs = %i\n", _viewFogs);
+		debugPrintf("Drawing lights = %i\n", _viewLights);
+		debugPrintf("Drawing obstacles = %i\n", _viewObstacles);
+		debugPrintf("Drawing regions = %i\n", _viewRegions);
 		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
 		debugPrintf("Drawing UI elements = %i\n", _viewUI);
+		debugPrintf("Drawing waypoints = %i\n", _viewWaypoints);
+		debugPrintf("Drawing walkboxes = %i\n", _viewWalkboxes);
 		debugPrintf("Drawing Z buffer = %i\n", _viewZBuffer);
 	}
 
+	_isDebuggerOverlay = _viewSceneObjects | _viewScreenEffects | _viewRegions | _viewLights | _viewFogs | _viewWaypoints | _viewWalkboxes;
 	return true;
 }
 
@@ -316,7 +365,7 @@ const struct SceneList {
 	{ 1, "CT05", 28, 17 },   { 1, "CT06", 29, 18 },  { 1, "CT07", 30, 19 },   { 1, "CT12", 4, 24 },
 	{ 1, "MA01", 49, 48 },   { 1, "MA02", 10, 49 },  { 1, "MA04", 10, 50 },   { 1, "MA04", 50, 50 },
 	{ 1, "MA05", 51, 51 },   { 1, "MA06", 52, 52 },  { 1, "MA07", 53, 53 },   { 1, "PS01", 61, 65 },
-	{ 1, "PS02", 62, 66 },   { 1, "PS03", 63, 67 },  { 1, "PS04", 64, 68 },   { 1, "PS05", 15, 59 },
+	{ 1, "PS02", 62, 66 },   { 1, "PS03", 63, 67 },  { 1, "PS04", 64, 68 },   { 1, "PS05", 15, 69 },
 	{ 1, "PS06", 65, 70 },   { 1, "PS07", 66, 71 },  { 1, "PS09", 67, 72 },   { 1, "PS10", 14, 73 },
 	{ 1, "PS11", 14, 74 },   { 1, "PS12", 14, 75 },  { 1, "PS13", 14, 76 },   { 1, "PS14", 68, 77 },
 	{ 1, "PS15", 101, 119 }, { 1, "RC01", 69, 78 },  { 1, "RC02", 16, 79 },   { 1, "RC51", 16, 107 },
@@ -324,26 +373,26 @@ const struct SceneList {
 	{ 2, "AR01", 0, 0 },     { 2, "AR02", 0, 1 },    { 2, "BB01", 20, 2 },    { 2, "BB02", 1, 3 },
 	{ 2, "BB03", 21, 4 },    { 2, "BB04", 1, 5 },    { 2, "BB05", 22, 6 },    { 2, "BB06", 1, 7 },
 	{ 2, "BB06", 2, 7 },     { 2, "BB07", 2, 8 },    { 2, "BB07", 3, 8 },     { 2, "BB08", 23, 9 },
-	{ 2, "BB10", 25, 11 },   { 2, "BB11", 26, 12 },  { 2, "BB12", 102, 120 }, { 2, "BB51", 1, 104 },
-	{ 2, "CT01", 4, 13 },    { 2, "CT02", 27, 14 },  { 2, "CT03", 5, 15 },    { 2, "CT04", 5, 16 },
-	{ 2, "CT05", 28, 17 },   { 2, "CT06", 29, 18 },  { 2, "CT08", 6, 20 },    { 2, "CT09", 31, 21 },
-	{ 2, "CT10", 32, 22 },   { 2, "CT11", 33, 23 },  { 2, "CT12", 4, 24 },    { 2, "CT51", 6, 105 },
-	{ 2, "DR01", 7, 25 },    { 2, "DR02", 7, 26 },   { 2, "DR03", 34, 27 },   { 2, "DR04", 7, 28 },
-	{ 2, "DR05", 35, 29 },   { 2, "DR06", 36, 30 },  { 2, "HC01", 8, 31 },    { 2, "HC02", 8, 32 },
-	{ 2, "HC03", 8, 33 },    { 2, "HC04", 8, 106 },  { 2, "HF01", 37, 34 },   { 2, "HF02", 38, 35 },
-	{ 2, "HF03", 39, 36 },   { 2, "HF04", 40, 37 },  { 2, "HF05", 41, 38 },   { 2, "HF06", 42, 39 },
-	{ 2, "MA01", 49, 48 },   { 2, "MA02", 10, 49 },  { 2, "MA04", 10, 50 },   { 2, "MA04", 50, 50 },
-	{ 2, "MA05", 51, 51 },   { 2, "MA06", 52, 52 },  { 2, "MA07", 53, 53 },   { 2, "NR01", 54, 54 },
-	{ 2, "NR02", 11, 55 },   { 2, "NR03", 55, 56 },  { 2, "NR04", 12, 57 },   { 2, "NR05", 13, 58 },
-	{ 2, "NR06", 56, 59 },   { 2, "NR07", 57, 60 },  { 2, "NR08", 13, 61 },   { 2, "NR09", 58, 62 },
-	{ 2, "NR10", 59, 63 },   { 2, "NR11", 60, 64 },  { 2, "PS01", 61, 65 },   { 2, "PS02", 62, 66 },
-	{ 2, "PS03", 63, 67 },   { 2, "PS04", 64, 68 },  { 2, "PS05", 15, 59 },   { 2, "PS06", 65, 70 },
-	{ 2, "PS07", 66, 71 },   { 2, "PS09", 67, 72 },  { 2, "PS10", 14, 73 },   { 2, "PS11", 14, 74 },
-	{ 2, "PS12", 14, 75 },   { 2, "PS13", 14, 76 },  { 2, "PS14", 68, 77 },   { 2, "PS15", 101, 119 },
-	{ 2, "RC01", 69, 78 },   { 2, "RC03", 70, 80 },  { 2, "RC04", 71, 81 },   { 2, "TB02", 17, 82 },
-	{ 2, "TB05", 72, 84 },   { 2, "TB06", 73, 85 },  { 2, "TB07", 18, 108 },  { 2, "UG01", 74, 86 },
-	{ 2, "UG02", 75, 87 },   { 2, "UG03", 76, 88 },  { 2, "UG04", 77, 89 },   { 2, "UG06", 79, 91 },
-	{ 2, "UG10", 83, 95 },
+	{ 2, "BB09", 24, 10 },   { 2, "BB10", 25, 11 },  { 2, "BB11", 26, 12 },   { 2, "BB12", 102, 120 },
+	{ 2, "BB51", 1, 104 },   { 2, "CT01", 4, 13 },   { 2, "CT02", 27, 14 },   { 2, "CT03", 5, 15 },
+	{ 2, "CT04", 5, 16 },    { 2, "CT05", 28, 17 },  { 2, "CT06", 29, 18 },   { 2, "CT08", 6, 20 },
+	{ 2, "CT09", 31, 21 },   { 2, "CT10", 32, 22 },  { 2, "CT11", 33, 23 },   { 2, "CT12", 4, 24 },
+	{ 2, "CT51", 6, 105 },   { 2, "DR01", 7, 25 },   { 2, "DR02", 7, 26 },    { 2, "DR03", 34, 27 },
+	{ 2, "DR04", 7, 28 },    { 2, "DR05", 35, 29 },  { 2, "DR06", 36, 30 },   { 2, "HC01", 8, 31 },
+	{ 2, "HC02", 8, 32 },    { 2, "HC03", 8, 33 },   { 2, "HC04", 8, 106 },   { 2, "HF01", 37, 34 },
+	{ 2, "HF02", 38, 35 },   { 2, "HF03", 39, 36 },  { 2, "HF04", 40, 37 },   { 2, "HF05", 41, 38 },
+	{ 2, "HF06", 42, 39 },   { 2, "MA01", 49, 48 },  { 2, "MA02", 10, 49 },   { 2, "MA04", 10, 50 },
+	{ 2, "MA04", 50, 50 },   { 2, "MA05", 51, 51 },  { 2, "MA06", 52, 52 },   { 2, "MA07", 53, 53 },
+	{ 2, "NR01", 54, 54 },   { 2, "NR02", 11, 55 },  { 2, "NR03", 55, 56 },   { 2, "NR04", 12, 57 },
+	{ 2, "NR05", 13, 58 },   { 2, "NR06", 56, 59 },  { 2, "NR07", 57, 60 },   { 2, "NR08", 13, 61 },
+	{ 2, "NR09", 58, 62 },   { 2, "NR10", 59, 63 },  { 2, "NR11", 60, 64 },   { 2, "PS01", 61, 65 },
+	{ 2, "PS02", 62, 66 },   { 2, "PS03", 63, 67 },  { 2, "PS04", 64, 68 },   { 2, "PS05", 15, 69 },
+	{ 2, "PS06", 65, 70 },   { 2, "PS07", 66, 71 },  { 2, "PS09", 67, 72 },   { 2, "PS10", 14, 73 },
+	{ 2, "PS11", 14, 74 },   { 2, "PS12", 14, 75 },  { 2, "PS13", 14, 76 },   { 2, "PS14", 68, 77 },
+	{ 2, "PS15", 101, 119 }, { 2, "RC01", 69, 78 },  { 2, "RC03", 70, 80 },   { 2, "RC04", 71, 81 },
+	{ 2, "TB02", 17, 82 },   { 2, "TB05", 72, 84 },  { 2, "TB06", 73, 85 },   { 2, "TB07", 18, 108 },
+	{ 2, "UG01", 74, 86 },   { 2, "UG02", 75, 87 },  { 2, "UG03", 76, 88 },   { 2, "UG04", 77, 89 },
+	{ 2, "UG06", 79, 91 },   { 2, "UG10", 83, 95 },
 
 	{ 4, "AR01", 0, 0 },     { 4, "AR02", 0, 1 },    { 4, "BB01", 20, 2 },    { 4, "BB02", 1, 3 },
 	{ 4, "BB03", 21, 4 },    { 4, "BB04", 1, 5 },    { 4, "BB51", 1, 104 },   { 4, "CT01", 4, 13 },
@@ -459,9 +508,16 @@ bool Debugger::cmdScene(int argc, const char **argv) {
 		return false;
 	}
 
+	int chapterId = _vm->_settings->getChapter();
+	int chapterIdNormalized = chapterId;
+
+	if (chapterId == 3 || chapterId == 5) {
+		chapterIdNormalized = chapterId - 1;
+	}
+
 	uint i;
 	for (i = 0; sceneList[i].chapter != 0; i++) {
-		if (sceneList[i].chapter == _vm->_settings->getChapter() && sceneList[i].set == _vm->_scene->getSetId()
+		if (sceneList[i].chapter == chapterIdNormalized && sceneList[i].set == _vm->_scene->getSetId()
 				&& sceneList[i].scene == _vm->_scene->getSceneId())
 			break;
 	}
@@ -527,6 +583,89 @@ bool Debugger::cmdClue(int argc, const char **argv) {
 	return true;
 }
 
+bool Debugger::cmdTimer(int argc, const char **argv) {
+	if (argc != 2 && argc != 4) {
+		debugPrintf("Get or changes timers for an actor.\n");
+		debugPrintf("Usage: %s <actorId> [<timer> <value>]\n", argv[0]);
+		return true;
+	}
+
+	int actorId = atoi(argv[1]);
+
+	Actor *actor = nullptr;
+	if ((actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) || (actorId == kActorVoiceOver)) {
+		actor = _vm->_actors[actorId];
+	}
+
+	if (actor == nullptr) {
+		debugPrintf("Unknown actor %i\n", actorId);
+		return true;
+	}
+
+	if (argc == 4) {
+		int timer = atoi(argv[2]);
+		int value = atoi(argv[3]);
+
+		if (timer < 0 || timer > 6) {
+			debugPrintf("Timer must be [0..6]");
+			return true;
+		}
+
+		if (value == 0) {
+			actor->timerReset(timer);
+		} else {
+			actor->timerStart(timer, value);
+		}
+	}
+
+	for (int i = 0; i < 7; ++i) {
+		debugPrintf("actorTimer(%i, %i) = %i ms\n", actorId, i, actor->timerLeft(i));
+	}
+
+	return true;
+}
+
+bool Debugger::cmdFriend(int argc, const char **argv) {
+	if (argc != 3 && argc != 4) {
+		debugPrintf("Get or changes friendliness for an actor towards another actor.\n");
+		debugPrintf("Usage: %s <actorId> <otherActorId> [<value>]\n", argv[0]);
+		return true;
+	}
+
+	int actorId = atoi(argv[1]);
+
+	Actor *actor = nullptr;
+	if (actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) {
+		actor = _vm->_actors[actorId];
+	}
+
+	if (actor == nullptr) {
+		debugPrintf("Unknown actor %i\n", actorId);
+		return true;
+	}
+
+	int otherActorId = atoi(argv[2]);
+
+	if (otherActorId < 0 && otherActorId >= (int)_vm->_gameInfo->getActorCount()) {
+		debugPrintf("Unknown actor %i\n", otherActorId);
+	}
+
+	if (argc == 4) {
+		int value = atoi(argv[3]);
+
+		if (value < 0 || value > 100) {
+			debugPrintf("Value must be [0..100]");
+			return true;
+		}
+
+		actor->setFriendlinessToOther(otherActorId, value);
+	}
+
+	debugPrintf("actorFriendliness(%i, %i) = %i\n", actorId, otherActorId, actor->getFriendlinessToOther(otherActorId));
+
+	return true;
+}
+
 bool Debugger::cmdLoad(int argc, const char **argv) {
 	if (argc != 2) {
 		debugPrintf("Loads a save game from original format.\n");
@@ -568,7 +707,9 @@ bool Debugger::cmdSave(int argc, const char **argv) {
 
 	Graphics::Surface thumbnail = _vm->generateThumbnail();
 
+	_vm->_time->pause();
 	_vm->saveGame(*saveFile, thumbnail);
+	_vm->_time->resume();
 
 	saveFile->finalize();
 
@@ -576,7 +717,17 @@ bool Debugger::cmdSave(int argc, const char **argv) {
 
 	delete saveFile;
 
-	return true;
+	return false;
+}
+
+void Debugger::drawDebuggerOverlay() {
+	if (_viewSceneObjects) drawSceneObjects();
+	if (_viewScreenEffects) drawScreenEffects();
+	if (_viewLights) drawLights();
+	if (_viewFogs) drawFogs();
+	if (_viewRegions) drawRegions();
+	if (_viewWaypoints) drawWaypoints();
+	if (_viewWalkboxes) drawWalkboxes();
 }
 
 void Debugger::drawBBox(Vector3 start, Vector3 end, View *view, Graphics::Surface *surface, int color) {
@@ -653,36 +804,9 @@ void Debugger::drawSceneObjects() {
 			}
 		}
 	}
+}
 
-	if (_viewActorsOnly)
-		return;
-
-	//draw regions
-	for (int i = 0; i < 10; i++) {
-		Regions::Region *region = &_vm->_scene->_regions->_regions[i];
-		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, 0x001F); // 00000 00000 11111
-	}
-
-	for (int i = 0; i < 10; i++) {
-		Regions::Region *region = &_vm->_scene->_exits->_regions[i];
-		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, 0x7FFF); // 11111 11111 11111
-	}
-
-	//draw walkboxes
-	for (int i = 0; i < _vm->_scene->_set->_walkboxCount; i++) {
-		Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
-
-		for (int j = 0; j < walkbox->vertexCount; j++) {
-			Vector3 start = _vm->_view->calculateScreenPosition(walkbox->vertices[j]);
-			Vector3 end = _vm->_view->calculateScreenPosition(walkbox->vertices[(j + 1) % walkbox->vertexCount]);
-			_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, 0x7FE0); // 11111 11111 00000
-			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (start + end));
-			_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, 0x7FE0); // 11111 11111 00000
-		}
-	}
-
+void Debugger::drawLights() {
 	// draw lights
 	for (int i = 0; i < (int)_vm->_lights->_lights.size(); i++) {
 		Light *light = _vm->_lights->_lights[i];
@@ -709,11 +833,67 @@ void Debugger::drawSceneObjects() {
 
 		Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
 		Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
+
 		_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
+
 		_vm->_mainFont->drawColor(light->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
 	}
+}
 
-	//draw waypoints
+void Debugger::drawFogs() {
+	for (Fog *fog = _vm->_scene->_set->_effects->_fogs; fog != nullptr; fog = fog->_next) {
+
+		// Matrix4x3 m = fog->_matrix;
+		// m = invertMatrix(m);
+		Matrix4x3 m = fog->_inverted;
+
+		//todo do this properly
+		Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
+		float t = posOrigin.y;
+		posOrigin.y = posOrigin.z;
+		posOrigin.z = -t;
+
+		Vector3 posTarget = m * Vector3(0.0f, 0.0f, -100.0f);
+		t = posTarget.y;
+		posTarget.y = posTarget.z;
+		posTarget.z = -t;
+
+		Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
+		int colorR = (fog->_fogColor.r * 31.0f);
+		int colorG = (fog->_fogColor.g * 31.0f);
+		int colorB = (fog->_fogColor.b * 31.0f);
+		int color = (colorR << 10) + (colorG << 5) + colorB;
+
+		drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
+
+		Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
+		Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
+
+		// TODO: draw line only for cone fogs, draw boxes or circles for the other types
+		_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
+
+		_vm->_mainFont->drawColor(fog->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
+	}
+}
+
+void Debugger::drawRegions() {
+	//draw regions
+	for (int i = 0; i < 10; i++) {
+		Regions::Region *region = &_vm->_scene->_regions->_regions[i];
+		if (!region->present) continue;
+		_vm->_surfaceFront.frameRect(region->rectangle, 0x001F); // 00000 00000 11111
+	}
+
+	//draw exits
+	for (int i = 0; i < 10; i++) {
+		Regions::Region *region = &_vm->_scene->_exits->_regions[i];
+		if (!region->present) continue;
+		_vm->_surfaceFront.frameRect(region->rectangle, 0x7FFF); // 11111 11111 11111
+	}
+}
+
+void Debugger::drawWaypoints() {
+	//draw world waypoints
 	for (int i = 0; i < _vm->_waypoints->_count; i++) {
 		Waypoints::Waypoint *waypoint = &_vm->_waypoints->_waypoints[i];
 		if(waypoint->setId != _vm->_scene->getSetId()) {
@@ -760,11 +940,27 @@ void Debugger::drawSceneObjects() {
 		sprintf(fleeText, "flee %i", i);
 		_vm->_mainFont->drawColor(fleeText, _vm->_surfaceFront, spos.x, spos.y, color);
 	}
+}
 
-#if 0
+void Debugger::drawWalkboxes() {
+	//draw walkboxes
+	for (int i = 0; i < _vm->_scene->_set->_walkboxCount; i++) {
+		Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
+
+		for (int j = 0; j < walkbox->vertexCount; j++) {
+			Vector3 start = _vm->_view->calculateScreenPosition(walkbox->vertices[j]);
+			Vector3 end = _vm->_view->calculateScreenPosition(walkbox->vertices[(j + 1) % walkbox->vertexCount]);
+			_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, 0x7FE0); // 11111 11111 00000
+			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (start + end));
+			_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, 0x7FE0); // 11111 11111 00000
+		}
+	}
+}
+
+void Debugger::drawScreenEffects() {
 	//draw aesc
-	for (uint i = 0; i < _screenEffects->_entries.size(); i++) {
-		ScreenEffects::Entry &entry = _screenEffects->_entries[i];
+	for (uint i = 0; i < _vm->_screenEffects->_entries.size(); i++) {
+		ScreenEffects::Entry &entry = _vm->_screenEffects->_entries[i];
 		int j = 0;
 		for (int y = 0; y < entry.height; y++) {
 			for (int x = 0; x < entry.width; x++) {
@@ -779,11 +975,11 @@ void Debugger::drawSceneObjects() {
 					CLIP(color.r * bladeToScummVmConstant, 0, 255),
 					CLIP(color.g * bladeToScummVmConstant, 0, 255),
 					CLIP(color.b * bladeToScummVmConstant, 0, 255));
-				_surfaceFront.fillRect(r, color555);
+				_vm->_surfaceFront.fillRect(r, color555);
 			}
 		}
 	}
-#endif
 }
+
 
 } // End of namespace BladeRunner

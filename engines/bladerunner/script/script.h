@@ -80,7 +80,7 @@ protected:
 	void Actor_Set_Flag_Damage_Anim_If_Moving(int actorId, bool value);
 	bool Actor_Query_Flag_Damage_Anim_If_Moving(int actorId);
 	void Actor_Combat_AI_Hit_Attempt(int actorId);
-	void Non_Player_Actor_Combat_Mode_On(int actorId, int initialState, bool rangedAttack, int enemyId, int waypointType, int animationModeCombatIdle, int animationModeCombatWalk, int animationModeCombatRun, int fleeRatio, int coverRatio, int actionRatio, int damage, int range, bool unstoppable);
+	void Non_Player_Actor_Combat_Mode_On(int actorId, int initialState, bool rangedAttack, int enemyId, int waypointType, int animationModeCombatIdle, int animationModeCombatWalk, int animationModeCombatRun, int fleeRatio, int coverRatio, int attackRatio, int damage, int range, bool unstoppable);
 	void Non_Player_Actor_Combat_Mode_Off(int actorId);
 	void Actor_Set_Health(int actorId, int hp, int maxHp);
 	void Actor_Set_Targetable(int actorId, bool targetable);
@@ -103,13 +103,13 @@ protected:
 	int Slice_Animation_Query_Number_Of_Frames(int animationId);
 	void Actor_Change_Animation_Mode(int actorId, int animationMode);
 	int Actor_Query_Animation_Mode(int actorId);
-	bool Loop_Actor_Walk_To_Actor(int actorId, int otherActorId, int distance, bool interruptible, bool run);
-	bool Loop_Actor_Walk_To_Item(int actorId, int itemId, int destinationOffset, bool interruptible, bool run);
-	bool Loop_Actor_Walk_To_Scene_Object(int actorId, const char *objectName, int distance, bool interruptible, bool run);
-	bool Loop_Actor_Walk_To_Waypoint(int actorId, int waypointId, int destinationOffset, bool interruptible, bool run);
-	bool Loop_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int destinationOffset, bool interruptible, bool run, int a7);
-	void Async_Actor_Walk_To_Waypoint(int actorId, int waypointId, int destinationOffset, bool run);
-	void Async_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int destinationOffset, bool run);
+	bool Loop_Actor_Walk_To_Actor(int actorId, int otherActorId, int proximity, bool interruptible, bool run);
+	bool Loop_Actor_Walk_To_Item(int actorId, int itemId, int proximity, bool interruptible, bool run);
+	bool Loop_Actor_Walk_To_Scene_Object(int actorId, const char *objectName, int proximity, bool interruptible, bool run);
+	bool Loop_Actor_Walk_To_Waypoint(int actorId, int waypointId, int proximity, bool interruptible, bool run);
+	bool Loop_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int proximity, bool interruptible, bool run, bool a7);
+	void Async_Actor_Walk_To_Waypoint(int actorId, int waypointId, int proximity, bool run);
+	void Async_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int proximity, bool run);
 	void Actor_Force_Stop_Walking(int actorId);
 	void Loop_Actor_Travel_Stairs(int actorId, int stepCount, bool up, int animationModeEnd);
 	void Loop_Actor_Travel_Ladder(int actorId, int stepCount, bool up, int animationModeEnd);
@@ -242,7 +242,7 @@ protected:
 	void Assign_Player_Gun_Miss_Sounds(int ammoType, int soundId1, int soundId2, int soundId3);
 	void Disable_Shadows(int animationsIdsList[], int listSize);
 	bool Query_System_Currently_Loading_Game();
-	void Actor_Retired_Here(int actorId, int width, int height, int retired, int retiredByActorId);
+	void Actor_Retired_Here(int actorId, int width, int height, bool retired, int retiredByActorId);
 	void Clickable_Object(const char *objectName);
 	void Unclickable_Object(const char *objectName);
 	void Obstacle_Object(const char *objectName, bool updateWalkpath);

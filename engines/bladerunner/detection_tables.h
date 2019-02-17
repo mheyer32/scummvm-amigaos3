@@ -25,6 +25,9 @@
 
 #include "engines/advancedDetector.h"
 
+#define GAMEOPTION_SITCOM GUIO_GAMEOPTIONS1
+#define GAMEOPTION_SHORTY GUIO_GAMEOPTIONS2
+
 namespace BladeRunner {
 
 static const ADGameDescription gameDescriptions[] = {
@@ -36,7 +39,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::EN_ANY,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	// BladeRunner (German)
@@ -47,7 +50,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::DE_DEU,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	// BladeRunner (French) - Bug #9722
@@ -58,7 +61,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::FR_FRA,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	// BladeRunner (Italian)
@@ -69,7 +72,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::IT_ITA,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	// BladeRunner (Russian)
@@ -80,7 +83,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::RU_RUS,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	// BladeRunner (Spanish)
@@ -91,7 +94,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::ES_ESP,
 		Common::kPlatformWindows,
 		ADGF_NO_FLAGS,
-		GUIO0()
+		GUIO2(GAMEOPTION_SITCOM, GAMEOPTION_SHORTY)
 	},
 
 	AD_TABLE_END_MARKER

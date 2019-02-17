@@ -25,10 +25,12 @@
 namespace BladeRunner {
 
 void SceneScriptNR02::InitializeScene() {
-	sub_402134();
+	playNextMusic();
 	Setup_Scene_Information(-283.0f, -24.0f, 326.0f, 200);
-	Game_Flag_Reset(532);
+	Game_Flag_Reset(kFlagNR01toNR02);
+
 	Scene_Exit_Add_2D_Exit(0, 0, 105, 75, 291, 3);
+
 	Ambient_Sounds_Add_Looping_Sound(280, 50, 38, 0);
 	Ambient_Sounds_Add_Sound(252, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
 	Ambient_Sounds_Add_Sound(254, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
@@ -72,12 +74,17 @@ bool SceneScriptNR02::MouseClick(int x, int y) {
 }
 
 bool SceneScriptNR02::ClickedOn3DObject(const char *objectName, bool a2) {
-	if (Object_Query_Click("VID PHONE 01", objectName) || Object_Query_Click("VID PHONE 02", objectName)) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -191.9f, -24.0f, 62.15f, 0, 1, false, 0)) {
+	if (Object_Query_Click("VID PHONE 01", objectName)
+	 || Object_Query_Click("VID PHONE 02", objectName)
+	) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -191.9f, -24.0f, 62.15f, 0, true, false, 0)) {
 			Actor_Face_Heading(kActorMcCoy, 13, false);
-			if (Actor_Clue_Query(kActorMcCoy, kClueFolder) && Actor_Clue_Query(kActorMcCoy, kClueGuzzaFramedMcCoy) && !Game_Flag_Query(670)) {
-				Actor_Set_Goal_Number(kActorMcCoy, 350);
-				Game_Flag_Set(670);
+			if ( Actor_Clue_Query(kActorMcCoy, kClueFolder)
+			 &&  Actor_Clue_Query(kActorMcCoy, kClueGuzzaFramedMcCoy)
+			 && !Game_Flag_Query(kFlagCallWithGuzza)
+			) {
+				Actor_Set_Goal_Number(kActorMcCoy, kGoalMcCoyCallWithGuzza);
+				Game_Flag_Set(kFlagCallWithGuzza);
 			} else {
 				Sound_Play(123, 50, 0, 0, 50);
 				Delay(1000);
@@ -97,24 +104,33 @@ bool SceneScriptNR02::ClickedOn3DObject(const char *objectName, bool a2) {
 }
 
 bool SceneScriptNR02::ClickedOnActor(int actorId) {
-	if (actorId == 2 && Actor_Query_Goal_Number(kActorGordo) == 201 && !Loop_Actor_Walk_To_XYZ(kActorMcCoy, 67.37f, -24.0f, 389.32f, 0, 1, false, 0)) {
-		Actor_Set_Goal_Number(kActorGordo, 215);
+	if (actorId == kActorGordo
+	 && Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02WaitAtBar
+	) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 67.37f, -24.0f, 389.32f, 0, true, false, 0)) {
+			Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02TalkToMcCoy);
+		}
 	}
 	return false;
 }
 
 bool SceneScriptNR02::ClickedOnItem(int itemId, bool a2) {
-	if ((itemId == 89 || itemId == 90) && !Loop_Actor_Walk_To_XYZ(kActorMcCoy, 109.38f, -24.0f, 420.5f, 0, 1, false, 0)) {
-		Actor_Face_Heading(kActorMcCoy, 423, false);
-		if (itemId == 89) {
-			Item_Remove_From_World(89);
-			Item_Pickup_Spin_Effect(953, 214, 380);
-			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter1, true, -1);
-		}
-		if (itemId == 90) {
-			Item_Remove_From_World(90);
-			Item_Pickup_Spin_Effect(954, 214, 380);
-			Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter2, true, -1);
+	if (itemId == kItemGordosLighter1
+	 || itemId == kItemGordosLighter2
+	) {
+		if(!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 109.38f, -24.0f, 420.5f, 0, true, false, 0)) {
+			Actor_Face_Heading(kActorMcCoy, 423, false);
+			if (itemId == kItemGordosLighter1) {
+				Item_Remove_From_World(kItemGordosLighter1);
+				Item_Pickup_Spin_Effect(953, 214, 380);
+				Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter1, true, -1);
+			}
+
+			if (itemId == kItemGordosLighter2) {
+				Item_Remove_From_World(kItemGordosLighter2);
+				Item_Pickup_Spin_Effect(954, 214, 380);
+				Actor_Clue_Acquire(kActorMcCoy, kClueGordosLighter2, true, -1);
+			}
 		}
 	}
 	return false;
@@ -122,13 +138,15 @@ bool SceneScriptNR02::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptNR02::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -283.0f, -24.0f, 326.0f, 0, 1, false, 0)) {
-			if (Actor_Query_Goal_Number(kActorGordo) < 230 || Actor_Query_Goal_Number(kActorGordo) > 250) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -283.0f, -24.0f, 326.0f, 0, true, false, 0)) {
+			if (Actor_Query_Goal_Number(kActorGordo) < kGoalGordoNR01WaitAndAttack
+			 || Actor_Query_Goal_Number(kActorGordo) > kGoalGordoNR01WaitAndTakeHostage
+			) {
 				Music_Stop(2);
 			}
-			Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+			Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
-			Game_Flag_Set(533);
+			Game_Flag_Set(kFlagNR02toNR01);
 			Set_Enter(kSetNR01, kSceneNR01);
 		}
 		return true;
@@ -141,8 +159,13 @@ bool SceneScriptNR02::ClickedOn2DRegion(int region) {
 }
 
 void SceneScriptNR02::SceneFrameAdvanced(int frame) {
-	if (!Music_Is_Playing() && (Actor_Query_Goal_Number(kActorGordo) < 210 || Actor_Query_Goal_Number(kActorGordo) > 222)) {
-		sub_402134();
+	// Gordo not running away
+	if (!Music_Is_Playing()
+	 && (Actor_Query_Goal_Number(kActorGordo) < kGoalGordoNR02TalkAboutMcCoy
+	  || Actor_Query_Goal_Number(kActorGordo) > kGoalGordoNR02RunAway3
+	 )
+	) {
+		playNextMusic();
 	}
 	//return false;
 }
@@ -151,65 +174,88 @@ void SceneScriptNR02::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptNR02::PlayerWalkedIn() {
-	if (Actor_Query_Goal_Number(kActorGordo) == 211) {
-		Actor_Set_Goal_Number(kActorGordo, 220);
+	if (Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02WaitAtPodium) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02RunAway1);
 	}
-	if (Actor_Query_Goal_Number(kActorGordo) == 204) {
-		Actor_Set_Goal_Number(kActorGordo, 205);
+
+	if (Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02WaitForMcCoy) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02NextAct);
 	}
-	if (Actor_Query_Goal_Number(kActorGordo) == 206) {
-		Actor_Set_Goal_Number(kActorGordo, 205);
+
+	if (Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02TellJoke1) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02NextAct);
 	}
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -203.0f, -24.0f, 334.0f, 0, 0, false, 0);
+
+	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -203.0f, -24.0f, 334.0f, 0, false, false, 0);
 	//return false;
 }
 
 void SceneScriptNR02::PlayerWalkedOut() {
 	Music_Stop(2);
-	if (Actor_Query_Goal_Number(kActorGordo) < 210 && Actor_Query_Goal_Number(kActorGordo) >= 205) {
-		Actor_Set_Goal_Number(kActorGordo, 204);
+
+	// Gordo on the podium
+	if (Actor_Query_Goal_Number(kActorGordo) < kGoalGordoNR02TalkAboutMcCoy
+	 && Actor_Query_Goal_Number(kActorGordo) >= kGoalGordoNR02NextAct
+	) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02WaitForMcCoy);
 	}
 }
 
 void SceneScriptNR02::DialogueQueueFlushed(int a1) {
-	if (Player_Query_Current_Scene() == 55 && Actor_Query_Goal_Number(kActorGordo) == 206) {
+	if (Player_Query_Current_Scene() == kSceneNR02
+	 && Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02TellJoke1
+	) {
 		Sound_Play(575, 50, 0, 0, 50);
 		Sound_Play(321, 50, 0, 0, 50);
 	}
-	if (Player_Query_Current_Scene() == 55 && Actor_Query_Goal_Number(kActorGordo) == 207) {
+
+	if (Player_Query_Current_Scene() == kSceneNR02
+	 && Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02TellJoke2
+	) {
 		Sound_Play(576, 50, 0, 0, 50);
 		Sound_Play(323, 50, 0, 0, 50);
 	}
-	if (Player_Query_Current_Scene() == 55 && Actor_Query_Goal_Number(kActorGordo) == 208) {
+
+	if (Player_Query_Current_Scene() == kSceneNR02
+	 && Actor_Query_Goal_Number(kActorGordo) == kGoalGordoNR02TellJoke3
+	) {
 		Sound_Play(579, 50, 0, 0, 50);
 		Sound_Play(324, 50, 0, 0, 50);
 	}
-	if (Player_Query_Current_Scene() == 55 && Actor_Query_Goal_Number(kActorGordo) > 205 && Actor_Query_Goal_Number(kActorGordo) < 210) {
-		Actor_Set_Goal_Number(kActorGordo, 205);
-		//return true;
-		return;
-	} else if (Actor_Query_Goal_Number(kActorGordo) > 205 && Actor_Query_Goal_Number(kActorGordo) < 210) {
-		Actor_Set_Goal_Number(kActorGordo, 204);
-		//return true;
-		return;
+
+	// Gordo on the podium
+	if (Player_Query_Current_Scene() == kSceneNR02
+	 && Actor_Query_Goal_Number(kActorGordo) > kGoalGordoNR02NextAct
+	 && Actor_Query_Goal_Number(kActorGordo) < kGoalGordoNR02TalkAboutMcCoy
+	) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02NextAct);
+		return; // true;
+	}
+
+	// Gordo on the podium, but McCoy is outside
+	if (Actor_Query_Goal_Number(kActorGordo) > kGoalGordoNR02NextAct
+	 && Actor_Query_Goal_Number(kActorGordo) < kGoalGordoNR02TalkAboutMcCoy
+	) {
+		Actor_Set_Goal_Number(kActorGordo, kGoalGordoNR02WaitForMcCoy);
+		return; // true;
 	}
 	//return false;
 }
 
-void SceneScriptNR02::sub_402134() {
-	int v0 = Global_Variable_Query(50);
-	if (v0 == 0) {
+void SceneScriptNR02::playNextMusic() {
+	int track = Global_Variable_Query(kVariableTaffyLewisMusic);
+	if (track == 0) {
 		Music_Play(8, 41, 0, 2, -1, 0, 0);
-	} else if (v0 == 1) {
+	} else if (track == 1) {
 		Music_Play(9, 41, 0, 2, -1, 0, 0);
-	} else if (v0 == 2) {
+	} else if (track == 2) {
 		Music_Play(10, 41, 0, 2, -1, 0, 0);
 	}
-	v0++;
-	if (v0 > 2) {
-		v0 = 0;
+	track++;
+	if (track > 2) {
+		track = 0;
 	}
-	Global_Variable_Set(50, v0);
+	Global_Variable_Set(kVariableTaffyLewisMusic, track);
 }
 
 } // End of namespace BladeRunner

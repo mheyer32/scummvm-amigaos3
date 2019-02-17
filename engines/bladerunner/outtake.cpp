@@ -23,6 +23,7 @@
 #include "bladerunner/outtake.h"
 
 #include "bladerunner/bladerunner.h"
+#include "bladerunner/chapters.h"
 #include "bladerunner/subtitles.h"
 #include "bladerunner/vqa_player.h"
 
@@ -32,11 +33,28 @@
 
 namespace BladeRunner {
 
+OuttakePlayer::OuttakePlayer(BladeRunnerEngine *vm) {
+	_vm = vm;
+	_surfaceVideo.create(_vm->_surfaceBack.w, _vm->_surfaceBack.h, createRGB555());
+}
+
+OuttakePlayer::~OuttakePlayer() {
+	_surfaceVideo.free();
+}
+
 void OuttakePlayer::play(const Common::String &name, bool noLocalization, int container) {
+	Common::String oldOuttakeFile = Common::String::format("OUTTAKE%d.MIX", _vm->_chapters->currentResourceId());
+	Common::String newOuttakeFile = Common::String::format("OUTTAKE%d.MIX", container);
+
 	if (container > 0) {
-		debug("OuttakePlayer::play TODO");
-		return;
+		if (_vm->isArchiveOpen(oldOuttakeFile)) {
+			_vm->closeArchive(oldOuttakeFile);
+		}
+
+		_vm->openArchive(newOuttakeFile);
 	}
+
+	_vm->playerLosesControl();
 
 	Common::String resName = name;
 	if (!noLocalization) {
@@ -45,21 +63,24 @@ void OuttakePlayer::play(const Common::String &name, bool noLocalization, int co
 	Common::String resNameNoVQASuffix = resName;
 	resName = resName + ".VQA";
 
-	VQAPlayer vqa_player(_vm, &_vm->_surfaceBack, resName); // surfaceBack is needed here for subtitles rendering properly, original was _surfaceFront here
+	VQAPlayer vqaPlayer(_vm, &_surfaceVideo, resName); // in original game _surfaceFront is used here, but for proper subtitles rendering we need separate surface
+	vqaPlayer.open();
 
-	vqa_player.open();
+	_vm->_vqaIsPlaying = true;
+	_vm->_vqaStopIsRequested = false;
 
-	_vm->_mixer->stopAll();
-	while (!_vm->shouldQuit()) {
-		Common::Event event;
-		while (_vm->_system->getEventManager()->pollEvent(event))
-			if (event.type == Common::EVENT_KEYDOWN && event.kbd.keycode == Common::KEYCODE_ESCAPE)
-				return;
+	while (!_vm->_vqaStopIsRequested && !_vm->shouldQuit()) {
+		_vm->handleEvents();
 
-		int frame = vqa_player.update();
-		blit(_vm->_surfaceBack, _vm->_surfaceFront); // This helps to make subtitles disappear properly, if the video is rendered in surface back and then pushed to the front surface
-		if (frame == -3)
+		if (!_vm->_windowIsActive) {
+			continue;
+		}
+
+		int frame = vqaPlayer.update();
+		blit(_surfaceVideo, _vm->_surfaceFront); // This helps to make subtitles disappear properly, if the video is rendered in separate surface and then pushed to the front surface
+		if (frame == -3) { // end of video
 			break;
+		}
 
 		if (frame >= 0) {
 			_vm->_subtitles->getOuttakeSubsText(resNameNoVQASuffix, frame);
@@ -68,6 +89,22 @@ void OuttakePlayer::play(const Common::String &name, bool noLocalization, int co
 		}
 
 		_vm->_system->delayMillis(10);
+	}
+
+	_vm->_vqaIsPlaying = false;
+	_vm->_vqaStopIsRequested = false;
+	vqaPlayer.close();
+
+	// TODO: scene video is played fast after end of outtake - visible in tb07
+
+	_vm->playerGainsControl();
+
+	if (container > 0) {
+		if (_vm->isArchiveOpen(newOuttakeFile)) {
+			_vm->closeArchive(newOuttakeFile);
+		}
+
+		_vm->openArchive(oldOuttakeFile);
 	}
 }
 

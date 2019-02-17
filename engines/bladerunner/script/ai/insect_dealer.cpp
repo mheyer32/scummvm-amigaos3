@@ -50,7 +50,9 @@ void AIScriptInsectDealer::Initialize() {
 }
 
 bool AIScriptInsectDealer::Update() {
-	if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_Goal_Number(kActorInsectDealer) < 400)
+	if (Global_Variable_Query(kVariableChapter) == 5
+	 && Actor_Query_Goal_Number(kActorInsectDealer) < 400
+	)
 		Actor_Set_Goal_Number(kActorInsectDealer, 400);
 
 	return false;
@@ -109,9 +111,9 @@ bool AIScriptInsectDealer::GoalChanged(int currentGoalNumber, int newGoalNumber)
 		Actor_Put_In_Set(kActorInsectDealer, kSetFreeSlotH);
 		Actor_Set_At_Waypoint(kActorInsectDealer, 40, 0);
 
-		if (!Game_Flag_Query(374)) {
-			Game_Flag_Set(374);
-			Item_Remove_From_World(106);
+		if (!Game_Flag_Query(kFlagAR02DektoraBoughtScorpions)) {
+			Game_Flag_Set(kFlagAR02DektoraBoughtScorpions);
+			Item_Remove_From_World(kItemScrorpions);
 		}
 	}
 

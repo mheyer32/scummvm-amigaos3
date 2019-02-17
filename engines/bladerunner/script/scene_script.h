@@ -36,9 +36,9 @@ public:
 	virtual void InitializeScene() = 0;
 	virtual void SceneLoaded() = 0;
 	virtual bool MouseClick(int x, int y) = 0;
-	virtual bool ClickedOn3DObject(const char *objectName, bool attack) = 0;
+	virtual bool ClickedOn3DObject(const char *objectName, bool combatMode) = 0;
 	virtual bool ClickedOnActor(int actorId) = 0;
-	virtual bool ClickedOnItem(int itemId, bool a2) = 0;
+	virtual bool ClickedOnItem(int itemId, bool combatMode) = 0;
 	virtual bool ClickedOnExit(int exitId) = 0;
 	virtual bool ClickedOn2DRegion(int region) = 0;
 	virtual void SceneFrameAdvanced(int frame) = 0;
@@ -57,9 +57,9 @@ public: \
 	void InitializeScene(); \
 	void SceneLoaded(); \
 	bool MouseClick(int x, int y); \
-	bool ClickedOn3DObject(const char *objectName, bool attack); \
+	bool ClickedOn3DObject(const char *objectName, bool combatMode); \
 	bool ClickedOnActor(int actorId); \
-	bool ClickedOnItem(int itemId, bool a2); \
+	bool ClickedOnItem(int itemId, bool combatMode); \
 	bool ClickedOnExit(int exitId); \
 	bool ClickedOn2DRegion(int region); \
 	void SceneFrameAdvanced(int frame); \
@@ -74,9 +74,9 @@ DECLARE_SCRIPT(AR01)
 END_SCRIPT
 
 DECLARE_SCRIPT(AR02)
-	void sub_402694();
-	void sub_402AE0();
-	void sub_402CE4();
+	void dialogueWithInsectDealer1();
+	void dialogueWithInsectDealer2();
+	void dialogueWithHassan();
 END_SCRIPT
 
 DECLARE_SCRIPT(BB01)
@@ -149,7 +149,7 @@ DECLARE_SCRIPT(CT09)
 END_SCRIPT
 
 DECLARE_SCRIPT(CT10)
-	void sub_401844();
+	void checkCabinet();
 END_SCRIPT
 
 DECLARE_SCRIPT(CT11)
@@ -168,11 +168,11 @@ DECLARE_SCRIPT(DR02)
 END_SCRIPT
 
 DECLARE_SCRIPT(DR03)
-	void sub_401B18();
+	void dialogueWithChew();
 END_SCRIPT
 
 DECLARE_SCRIPT(DR04)
-	bool sub_401160();
+	bool farEnoughFromExplosion();
 END_SCRIPT
 
 DECLARE_SCRIPT(DR05)
@@ -182,8 +182,8 @@ DECLARE_SCRIPT(DR06)
 END_SCRIPT
 
 DECLARE_SCRIPT(HC01)
-	void sub_402384();
-	void sub_40346C();
+	void dialogueWithIzo();
+	void takePhotoAndRunAway();
 END_SCRIPT
 
 DECLARE_SCRIPT(HC02)
@@ -193,46 +193,46 @@ DECLARE_SCRIPT(HC03)
 END_SCRIPT
 
 DECLARE_SCRIPT(HC04)
-	void sub_401B90();
+	void dialogueWithIsabella();
 END_SCRIPT
 
 DECLARE_SCRIPT(HF01)
-	void sub_4026B4();
-	void sub_4032DC();
-	void sub_403484();
+	void dialogueWithMiaAndMurray();
+	void talkWithDektora();
+	void talkWithLucy();
 END_SCRIPT
 
 DECLARE_SCRIPT(HF02)
 END_SCRIPT
 
 DECLARE_SCRIPT(HF03)
-	void sub_401C80();
+	void dialogueWithLucy();
 END_SCRIPT
 
 DECLARE_SCRIPT(HF04)
 END_SCRIPT
 
 DECLARE_SCRIPT(HF05)
-	void sub_402370();
-	void sub_402970();
-	void sub_402AE4();
-	void sub_403738();
-	void sub_403A34(int actorId);
-	void sub_403F0C();
-	void sub_40410C();
-	void sub_4042E4();
-	void sub_404474();
-	int sub_404858();
-	int sub_4048C0();
+	void talkWithCrazyLegs1();
+	void talkWithCrazyLegs2();
+	void dialogueWithCrazylegs1();
+	void dialogueWithCrazylegs2();
+	void talkWithCrazylegs3(int actorId);
+	void talkWithDektora();
+	void talkWithLucy();
+	void policeAttack();
+	void addAmbientSounds();
+	int getAffectionTowardsActor();
+	int getCompanionActor();
 END_SCRIPT
 
 DECLARE_SCRIPT(HF06)
-	void sub_401EF4();
-	void sub_4023E0();
+	void steelInterruption();
+	void addAmbientSounds();
 END_SCRIPT
 
 DECLARE_SCRIPT(HF07)
-	int sub_401864();
+	int getAffectionTowardsActor();
 END_SCRIPT
 
 DECLARE_SCRIPT(KP01)
@@ -242,7 +242,7 @@ DECLARE_SCRIPT(KP02)
 END_SCRIPT
 
 DECLARE_SCRIPT(KP03)
-	void sub_401E54();
+	void saveSteele();
 END_SCRIPT
 
 DECLARE_SCRIPT(KP04)
@@ -261,7 +261,7 @@ DECLARE_SCRIPT(MA01)
 END_SCRIPT
 
 DECLARE_SCRIPT(MA02)
-	void dialogueWithRajif();
+	void talkWithRajif();
 	bool isPhoneRinging();
 	void selectNextTvNews();
 END_SCRIPT
@@ -298,59 +298,59 @@ DECLARE_SCRIPT(NR01)
 END_SCRIPT
 
 DECLARE_SCRIPT(NR02)
-	void sub_402134();
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR03)
-	void sub_40259C(int frame);
-	void sub_402994();
+	void rotateActorOnTable(int frame);
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR04)
-	void sub_401DB0();
-	void sub_402860(int frame);
-	void sub_402960();
+	void dialogueWithEarlyQ();
+	void druggedEffect(int frame);
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR05)
 	void rotateActorOnTable(int frame);
-	void sub_4020B4();
-	void sub_4022DC();
+	void talkToBartender();
+	void talkToEarlyQ();
 	void rotateActorOnGround(int actorId);
-	void sub_402B9C();
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR06)
-	void sub_401BAC();
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR07)
-	void sub_4018D4();
-	void sub_401A10();
-	void sub_401C60();
-	void sub_401EF4();
-	void sub_4020F0();
-	void sub_402284();
-	void sub_402510();
-	void sub_402614();
-	void sub_402738();
-	void sub_4028FC();
+	void dektoraRunAway();
+	void callHolloway();
+	void clickedOnVase();
+	void talkAboutBelt1();
+	void talkAboutBelt2();
+	void talkAboutVoightKampff();
+	void talkAboutSteele();
+	void talkAboutMoonbus();
+	void talkAboutBlackSedan();
+	void talkAboutScorpions();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR08)
-	void sub_4021B4();
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR09)
-	void sub_40172C();
+	void playNextMusic();
 END_SCRIPT
 
 DECLARE_SCRIPT(NR10)
 END_SCRIPT
 
 DECLARE_SCRIPT(NR11)
-	void sub_4027D0(int actorId, signed int frame);
-	void sub_4028EC();
+	void actorSweepArea(int actorId, signed int frame);
+	void untargetEverything();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS01)
@@ -381,7 +381,7 @@ END_SCRIPT
 // PS08 does not exits
 
 DECLARE_SCRIPT(PS09)
-	void dialogueWithGregorian();
+	void dialogueWithGrigorian();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS10)
@@ -389,15 +389,15 @@ DECLARE_SCRIPT(PS10)
 END_SCRIPT
 
 DECLARE_SCRIPT(PS11)
-	void sub_402744();
+	void removeTargets();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS12)
-	void sub_4028C4();
+	void removeTargets();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS13)
-	void sub_40267C();
+	void removeTargets();
 END_SCRIPT
 
 DECLARE_SCRIPT(PS14)
@@ -416,7 +416,7 @@ DECLARE_SCRIPT(RC02)
 END_SCRIPT
 
 DECLARE_SCRIPT(RC03)
-	void sub_402834();
+	void talkWithSteele();
 END_SCRIPT
 
 DECLARE_SCRIPT(RC04)
@@ -441,14 +441,14 @@ DECLARE_SCRIPT(TB06)
 END_SCRIPT
 
 DECLARE_SCRIPT(TB07)
-	void sub_401B0C();
+	void McCoyTalkWithRachaelAndTyrell();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG01)
 END_SCRIPT
 
 DECLARE_SCRIPT(UG02)
-	bool sub_402354();
+	bool walkToCenter();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG03)
@@ -458,8 +458,8 @@ DECLARE_SCRIPT(UG04)
 END_SCRIPT
 
 DECLARE_SCRIPT(UG05)
-	int sub_4021B0();
-	void sub_402218();
+	int getAffectionTowardsActor();
+	void endGame();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG06)
@@ -483,13 +483,9 @@ DECLARE_SCRIPT(UG12)
 END_SCRIPT
 
 DECLARE_SCRIPT(UG13)
-	void sub_40223C();
-	void sub_4023D8();
-	void sub_4025E0();
-	void sub_402960();
-	int sub_402AD0();
-	void sub_402AD4();
-	void sub_402E24();
+	void talkAboutGuzza();
+	void dialogueWithHomeless1();
+	void dialogueWithHomeless2();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG14)
@@ -499,19 +495,15 @@ DECLARE_SCRIPT(UG15)
 END_SCRIPT
 
 DECLARE_SCRIPT(UG16)
-	void sub_401D78();
+	void dialogueWithLuther();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG17)
 END_SCRIPT
 
 DECLARE_SCRIPT(UG18)
-	void sub_402734();
-	void sub_402DE8();
-	void sub_402F8C();
-	void sub_403114();
-	void sub_403278();
-	void sub_403588();
+	void talkWithGuzza();
+	void talkWithClovis();
 END_SCRIPT
 
 DECLARE_SCRIPT(UG19)
@@ -527,6 +519,9 @@ protected:
 	SceneScriptBase   *_currentScript;
 
 public:
+	int _mouseX;
+	int _mouseY;
+
 	SceneScript(BladeRunnerEngine *vm);
 	~SceneScript();
 
@@ -535,9 +530,9 @@ public:
 	void initializeScene();
 	void sceneLoaded();
 	bool mouseClick(int x, int y);
-	bool clickedOn3DObject(const char *objectName, bool attack);
+	bool clickedOn3DObject(const char *objectName, bool combatMode);
 	bool clickedOnActor(int actorId);
-	bool clickedOnItem(int itemId, bool a2);
+	bool clickedOnItem(int itemId, bool combatMode);
 	bool clickedOnExit(int exitId);
 	bool clickedOn2DRegion(int region);
 	void sceneFrameAdvanced(int frame);

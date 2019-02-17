@@ -28,6 +28,7 @@
 #include "bladerunner/game_info.h"
 #include "bladerunner/savefile.h"
 #include "bladerunner/text_resource.h"
+#include "bladerunner/time.h"
 #include "bladerunner/ui/kia.h"
 #include "bladerunner/ui/kia_shapes.h"
 #include "bladerunner/ui/ui_container.h"
@@ -121,7 +122,7 @@ void KIASectionSave::open() {
 	}
 
 	_hoveredLineId = -1;
-	_timeLast = _vm->getTotalPlayTime(); // Original game is using system timer
+	_timeLast = _vm->_time->currentSystem();
 	_timeLeft = 800;
 }
 
@@ -191,7 +192,7 @@ void KIASectionSave::draw(Graphics::Surface &surface){
 		_hoveredLineId = selectedLineId;
 	}
 
-	uint32 now = _vm->getTotalPlayTime(); // Original game is using system timer
+	uint32 now = _vm->_time->currentSystem();
 	if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size()) {
 		if (_timeLeft) {
 			uint32 timeDiff = now - _timeLast;
@@ -366,7 +367,9 @@ void KIASectionSave::save() {
 		slot = _saveList[_selectedLineId].getSaveSlot();
 	} else {
 		// Find first available save slot
+		int maxSlot = -1;
 		for (int i = 0; i < (int)_saveList.size(); ++i) {
+			maxSlot = MAX(maxSlot, _saveList[i].getSaveSlot());
 			if (_saveList[i].getSaveSlot() != i) {
 				slot = i;
 				break;
@@ -374,7 +377,7 @@ void KIASectionSave::save() {
 		}
 
 		if (slot == -1) {
-			slot = _saveList.size();
+			slot = maxSlot + 1;
 		}
 	}
 

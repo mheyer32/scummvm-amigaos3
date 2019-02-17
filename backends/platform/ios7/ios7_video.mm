@@ -349,6 +349,19 @@ uint getSizeNextPOT(uint size) {
 }
 
 - (void)setupGestureRecognizers {
+	const NSUInteger KEYBOARDSWIPETOUCHCOUNT = 3;
+	UISwipeGestureRecognizer *swipeUpKeyboard = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardSwipeUp:)];
+	swipeUpKeyboard.direction = UISwipeGestureRecognizerDirectionUp;
+	swipeUpKeyboard.numberOfTouchesRequired = KEYBOARDSWIPETOUCHCOUNT;
+	swipeUpKeyboard.delaysTouchesBegan = NO;
+	swipeUpKeyboard.delaysTouchesEnded = NO;
+
+	UISwipeGestureRecognizer *swipeDownKeyboard = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardSwipeDown:)];
+	swipeDownKeyboard.direction = UISwipeGestureRecognizerDirectionDown;
+	swipeDownKeyboard.numberOfTouchesRequired = KEYBOARDSWIPETOUCHCOUNT;
+	swipeDownKeyboard.delaysTouchesBegan = NO;
+	swipeDownKeyboard.delaysTouchesEnded = NO;
+
 	UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(twoFingersSwipeRight:)];
 	swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
 	swipeRight.numberOfTouchesRequired = 2;
@@ -379,12 +392,16 @@ uint getSizeNextPOT(uint size) {
 	doubleTapTwoFingers.delaysTouchesBegan = NO;
 	doubleTapTwoFingers.delaysTouchesEnded = NO;
 
+	[self addGestureRecognizer:swipeUpKeyboard];
+	[self addGestureRecognizer:swipeDownKeyboard];
 	[self addGestureRecognizer:swipeRight];
 	[self addGestureRecognizer:swipeLeft];
 	[self addGestureRecognizer:swipeUp];
 	[self addGestureRecognizer:swipeDown];
 	[self addGestureRecognizer:doubleTapTwoFingers];
 
+	[swipeUpKeyboard release];
+	[swipeDownKeyboard release];
 	[swipeRight release];
 	[swipeLeft release];
 	[swipeUp release];
@@ -413,6 +430,7 @@ uint getSizeNextPOT(uint size) {
 #endif
 
 	_keyboardView = nil;
+	_keyboardVisible = NO;
 	_screenTexture = 0;
 	_overlayTexture = 0;
 	_mouseCursorTexture = 0;
@@ -725,7 +743,7 @@ uint getSizeNextPOT(uint size) {
 		[_keyboardView setInputDelegate:self];
 		[self addSubview:[_keyboardView inputView]];
 		[self addSubview: _keyboardView];
-		[_keyboardView showKeyboard];
+		[self showKeyboard];
 	}
 
 	glBindRenderbuffer(GL_RENDERBUFFER, _viewRenderbuffer); printOpenGLError();
@@ -907,10 +925,24 @@ uint getSizeNextPOT(uint size) {
 
   BOOL isLandscape = (self.bounds.size.width > self.bounds.size.height);
   if (isLandscape) {
-    [_keyboardView hideKeyboard];
+    [self hideKeyboard];
   } else {
-    [_keyboardView showKeyboard];
+    [self showKeyboard];
   }
+}
+
+- (void)showKeyboard {
+	[_keyboardView showKeyboard];
+	_keyboardVisible = YES;
+}
+
+- (void)hideKeyboard {
+	[_keyboardView hideKeyboard];
+	_keyboardVisible = NO;
+}
+
+- (BOOL)isKeyboardShown {
+	return _keyboardVisible;
 }
 
 - (UITouch *)secondTouchOtherTouchThan:(UITouch *)touch in:(NSSet *)set {
@@ -996,6 +1028,14 @@ uint getSizeNextPOT(uint size) {
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	_firstTouch = nil;
 	_secondTouch = nil;
+}
+
+- (void)keyboardSwipeUp:(UISwipeGestureRecognizer *)recognizer {
+	[self showKeyboard];
+}
+
+- (void)keyboardSwipeDown:(UISwipeGestureRecognizer *)recognizer {
+	[self hideKeyboard];
 }
 
 - (void)twoFingersSwipeRight:(UISwipeGestureRecognizer *)recognizer {

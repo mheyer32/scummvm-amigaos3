@@ -21,6 +21,7 @@
  */
 
 #include "glk/frotz/screen.h"
+#include "glk/frotz/bitmap_font.h"
 #include "glk/frotz/frotz.h"
 #include "glk/conf.h"
 #include "common/file.h"
@@ -42,17 +43,73 @@ void FrotzScreen::loadFonts(Common::Archive *archive) {
 	byte version = g_vm->_gameFile.readByte();
 
 	if (version == 6) {
-		// For graphical games, ignore any font configurations and force their size
-		g_conf->_monoInfo._size = g_conf->_propInfo._size = 7;
-		g_conf->_monoInfo._aspect = g_conf->_propInfo._aspect = 1.0;
-		g_vm->_defaultForeground = 0;
-		g_vm->_defaultBackground = 0xffffff;
+		loadVersion6Fonts(archive);
+	} else {
+		// Load the basic fonts
+		Screen::loadFonts(archive);
 	}
 
-	// Load the basic fonts
-	Screen::loadFonts(archive);
+	// Add character graphics and runic fonts
+	loadExtraFonts(archive);
+}
 
-	// Add character graphics font
+void FrotzScreen::loadVersion6Fonts(Common::Archive *archive) {
+	// Set the basic font properties
+	MonoFontInfo &mi = g_conf->_monoInfo;
+	PropFontInfo &pi = g_conf->_propInfo;
+	mi._size = pi._size = 7;
+	mi._aspect = pi._aspect = 1.0;
+	pi._quotes = false;
+	pi._dashes = false;
+	pi._spaces = false;
+	pi._morePrompt = "[MORE]";
+	pi._lineSeparation = 0;
+
+	g_vm->_defaultForeground = 0;
+	g_vm->_defaultBackground = (int)zcolor_Transparent;
+	g_conf->_tMarginX = 3;
+
+	for (uint idx = 0; idx < style_NUMSTYLES; ++idx) {
+		g_conf->_tStyles[idx].bg = g_conf->_tStylesDefault[idx].bg = zcolor_Transparent;
+		g_conf->_gStyles[idx].bg = g_conf->_gStylesDefault[idx].bg = zcolor_Transparent;
+	}
+
+	_fonts.resize(8);
+
+	// Load up the 8x8 Infocom font
+	Image::BitmapDecoder decoder;
+	Common::File f;
+	if (!f.open("infocom6x8.bmp", *archive))
+		error("Could not load font");
+
+	Common::Point fontSize(6, 8);
+	decoder.loadStream(f);
+	f.close();
+
+	// Add normal fonts
+	_fonts[MONOR] = new FixedWidthBitmapFont(*decoder.getSurface(), fontSize, 6, 8);
+	_fonts[MONOB] = new FixedWidthBitmapFont(*decoder.getSurface(), fontSize, 6, 8);
+	_fonts[PROPR] = new VariableWidthBitmapFont(*decoder.getSurface(), fontSize, 6, 8);
+	_fonts[PROPB] = new VariableWidthBitmapFont(*decoder.getSurface(), fontSize, 6, 8);
+
+	// Create a new version of the font with every character unlined for the emphasized fonts
+	const Graphics::Surface &norm = *decoder.getSurface();
+	Graphics::ManagedSurface emph(norm.w, norm.h);
+	emph.blitFrom(norm);
+
+	for (int y = 8 - 2; y < emph.h; y += 8) {
+		byte *lineP = (byte *)emph.getBasePtr(0, y);
+		Common::fill(lineP, lineP + emph.w, 0);
+	}
+
+	// Add them to the font list
+	_fonts[MONOI] = new FixedWidthBitmapFont(emph, fontSize, 6, 8);
+	_fonts[MONOZ] = new FixedWidthBitmapFont(emph, fontSize, 6, 8);
+	_fonts[PROPI] = new VariableWidthBitmapFont(emph, fontSize, 6, 8);
+	_fonts[PROPZ] = new VariableWidthBitmapFont(emph, fontSize, 6, 8);
+}
+
+void FrotzScreen::loadExtraFonts(Common::Archive *archive) {
 	Image::BitmapDecoder decoder;
 	Common::File f;
 	if (!f.open("infocom_graphics.bmp", *archive))
@@ -60,7 +117,7 @@ void FrotzScreen::loadFonts(Common::Archive *archive) {
 
 	Common::Point fontSize(_fonts[0]->getMaxCharWidth(), _fonts[0]->getFontHeight());
 	decoder.loadStream(f);
-	_fonts.push_back(new BitmapFont(*decoder.getSurface(), fontSize));
+	_fonts.push_back(new FixedWidthBitmapFont(*decoder.getSurface(), fontSize));
 	f.close();
 
 	// Add Runic font. It provides cleaner versions of the runic characters in the
@@ -70,41 +127,6 @@ void FrotzScreen::loadFonts(Common::Archive *archive) {
 
 	_fonts.push_back(Graphics::loadTTFFont(f, g_conf->_propInfo._size, Graphics::kTTFSizeModeCharacter));
 	f.close();
-}
-
-/*--------------------------------------------------------------------------*/
-
-BitmapFont::BitmapFont(const Graphics::Surface &src, const Common::Point &size,
-		uint srcWidth, uint srcHeight, unsigned char startingChar) :
-		_startingChar(startingChar), _size(size) {
-	assert(src.format.bytesPerPixel == 1);
-	assert((src.w % srcWidth) == 0);
-	assert((src.h % srcHeight) == 0);
-
-	// Set up a characters array
-	_chars.resize((src.w / srcWidth) * (src.h / srcHeight));
-
-	// Iterate through loading characters
-	Common::Rect r(srcWidth, srcHeight);
-	int charsPerRow = src.w / srcWidth;
-	for (uint idx = 0; idx < _chars.size(); ++idx) {
-		r.moveTo((idx % charsPerRow) * srcWidth, (idx / charsPerRow) * srcHeight);
-
-		_chars[idx].create(size.x, size.y, src.format);
-		_chars[idx].transBlitFrom(src, r, Common::Rect(0, 0, size.x, size.y));
-	}
-}
-
-void BitmapFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y, uint32 color) const {
-	const Graphics::ManagedSurface &c = _chars[chr - _startingChar];
-	for (int yCtr = 0; yCtr < c.h; ++yCtr) {
-		const byte *srcP = (const byte *)c.getBasePtr(0, yCtr);
-
-		for (int xCtr = 0; xCtr < c.w; ++xCtr, ++srcP) {
-			if (!*srcP)
-				dst->hLine(x + xCtr, y + yCtr, x + xCtr, color);
-		}
-	}
 }
 
 } // End of namespace Frotz

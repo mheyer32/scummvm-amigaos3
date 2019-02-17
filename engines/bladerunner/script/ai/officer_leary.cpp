@@ -60,9 +60,9 @@ bool AIScriptOfficerLeary::Update() {
 		return false;
 	}
 
-	if (!Game_Flag_Query(kFlagMcCoyAtRCxx)
-	 &&  Game_Flag_Query(kFlagChopstickWrapperTaken)
-	 &&  Game_Flag_Query(kFlagChromeDebrisTaken)
+	if (!Game_Flag_Query(kFlagMcCoyInRunciters)
+	 &&  Game_Flag_Query(kFlagRC51ChopstickWrapperTaken)
+	 &&  Game_Flag_Query(kFlagRC01ChromeDebrisTaken)
 	 &&  Player_Query_Current_Scene() != kSceneRC01
 	 &&  Global_Variable_Query(kVariableChapter) < 3
 	) {
@@ -86,15 +86,15 @@ bool AIScriptOfficerLeary::Update() {
 		return false;
 	}
 
-	if (Game_Flag_Query(629)) {
-		Game_Flag_Reset(629);
+	if (Game_Flag_Query(kFlagUnpauseGenWalkers)) {
+		Game_Flag_Reset(kFlagUnpauseGenWalkers);
 		return false;
 	}
 
-	if ( Game_Flag_Query(623)
-	 && !Game_Flag_Query(664)
+	if ( Game_Flag_Query(kFlagUG07Empty)
+	 && !Game_Flag_Query(kFlagUG07PoliceLeave)
 	) {
-		Game_Flag_Set(664);
+		Game_Flag_Set(kFlagUG07PoliceLeave);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 305);
 		return false;
 	}
@@ -203,7 +203,7 @@ void AIScriptOfficerLeary::TimerExpired(int timer) {
 			Actor_Set_Goal_Number(kActorOfficerLeary, 430);
 			Actor_Set_Goal_Number(kActorOfficerGrayford, 430);
 		} else {
-			Game_Flag_Set(684);
+			Game_Flag_Set(kFlagHF05PoliceAttacked);
 		}
 	} else if (timer == 2) {
 		AI_Countdown_Timer_Reset(kActorOfficerLeary, 2);
@@ -264,7 +264,7 @@ bool AIScriptOfficerLeary::ShotAtAndHit() {
 
 void AIScriptOfficerLeary::Retired(int byActorId) {
 	Actor_Set_Goal_Number(kActorOfficerLeary, 599);
-	Game_Flag_Set(607);
+	Game_Flag_Set(kFlagMcCoyRetiredHuman);
 }
 
 int AIScriptOfficerLeary::GetFriendlinessModifierIfGetsClue(int otherActorId, int clueId) {
@@ -321,7 +321,7 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 				Actor_Clue_Acquire(kActorOfficerLeary, kClueCrowdInterviewB, false, -1);
 			}
 		}
-		if (Game_Flag_Query(kFlagMcCoyAtRCxx)) {
+		if (Game_Flag_Query(kFlagMcCoyInRunciters)) {
 			if (Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA)
 			 && Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewB)
 			) {
@@ -906,7 +906,7 @@ bool AIScriptOfficerLeary::UpdateAnimation(int *animation, int *frame) {
 		return true;
 	case 0:
 		if ( Game_Flag_Query(kFlagOfficerLearyTakingNotes)
-		 && !Game_Flag_Query(KFlagMcCoyAndOfficerLearyTalking)) {
+		 && !Game_Flag_Query(kFlagRC01McCoyAndOfficerLearyTalking)) {
 			_animationState = 31;
 			_animationFrame = 0;
 			*animation = 604;

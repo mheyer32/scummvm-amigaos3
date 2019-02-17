@@ -465,15 +465,11 @@ void GlkAPI::glk_stylehint_set(uint wintype, uint style, uint hint, int val) {
 
 	switch (hint) {
 	case stylehint_TextColor:
-		styles[style].fg[0] = (val >> 16) & 0xff;
-		styles[style].fg[1] = (val >> 8) & 0xff;
-		styles[style].fg[2] = (val) & 0xff;
+		styles[style].fg = val;
 		break;
 
 	case stylehint_BackColor:
-		styles[style].bg[0] = (val >> 16) & 0xff;
-		styles[style].bg[1] = (val >> 8) & 0xff;
-		styles[style].bg[2] = (val) & 0xff;
+		styles[style].bg = val;
 		break;
 
 	case stylehint_ReverseColor:
@@ -505,12 +501,12 @@ void GlkAPI::glk_stylehint_set(uint wintype, uint style, uint hint, int val) {
 	}
 
 	if (wintype == wintype_TextBuffer && style == style_Normal && hint == stylehint_BackColor) {
-		memcpy(g_conf->_windowColor, styles[style].bg, 3);
+		g_conf->_windowColor = styles[style].bg;
 	}
 
 	if (wintype == wintype_TextBuffer && style == style_Normal && hint == stylehint_TextColor) {
-		memcpy(g_conf->_propInfo._moreColor, styles[style].fg, 3);
-		memcpy(g_conf->_propInfo._caretColor, styles[style].fg, 3);
+		g_conf->_propInfo._moreColor = styles[style].fg;
+		g_conf->_propInfo._caretColor = styles[style].fg;
 	}
 }
 
@@ -539,15 +535,11 @@ void GlkAPI::glk_stylehint_clear(uint wintype, uint style, uint hint) {
 
 	switch (hint) {
 	case stylehint_TextColor:
-		styles[style].fg[0] = defaults[style].fg[0];
-		styles[style].fg[1] = defaults[style].fg[1];
-		styles[style].fg[2] = defaults[style].fg[2];
+		styles[style].fg = defaults[style].fg;
 		break;
 
 	case stylehint_BackColor:
-		styles[style].bg[0] = defaults[style].bg[0];
-		styles[style].bg[1] = defaults[style].bg[1];
-		styles[style].bg[2] = defaults[style].bg[2];
+		styles[style].bg = defaults[style].bg;
 		break;
 
 	case stylehint_ReverseColor:
@@ -608,13 +600,11 @@ bool GlkAPI::glk_style_measure(winid_t win, uint style, uint hint, uint *result)
 		break;
 
 	case stylehint_TextColor:
-		*result =
-		    (styles[style].fg[0] << 16) | (styles[style].fg[1] << 8) | (styles[style].fg[2]);
+		*result = styles[style].fg;
 		break;
 
 	case stylehint_BackColor:
-		*result =
-		    (styles[style].bg[0] << 16) | (styles[style].bg[1] << 8) | (styles[style].bg[2]);
+		*result = styles[style].bg;
 		break;
 
 	case stylehint_ReverseColor:
@@ -1207,6 +1197,16 @@ void GlkAPI::garglk_set_reversevideo_stream(strid_t str, uint reverse) {
 	} else {
 		warning("set_reversevideo: Invalid ref");
 	}
+}
+
+void GlkAPI::garglk_window_get_cursor(winid_t win, uint *xpos, uint *ypos) {
+	Point pos = win->getCursor();
+	*xpos = pos.x;
+	*ypos = pos.y;
+}
+
+void GlkAPI::garglk_window_get_cursor_current(uint *xpos, uint *ypos) {
+	garglk_window_get_cursor(_windows->getFocusWindow(), xpos, ypos);
 }
 
 } // End of namespace Glk

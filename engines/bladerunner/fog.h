@@ -36,6 +36,7 @@ class SetEffects;
 
 class Fog {
 	friend class SetEffects;
+	friend class Debugger;
 
 protected:
 	Common::String _name;
@@ -60,10 +61,6 @@ protected:
 	float     *_m33ptr;
 	float     *_m34ptr;
 
-	float      _parameter1;
-	float      _parameter2;
-	float      _parameter3;
-
 	Fog       *_next;
 
 public:
@@ -82,17 +79,35 @@ protected:
 
 };
 
-class FogCone : public Fog {
+class FogSphere : public Fog {
+private:
+	float _radius;
+
+public:
+	FogSphere():_radius(0.0f) {};
+
 	void read(Common::ReadStream *stream, int frameCount);
 	void calculateCoeficient(Vector3 position, Vector3 viewPosition, float *coeficient);
 };
 
-class FogSphere : public Fog {
+class FogCone : public Fog {
+private:
+	float _coneAngle;
+
+public:
+	FogCone():_coneAngle(0.0f) {};
+
 	void read(Common::ReadStream *stream, int frameCount);
 	void calculateCoeficient(Vector3 position, Vector3 viewPosition, float *coeficient);
 };
 
 class FogBox : public Fog {
+private:
+	Vector3 _size;
+
+public:
+	FogBox():_size() {};
+
 	void read(Common::ReadStream *stream, int frameCount);
 	void calculateCoeficient(Vector3 position, Vector3 viewPosition, float *coeficient);
 };

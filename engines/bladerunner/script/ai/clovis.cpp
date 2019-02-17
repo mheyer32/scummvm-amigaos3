@@ -46,34 +46,52 @@ void AIScriptClovis::Initialize() {
 	_var5 = 0;
 	_flag = 0;
 
-	Actor_Set_Goal_Number(kActorClovis, 100);
+	Actor_Set_Goal_Number(kActorClovis, kGoalClovisDefault);
 }
 
 bool AIScriptClovis::Update() {
-	if (Actor_Query_Goal_Number(kActorClovis) == 104) {
-		Actor_Set_Goal_Number(kActorClovis, 105);
+	if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisBB11PrepareTalkToMcCoy) {
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisBB11TalkToMcCoy);
 		return true;
-	} else if (Global_Variable_Query(kVariableChapter) == 3 && Actor_Query_Goal_Number(kActorClovis) < 350) {
-		Actor_Set_Goal_Number(kActorClovis, 350);
-		return true;
-	} else if (Global_Variable_Query(kVariableChapter) == 4 && !Game_Flag_Query(542)) {
-		Game_Flag_Set(542);
-		Actor_Set_Goal_Number(kActorClovis, 400);
-		return true;
-	} else {
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_Goal_Number(kActorClovis) < 500) {
-			Actor_Set_Goal_Number(kActorClovis, 500);
-		}
-		if (Actor_Query_Goal_Number(kActorClovis) == 511 && Game_Flag_Query(657)) {
-			Actor_Set_Goal_Number(kActorClovis, 512);
-		}
-		if (Game_Flag_Query(653) && !Game_Flag_Query(696) && Game_Flag_Query(697)) {
-			Actor_Set_Goal_Number(kActorClovis, 517);
-			Game_Flag_Set(696);
-			return true;
-		}
-		return false;
 	}
+
+	if (Global_Variable_Query(kVariableChapter) == 3
+	 && Actor_Query_Goal_Number(kActorClovis) < kGoalClovisStartChapter3
+	) {
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisStartChapter3);
+		return true;
+	}
+
+	if ( Global_Variable_Query(kVariableChapter) == 4
+	 && !Game_Flag_Query(kFlagClovisChapter4Started)
+	) {
+		Game_Flag_Set(kFlagClovisChapter4Started);
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisStartChapter4);
+		return true;
+	}
+
+	if (Global_Variable_Query(kVariableChapter) == 5
+	 && Actor_Query_Goal_Number(kActorClovis) < kGoalClovisStartChapter5
+	) {
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisStartChapter5);
+	}
+
+	if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisKP06Wait
+	 && Game_Flag_Query(kFlagNotUsed657)
+	) {
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP06TalkToMcCoy);
+	}
+
+	if ( Game_Flag_Query(kFlagMcCoyIsHelpingReplicants)
+	 && !Game_Flag_Query(kFlagKP07ReplicantsAttackMcCoy)
+	 &&  Game_Flag_Query(kFlagKP07McCoyPulledGun)
+	) {
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP07ReplicantsAttackMcCoy);
+		Game_Flag_Set(kFlagKP07ReplicantsAttackMcCoy);
+		return true;
+	}
+	return false;
+
 }
 
 void AIScriptClovis::TimerExpired(int timer) {
@@ -82,21 +100,21 @@ void AIScriptClovis::TimerExpired(int timer) {
 
 void AIScriptClovis::CompletedMovementTrack() {
 	switch (Actor_Query_Goal_Number(kActorClovis)) {
-	case 101:
-		Actor_Set_Goal_Number(kActorClovis, 103);
+	case kGoalClovisBB11WalkToMcCoy:
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisBB11StopSadik);
 		break;
 
-	case 102:
-		Actor_Set_Goal_Number(kActorClovis, 102);
+	case kGoalClovisBB11StopSadik:
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisBB11TalkWithSadik);
 		break;
 
-	case 401:
+	case kGoalClovisUG07ChaseMcCoy:
 		AI_Movement_Track_Flush(kActorClovis);
 
-		if (Player_Query_Current_Scene() == 92) {
-			Actor_Set_Goal_Number(kActorClovis, 402);
+		if (Player_Query_Current_Scene() == kSceneUG07) {
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisUG07KillMcCoy);
 		} else {
-			Actor_Set_Goal_Number(kActorClovis, 400);
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisStartChapter4);
 		}
 		break;
 
@@ -112,7 +130,7 @@ void AIScriptClovis::ReceivedClue(int clueId, int fromActorId) {
 }
 
 void AIScriptClovis::ClickedByPlayer() {
-	if (Actor_Query_Goal_Number(kActorClovis) == 599) {
+	if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisGone) {
 		Actor_Face_Actor(kActorMcCoy, kActorClovis, true);
 		Actor_Says(kActorMcCoy, 8630, 16);
 	}
@@ -131,9 +149,11 @@ void AIScriptClovis::OtherAgentExitedThisScene(int otherActorId) {
 }
 
 void AIScriptClovis::OtherAgentEnteredCombatMode(int otherActorId, int combatMode) {
-	if (Game_Flag_Query(653) && Actor_Query_In_Set(kActorMcCoy, kSetKP07)) {
-		Game_Flag_Set(697);
-		Game_Flag_Set(714);
+	if (Game_Flag_Query(kFlagMcCoyIsHelpingReplicants)
+	 && Actor_Query_In_Set(kActorMcCoy, kSetKP07)
+	) {
+		Game_Flag_Set(kFlagKP07McCoyPulledGun);
+		Game_Flag_Set(kFlagMcCoyAttackedReplicants);
 		// return true;
 	}
 	// return false;
@@ -144,17 +164,19 @@ void AIScriptClovis::ShotAtAndMissed() {
 }
 
 bool AIScriptClovis::ShotAtAndHit() {
-	if (!Game_Flag_Query(697)) {
-		if (Actor_Query_Goal_Number(kActorClovis) == 515) {
+	if (!Game_Flag_Query(kFlagKP07McCoyPulledGun)) {
+		if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisKP07SayFinalWords) {
 			ADQ_Flush();
-			Actor_Set_Goal_Number(kActorClovis, 599);
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisGone);
 			shotAnim();
 			Actor_Set_Targetable(kActorClovis, false);
 			ADQ_Add(kActorMcCoy, 2340, -1);
 			Music_Stop(3);
-		} else if (Actor_Query_Goal_Number(kActorClovis) == 513 || Actor_Query_Goal_Number(kActorClovis) == 518) {
+		} else if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisKP07Wait
+		        || Actor_Query_Goal_Number(kActorClovis) == kGoalClovisKP07LayDown
+		) {
 			ADQ_Flush();
-			Actor_Set_Goal_Number(kActorClovis, 599);
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisGone);
 			shotAnim();
 			Actor_Set_Targetable(kActorClovis, false);
 			Music_Stop(3);
@@ -164,20 +186,20 @@ bool AIScriptClovis::ShotAtAndHit() {
 }
 
 void AIScriptClovis::Retired(int byActorId) {
-	if (Game_Flag_Query(653)) {
+	if (Game_Flag_Query(kFlagMcCoyIsHelpingReplicants)) {
 		if (Actor_Query_In_Set(kActorClovis, kSetKP07)) {
 			Global_Variable_Decrement(kVariableReplicants, 1);
-			Actor_Set_Goal_Number(kActorClovis, 599);
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisGone);
 
 			if (Global_Variable_Query(kVariableReplicants) == 0) {
 				Player_Loses_Control();
 				Delay(2000);
 				Player_Set_Combat_Mode(false);
 				Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -41.58f, 72.0f, 0, true, false, 0);
-				Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+				Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 				Ambient_Sounds_Remove_All_Looping_Sounds(1);
-				Game_Flag_Set(579);
-				Game_Flag_Reset(653);
+				Game_Flag_Set(kFlagKP07toKP06);
+				Game_Flag_Reset(kFlagMcCoyIsHelpingReplicants);
 				Set_Enter(kSetKP05_KP06, kSceneKP06);
 			}
 		}
@@ -223,28 +245,28 @@ int AIScriptClovis::GetFriendlinessModifierIfGetsClue(int otherActorId, int clue
 
 bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	switch (newGoalNumber) {
-	case 100:
+	case kGoalClovisDefault:
 		AI_Movement_Track_Flush(kActorClovis);
 		AI_Movement_Track_Append(kActorClovis, 33, 0);
 		AI_Movement_Track_Repeat(kActorClovis);
 		return true;
 
-	case 101:
+	case kGoalClovisBB11WalkToMcCoy:
 		AI_Movement_Track_Flush(kActorClovis);
 		AI_Movement_Track_Append(kActorClovis, 319, 0);
 		AI_Movement_Track_Append(kActorClovis, 320, 0);
 		AI_Movement_Track_Repeat(kActorClovis);
 		return true;
 
-	case 102:
+	case kGoalClovisBB11StopSadik:
 		Actor_Start_Speech_Sample(kActorClovis, 0);
 		AI_Movement_Track_Flush(kActorClovis);
 		AI_Movement_Track_Append(kActorClovis, 321, 0);
 		AI_Movement_Track_Repeat(kActorClovis);
 		return true;
 
-	case 103:
-		Actor_Set_Goal_Number(kActorSadik, 107);
+	case kGoalClovisBB11TalkWithSadik:
+		Actor_Set_Goal_Number(kActorSadik, kGoalSadikBB11TalkWithClovis);
 		Actor_Says(kActorClovis, 10, 15);
 		Actor_Says(kActorSadik, 0, kAnimationModeTalk);
 		Actor_Face_Actor(kActorClovis, kActorSadik, true);
@@ -260,7 +282,7 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Change_Animation_Mode(kActorClovis, kAnimationModeSit);
 		return true;
 
-	case 105:
+	case kGoalClovisBB11TalkToMcCoy:
 		Actor_Says(kActorClovis, 60, 30);
 		Actor_Says(kActorSadik, 30, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 70, 30);
@@ -272,86 +294,86 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Face_Current_Camera(5, true);
 		Actor_Says(kActorClovis, 100, 17);
 		Delay(1000);
-		if (!Game_Flag_Query(48)) {
+		if (!Game_Flag_Query(kFlagSadikIsReplicant)) {
 			Actor_Clue_Acquire(kActorMcCoy, kClueStaggeredbyPunches, true, kActorSadik);
 		}
-		Game_Flag_Set(383);
-		Game_Flag_Reset(509);
+		Game_Flag_Set(kFlagNotUsed383);
+		Game_Flag_Reset(kFlagBB11SadikFight);
 		Global_Variable_Set(kVariableChapter, 3);
 		Actor_Set_Goal_Number(kActorClovis, 200);
 		Actor_Set_Goal_Number(kActorSadik, 200);
 		Actor_Clue_Acquire(kActorMcCoy, kClueAct2Ended, true, -1);
 		Player_Gains_Control();
-		Chapter_Enter(3, 6, 20);
-		Game_Flag_Set(550);
-		Game_Flag_Set(679);
+		Chapter_Enter(3, kSetCT08_CT51_UG12, kSceneCT08);
+		Game_Flag_Set(kFlagMcCoyTiedDown);
+		Game_Flag_Set(kFlagChapter3Intro);
 		return true;
 
-	case 300:
+	case kGoalClovisUG18Wait:
 		Actor_Put_In_Set(kActorClovis, kSetUG18);
 		Actor_Set_At_XYZ(kActorClovis, -52.26f, 0.0f, 611.02f, 900);
 		Actor_Change_Animation_Mode(kActorClovis, kAnimationModeIdle);
 		return true;
 
-	case 301:
-	case 302:
-	case 303:
-	case 310:
+	case kGoalClovisUG18SadikWillShootGuzza:
+	case kGoalClovisUG18SadikIsShootingGuzza:
+	case kGoalClovisUG18GuzzaDied:
+	case kGoalClovisUG18Leave:
 		return true;
 
-	case 350:
+	case kGoalClovisStartChapter3:
 		Actor_Put_In_Set(kActorClovis, kSetFreeSlotA);
 		Actor_Set_At_Waypoint(kActorClovis, 33, 0);
 		return true;
 
-	case 400:
+	case kGoalClovisStartChapter4:
 		AI_Movement_Track_Flush(kActorClovis);
 		Actor_Put_In_Set(kActorClovis, kSetFreeSlotA);
 		Actor_Set_At_Waypoint(kActorClovis, 33, 0);
 		return true;
 
-	case 401:
+	case kGoalClovisUG07ChaseMcCoy:
 		AI_Movement_Track_Flush(kActorClovis);
 		AI_Movement_Track_Append(kActorClovis, 341, 0);
 		AI_Movement_Track_Append(kActorClovis, 342, 0);
 		AI_Movement_Track_Repeat(kActorClovis);
 		return true;
 
-	case 402:
+	case kGoalClovisUG07KillMcCoy:
 		Player_Loses_Control();
 		Actor_Force_Stop_Walking(kActorMcCoy);
-		Actor_Face_Actor(kActorMcCoy, kActorClovis, 1);
-		Loop_Actor_Walk_To_Actor(kActorClovis, kActorMcCoy, 48, 0, 1);
-		Actor_Face_Actor(kActorClovis, kActorMcCoy, 1);
-		Actor_Change_Animation_Mode(kActorClovis, 6);
+		Actor_Face_Actor(kActorMcCoy, kActorClovis, true);
+		Loop_Actor_Walk_To_Actor(kActorClovis, kActorMcCoy, 48, false, true);
+		Actor_Face_Actor(kActorClovis, kActorMcCoy, true);
+		Actor_Change_Animation_Mode(kActorClovis, kAnimationModeCombatAttack);
 		if (Player_Query_Combat_Mode()) {
-			Actor_Change_Animation_Mode(kActorMcCoy, 49);
+			Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeCombatDie);
 		} else {
-			Actor_Change_Animation_Mode(kActorMcCoy, 48);
+			Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeDie);
 		}
 		Delay(3000);
-		Actor_Retired_Here(kActorMcCoy, 12, 48, 1, kActorClovis);
+		Actor_Retired_Here(kActorMcCoy, 12, 48, true, kActorClovis);
 		return true;
 
-	case 500:
-		Actor_Set_Goal_Number(kActorClovis, 510);
+	case kGoalClovisStartChapter5:
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisDecide);
 		return true;
 
-	case 510:
-		if (Game_Flag_Query(653)) {
-			Actor_Set_Goal_Number(kActorClovis, 513);
+	case kGoalClovisDecide:
+		if (Game_Flag_Query(kFlagMcCoyIsHelpingReplicants)) {
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP07Wait);
 		} else {
-			Actor_Set_Goal_Number(kActorClovis, 511);
-			Game_Flag_Set(685);
+			Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP06Wait);
+			Game_Flag_Set(kFlagClovisLyingDown);
 		}
 		return true;
 
-	case 511:
+	case kGoalClovisKP06Wait:
 		Actor_Put_In_Set(kActorClovis, kSetKP05_KP06);
 		Actor_Set_At_XYZ(kActorClovis, -1072.0f, 8.26f, -708.0f, 530);
 		return true;
 
-	case 512:
+	case kGoalClovisKP06TalkToMcCoy:
 		Actor_Says(kActorClovis, 110, kAnimationModeTalk);
 		Actor_Says(kActorMcCoy, 2255, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 120, kAnimationModeTalk);
@@ -359,13 +381,13 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Says(kActorClovis, 140, kAnimationModeTalk);
 		Actor_Says(kActorMcCoy, 2260, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 150, kAnimationModeTalk);
-		Actor_Set_Goal_Number(kActorClovis, 513);
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP07Wait);
 		return true;
 
-	case 513:
+	case kGoalClovisKP07Wait:
 		Actor_Put_In_Set(kActorClovis, kSetKP07);
 		Actor_Set_Targetable(kActorClovis, true);
-		if (Game_Flag_Query(653)) {
+		if (Game_Flag_Query(kFlagMcCoyIsHelpingReplicants)) {
 			Global_Variable_Set(kVariableReplicants, 0);
 			Global_Variable_Increment(kVariableReplicants, 1);
 			Actor_Set_At_XYZ(kActorClovis, 45.0f, -41.52f, -85.0f, 750);
@@ -376,12 +398,12 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		someAnim();
 		return true;
 
-	case 514:
+	case kGoalClovisKP07TalkToMcCoy:
 		Actor_Says(kActorMcCoy, 2345, 16);
 		Actor_Says(kActorClovis, 170, -1);
 		Actor_Says(kActorClovis, 180, kAnimationModeTalk);
 		Actor_Says(kActorMcCoy, 2350, 17);
-		if (!Game_Flag_Query(714)) {
+		if (!Game_Flag_Query(kFlagMcCoyAttackedReplicants)) {
 			Actor_Says(kActorMcCoy, 2355, 11);
 		}
 		Actor_Says(kActorClovis, 190, -1);
@@ -389,10 +411,10 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Says(kActorMcCoy, 2360, 18);
 		Actor_Says(kActorClovis, 210, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 220, -1);
-		Actor_Set_Goal_Number(kActorClovis, 515);
+		Actor_Set_Goal_Number(kActorClovis, kGoalClovisKP07SayFinalWords);
 		return true;
 
-	case 515:
+	case kGoalClovisKP07SayFinalWords:
 		ADQ_Add(kActorClovis, 240, -1);
 		ADQ_Add(kActorClovis, 250, -1);
 		ADQ_Add(kActorClovis, 260, -1);
@@ -403,7 +425,7 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		ADQ_Add(kActorClovis, 300, -1);
 		return true;
 
-	case 516:
+	case kGoalClovisKP07FlyAway:
 		Actor_Says(kActorMcCoy, 8501, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 1260, kAnimationModeTalk);
 		Actor_Says(kActorMcCoy, 8502, kAnimationModeTalk);
@@ -413,43 +435,70 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Says(kActorMcCoy, 8505, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 1300, kAnimationModeTalk);
 		Actor_Says(kActorClovis, 1310, kAnimationModeTalk);
-		Ambient_Sounds_Remove_All_Non_Looping_Sounds(1);
+		Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 		Ambient_Sounds_Remove_All_Looping_Sounds(1);
-		Outtake_Play(20, 0, -1);
-		if (Global_Variable_Query(kVariableAffectionTowards) == 3 && Game_Flag_Query(46)) {
-			Outtake_Play(21, 0, -1);
-		} else if (Global_Variable_Query(kVariableAffectionTowards) == 2 && Game_Flag_Query(47)) {
-			Outtake_Play(22, 0, -1);
+		Outtake_Play(kOuttakeEnd4A, 0, -1);
+		if (Global_Variable_Query(kVariableAffectionTowards) == kAffectionTowardsLucy
+		 && Game_Flag_Query(kFlagLucyIsReplicant)
+		) {
+			Outtake_Play(kOuttakeEnd4B, 0, -1);
+		} else if (Global_Variable_Query(kVariableAffectionTowards) == kAffectionTowardsDektora
+		       && Game_Flag_Query(kFlagDektoraIsReplicant)
+		) {
+			Outtake_Play(kOuttakeEnd4C, 0, -1);
 		}
-		Outtake_Play(23, 0, -1);
+		Outtake_Play(kOuttakeEnd4D, 0, -1);
 		Game_Over();
 		return true;
 
-	case 517:
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorLucy, kSetKP07)) {
-			Actor_Set_Goal_Number(kActorLucy, 599);
+	case kGoalClovisKP07ReplicantsAttackMcCoy:
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorLucy, kSetKP07)
+		) {
+			Actor_Set_Goal_Number(kActorLucy, kGoalLucyGone);
 			Global_Variable_Decrement(kVariableReplicants, 1);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorLuther, kSetKP07)) {
-			Actor_Set_Goal_Number(kActorLuther, 599);
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorLuther, kSetKP07)
+		) {
+			Actor_Set_Goal_Number(kActorLuther, kGoalLutherGone);
 			Global_Variable_Decrement(kVariableReplicants, 1);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorDektora, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorDektora, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorDektora, kActorCombatStateIdle, false, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorZuben, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorZuben, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorZuben, kActorCombatStateIdle, false, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorSadik, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorSadik, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorSadik, kActorCombatStateIdle, true, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorIzo, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorIzo, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorIzo, kActorCombatStateIdle, false, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorGordo, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorGordo, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorGordo, kActorCombatStateIdle, true, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
-		if (Global_Variable_Query(kVariableChapter) == 5 && Actor_Query_In_Set(kActorClovis, kSetKP07)) {
+
+		if (Global_Variable_Query(kVariableChapter) == 5
+		 && Actor_Query_In_Set(kActorClovis, kSetKP07)
+		) {
 			Non_Player_Actor_Combat_Mode_On(kActorClovis, kActorCombatStateIdle, false, kActorMcCoy, 19, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 10, 300, false);
 		}
 		return true;
@@ -458,7 +507,7 @@ bool AIScriptClovis::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Set_At_XYZ(kActorClovis, 84.85f, -50.56f, -68.87f, 800);
 		Actor_Face_Heading(kActorClovis, 1022, false);
 		Actor_Set_Targetable(kActorClovis, true);
-		Game_Flag_Set(685);
+		Game_Flag_Set(kFlagClovisLyingDown);
 		someAnim();
 		return true;
 
@@ -540,7 +589,7 @@ bool AIScriptClovis::UpdateAnimation(int *animation, int *frame) {
 		break;
 
 	case 1:
-		if (!_var1) {
+		if (_var1 == 0) {
 			*animation = 228;
 		}
 		if (_var1 == 1) {
@@ -593,8 +642,8 @@ bool AIScriptClovis::UpdateAnimation(int *animation, int *frame) {
 			_animationState = 2;
 			_animationFrame = 0;
 			*animation = 238;
-			if (Actor_Query_Goal_Number(kActorClovis) == 103) {
-				Actor_Set_Goal_Number(kActorClovis, 104);
+			if (Actor_Query_Goal_Number(kActorClovis) == kGoalClovisBB11TalkWithSadik) {
+				Actor_Set_Goal_Number(kActorClovis, kGoalClovisBB11PrepareTalkToMcCoy);
 			}
 		}
 		break;
@@ -1049,7 +1098,9 @@ bool AIScriptClovis::UpdateAnimation(int *animation, int *frame) {
 
 	case 33:
 		*animation = 244;
-		if (!_animationFrame && _flag) {
+		if (_animationFrame == 0
+		 && _flag
+		) {
 			_animationState = 32;
 			_animationFrame = 0;
 			Actor_Change_Animation_Mode(kActorClovis, 54);
@@ -1159,39 +1210,40 @@ bool AIScriptClovis::UpdateAnimation(int *animation, int *frame) {
 bool AIScriptClovis::ChangeAnimationMode(int mode) {
 	switch (mode) {
 	case kAnimationModeIdle:
-		if (!Game_Flag_Query(685)) {
-			switch (_animationState) {
-			case 2:
-				Actor_Change_Animation_Mode(kActorClovis, kAnimationModeSit);
-				break;
-			case 4:
-				break;
-			case 5:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-				_flag = 1;
-				break;
-			case 12:
-				_flag = 1;
-				break;
-			case 13:
-				_animationState = 15;
-				_animationFrame = 0;
-				break;
-			default:
-				_animationState = 0;
-				_animationFrame = 0;
-				_var1 = 0;
-				break;
-			}
+		if (Game_Flag_Query(kFlagClovisLyingDown)) {
+			_animationState = 32;
+			_animationFrame = 0;
 			break;
 		}
-		_animationState = 32;
-		_animationFrame = 0;
+
+		switch (_animationState) {
+		case 2:
+			Actor_Change_Animation_Mode(kActorClovis, kAnimationModeSit);
+			break;
+		case 4:
+			break;
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+			_flag = 1;
+			break;
+		case 12:
+			_flag = 1;
+			break;
+		case 13:
+			_animationState = 15;
+			_animationFrame = 0;
+			break;
+		default:
+			_animationState = 0;
+			_animationFrame = 0;
+			_var1 = 0;
+			break;
+		}
 		break;
 
 	case kAnimationModeWalk:
@@ -1206,7 +1258,7 @@ bool AIScriptClovis::ChangeAnimationMode(int mode) {
 
 	case kAnimationModeTalk:
 	case 9:
-		if (Game_Flag_Query(685)) {
+		if (Game_Flag_Query(kFlagClovisLyingDown)) {
 			_animationFrame = 0;
 			_animationState = 34;
 		} else {
@@ -1441,7 +1493,7 @@ void AIScriptClovis::shotAnim() {
 }
 
 void AIScriptClovis::someAnim() {
-	if (Game_Flag_Query(685)) {
+	if (Game_Flag_Query(kFlagClovisLyingDown)) {
 		_animationState = 32;
 		_animationFrame = 0;
 		return;

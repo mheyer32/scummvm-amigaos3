@@ -35,9 +35,9 @@
 
 #include "graphics/surface.h"
 
-//TODO: remove these when game is playable
+//TODO: change this to debugflag
 #define BLADERUNNER_DEBUG_CONSOLE 0
-#define BLADERUNNER_DEBUG_GAME 0
+#define BLADERUNNER_ORIGINAL_SETTINGS 0
 
 namespace Common {
 struct Event;
@@ -60,6 +60,7 @@ class ActorDialogueQueue;
 class ScreenEffects;
 class AIScripts;
 class AmbientSounds;
+class AudioCache;
 class AudioMixer;
 class AudioPlayer;
 class AudioSpeech;
@@ -105,11 +106,7 @@ class ZBuffer;
 
 class BladeRunnerEngine : public Engine {
 public:
-#if BLADERUNNER_DEBUG_GAME
-	static const int kArchiveCount = 100;
-#else
 	static const int kArchiveCount = 11; // +1 to original value (10) to accommodate for SUBTITLES.MIX resource
-#endif
 	static const int kActorCount = 100;
 	static const int kActorVoiceOver = kActorCount - 1;
 
@@ -122,6 +119,7 @@ public:
 	ScreenEffects      *_screenEffects;
 	AIScripts          *_aiScripts;
 	AmbientSounds      *_ambientSounds;
+	AudioCache         *_audioCache;
 	AudioMixer         *_audioMixer;
 	AudioPlayer        *_audioPlayer;
 	AudioSpeech        *_audioSpeech;
@@ -175,7 +173,6 @@ public:
 
 	Graphics::Surface  _surfaceFront;
 	Graphics::Surface  _surfaceBack;
-	Graphics::Surface  _surface4;
 
 	ZBuffer           *_zbuffer;
 
@@ -190,7 +187,8 @@ public:
 	bool _interruptWalking;
 	bool _playerActorIdle;
 	bool _playerDead;
-	bool _speechSkipped;
+	bool _actorIsSpeaking;
+	bool _actorSpeakStopIsRequested;
 	bool _gameOver;
 	int  _gameAutoSave;
 	bool _gameIsLoading;
@@ -198,6 +196,8 @@ public:
 	bool _vqaIsPlaying;
 	bool _vqaStopIsRequested;
 	bool _subtitlesEnabled; // tracks the state of whether subtitles are enabled or disabled from ScummVM GUI option or KIA checkbox (the states are synched)
+	bool _sitcomMode;
+	bool _shortyMode;
 
 	int _walkSoundId;
 	int _walkSoundVolume;
@@ -236,8 +236,9 @@ public:
 	Common::Error loadGameState(int slot) override;
 	bool canSaveGameStateCurrently() override;
 	Common::Error saveGameState(int slot, const Common::String &desc) override;
+	void pauseEngineIntern(bool pause) override;
 
-	Common::Error run();
+	Common::Error run() override;
 
 	bool startup(bool hasSavegames = false);
 	void initChapterAndScene();
@@ -279,7 +280,6 @@ public:
 	bool isSubtitlesEnabled();
 	void setSubtitlesEnabled(bool newVal);
 
-
 	Common::SeekableReadStream *getResourceStream(const Common::String &name);
 
 	bool playerHasControl();
@@ -290,7 +290,7 @@ public:
 	bool saveGame(Common::WriteStream &stream, const Graphics::Surface &thumbnail);
 	bool loadGame(Common::SeekableReadStream &stream);
 	void newGame(int difficulty);
-	void autoSaveGame();
+	void autoSaveGame(int textId, bool endgame);
 
 	void ISez(const Common::String &str);
 

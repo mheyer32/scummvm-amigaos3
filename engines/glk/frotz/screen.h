@@ -23,11 +23,6 @@
 #ifndef GLK_FROTZ_FONTS
 #define GLK_FROTZ_FONTS
 
-#include "graphics/font.h"
-#include "graphics/surface.h"
-#include "common/archive.h"
-#include "common/array.h"
-#include "common/rect.h"
 #include "glk/screen.h"
 
 namespace Glk {
@@ -37,6 +32,16 @@ namespace Frotz {
  * Derived screen class that adds in the Infocom character graphics font
  */
 class FrotzScreen : public Glk::Screen {
+private:
+	/**
+	 * Handles loading fonts for V6 games
+	 */
+	void loadVersion6Fonts(Common::Archive *archive);
+
+	/**
+	 * Handles loading the character graphics and runic fonts
+	 */
+	void loadExtraFonts(Common::Archive *archive);
 protected:
 	/**
 	 * Load the fonts
@@ -47,42 +52,6 @@ public:
 	 * Constructor
 	 */
 	FrotzScreen();
-};
-
-/**
- * Implements a fixed width font stored as a grid on a passed surface
- */
-class BitmapFont : public Graphics::Font {
-private:
-	Common::Array<Graphics::ManagedSurface> _chars;
-	size_t _startingChar;
-	Common::Point _size;
-public:
-	/**
-	 * Constructor
-	 */
-	BitmapFont(const Graphics::Surface &src, const Common::Point &size,
-		uint srcWidth = 8, uint srcHeight = 8, unsigned char startingChar = ' ');
-
-	/**
-	 * Get the font height
-	 */
-	virtual int getFontHeight() const override { return _size.y; }
-
-	/**
-	 * Get the maximum character width
-	 */
-	virtual int getMaxCharWidth() const override { return _size.x; }
-
-	/**
-	 * Get the width of the given character
-	 */
-	virtual int getCharWidth(uint32 chr) const override { return _size.x; }
-
-	/**
-	 * Draw a character
-	 */
-	virtual void drawChar(Graphics::Surface *dst, uint32 chr, int x, int y, uint32 color) const override;
 };
 
 } // End of namespace Frotz

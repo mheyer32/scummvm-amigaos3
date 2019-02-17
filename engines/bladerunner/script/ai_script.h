@@ -102,20 +102,19 @@ DECLARE_SCRIPT(McCoy)
 	int dword_45A0E4;
 	float off_45A0EC;
 	int dword_45A0E8;
-	int dword_45A0F0;
-	int dword_45A0F4;
-	int dword_45A0F8;
-	int dword_45A0FC;
-	float off_45A100;
-	float flt_462710;
-	float flt_462714;
+	int _animationStateNextSpecial;
+	int _animationNextSpecial;
+	int _nextSoundId;
+	bool _NR10SteeleShooting;
+	float _fallSpeed;
+	float _fallHeightCurrent;
+	float _fallHeightTarget;
 
-	void sub_4053E0();
-	void sub_4054F0();
+	void fallDown();
+	void UG15fall();
 	void sub_405660();
 	void sub_405800();
 	void dodge();
-	void sub_405920();
 	void sub_405940(float a1);
 	void sub_4059D0(float a1);
 END_SCRIPT
@@ -137,11 +136,11 @@ DECLARE_SCRIPT(Gordo)
 	int _frameMax;
 	int _state;
 
-	void sub_40FD00();
-	void sub_4103B8();
-	void sub_410590();
-	void sub_41090C();
-	void sub_41117C();
+	void talkToMcCoyInCity();
+	void talkToMcCoyAtNR02();
+	void dialogue2();
+	void dialogue1();
+	void unknown();
 END_SCRIPT
 
 DECLARE_SCRIPT(Dektora)
@@ -174,7 +173,7 @@ END_SCRIPT
 DECLARE_SCRIPT(Lucy)
 	bool _flag;
 
-	void voightKempTest();
+	void voightKampffTest();
 	void checkCombat();
 END_SCRIPT
 
@@ -185,7 +184,7 @@ DECLARE_SCRIPT(Izo)
 	int _var4;
 	bool _flag;
 
-	void someDialog();
+	void dialogueWithIzo();
 	void modifyWaypoints();
 END_SCRIPT
 
@@ -290,7 +289,7 @@ END_SCRIPT
 
 DECLARE_SCRIPT(Hanoi)
 	int _var1;
-	int _var2;
+	bool _flag1;
 	int _var3;
 	int _var4;
 END_SCRIPT
@@ -299,8 +298,8 @@ DECLARE_SCRIPT(Baker)
 END_SCRIPT
 
 DECLARE_SCRIPT(DeskClerk)
-	int _var1;
-	int _var2;
+	bool _flag1;
+	bool _flag2;
 	int _var3;
 END_SCRIPT
 
@@ -445,12 +444,12 @@ DECLARE_SCRIPT(Newscaster)
 END_SCRIPT
 
 DECLARE_SCRIPT(Leon)
-	int var_45EDAC;
-	float var_45EDA0_z;
-	float var_45EDA4_y;
-	float var_45EDA8_x;
+	bool _flag;
+	float _mcCoyPositionX;
+	float _mcCoyPositionY;
+	float _mcCoyPositionZ;
 
-	float sub_446700(int actorId, float x, float y, float z);
+	float distanceTo(int actorId, float x, float y, float z);
 END_SCRIPT
 
 DECLARE_SCRIPT(MaleAnnouncer)
@@ -459,12 +458,12 @@ END_SCRIPT
 DECLARE_SCRIPT(FreeSlotA)
 	int _var1;
 	int _var2;
-	float _var3;
-	float _var4;
-	float _var5;
+	float _fallSpeed;
+	float _fallHeightCurrent;
+	float _fallHeightTarget;
 
 	void calcHit();
-	void processGoal306();
+	void goToRandomUGxx();
 END_SCRIPT
 
 DECLARE_SCRIPT(FreeSlotB)
@@ -481,8 +480,8 @@ DECLARE_SCRIPT(Maggie)
 	int var_45F404;
 	int var_45F408;
 
-	int sub_44B260();
-	float sub_44B200(int actorId, float x, float y, float z);
+	int randomWaypointMA02();
+	float distanceToActor(int actorId, float x, float y, float z);
 END_SCRIPT
 
 DECLARE_SCRIPT(GenericWalkerA)

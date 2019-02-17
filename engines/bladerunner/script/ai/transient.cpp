@@ -56,16 +56,16 @@ bool AIScriptTransient::Update() {
 	}
 
 	if ( Global_Variable_Query(kVariableChapter) == 3
-	 &&  Game_Flag_Query(kFlagMcCoyKilledHomeless)
-	 &&  Game_Flag_Query(kFlagHomelessBodyInDumpster)
-	 && !Game_Flag_Query(kFlagHomelessBodyFound)
-	 && !Game_Flag_Query(kFlagDumpsterEmptied)
+	 &&  Game_Flag_Query(kFlagCT04HomelessKilledByMcCoy)
+	 &&  Game_Flag_Query(kFlagCT04HomelessBodyInDumpster)
+	 && !Game_Flag_Query(kFlagCT04HomelessBodyFound)
+	 && !Game_Flag_Query(kFlagCT04HomelessBodyThrownAway)
 	) {
-		Game_Flag_Set(kFlagDumpsterEmptied);
+		Game_Flag_Set(kFlagCT04HomelessBodyThrownAway);
 	}
 
 	if (Global_Variable_Query(kVariableChapter) < 4
-	 && Game_Flag_Query(kFlagHomelessBodyFound)
+	 && Game_Flag_Query(kFlagCT04HomelessBodyFound)
 	 && Actor_Query_Goal_Number(kActorTransient) != 6
 	 && Actor_Query_Goal_Number(kActorTransient) != 599
 	) {
@@ -148,7 +148,7 @@ void AIScriptTransient::ShotAtAndMissed() {
 
 bool AIScriptTransient::ShotAtAndHit() {
 	Actor_Set_Frame_Rate_FPS(kActorTransient, 8);
-	if (Game_Flag_Query(716)) {
+	if (Game_Flag_Query(kFlagUG13HomelessLayingdown)) {
 		_animationState = 11;
 	} else {
 		_animationState = 14;
@@ -163,7 +163,7 @@ bool AIScriptTransient::ShotAtAndHit() {
 		Actor_Set_Goal_Number(kActorTransient, 599);
 	}
 
-	Game_Flag_Set(kFlagMcCoyKilledHomeless);
+	Game_Flag_Set(kFlagCT04HomelessKilledByMcCoy);
 
 	return false;
 }
@@ -172,7 +172,7 @@ void AIScriptTransient::Retired(int byActorId) {
 	Actor_Set_Goal_Number(kActorTransient, 599);
 
 	if (Global_Variable_Query(kVariableChapter) == 4) {
-		Game_Flag_Set(607);
+		Game_Flag_Set(kFlagMcCoyRetiredHuman);
 	}
 }
 
@@ -203,7 +203,7 @@ bool AIScriptTransient::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Set_At_XYZ(kActorTransient, -310.0, 55.0, -350.0, 400);
 		Actor_Change_Animation_Mode(kActorTransient, 53);
 		Actor_Set_Targetable(kActorTransient, true);
-		Game_Flag_Set(716);
+		Game_Flag_Set(kFlagUG13HomelessLayingdown);
 		return true;
 	case 391:
 		Actor_Change_Animation_Mode(kActorTransient, 53);
@@ -461,7 +461,7 @@ bool AIScriptTransient::ChangeAnimationMode(int mode) {
 		_animationFrame = 0;
 		break;
 	case 21:
-		if (Game_Flag_Query(716)) {
+		if (Game_Flag_Query(kFlagUG13HomelessLayingdown)) {
 			_animationState = 11;
 		} else {
 			_animationState = 14;

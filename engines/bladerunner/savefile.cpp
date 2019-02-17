@@ -41,6 +41,7 @@ SaveStateList SaveFileManager::list(const Common::String &target) {
 	for (Common::StringArray::const_iterator fileName = files.begin(); fileName != files.end(); ++fileName) {
 		Common::InSaveFile *saveFile = saveFileMan->openForLoading(*fileName);
 		if (saveFile == nullptr || saveFile->err()) {
+			delete saveFile;
 			continue;
 		}
 
@@ -49,6 +50,8 @@ SaveStateList SaveFileManager::list(const Common::String &target) {
 
 		int slotNum = atoi(fileName->c_str() + fileName->size() - 3);
 		saveList.push_back(SaveStateDescriptor(slotNum, header._name));
+
+		delete saveFile;
 	}
 
 	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
@@ -124,7 +127,7 @@ bool SaveFileManager::readHeader(Common::SeekableReadStream &in, SaveFileHeader 
 
 		s.skip(4); //skip size;
 
-		void *thumbnailData = new byte[kThumbnailSize]; // freed by ScummVM's smartptr
+		void *thumbnailData = malloc(kThumbnailSize); // freed by ScummVM's smartptr
 		s.read(thumbnailData, kThumbnailSize);
 
 		// TODO: cleanup - remove magic constants

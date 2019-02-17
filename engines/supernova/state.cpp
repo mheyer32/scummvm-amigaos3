@@ -290,7 +290,8 @@ StringId GameManager::guiStatusCommands[] = {
 GameManager::GameManager(SupernovaEngine *vm, Sound *sound)
 	: _inventory(&_nullObject, _inventoryScroll)
 	, _vm(vm)
-	, _sound(sound) {
+    , _sound(sound)
+    , _mouseClickType(Common::EVENT_INVALID) {
 	initRooms();
 	changeRoom(INTRO);
 	initState();
@@ -2004,6 +2005,9 @@ bool GameManager::genericInteract(Action verb, Object &obj1, Object &obj2) {
 			takeObject(*_rooms[ROGER]->getObject(8));
 		}
 	} else if ((verb == ACTION_LOOK) && (obj1._id == NEWSPAPER)) {
+		animationOff();
+		saveTime();
+
 		_vm->renderMessage(kStringGenericInteract_10);
 		waitOnInput(_messageDuration);
 		_vm->removeMessage();
@@ -2017,6 +2021,9 @@ bool GameManager::genericInteract(Action verb, Object &obj1, Object &obj2) {
 		_vm->renderRoom(*_currentRoom);
 		roomBrightness();
 		_vm->renderMessage(kStringGenericInteract_12);
+
+		loadTime();
+		animationOn();
 	} else if ((verb == ACTION_LOOK) && (obj1._id == KEYCARD2)) {
 		_vm->renderMessage(obj1._description);
 		obj1._description = kStringKeycard2Description2;

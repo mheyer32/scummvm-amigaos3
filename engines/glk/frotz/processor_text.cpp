@@ -570,7 +570,7 @@ void Processor::handleAbbreviations() {
 
 	// Check for standard abbreviations
 	if (word == "g")
-		word == "again";
+		word = "again";
 	else if (word == "o")
 		word = "oops";
 	else if (word == "x")
@@ -879,7 +879,7 @@ void Processor::z_print_obj() {
 }
 
 void Processor::z_print_paddr() {
-	decode_text (HIGH_STRING, zargs[0]);
+	decode_text(HIGH_STRING, zargs[0]);
 }
 
 void Processor::z_print_ret() {

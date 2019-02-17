@@ -58,7 +58,7 @@ void InitScript::Init_Globals() {
 	for (int i = 0; i != 55; ++i)
 		Global_Variable_Set(i, 0);
 
-	Global_Variable_Set(35, 2);
+	Global_Variable_Set(kVariableGenericWalkerConfig, 2);
 	Global_Variable_Set(kVariableChapter, 1);
 	Global_Variable_Set(kVariableChinyen, 100);
 
@@ -79,38 +79,51 @@ void InitScript::Init_Game_Flags() {
 	if (Random_Query(1, 2) == 1) {
 		Game_Flag_Set(kFlagIzoIsReplicant);
 	}
+
 	if (Random_Query(1, 2) == 1) {
 		Game_Flag_Set(kFlagGordoIsReplicant);
 	}
+
 	if (Random_Query(1, 2) == 1) {
 		Game_Flag_Set(kFlagLucyIsReplicant);
 	}
+
 	if (Random_Query(1, 2) == 1) {
 		Game_Flag_Set(kFlagDektoraIsReplicant);
 	}
+
 	if (Random_Query(1, 2) == 1) {
 		Game_Flag_Set(kFlagSadikIsReplicant);
 	}
+
 	if (Random_Query(1, 2) == 1) {
-		Game_Flag_Set(560);
+		Game_Flag_Set(kFlagLutherLanceIsReplicant);
 	}
-	if (!Game_Flag_Query(kFlagGordoIsReplicant) && !Game_Flag_Query(kFlagLucyIsReplicant) && !Game_Flag_Query(kFlagDektoraIsReplicant)) {
+
+	if (!Game_Flag_Query(kFlagGordoIsReplicant)
+	 && !Game_Flag_Query(kFlagLucyIsReplicant)
+	 && !Game_Flag_Query(kFlagDektoraIsReplicant)
+	) {
 		Game_Flag_Set(kFlagDektoraIsReplicant);
 	}
 
 	if (Game_Flag_Query(kFlagDektoraIsReplicant)) {
-		Global_Variable_Set(40, 1);
-	} else if (Game_Flag_Query(kFlagGordoIsReplicant) && !Game_Flag_Query(kFlagLucyIsReplicant)) {
-		Global_Variable_Set(40, 2);
-	} else if (!Game_Flag_Query(kFlagGordoIsReplicant) && Game_Flag_Query(kFlagLucyIsReplicant)) {
-		Global_Variable_Set(40, 3);
+		Global_Variable_Set(kVariableHollowayArrest, 1);
+	} else if ( Game_Flag_Query(kFlagGordoIsReplicant)
+	        && !Game_Flag_Query(kFlagLucyIsReplicant)
+	) {
+		Global_Variable_Set(kVariableHollowayArrest, 2);
+	} else if (!Game_Flag_Query(kFlagGordoIsReplicant)
+	        &&  Game_Flag_Query(kFlagLucyIsReplicant)
+	) {
+		Global_Variable_Set(kVariableHollowayArrest, 3);
 	} else if (Random_Query(1, 2) == 1) {
-		Global_Variable_Set(40, 2);
+		Global_Variable_Set(kVariableHollowayArrest, 2);
 	} else {
-		Global_Variable_Set(40, 3);
+		Global_Variable_Set(kVariableHollowayArrest, 3);
 	}
 
-	Game_Flag_Set(kFlagMcCoyAtRCxx);
+	Game_Flag_Set(kFlagMcCoyInRunciters);
 	Game_Flag_Set(kFlagSpinnerAtRC01);
 }
 

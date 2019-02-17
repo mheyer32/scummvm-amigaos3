@@ -40,11 +40,20 @@ class Debugger : public GUI::Debugger{
 	BladeRunnerEngine *_vm;
 
 public:
-	bool _viewSceneObjects;
+	bool _isDebuggerOverlay;
+
 	bool _viewActorsOnly;
+	bool _viewFogs;
+	bool _viewLights;
+	bool _viewScreenEffects;
+	bool _viewSceneObjects;
 	bool _viewObstacles;
+	bool _viewRegions;
 	bool _viewUI;
+	bool _viewWaypoints;
+	bool _viewWalkboxes;
 	bool _viewZBuffer;
+
 
 	Debugger(BladeRunnerEngine *vm);
 	~Debugger();
@@ -60,12 +69,22 @@ public:
 	bool cmdScene(int argc, const char **argv);
 	bool cmdVariable(int argc, const char **argv);
 	bool cmdClue(int argc, const char **argv);
+	bool cmdTimer(int argc, const char **argv);
+	bool cmdFriend(int argc, const char **argv);
 	bool cmdLoad(int argc, const char **argv);
 	bool cmdSave(int argc, const char **argv);
 
+	void drawDebuggerOverlay();
+
 	void drawBBox(Vector3 start, Vector3 end, View *view, Graphics::Surface *surface, int color);
 	void drawSceneObjects();
-	void drawZBuffer();
+	void drawActors();
+	void drawLights();
+	void drawFogs();
+	void drawRegions();
+	void drawWaypoints();
+	void drawWalkboxes();
+	void drawScreenEffects();
 };
 
 } // End of namespace BladeRunner
