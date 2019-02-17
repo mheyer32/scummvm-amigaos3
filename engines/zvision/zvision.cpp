@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -34,13 +34,13 @@
 #include "zvision/text/text.h"
 #include "zvision/text/truetype_font.h"
 #include "zvision/sound/midi.h"
-#include "zvision/file/zfs_archive.h"
 
 #include "common/config-manager.h"
 #include "common/str.h"
 #include "common/debug.h"
 #include "common/debug-channels.h"
 #include "common/textconsole.h"
+#include "common/timer.h"
 #include "common/error.h"
 #include "common/system.h"
 #include "common/file.h"
@@ -191,6 +191,15 @@ void ZVision::initialize() {
 		}
 	}
 
+	Graphics::ModeList modes;
+	modes.push_back(Graphics::Mode(WINDOW_WIDTH, WINDOW_HEIGHT));
+#if defined(USE_MPEG2) && defined(USE_A52)
+	// For the DVD version of ZGI we can play high resolution videos
+	if (getGameId() == GID_GRANDINQUISITOR && (getFeatures() & GF_DVD))
+		modes.push_back(Graphics::Mode(HIRES_WINDOW_WIDTH, HIRES_WINDOW_HEIGHT));
+#endif
+	initGraphicsModes(modes);
+
 	initScreen();
 
 	// Register random source
@@ -219,8 +228,8 @@ void ZVision::initialize() {
 
 	loadSettings();
 
-#ifndef USE_MPEG2
-	// libmpeg2 not loaded, disable the MPEG2 movies option
+#if !defined(USE_MPEG2) || !defined(USE_A52)
+	// libmpeg2 or liba52 not loaded, disable the MPEG2 movies option
 	_scriptManager->setStateValue(StateKey_MPEGMovies, 2);
 #endif
 
@@ -276,7 +285,8 @@ Common::Error ZVision::run() {
 
 			if (!Common::File::exists(fontName) && !_searchManager->hasFile(fontName) &&
 				!Common::File::exists(liberationFontName) && !_searchManager->hasFile(liberationFontName) &&
-				!Common::File::exists(freeFontName) && !_searchManager->hasFile(freeFontName)) {
+				!Common::File::exists(freeFontName) && !_searchManager->hasFile(freeFontName) &&
+				!Common::File::exists("fonts.dat") && !_searchManager->hasFile("fonts.dat")) {
 				foundAllFonts = false;
 				break;
 			}
@@ -401,13 +411,13 @@ void ZVision::initScreen() {
 						((WINDOW_HEIGHT - workingWindowHeight) / 2) + workingWindowHeight
 					 );
 
-	initGraphics(WINDOW_WIDTH, WINDOW_HEIGHT, true, &_screenPixelFormat);
+	initGraphics(WINDOW_WIDTH, WINDOW_HEIGHT, &_screenPixelFormat);
 }
 
 void ZVision::initHiresScreen() {
 	_renderManager->upscaleRect(_workingWindow);
 
-	initGraphics(HIRES_WINDOW_WIDTH, HIRES_WINDOW_HEIGHT, true, &_screenPixelFormat);
+	initGraphics(HIRES_WINDOW_WIDTH, HIRES_WINDOW_HEIGHT, &_screenPixelFormat);
 }
 
 } // End of namespace ZVision

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{929EDEBE-B753-4187-AE95-E6A45BC0389C}</ProjectGuid>
+		<ProjectGuid>{7FAFF641-A357-49EF-A8E4-F993DC082D72}</ProjectGuid>
 		<RootNamespace>scummvm</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -116,7 +116,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analysis|Win32'">
@@ -126,7 +126,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LLVM|Win32'">
@@ -136,7 +136,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -145,7 +145,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -155,7 +155,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analysis|x64'">
@@ -165,7 +165,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LLVM|x64'">
@@ -175,7 +175,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,7 +184,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;opengl32.lib;sdl.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemGroup>
@@ -207,7 +207,9 @@
 		<ClCompile Include="..\..\audio\decoders\xa.cpp" />
 		<ClCompile Include="..\..\audio\mods\infogrames.cpp" />
 		<ClCompile Include="..\..\audio\mods\maxtrax.cpp" />
+		<ClCompile Include="..\..\audio\mods\mod_xm_s3m.cpp" />
 		<ClCompile Include="..\..\audio\mods\module.cpp" />
+		<ClCompile Include="..\..\audio\mods\module_mod_xm_s3m.cpp" />
 		<ClCompile Include="..\..\audio\mods\paula.cpp" />
 		<ClCompile Include="..\..\audio\mods\protracker.cpp" />
 		<ClCompile Include="..\..\audio\mods\rjp1.cpp" />
@@ -219,10 +221,17 @@
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_driver.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_fmsynth.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_plugins.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\c_interface\c_interface.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\sha1\sha1.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\Analog.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\BReverbModel.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\File.cpp">
+			<ObjectFileName>$(IntDir)audio_softsynth_mt32_%(Filename).obj</ObjectFileName>
+		</ClCompile>
+		<ClCompile Include="..\..\audio\softsynth\mt32\FileStream.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\LA32Ramp.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\LA32WaveGenerator.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\MidiStreamParser.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\Part.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\Partial.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\PartialManager.cpp" />
@@ -262,18 +271,61 @@
 		<ClCompile Include="..\..\audio\rate.cpp" />
 		<ClCompile Include="..\..\audio\timestamp.cpp" />
 		<ClCompile Include="..\..\backends\audiocd\default\default-audiocd.cpp" />
-		<ClCompile Include="..\..\backends\audiocd\sdl\sdl-audiocd.cpp" />
+		<ClCompile Include="..\..\backends\audiocd\win32\win32-audiocd.cpp" />
+		<ClCompile Include="..\..\backends\audiocd\audiocd-stream.cpp" />
+		<ClCompile Include="..\..\backends\cloud\box\boxlistdirectorybyidrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\box\boxstorage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\box\boxtokenrefresher.cpp" />
+		<ClCompile Include="..\..\backends\cloud\box\boxuploadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\dropbox\dropboxcreatedirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\dropbox\dropboxinforequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\dropbox\dropboxlistdirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\dropbox\dropboxstorage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\dropbox\dropboxuploadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\googledrive\googledrivelistdirectorybyidrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\googledrive\googledrivestorage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\googledrive\googledrivetokenrefresher.cpp" />
+		<ClCompile Include="..\..\backends\cloud\googledrive\googledriveuploadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\idcreatedirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\iddownloadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\idlistdirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\idresolveidrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\idstorage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\id\idstreamfilerequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivecreatedirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivelistdirectoryrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivestorage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivetokenrefresher.cpp" />
+		<ClCompile Include="..\..\backends\cloud\onedrive\onedriveuploadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\cloudicon.cpp" />
+		<ClCompile Include="..\..\backends\cloud\cloudmanager.cpp" />
+		<ClCompile Include="..\..\backends\cloud\downloadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\folderdownloadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\iso8601.cpp" />
+		<ClCompile Include="..\..\backends\cloud\savessyncrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\storage.cpp" />
+		<ClCompile Include="..\..\backends\cloud\storagefile.cpp" />
 		<ClCompile Include="..\..\backends\events\default\default-events.cpp" />
 		<ClCompile Include="..\..\backends\events\sdl\sdl-events.cpp" />
 		<ClCompile Include="..\..\backends\fs\windows\windows-fs-factory.cpp" />
 		<ClCompile Include="..\..\backends\fs\windows\windows-fs.cpp" />
 		<ClCompile Include="..\..\backends\fs\abstract-fs.cpp" />
 		<ClCompile Include="..\..\backends\fs\stdiostream.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\pipelines\clut8.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\pipelines\fixed.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\pipelines\pipeline.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\pipelines\shader.cpp">
+			<ObjectFileName>$(IntDir)backends_graphics_opengl_pipelines_%(Filename).obj</ObjectFileName>
+		</ClCompile>
+		<ClCompile Include="..\..\backends\graphics\opengl\context.cpp" />
 		<ClCompile Include="..\..\backends\graphics\opengl\debug.cpp">
 			<ObjectFileName>$(IntDir)backends_graphics_opengl_%(Filename).obj</ObjectFileName>
 		</ClCompile>
-		<ClCompile Include="..\..\backends\graphics\opengl\extensions.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\framebuffer.cpp" />
 		<ClCompile Include="..\..\backends\graphics\opengl\opengl-graphics.cpp" />
+		<ClCompile Include="..\..\backends\graphics\opengl\shader.cpp">
+			<ObjectFileName>$(IntDir)backends_graphics_opengl_%(Filename).obj</ObjectFileName>
+		</ClCompile>
 		<ClCompile Include="..\..\backends\graphics\opengl\texture.cpp" />
 		<ClCompile Include="..\..\backends\graphics\openglsdl\openglsdl-graphics.cpp" />
 		<ClCompile Include="..\..\backends\graphics\sdl\sdl-graphics.cpp" />
@@ -286,9 +338,29 @@
 		<ClCompile Include="..\..\backends\midi\stmidi.cpp" />
 		<ClCompile Include="..\..\backends\midi\timidity.cpp" />
 		<ClCompile Include="..\..\backends\midi\windows.cpp" />
-		<ClCompile Include="..\..\backends\mixer\doublebuffersdl\doublebuffersdl-mixer.cpp" />
 		<ClCompile Include="..\..\backends\mixer\sdl\sdl-mixer.cpp" />
 		<ClCompile Include="..\..\backends\mutex\sdl\sdl-mutex.cpp" />
+		<ClCompile Include="..\..\backends\networking\connection\islimited-default.cpp" />
+		<ClCompile Include="..\..\backends\networking\curl\connectionmanager.cpp" />
+		<ClCompile Include="..\..\backends\networking\curl\curljsonrequest.cpp" />
+		<ClCompile Include="..\..\backends\networking\curl\curlrequest.cpp" />
+		<ClCompile Include="..\..\backends\networking\curl\networkreadstream.cpp" />
+		<ClCompile Include="..\..\backends\networking\curl\request.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\createdirectoryhandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\downloadfilehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\filesajaxpagehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\filesbasehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\filespagehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\indexpagehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\listajaxhandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\resourcehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlers\uploadfilehandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\client.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\getclienthandler.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\handlerutils.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\localwebserver.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\reader.cpp" />
+		<ClCompile Include="..\..\backends\networking\sdl_net\uploadfileclienthandler.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32-main.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32-window.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32.cpp" />
@@ -302,6 +374,7 @@
 		<ClCompile Include="..\..\backends\taskbar\win32\win32-taskbar.cpp" />
 		<ClCompile Include="..\..\backends\timer\default\default-timer.cpp" />
 		<ClCompile Include="..\..\backends\timer\sdl\sdl-timer.cpp" />
+		<ClCompile Include="..\..\backends\updates\win32\win32-updates.cpp" />
 		<ClCompile Include="..\..\backends\base-backend.cpp" />
 		<ClCompile Include="..\..\backends\modular-backend.cpp" />
 		<ClCompile Include="..\..\base\commandLine.cpp" />
@@ -323,7 +396,9 @@
 			<ObjectFileName>$(IntDir)common_%(Filename).obj</ObjectFileName>
 		</ClCompile>
 		<ClCompile Include="..\..\common\fft.cpp" />
-		<ClCompile Include="..\..\common\file.cpp" />
+		<ClCompile Include="..\..\common\file.cpp">
+			<ObjectFileName>$(IntDir)common_%(Filename).obj</ObjectFileName>
+		</ClCompile>
 		<ClCompile Include="..\..\common\fs.cpp" />
 		<ClCompile Include="..\..\common\gui_options.cpp" />
 		<ClCompile Include="..\..\common\hashmap.cpp" />
@@ -331,12 +406,14 @@
 		<ClCompile Include="..\..\common\iff_container.cpp" />
 		<ClCompile Include="..\..\common\ini-file.cpp" />
 		<ClCompile Include="..\..\common\installshield_cab.cpp" />
+		<ClCompile Include="..\..\common\json.cpp" />
 		<ClCompile Include="..\..\common\language.cpp" />
 		<ClCompile Include="..\..\common\localization.cpp" />
 		<ClCompile Include="..\..\common\macresman.cpp" />
 		<ClCompile Include="..\..\common\md5.cpp" />
 		<ClCompile Include="..\..\common\memorypool.cpp" />
 		<ClCompile Include="..\..\common\mutex.cpp" />
+		<ClCompile Include="..\..\common\osd_message_queue.cpp" />
 		<ClCompile Include="..\..\common\platform.cpp" />
 		<ClCompile Include="..\..\common\quicktime.cpp">
 			<ObjectFileName>$(IntDir)common_%(Filename).obj</ObjectFileName>
@@ -369,10 +446,18 @@
 		<ClCompile Include="..\..\engines\savestate.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\bdf.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\consolefont.cpp" />
+		<ClCompile Include="..\..\graphics\fonts\macfont.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\newfont.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\newfont_big.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\ttf.cpp" />
 		<ClCompile Include="..\..\graphics\fonts\winfont.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\macfontmanager.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\macmenu.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\mactext.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\mactextwindow.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\macwindow.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\macwindowborder.cpp" />
+		<ClCompile Include="..\..\graphics\macgui\macwindowmanager.cpp" />
 		<ClCompile Include="..\..\graphics\scaler\2xsai.cpp" />
 		<ClCompile Include="..\..\graphics\scaler\aspect.cpp" />
 		<ClCompile Include="..\..\graphics\scaler\downscaler.cpp" />
@@ -389,9 +474,12 @@
 		<ClCompile Include="..\..\graphics\font.cpp" />
 		<ClCompile Include="..\..\graphics\fontman.cpp" />
 		<ClCompile Include="..\..\graphics\maccursor.cpp" />
+		<ClCompile Include="..\..\graphics\managed_surface.cpp" />
+		<ClCompile Include="..\..\graphics\nine_patch.cpp" />
 		<ClCompile Include="..\..\graphics\pixelformat.cpp" />
 		<ClCompile Include="..\..\graphics\primitives.cpp" />
 		<ClCompile Include="..\..\graphics\scaler.cpp" />
+		<ClCompile Include="..\..\graphics\screen.cpp" />
 		<ClCompile Include="..\..\graphics\sjis.cpp" />
 		<ClCompile Include="..\..\graphics\surface.cpp" />
 		<ClCompile Include="..\..\graphics\thumbnail.cpp" />
@@ -400,11 +488,15 @@
 		<ClCompile Include="..\..\graphics\transparent_surface.cpp" />
 		<ClCompile Include="..\..\graphics\wincursor.cpp" />
 		<ClCompile Include="..\..\graphics\yuv_to_rgb.cpp" />
+		<ClCompile Include="..\..\gui\animation\Animation.cpp" />
+		<ClCompile Include="..\..\gui\animation\RepeatAnimationWrapper.cpp" />
+		<ClCompile Include="..\..\gui\animation\SequenceAnimationComposite.cpp" />
 		<ClCompile Include="..\..\gui\widgets\editable.cpp" />
 		<ClCompile Include="..\..\gui\widgets\edittext.cpp" />
 		<ClCompile Include="..\..\gui\widgets\list.cpp" />
 		<ClCompile Include="..\..\gui\widgets\popup.cpp" />
 		<ClCompile Include="..\..\gui\widgets\scrollbar.cpp" />
+		<ClCompile Include="..\..\gui\widgets\scrollcontainer.cpp" />
 		<ClCompile Include="..\..\gui\widgets\tab.cpp" />
 		<ClCompile Include="..\..\gui\EventRecorder.cpp" />
 		<ClCompile Include="..\..\gui\ThemeEngine.cpp" />
@@ -418,6 +510,8 @@
 		<ClCompile Include="..\..\gui\console.cpp" />
 		<ClCompile Include="..\..\gui\debugger.cpp" />
 		<ClCompile Include="..\..\gui\dialog.cpp" />
+		<ClCompile Include="..\..\gui\downloaddialog.cpp" />
+		<ClCompile Include="..\..\gui\editgamedialog.cpp" />
 		<ClCompile Include="..\..\gui\error.cpp">
 			<ObjectFileName>$(IntDir)gui_%(Filename).obj</ObjectFileName>
 		</ClCompile>
@@ -430,17 +524,26 @@
 		<ClCompile Include="..\..\gui\object.cpp" />
 		<ClCompile Include="..\..\gui\options.cpp" />
 		<ClCompile Include="..\..\gui\predictivedialog.cpp" />
+		<ClCompile Include="..\..\gui\remotebrowser.cpp" />
 		<ClCompile Include="..\..\gui\saveload-dialog.cpp" />
 		<ClCompile Include="..\..\gui\saveload.cpp" />
+		<ClCompile Include="..\..\gui\storagewizarddialog.cpp" />
 		<ClCompile Include="..\..\gui\themebrowser.cpp" />
 		<ClCompile Include="..\..\gui\widget.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo\indeo.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo\indeo_dsp.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo\mem.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo\vlc.cpp" />
 		<ClCompile Include="..\..\image\codecs\bmp_raw.cpp" />
 		<ClCompile Include="..\..\image\codecs\cdtoons.cpp" />
 		<ClCompile Include="..\..\image\codecs\cinepak.cpp" />
 		<ClCompile Include="..\..\image\codecs\codec.cpp" />
 		<ClCompile Include="..\..\image\codecs\indeo3.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo4.cpp" />
+		<ClCompile Include="..\..\image\codecs\indeo5.cpp" />
 		<ClCompile Include="..\..\image\codecs\mjpeg.cpp" />
 		<ClCompile Include="..\..\image\codecs\msrle.cpp" />
+		<ClCompile Include="..\..\image\codecs\msrle4.cpp" />
 		<ClCompile Include="..\..\image\codecs\msvideo1.cpp" />
 		<ClCompile Include="..\..\image\codecs\qtrle.cpp" />
 		<ClCompile Include="..\..\image\codecs\rpza.cpp" />
@@ -488,7 +591,9 @@
 		<ClInclude Include="..\..\audio\decoders\xa.h" />
 		<ClInclude Include="..\..\audio\mods\infogrames.h" />
 		<ClInclude Include="..\..\audio\mods\maxtrax.h" />
+		<ClInclude Include="..\..\audio\mods\mod_xm_s3m.h" />
 		<ClInclude Include="..\..\audio\mods\module.h" />
+		<ClInclude Include="..\..\audio\mods\module_mod_xm_s3m.h" />
 		<ClInclude Include="..\..\audio\mods\paula.h" />
 		<ClInclude Include="..\..\audio\mods\protracker.h" />
 		<ClInclude Include="..\..\audio\mods\rjp1.h" />
@@ -499,18 +604,27 @@
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_midi.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_driver.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_fmsynth.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\c_interface\c_interface.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\c_interface\c_types.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\c_interface\cpp_interface.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\sha1\sha1.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Analog.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\BReverbModel.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\Enumerations.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\File.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\FileStream.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\LA32FloatWaveGenerator.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\LA32Ramp.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\LA32WaveGenerator.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\MemoryRegion.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\MidiEventQueue.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\MidiStreamParser.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Part.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Partial.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\PartialManager.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Poly.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\ROMInfo.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\SampleRateConverter.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Structures.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Synth.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\TVA.h" />
@@ -518,6 +632,8 @@
 		<ClInclude Include="..\..\audio\softsynth\mt32\TVP.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Tables.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\Types.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\config.h" />
+		<ClInclude Include="..\..\audio\softsynth\mt32\globals.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\internals.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\mmath.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\mt32emu.h" />
@@ -543,8 +659,44 @@
 		<ClInclude Include="..\..\audio\rate.h" />
 		<ClInclude Include="..\..\audio\timestamp.h" />
 		<ClInclude Include="..\..\backends\audiocd\default\default-audiocd.h" />
-		<ClInclude Include="..\..\backends\audiocd\sdl\sdl-audiocd.h" />
+		<ClInclude Include="..\..\backends\audiocd\win32\win32-audiocd.h" />
+		<ClInclude Include="..\..\backends\audiocd\audiocd-stream.h" />
 		<ClInclude Include="..\..\backends\audiocd\audiocd.h" />
+		<ClInclude Include="..\..\backends\cloud\box\boxlistdirectorybyidrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\box\boxstorage.h" />
+		<ClInclude Include="..\..\backends\cloud\box\boxtokenrefresher.h" />
+		<ClInclude Include="..\..\backends\cloud\box\boxuploadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\dropbox\dropboxcreatedirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\dropbox\dropboxinforequest.h" />
+		<ClInclude Include="..\..\backends\cloud\dropbox\dropboxlistdirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\dropbox\dropboxstorage.h" />
+		<ClInclude Include="..\..\backends\cloud\dropbox\dropboxuploadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\googledrive\googledrivelistdirectorybyidrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\googledrive\googledrivestorage.h" />
+		<ClInclude Include="..\..\backends\cloud\googledrive\googledrivetokenrefresher.h" />
+		<ClInclude Include="..\..\backends\cloud\googledrive\googledriveuploadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\id\idcreatedirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\id\iddownloadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\id\idlistdirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\id\idresolveidrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\id\idstorage.h" />
+		<ClInclude Include="..\..\backends\cloud\id\idstreamfilerequest.h" />
+		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivecreatedirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivelistdirectoryrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivestorage.h" />
+		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivetokenrefresher.h" />
+		<ClInclude Include="..\..\backends\cloud\onedrive\onedriveuploadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\cloudicon.h" />
+		<ClInclude Include="..\..\backends\cloud\cloudicon_data.h" />
+		<ClInclude Include="..\..\backends\cloud\cloudicon_disabled_data.h" />
+		<ClInclude Include="..\..\backends\cloud\cloudmanager.h" />
+		<ClInclude Include="..\..\backends\cloud\downloadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\folderdownloadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\iso8601.h" />
+		<ClInclude Include="..\..\backends\cloud\savessyncrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\storage.h" />
+		<ClInclude Include="..\..\backends\cloud\storagefile.h" />
+		<ClInclude Include="..\..\backends\cloud\storageinfo.h" />
 		<ClInclude Include="..\..\backends\events\default\default-events.h" />
 		<ClInclude Include="..\..\backends\events\sdl\sdl-events.h" />
 		<ClInclude Include="..\..\backends\fs\windows\windows-fs-factory.h" />
@@ -552,21 +704,50 @@
 		<ClInclude Include="..\..\backends\fs\abstract-fs.h" />
 		<ClInclude Include="..\..\backends\fs\fs-factory.h" />
 		<ClInclude Include="..\..\backends\fs\stdiostream.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\pipelines\clut8.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\pipelines\fixed.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\pipelines\pipeline.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\pipelines\shader.h" />
 		<ClInclude Include="..\..\backends\graphics\opengl\debug.h" />
-		<ClInclude Include="..\..\backends\graphics\opengl\extensions.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\framebuffer.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\opengl-defs.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\opengl-func.h" />
 		<ClInclude Include="..\..\backends\graphics\opengl\opengl-graphics.h" />
 		<ClInclude Include="..\..\backends\graphics\opengl\opengl-sys.h" />
+		<ClInclude Include="..\..\backends\graphics\opengl\shader.h" />
 		<ClInclude Include="..\..\backends\graphics\opengl\texture.h" />
 		<ClInclude Include="..\..\backends\graphics\openglsdl\openglsdl-graphics.h" />
 		<ClInclude Include="..\..\backends\graphics\sdl\sdl-graphics.h" />
 		<ClInclude Include="..\..\backends\graphics\surfacesdl\surfacesdl-graphics.h" />
 		<ClInclude Include="..\..\backends\graphics\default-palette.h" />
 		<ClInclude Include="..\..\backends\graphics\graphics.h" />
+		<ClInclude Include="..\..\backends\graphics\windowed.h" />
 		<ClInclude Include="..\..\backends\log\log.h" />
-		<ClInclude Include="..\..\backends\mixer\doublebuffersdl\doublebuffersdl-mixer.h" />
 		<ClInclude Include="..\..\backends\mixer\sdl\sdl-mixer.h" />
 		<ClInclude Include="..\..\backends\mutex\sdl\sdl-mutex.h" />
 		<ClInclude Include="..\..\backends\mutex\mutex.h" />
+		<ClInclude Include="..\..\backends\networking\connection\islimited.h" />
+		<ClInclude Include="..\..\backends\networking\curl\connectionmanager.h" />
+		<ClInclude Include="..\..\backends\networking\curl\curljsonrequest.h" />
+		<ClInclude Include="..\..\backends\networking\curl\curlrequest.h" />
+		<ClInclude Include="..\..\backends\networking\curl\networkreadstream.h" />
+		<ClInclude Include="..\..\backends\networking\curl\request.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\basehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\createdirectoryhandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\downloadfilehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\filesajaxpagehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\filesbasehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\filespagehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\indexpagehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\listajaxhandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\resourcehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlers\uploadfilehandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\client.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\getclienthandler.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\handlerutils.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\localwebserver.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\reader.h" />
+		<ClInclude Include="..\..\backends\networking\sdl_net\uploadfileclienthandler.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\win32\win32-window.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\win32\win32.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\sdl-sys.h" />
@@ -581,6 +762,7 @@
 		<ClInclude Include="..\..\backends\taskbar\win32\win32-taskbar.h" />
 		<ClInclude Include="..\..\backends\timer\default\default-timer.h" />
 		<ClInclude Include="..\..\backends\timer\sdl\sdl-timer.h" />
+		<ClInclude Include="..\..\backends\updates\win32\win32-updates.h" />
 		<ClInclude Include="..\..\backends\base-backend.h" />
 		<ClInclude Include="..\..\backends\modular-backend.h" />
 		<ClInclude Include="..\..\base\commandLine.h" />
@@ -594,6 +776,7 @@
 		<ClInclude Include="..\..\common\bitstream.h" />
 		<ClInclude Include="..\..\common\bufferedstream.h" />
 		<ClInclude Include="..\..\common\c++11-compat.h" />
+		<ClInclude Include="..\..\common\callback.h" />
 		<ClInclude Include="..\..\common\config-manager.h" />
 		<ClInclude Include="..\..\common\coroutines.h" />
 		<ClInclude Include="..\..\common\cosinetables.h" />
@@ -611,12 +794,14 @@
 		<ClInclude Include="..\..\common\fs.h" />
 		<ClInclude Include="..\..\common\func.h" />
 		<ClInclude Include="..\..\common\gui_options.h" />
+		<ClInclude Include="..\..\common\hash-ptr.h" />
 		<ClInclude Include="..\..\common\hash-str.h" />
 		<ClInclude Include="..\..\common\hashmap.h" />
 		<ClInclude Include="..\..\common\huffman.h" />
 		<ClInclude Include="..\..\common\iff_container.h" />
 		<ClInclude Include="..\..\common\ini-file.h" />
 		<ClInclude Include="..\..\common\installshield_cab.h" />
+		<ClInclude Include="..\..\common\json.h" />
 		<ClInclude Include="..\..\common\keyboard.h" />
 		<ClInclude Include="..\..\common\language.h" />
 		<ClInclude Include="..\..\common\list.h" />
@@ -630,6 +815,7 @@
 		<ClInclude Include="..\..\common\memstream.h" />
 		<ClInclude Include="..\..\common\mutex.h" />
 		<ClInclude Include="..\..\common\noncopyable.h" />
+		<ClInclude Include="..\..\common\osd_message_queue.h" />
 		<ClInclude Include="..\..\common\pack-end.h" />
 		<ClInclude Include="..\..\common\pack-start.h" />
 		<ClInclude Include="..\..\common\platform.h" />
@@ -641,11 +827,13 @@
 		<ClInclude Include="..\..\common\rdft.h" />
 		<ClInclude Include="..\..\common\rect.h" />
 		<ClInclude Include="..\..\common\rendermode.h" />
+		<ClInclude Include="..\..\common\safe-bool.h" />
 		<ClInclude Include="..\..\common\savefile.h" />
 		<ClInclude Include="..\..\common\scummsys.h" />
 		<ClInclude Include="..\..\common\serializer.h" />
 		<ClInclude Include="..\..\common\sinetables.h" />
 		<ClInclude Include="..\..\common\singleton.h" />
+		<ClInclude Include="..\..\common\span.h" />
 		<ClInclude Include="..\..\common\stack.h" />
 		<ClInclude Include="..\..\common\str-array.h" />
 		<ClInclude Include="..\..\common\str.h" />
@@ -657,6 +845,7 @@
 		<ClInclude Include="..\..\common\timer.h" />
 		<ClInclude Include="..\..\common\tokenizer.h" />
 		<ClInclude Include="..\..\common\translation.h" />
+		<ClInclude Include="..\..\common\type-traits.h" />
 		<ClInclude Include="..\..\common\types.h" />
 		<ClInclude Include="..\..\common\unarj.h" />
 		<ClInclude Include="..\..\common\unzip.h" />
@@ -678,8 +867,16 @@
 		<ClInclude Include="..\..\engines\savestate.h" />
 		<ClInclude Include="..\..\engines\util.h" />
 		<ClInclude Include="..\..\graphics\fonts\bdf.h" />
+		<ClInclude Include="..\..\graphics\fonts\macfont.h" />
 		<ClInclude Include="..\..\graphics\fonts\ttf.h" />
 		<ClInclude Include="..\..\graphics\fonts\winfont.h" />
+		<ClInclude Include="..\..\graphics\macgui\macfontmanager.h" />
+		<ClInclude Include="..\..\graphics\macgui\macmenu.h" />
+		<ClInclude Include="..\..\graphics\macgui\mactext.h" />
+		<ClInclude Include="..\..\graphics\macgui\mactextwindow.h" />
+		<ClInclude Include="..\..\graphics\macgui\macwindow.h" />
+		<ClInclude Include="..\..\graphics\macgui\macwindowborder.h" />
+		<ClInclude Include="..\..\graphics\macgui\macwindowmanager.h" />
 		<ClInclude Include="..\..\graphics\scaler\aspect.h" />
 		<ClInclude Include="..\..\graphics\scaler\downscaler.h" />
 		<ClInclude Include="..\..\graphics\scaler\intern.h" />
@@ -695,10 +892,14 @@
 		<ClInclude Include="..\..\graphics\font.h" />
 		<ClInclude Include="..\..\graphics\fontman.h" />
 		<ClInclude Include="..\..\graphics\maccursor.h" />
+		<ClInclude Include="..\..\graphics\managed_surface.h" />
+		<ClInclude Include="..\..\graphics\mode.h" />
+		<ClInclude Include="..\..\graphics\nine_patch.h" />
 		<ClInclude Include="..\..\graphics\palette.h" />
 		<ClInclude Include="..\..\graphics\pixelformat.h" />
 		<ClInclude Include="..\..\graphics\primitives.h" />
 		<ClInclude Include="..\..\graphics\scaler.h" />
+		<ClInclude Include="..\..\graphics\screen.h" />
 		<ClInclude Include="..\..\graphics\sjis.h" />
 		<ClInclude Include="..\..\graphics\surface.h" />
 		<ClInclude Include="..\..\graphics\thumbnail.h" />
@@ -707,11 +908,23 @@
 		<ClInclude Include="..\..\graphics\transparent_surface.h" />
 		<ClInclude Include="..\..\graphics\wincursor.h" />
 		<ClInclude Include="..\..\graphics\yuv_to_rgb.h" />
+		<ClInclude Include="..\..\gui\animation\AccelerateInterpolator.h" />
+		<ClInclude Include="..\..\gui\animation\AlphaAnimation.h" />
+		<ClInclude Include="..\..\gui\animation\Animation.h" />
+		<ClInclude Include="..\..\gui\animation\DeccelerateInterpolator.h" />
+		<ClInclude Include="..\..\gui\animation\Drawable.h" />
+		<ClInclude Include="..\..\gui\animation\Interpolator.h" />
+		<ClInclude Include="..\..\gui\animation\ParallelAnimation.h" />
+		<ClInclude Include="..\..\gui\animation\RepeatAnimationWrapper.h" />
+		<ClInclude Include="..\..\gui\animation\ScaleAnimation.h" />
+		<ClInclude Include="..\..\gui\animation\SequenceAnimationComposite.h" />
+		<ClInclude Include="..\..\gui\animation\WaitForConditionAnimation.h" />
 		<ClInclude Include="..\..\gui\widgets\editable.h" />
 		<ClInclude Include="..\..\gui\widgets\edittext.h" />
 		<ClInclude Include="..\..\gui\widgets\list.h" />
 		<ClInclude Include="..\..\gui\widgets\popup.h" />
 		<ClInclude Include="..\..\gui\widgets\scrollbar.h" />
+		<ClInclude Include="..\..\gui\widgets\scrollcontainer.h" />
 		<ClInclude Include="..\..\gui\widgets\tab.h" />
 		<ClInclude Include="..\..\gui\Actions.h" />
 		<ClInclude Include="..\..\gui\EventRecorder.h" />
@@ -729,6 +942,8 @@
 		<ClInclude Include="..\..\gui\credits.h" />
 		<ClInclude Include="..\..\gui\debugger.h" />
 		<ClInclude Include="..\..\gui\dialog.h" />
+		<ClInclude Include="..\..\gui\downloaddialog.h" />
+		<ClInclude Include="..\..\gui\editgamedialog.h" />
 		<ClInclude Include="..\..\gui\error.h" />
 		<ClInclude Include="..\..\gui\filebrowser-dialog.h" />
 		<ClInclude Include="..\..\gui\fluidsynth-dialog.h" />
@@ -739,18 +954,28 @@
 		<ClInclude Include="..\..\gui\object.h" />
 		<ClInclude Include="..\..\gui\options.h" />
 		<ClInclude Include="..\..\gui\predictivedialog.h" />
+		<ClInclude Include="..\..\gui\remotebrowser.h" />
 		<ClInclude Include="..\..\gui\saveload-dialog.h" />
 		<ClInclude Include="..\..\gui\saveload.h" />
+		<ClInclude Include="..\..\gui\storagewizarddialog.h" />
 		<ClInclude Include="..\..\gui\themebrowser.h" />
 		<ClInclude Include="..\..\gui\widget.h" />
+		<ClInclude Include="..\..\image\codecs\indeo\get_bits.h" />
+		<ClInclude Include="..\..\image\codecs\indeo\indeo.h" />
+		<ClInclude Include="..\..\image\codecs\indeo\indeo_dsp.h" />
+		<ClInclude Include="..\..\image\codecs\indeo\mem.h" />
+		<ClInclude Include="..\..\image\codecs\indeo\vlc.h" />
 		<ClInclude Include="..\..\image\codecs\bmp_raw.h" />
 		<ClInclude Include="..\..\image\codecs\cdtoons.h" />
 		<ClInclude Include="..\..\image\codecs\cinepak.h" />
 		<ClInclude Include="..\..\image\codecs\cinepak_tables.h" />
 		<ClInclude Include="..\..\image\codecs\codec.h" />
 		<ClInclude Include="..\..\image\codecs\indeo3.h" />
+		<ClInclude Include="..\..\image\codecs\indeo4.h" />
+		<ClInclude Include="..\..\image\codecs\indeo5.h" />
 		<ClInclude Include="..\..\image\codecs\mjpeg.h" />
 		<ClInclude Include="..\..\image\codecs\msrle.h" />
+		<ClInclude Include="..\..\image\codecs\msrle4.h" />
 		<ClInclude Include="..\..\image\codecs\msvideo1.h" />
 		<ClInclude Include="..\..\image\codecs\qtrle.h" />
 		<ClInclude Include="..\..\image\codecs\rpza.h" />
@@ -834,142 +1059,157 @@
 	</ItemGroup>
 	<ItemGroup>
 	<ProjectReference Include="access.vcxproj">
-		<Project>{8BE476E9-7F56-4239-9C77-DFB2CB3A7979}</Project>
+		<Project>{36FEA96A-90A1-4F81-ABEB-D04681ADA16E}</Project>
+	</ProjectReference>
+	<ProjectReference Include="adl.vcxproj">
+		<Project>{DD7C3522-BA7B-43C0-8D3B-90A0E4CCF2F9}</Project>
 	</ProjectReference>
 	<ProjectReference Include="agi.vcxproj">
-		<Project>{13CDCBDE-0270-49F2-A40C-BAFAC2EC3641}</Project>
+		<Project>{E7F8D54D-4AD5-4031-9898-A4B64229B901}</Project>
 	</ProjectReference>
 	<ProjectReference Include="agos.vcxproj">
-		<Project>{2866EB30-4C21-4D2E-A53A-2388EC0D9A89}</Project>
+		<Project>{C49CDC14-E3AE-4FD1-BF00-FB3BF4B227CD}</Project>
 	</ProjectReference>
 	<ProjectReference Include="bbvs.vcxproj">
-		<Project>{ED83AB45-D0B1-454E-A63F-E3C91204961A}</Project>
+		<Project>{9B4CD2B2-6271-4B9C-AA8A-B8735FA8C134}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cge.vcxproj">
-		<Project>{DCDB0B65-EF54-4E8D-AD27-633E6B07FDF8}</Project>
+		<Project>{4604494D-2FBE-4F23-8E98-B67955DFE047}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cge2.vcxproj">
-		<Project>{0EA222B4-D580-4887-927E-1B7F4503086A}</Project>
+		<Project>{9C58A6DE-1F66-4C63-B693-3C5E5EEA7C5E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cine.vcxproj">
-		<Project>{C9E3EE28-4DB3-4C1A-A88B-C7A709B82BCD}</Project>
+		<Project>{61CDFD23-7585-4197-8985-14BD95169C6D}</Project>
 	</ProjectReference>
 	<ProjectReference Include="composer.vcxproj">
-		<Project>{24DC4776-A0DE-4771-872C-E5CB42FE48CF}</Project>
+		<Project>{2970F121-4B15-41C8-942F-41DD1E04235B}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cruise.vcxproj">
-		<Project>{71D7E128-C108-4AEC-9548-3181535CA908}</Project>
+		<Project>{2407AFF1-84C7-4EA2-BF3D-D5DBBB737A77}</Project>
 	</ProjectReference>
 	<ProjectReference Include="draci.vcxproj">
-		<Project>{316BBA0A-9687-4B5F-8BA3-C49EE20C744A}</Project>
+		<Project>{9C999D1B-7D1A-433B-B8CF-F71955D56CDB}</Project>
 	</ProjectReference>
 	<ProjectReference Include="drascula.vcxproj">
-		<Project>{68E44358-733A-4E31-8147-542ABC39B7CF}</Project>
+		<Project>{E2FAC778-0ED3-412B-B100-240C873EEEDB}</Project>
 	</ProjectReference>
 	<ProjectReference Include="dreamweb.vcxproj">
-		<Project>{112226A1-CAAC-4710-92A4-DB869E90E82A}</Project>
+		<Project>{A7CA0A0A-08A2-4636-B7EA-916BFDFE2782}</Project>
+	</ProjectReference>
+	<ProjectReference Include="fullpipe.vcxproj">
+		<Project>{15705D96-D8A9-44AD-A254-1276516BB510}</Project>
+	</ProjectReference>
+	<ProjectReference Include="gnap.vcxproj">
+		<Project>{7EF7DA6E-F11D-42F5-A793-3A8EE514941D}</Project>
 	</ProjectReference>
 	<ProjectReference Include="gob.vcxproj">
-		<Project>{52FBDEDE-AED5-4777-B75B-02B2769CE823}</Project>
+		<Project>{6C7D6E6C-578B-40AC-9EB6-11B85640F626}</Project>
 	</ProjectReference>
 	<ProjectReference Include="groovie.vcxproj">
-		<Project>{9EAF19CF-EE28-454D-AC70-4317343FC3EC}</Project>
+		<Project>{355866A3-D405-45ED-98CD-13D305D2A915}</Project>
 	</ProjectReference>
 	<ProjectReference Include="hopkins.vcxproj">
-		<Project>{9AE4B075-CBC8-4662-B70C-81D21568B285}</Project>
+		<Project>{8AD1FC0E-385B-402B-81DB-E46B8F9380AA}</Project>
 	</ProjectReference>
 	<ProjectReference Include="hugo.vcxproj">
-		<Project>{90340840-03F2-4B9F-B54C-ED7EDA9DEBC3}</Project>
+		<Project>{21911766-CE5D-4F00-92EA-230FE71292D2}</Project>
 	</ProjectReference>
 	<ProjectReference Include="kyra.vcxproj">
-		<Project>{6EEFB5F1-80D4-4894-BBC2-5C2466C675FB}</Project>
+		<Project>{185C57CF-CAEA-4DC7-8885-63B784305959}</Project>
 	</ProjectReference>
 	<ProjectReference Include="lab.vcxproj">
-		<Project>{A45D6169-EF5E-4D00-AE4D-63B5E30243CC}</Project>
+		<Project>{E20CBF59-1A1D-4D83-A5D0-4D324FB43818}</Project>
 	</ProjectReference>
 	<ProjectReference Include="lure.vcxproj">
-		<Project>{CEC88673-346A-4A8D-8C74-9E7A4EB0012F}</Project>
+		<Project>{481FC6F9-369D-4F9B-86C6-65FA58D10A8E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="made.vcxproj">
-		<Project>{401F04E7-ECBD-4728-B1B4-05C004C47CEA}</Project>
+		<Project>{A7507F21-68C2-49F6-9587-871A4F09EC76}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mads.vcxproj">
-		<Project>{E964EA64-0985-4EE0-BBC2-78F671753299}</Project>
+		<Project>{A8D11571-2DB8-4780-9712-49F5B8CDF689}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mohawk.vcxproj">
-		<Project>{4891DAE2-8787-46DF-A92B-970C4D8B40E7}</Project>
+		<Project>{5A6BCF3A-1982-4A1E-B4E2-A5CFAE967D48}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mortevielle.vcxproj">
-		<Project>{BAE4030C-045C-4A2C-9545-B16281033478}</Project>
+		<Project>{9D8E3BC6-C2D1-4E54-85FB-B7E843C8C673}</Project>
 	</ProjectReference>
 	<ProjectReference Include="neverhood.vcxproj">
-		<Project>{91638C09-1D54-4302-A463-C1FD12E5B0B5}</Project>
+		<Project>{AA4778B6-A4C8-431A-9F8A-699A89220DC6}</Project>
 	</ProjectReference>
 	<ProjectReference Include="parallaction.vcxproj">
-		<Project>{145303DC-AB56-4346-A0F0-549732EE7510}</Project>
+		<Project>{643B033F-E0A4-4CE4-BC4D-972335ECF58D}</Project>
 	</ProjectReference>
 	<ProjectReference Include="pegasus.vcxproj">
-		<Project>{6159998A-51E5-4DDD-B42E-141E418EF407}</Project>
+		<Project>{3138930F-7942-4EA6-86C0-8D45C8F8B091}</Project>
+	</ProjectReference>
+	<ProjectReference Include="plumbers.vcxproj">
+		<Project>{99273B29-99FA-4519-AA3A-348D90010816}</Project>
 	</ProjectReference>
 	<ProjectReference Include="queen.vcxproj">
-		<Project>{8DD8D595-481D-43C9-837B-070C6BDA94FA}</Project>
+		<Project>{0C2D5ACF-850C-4CD4-AAEE-02A7AE0271EB}</Project>
 	</ProjectReference>
 	<ProjectReference Include="saga.vcxproj">
-		<Project>{D05164BA-3FF9-4DEF-9B4F-7010FBE07233}</Project>
+		<Project>{2994561A-3E0A-4468-AA0F-9D39D57C47A1}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sci.vcxproj">
-		<Project>{E706A576-680D-43EF-AFE3-D561685CBD83}</Project>
+		<Project>{B723583B-6033-4D96-82F4-FD1B92BEBF01}</Project>
 	</ProjectReference>
 	<ProjectReference Include="scumm.vcxproj">
-		<Project>{DB4A30B0-647C-4189-97BD-E74FFAC3DC29}</Project>
+		<Project>{70669276-B8EB-4CEB-81A0-D214CB6D8A07}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sherlock.vcxproj">
-		<Project>{B2789815-431E-471C-8392-27A5654ADDC8}</Project>
+		<Project>{13008A94-34F3-4D24-A3A0-77DDC0FEA4E0}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sky.vcxproj">
-		<Project>{9CA8AE22-E26B-494D-80C8-CB4DA3A189EF}</Project>
+		<Project>{9166FA05-F876-4CC4-8BC8-0FD3DF5B8B62}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword1.vcxproj">
-		<Project>{731DA10F-2C85-40FD-927B-9BA96B947119}</Project>
+		<Project>{E3EF0609-868C-42F3-8D85-F4C8C449E559}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword2.vcxproj">
-		<Project>{37709F47-765B-4350-B91F-26AC51CB4210}</Project>
+		<Project>{3FFDCFB0-97D1-4611-90D3-649F66A1CB82}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword25.vcxproj">
-		<Project>{F7782F34-884E-426D-B35B-CF99E391F019}</Project>
+		<Project>{0C19EC67-A9CA-4877-A254-66BB3C385F96}</Project>
 	</ProjectReference>
 	<ProjectReference Include="teenagent.vcxproj">
-		<Project>{23717C8A-4DFD-40EB-98F0-27BBF7771262}</Project>
+		<Project>{CC7DAFB7-CD7B-4E23-B862-80E4147EB799}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tinsel.vcxproj">
-		<Project>{A9523B4C-C66B-439A-9817-7575ED5A05F6}</Project>
+		<Project>{CAEFE093-30AD-4DAA-B13B-E155B54C2DCD}</Project>
+	</ProjectReference>
+	<ProjectReference Include="titanic.vcxproj">
+		<Project>{249E8842-E8EB-42BC-944F-C5F43A2477DC}</Project>
 	</ProjectReference>
 	<ProjectReference Include="toltecs.vcxproj">
-		<Project>{9FD6981A-1A37-4559-9F67-48FBDDF70ED6}</Project>
+		<Project>{5BBD51A2-93A1-4F44-854F-678449339E07}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tony.vcxproj">
-		<Project>{69FDB694-4232-4E37-BAB0-787BEC9B740E}</Project>
+		<Project>{35203A88-A169-4A76-B823-611C9E4DC567}</Project>
 	</ProjectReference>
 	<ProjectReference Include="toon.vcxproj">
-		<Project>{809322D6-6199-4FC2-9A1D-02A4FD254ADC}</Project>
+		<Project>{AFBA47B3-E0B6-4CF8-8E7E-986C0E2A75F2}</Project>
 	</ProjectReference>
 	<ProjectReference Include="touche.vcxproj">
-		<Project>{C2EFC5C1-5A21-4343-85BB-BA5D721B4A8A}</Project>
+		<Project>{705E170E-D96F-4566-94DE-F2CBB73E9468}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tsage.vcxproj">
-		<Project>{D438170F-C1F4-4EBF-AB7C-63A7E3C76AF3}</Project>
+		<Project>{30CC1EA2-9D8D-4C03-BE63-DCD0A5088A7E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tucker.vcxproj">
-		<Project>{327C31B5-8D15-420D-959B-6596099E0996}</Project>
+		<Project>{406185C5-CACC-4450-8B38-557FB6630AF4}</Project>
 	</ProjectReference>
 	<ProjectReference Include="voyeur.vcxproj">
-		<Project>{52A56875-FA42-42AB-A417-E0AF7ED99D2C}</Project>
+		<Project>{2DD62302-6FB9-4B04-B723-C3839C96C056}</Project>
 	</ProjectReference>
 	<ProjectReference Include="wintermute.vcxproj">
-		<Project>{430E6C40-1094-4D86-B9F3-8775118B3133}</Project>
+		<Project>{D900CD3A-0FDB-4552-8139-DB9FE2B114B4}</Project>
 	</ProjectReference>
 	<ProjectReference Include="zvision.vcxproj">
-		<Project>{E771433F-6029-4902-89BB-E795590CA269}</Project>
+		<Project>{D23A5F1E-DA91-42FC-AD6F-FB78A214CDAA}</Project>
 	</ProjectReference>
 	</ItemGroup>
 	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

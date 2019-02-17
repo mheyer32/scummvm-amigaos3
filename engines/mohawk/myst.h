@@ -26,11 +26,12 @@
 #include "mohawk/console.h"
 #include "mohawk/mohawk.h"
 #include "mohawk/resource_cache.h"
-#include "mohawk/myst_scripts.h"
+#include "mohawk/video.h"
 
+#include "audio/mixer.h"
+
+#include "common/events.h"
 #include "common/random.h"
-
-#include "gui/saveload.h"
 
 namespace Mohawk {
 
@@ -41,9 +42,11 @@ class MystScriptParser;
 class MystConsole;
 class MystGameState;
 class MystOptionsDialog;
-class MystResource;
-class MystResourceType8;
-class MystResourceType13;
+class MystSound;
+class MystArea;
+class MystAreaImageSwitch;
+class MystAreaHover;
+class MystCard;
 
 // Engine Debug Flags
 enum {
@@ -60,7 +63,7 @@ enum {
 };
 
 // Myst Stacks
-enum {
+enum MystStack {
 	kChannelwoodStack = 0,	// Channelwood Age
 	kCreditsStack,			// Credits
 	kDemoStack,				// Demo Main Menu
@@ -72,7 +75,8 @@ enum {
 	kSeleniticStack,		// Selenitic Age
 	kDemoSlidesStack,		// Demo Slideshow
 	kDemoPreviewStack,		// Demo Myst Library Preview
-	kStoneshipStack			// Stoneship Age
+	kStoneshipStack,		// Stoneship Age
+	kMenuStack				// Main menu
 };
 
 // Transitions
@@ -92,12 +96,21 @@ enum TransitionType {
 	kNoTransition			= 999
 };
 
-const uint16 kMasterpieceOnly = 0xFFFF;
-
 struct MystCondition {
 	uint16 var;
-	uint16 numStates;
-	uint16 *values;
+	Common::Array<uint16> values;
+};
+
+struct MystSoundBlock {
+	struct SoundItem {
+		int16 action;
+		uint16 volume;
+	};
+
+	int16 sound;
+	uint16 soundVolume;
+	uint16 soundVar;
+	Common::Array<SoundItem> soundList;
 };
 
 // View Sound Action Type
@@ -109,142 +122,112 @@ enum {
 	// Other positive values are PlayNewSound of that id
 };
 
-// View flags
-enum {
-	kMystZipDestination = (1 << 0)
-};
-
-struct MystView {
-	uint16 flags;
-
-	// Image Data
-	uint16 conditionalImageCount;
-	MystCondition *conditionalImages;
-	uint16 mainImage;
-
-	// Sound Data
-	int16 sound;
-	uint16 soundVolume;
-	uint16 soundVar;
-	uint16 soundCount;
-	int16 *soundList;
-	uint16 *soundListVolume;
-
-	// Script Resources
-	uint16 scriptResCount;
-	struct ScriptResource {
-		uint16 type;
-		uint16 id; // Not used by type 3
-		// TODO: Type 3 has more. Maybe use a union?
-		uint16 var; // Used by type 3 only
-		uint16 count; // Used by type 3 only
-		uint16 u0; // Used by type 3 only
-		int16 *resource_list; // Used by type 3 only
-	} *scriptResources;
-
-	// Resource ID's
-	uint16 rlst;
-	uint16 hint;
-	uint16 init;
-	uint16 exit;
-};
-
-struct MystCursorHint {
-	uint16 id;
-	int16 cursor;
-
-	MystCondition variableHint;
-};
+typedef Common::SharedPtr<MystCard> MystCardPtr;
+typedef Common::SharedPtr<MystScriptParser> MystScriptParserPtr;
 
 class MohawkEngine_Myst : public MohawkEngine {
 protected:
-	Common::Error run();
+	Common::Error run() override;
 
 public:
 	MohawkEngine_Myst(OSystem *syst, const MohawkGameDescription *gamedesc);
-	virtual ~MohawkEngine_Myst();
+	~MohawkEngine_Myst() override;
 
-	Common::SeekableReadStream *getResource(uint32 tag, uint16 id);
+	Common::SeekableReadStream *getResource(uint32 tag, uint16 id) override;
+	Common::Array<uint16> getResourceIDList(uint32 type) const;
+	void cachePreload(uint32 tag, uint16 id);
 
-	Common::String wrapMovieFilename(const Common::String &movieName, uint16 stack);
-
-	void reloadSaveList();
-
-	void changeToStack(uint16 stack, uint16 card, uint16 linkSrcSound, uint16 linkDstSound);
+	void changeToStack(MystStack stackId, uint16 card, uint16 linkSrcSound, uint16 linkDstSound);
 	void changeToCard(uint16 card, TransitionType transition);
-	uint16 getCurCard() { return _curCard; }
-	uint16 getCurStack() { return _curStack; }
+	MystCard *getCard() { return _card.get(); };
+	MystCardPtr getCardPtr() { return _card; };
 	void setMainCursor(uint16 cursor);
 	uint16 getMainCursor() { return _mainCursor; }
-	void checkCursorHints();
-	MystResource *updateCurrentResource();
-	bool skippableWait(uint32 duration);
+	void refreshCursor();
+	bool wait(uint32 duration, bool skippable = false);
 
-	bool _tweaksEnabled;
-	bool _needsUpdate;
-	bool _needsPageDrop;
-	bool _needsShowMap;
-	bool _needsShowDemoMenu;
+	/** Update the game state according to events and update the screen */
+	void doFrame();
 
-	MystView _view;
-	MystGraphics *_gfx;
-	MystGameState *_gameState;
-	MystScriptParser *_scriptParser;
-	Common::Array<MystResource *> _resources;
-	MystResource *_dragResource;
-	Common::RandomSource *_rnd;
+	MystSoundBlock readSoundBlock(Common::ReadStream *stream) const;
+	void applySoundBlock(const MystSoundBlock &block);
 
 	bool _showResourceRects;
-	MystResource *loadResource(Common::SeekableReadStream *rlstStream, MystResource *parent);
-	void setResourceEnabled(uint16 resourceId, bool enable);
-	void redrawArea(uint16 var, bool update = true);
-	void redrawResource(MystResourceType8 *resource, bool update = true);
-	void drawResourceImages();
-	void drawCardBackground();
-	uint16 getCardBackgroundId();
+
+	VideoManager *_video;
+	MystSound *_sound;
+	MystGraphics *_gfx;
+	MystGameState *_gameState;
+	MystScriptParserPtr _stack;
+	Common::RandomSource *_rnd;
+
+	MystArea *loadResource(Common::SeekableReadStream *rlstStream, MystArea *parent);
+	void redrawResource(MystAreaImageSwitch *resource, bool update = true);
 
 	void setCacheState(bool state) { _cache.enabled = state; }
 	bool getCacheState() { return _cache.enabled; }
 
-	GUI::Debugger *getDebugger() { return _console; }
+	VideoEntryPtr playMovie(const Common::String &name, MystStack stack);
+	VideoEntryPtr playMovieFullscreen(const Common::String &name, MystStack stack);
+	VideoEntryPtr findVideo(const Common::String &name, MystStack stack);
+	void playMovieBlocking(const Common::String &name, MystStack stack, uint16 x, uint16 y);
+	void playFlybyMovie(MystStack stack);
+	void waitUntilMovieEnds(const VideoEntryPtr &video);
+	Common::String selectLocalizedMovieFilename(const Common::String &movieName);
 
-	bool canLoadGameStateCurrently();
-	bool canSaveGameStateCurrently();
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	bool hasFeature(EngineFeature f) const;
+	void playSoundBlocking(uint16 id);
+
+	GUI::Debugger *getDebugger() override { return _console; }
+
+	/**
+	 * Is the game currently interactive
+	 *
+	 * When the game is interactive, the user can interact with the game world
+	 * and perform other operations such as loading saved games, ...
+	 */
+	bool isInteractive();
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc) override;
+	void tryAutoSaving();
+	bool hasFeature(EngineFeature f) const override;
+
+	void resumeFromMainMenu();
+
+	void runLoadDialog();
+	void runSaveDialog();
+	void runOptionsDialog();
 
 private:
 	MystConsole *_console;
-	GUI::SaveLoadChooser *_loadDialog;
 	MystOptionsDialog *_optionsDialog;
-	MystScriptParser *_prevStack;
 	ResourceCache _cache;
-	void cachePreload(uint32 tag, uint16 id);
 
-	uint16 _curStack;
-	uint16 _curCard;
+	MystScriptParserPtr _prevStack;
 
-	bool _runExitScript;
+	MystCardPtr _card;
+	MystCardPtr _prevCard;
+	uint32 _lastSaveTime;
+
+	bool hasGameSaveSupport() const;
+	void pauseEngineIntern(bool pause) override;
+
+	void goToMainMenu();
 
 	void dropPage();
 
-	void loadCard();
-	void unloadCard();
-	void runInitScript();
-	void runExitScript();
+	Common::String wrapMovieFilename(const Common::String &movieName, uint16 stack);
 
-	void loadHelp(uint16 id);
+	void loadStackArchives(MystStack stackId);
+	void loadArchive(const char *archiveName, const char *language, bool mandatory);
 
-	void loadResources();
-	void drawResourceRects();
-	void checkCurrentResource();
-	int16 _curResource;
-	MystResourceType13 *_hoverResource;
+	// Input
+	bool _mouseClicked;
+	bool _mouseMoved;
+	bool _escapePressed;
+	bool _waitingOnBlockingOperation;
 
-	uint16 _cursorHintCount;
-	MystCursorHint *_cursorHints;
-	void loadCursorHints();
 	uint16 _currentCursor;
 	uint16 _mainCursor; // Also defines the current page being held (white, blue, red, or none)
 };

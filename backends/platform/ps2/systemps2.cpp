@@ -46,6 +46,7 @@
 #include "common/events.h"
 #include "common/file.h"
 #include "common/scummsys.h"
+#include "common/str.h"
 
 #include "backends/platform/ps2/asyncfio.h"
 #include "backends/platform/ps2/cd.h"
@@ -628,7 +629,7 @@ bool OSystem_PS2::usbMassPresent(void) {
 }
 
 bool OSystem_PS2::netPresent(void) {
-	if (_useNet) 
+	if (_useNet)
 		return true;
 
 	return false;
@@ -678,7 +679,7 @@ void OSystem_PS2::setPalette(const byte *colors, uint start, uint num) {
 	_screen->setPalette(colors, (uint8)start, (uint16)num);
 }
 
-void OSystem_PS2::grabPalette(byte *colors, uint start, uint num) {
+void OSystem_PS2::grabPalette(byte *colors, uint start, uint num) const {
 	_screen->grabPalette(colors, (uint8)start, (uint16)num);
 }
 
@@ -1096,7 +1097,7 @@ void OSystem_PS2::makeConfigPath() {
 	else
 		ps2_fclose(src);
 
-	_configFile = strdup(path);
+	_configFile = scumm_strdup(path);
 }
 
 Common::String OSystem_PS2::getDefaultConfigFileName() {

@@ -13,7 +13,7 @@
 			<PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<MinimalRebuild>true</MinimalRebuild>
 			<BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-			<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 			<FunctionLevelLinking>true</FunctionLevelLinking>
 			<TreatWarningAsError>false</TreatWarningAsError>
 			<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -22,7 +22,6 @@
 		<Link>
 			<GenerateDebugInformation>true</GenerateDebugInformation>
 			<ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-			<IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
 		</Link>
 	</ItemDefinitionGroup>
 </Project>

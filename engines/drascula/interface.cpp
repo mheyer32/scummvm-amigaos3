@@ -123,15 +123,6 @@ void DrasculaEngine::showMenu() {
 	int h, n, x;
 	byte *srcSurface = (currentChapter == 6) ? tableSurface : frontSurface;
 	x = whichObject();
-	
-	// The original uses extraSurface to draw text in draw_abc() in the Spanish version
-	// while other languages use tableSurface. Here all language use tableSurface for
-	// chapter 6. However the code in ScummVM was changed to use tableSurface for all
-	// labguage in draw_abc(). So instead here for the Spanish version we use extraSurface.
-	// Compared to the original the use of the tableSurface and extraSurface has been swapped
-	// for the Spanish language all through chapter 6.
-	if (currentChapter == 6 && _lang == kSpanish)
-		srcSurface = extraSurface;
 
 	for (n = 1; n < ARRAYSIZE(inventoryObjects); n++) {
 		h = inventoryObjects[n];
@@ -174,9 +165,7 @@ void DrasculaEngine::showMap() {
 	_hasName = false;
 
 	for (int l = 0; l < numRoomObjs; l++) {
-		if (_mouseX > _objectX1[l] && _mouseY > _objectY1[l]
-				&& _mouseX < _objectX2[l] && _mouseY < _objectY2[l]
-				&& visible[l] == 1) {
+		if (_objectRect[l].contains(Common::Point(_mouseX, _mouseY)) && visible[l] == 1) {
 			strcpy(textName, objName[l]);
 			_hasName = true;
 		}

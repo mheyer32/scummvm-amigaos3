@@ -23,8 +23,6 @@
 #ifndef SCI_GRAPHICS_PAINT16_H
 #define SCI_GRAPHICS_PAINT16_H
 
-#include "sci/graphics/paint.h"
-
 namespace Sci {
 
 class GfxPorts;
@@ -36,9 +34,9 @@ class GfxView;
 /**
  * Paint16 class, handles painting/drawing for SCI16 (SCI0-SCI1.1) games
  */
-class GfxPaint16 : public GfxPaint {
+class GfxPaint16 {
 public:
-	GfxPaint16(ResourceManager *resMan, SegManager *segMan, GfxCache *cache, GfxPorts *ports, GfxCoordAdjuster *coordAdjuster, GfxScreen *screen, GfxPalette *palette, GfxTransitions *transitions, AudioPlayer *audio);
+	GfxPaint16(ResourceManager *resMan, SegManager *segMan, GfxCache *cache, GfxPorts *ports, GfxCoordAdjuster16 *coordAdjuster, GfxScreen *screen, GfxPalette *palette, GfxTransitions *transitions, AudioPlayer *audio);
 	~GfxPaint16();
 
 	void init(GfxAnimate *animate, GfxText16 *text16);
@@ -46,9 +44,9 @@ public:
 	void debugSetEGAdrawingVisualize(bool state);
 
 	void drawPicture(GuiResourceId pictureId, int16 animationNr, bool mirroredFlag, bool addToFlag, GuiResourceId paletteId);
-	void drawCelAndShow(GuiResourceId viewId, int16 loopNo, int16 celNo, uint16 leftPos, uint16 topPos, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128);
-	void drawCel(GuiResourceId viewId, int16 loopNo, int16 celNo, const Common::Rect &celRect, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128);
-	void drawCel(GfxView *view, int16 loopNo, int16 celNo, const Common::Rect &celRect, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128);
+	void drawCelAndShow(GuiResourceId viewId, int16 loopNo, int16 celNo, uint16 leftPos, uint16 topPos, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128, uint16 scaleSignal = 0);
+	void drawCel(GuiResourceId viewId, int16 loopNo, int16 celNo, const Common::Rect &celRect, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128, uint16 scaleSignal = 0);
+	void drawCel(GfxView *view, int16 loopNo, int16 celNo, const Common::Rect &celRect, byte priority, uint16 paletteNo, uint16 scaleX = 128, uint16 scaleY = 128, uint16 scaleSignal = 0);
 	void drawHiresCelAndShow(GuiResourceId viewId, int16 loopNo, int16 celNo, uint16 leftPos, uint16 topPos, byte priority, uint16 paletteNo, reg_t upscaledHiresHandle, uint16 scaleX = 128, uint16 scaleY = 128);
 
 	void clearScreen(byte color = 255);
@@ -93,7 +91,7 @@ private:
 	GfxAnimate *_animate;
 	GfxCache *_cache;
 	GfxPorts *_ports;
-	GfxCoordAdjuster *_coordAdjuster;
+	GfxCoordAdjuster16 *_coordAdjuster;
 	GfxScreen *_screen;
 	GfxPalette *_palette;
 	GfxText16 *_text16;

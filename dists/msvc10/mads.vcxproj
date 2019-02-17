@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{E964EA64-0985-4EE0-BBC2-78F671753299}</ProjectGuid>
+		<ProjectGuid>{A8D11571-2DB8-4780-9712-49F5B8CDF689}</ProjectGuid>
 		<RootNamespace>mads</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>

@@ -90,7 +90,7 @@ MacOSXUpdateManager::MacOSXUpdateManager() {
 			|| ConfMan.getInt("updates_check") == Common::UpdateManager::kUpdateIntervalNotSupported) {
 		setAutomaticallyChecksForUpdates(kUpdateStateDisabled);
 	} else {
-		setAutomaticallyChecksForUpdates(kUpdateStateEnabled);
+	setAutomaticallyChecksForUpdates(kUpdateStateEnabled);
 		setUpdateCheckInterval(normalizeInterval(ConfMan.getInt("updates_check")));
 	}
 }
@@ -103,7 +103,7 @@ void MacOSXUpdateManager::checkForUpdates() {
 	if (sparkleUpdater == nullptr)
 		return;
 
-	[sparkleUpdater checkForUpdatesInBackground];
+	[sparkleUpdater checkForUpdates:nil];
 }
 
 void MacOSXUpdateManager::setAutomaticallyChecksForUpdates(UpdateManager::UpdateState state) {

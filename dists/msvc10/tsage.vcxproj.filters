@@ -2,16 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="blue_force">
-			<UniqueIdentifier>1CBA1460-E3EB-4A1D-B9FC-C04A20CD08C3</UniqueIdentifier>
+			<UniqueIdentifier>910CDEC1-E4A4-4639-96A7-662C77009141</UniqueIdentifier>
 		</Filter>
 		<Filter Include="ringworld">
-			<UniqueIdentifier>FA892253-3716-4D32-AA15-D1EC253DA3C3</UniqueIdentifier>
+			<UniqueIdentifier>5E0E9858-0E9A-499D-B3D5-EDD1ABE60FB6</UniqueIdentifier>
 		</Filter>
 		<Filter Include="ringworld2">
-			<UniqueIdentifier>50CB74C8-15C2-43B7-9DA5-A4677D4F37AC</UniqueIdentifier>
+			<UniqueIdentifier>A0C82300-A00D-474F-B1CD-0B8EDA92F948</UniqueIdentifier>
 		</Filter>
 		<Filter Include="sherlock">
-			<UniqueIdentifier>ADBFED9E-1ABB-403F-AF0B-E43F979232B4</UniqueIdentifier>
+			<UniqueIdentifier>69D60C1A-BAAE-4C4C-B252-05598E19C1B5</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -134,6 +134,7 @@
 		<ClCompile Include="..\..\engines\tsage\resources.cpp" />
 		<ClCompile Include="..\..\engines\tsage\saveload.cpp" />
 		<ClCompile Include="..\..\engines\tsage\scenes.cpp" />
+		<ClCompile Include="..\..\engines\tsage\screen.cpp" />
 		<ClCompile Include="..\..\engines\tsage\sound.cpp" />
 		<ClCompile Include="..\..\engines\tsage\staticres.cpp" />
 		<ClCompile Include="..\..\engines\tsage\tsage.cpp" />
@@ -259,6 +260,7 @@
 		<ClInclude Include="..\..\engines\tsage\resources.h" />
 		<ClInclude Include="..\..\engines\tsage\saveload.h" />
 		<ClInclude Include="..\..\engines\tsage\scenes.h" />
+		<ClInclude Include="..\..\engines\tsage\screen.h" />
 		<ClInclude Include="..\..\engines\tsage\sound.h" />
 		<ClInclude Include="..\..\engines\tsage\staticres.h" />
 		<ClInclude Include="..\..\engines\tsage\tsage.h" />

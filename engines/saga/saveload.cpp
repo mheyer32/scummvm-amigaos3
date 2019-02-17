@@ -56,7 +56,7 @@ SaveFileData *SagaEngine::getSaveFile(uint idx) {
 		return &_saveFiles[_saveFilesCount - idx - 1];
 	} else {
 		if (!emptySlot.name[0])
-			strcpy(emptySlot.name, getTextString(kTextNewSave));
+			Common::strlcpy(emptySlot.name, getTextString(kTextNewSave), SAVE_TITLE_SIZE);
 
 		return (idx == 0) ? &emptySlot : &_saveFiles[_saveFilesCount - idx];
 	}
@@ -185,12 +185,13 @@ void SagaEngine::save(const char *fileName, const char *saveName) {
 
 	// Original game title
 	memset(title, 0, TITLESIZE);
-	strncpy(title, _gameTitle.c_str(), TITLESIZE);
+	Common::strlcpy(title, _gameTitle.c_str(), TITLESIZE);
 	out->write(title, TITLESIZE);
 
 	// Thumbnail
 	// First draw scene without save dialog
 	int oldMode = _interface->getMode();
+	_render->clearFlag(RF_RENDERPAUSE); // Don't show paused game message in saved thumbnail
 	_interface->setMode(kPanelMain);
 	_render->drawScene();
 
@@ -381,6 +382,12 @@ void SagaEngine::load(const char *fileName) {
 	_music->setVolume(volume);
 
 	_interface->draw();
+
+	// Abort any scene entry protagonist animations and auto-cue speeches.
+	// Fixes bug #10009.
+	_actor->abortAllSpeeches();
+	_actor->_protagonist->_location = _actor->_protagonist->_finalTarget;
+	_actor->actorEndWalk(ID_PROTAG, true);
 }
 
 } // End of namespace Saga

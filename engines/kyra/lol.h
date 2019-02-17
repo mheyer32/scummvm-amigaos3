@@ -462,7 +462,7 @@ private:
 	int _ingameSoundListSize;
 
 	const uint8 *_musicTrackMap;
-	const uint16 *_ingameSoundIndex;
+	const int16 *_ingameSoundIndex;
 	int _ingameSoundIndexSize;
 	const uint8 *_ingameGMSoundIndex;
 	int _ingameGMSoundIndexSize;
@@ -987,8 +987,7 @@ private:
 	uint16 _specialGuiShapeY;
 	uint16 _specialGuiShapeMirrorFlag;
 
-	char _lastOverridePalFile[12];
-	char *_lastOverridePalFilePtr;
+	Common::String _lastOverridePalFile;
 	int _lastSpecialColor;
 	int _lastSpecialColorWeight;
 

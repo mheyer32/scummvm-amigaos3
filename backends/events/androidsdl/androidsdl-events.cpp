@@ -26,7 +26,6 @@
 
 #include "backends/events/androidsdl/androidsdl-events.h"
 #include "backends/platform/androidsdl/androidsdl-sdl.h"
-#include <SDL_screenkeyboard.h>
 
 bool AndroidSdlEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &event) {
 	if (ev.button.button == SDL_BUTTON_LEFT)
@@ -43,23 +42,17 @@ bool AndroidSdlEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &
 	else if (ev.button.button == SDL_BUTTON_MIDDLE) {
 		event.type = Common::EVENT_MBUTTONDOWN;
 
-		static int show_onscreen=0;
-		if (show_onscreen==0) {
-		    SDL_ANDROID_SetScreenKeyboardShown(0);
-		    show_onscreen++;
-		}
-		else if (show_onscreen==1) {
-		    SDL_ANDROID_SetScreenKeyboardShown(1);
-		    show_onscreen++;
-		}
-		if (show_onscreen==2)
-		    show_onscreen=0;
+		const bool show_onscreen = g_system->getFeatureState(OSystem::kFeatureOnScreenControl);
+		g_system->setFeatureState(OSystem::kFeatureOnScreenControl, !show_onscreen);
 	}
 #endif
 	else
 		return false;
 
 	processMouseEvent(event, ev.button.x, ev.button.y);
+	// update KbdMouse
+	_km.x = ev.button.x * MULTIPLIER;
+	_km.y = ev.button.y * MULTIPLIER;
 
 	return true;
 }
@@ -67,8 +60,9 @@ bool AndroidSdlEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &
 bool AndroidSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 	if (false) {}
 
-	if (ev.key.keysym.sym == SDLK_LCTRL) {
-		ev.key.keysym.sym = SDLK_F5;
+	if (ev.key.keysym.sym == SDLK_F13) {
+		event.type = Common::EVENT_MAINMENU;
+		return true;
 	} else {
 		// Let the events fall through if we didn't change them, this may not be the best way to
 		// set it up, but i'm not sure how sdl would like it if we let if fall through then redid it though.
@@ -79,6 +73,24 @@ bool AndroidSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 	}
 
 	return false;
+}
+
+int AndroidSdlEventSource::mapKey(SDLKey sdlKey, SDLMod mod, Uint16 unicode) {
+	Common::KeyCode key = SDLToOSystemKeycode(sdlKey);
+
+	if (key >= Common::KEYCODE_F1 && key <= Common::KEYCODE_F9) {
+		return key - Common::KEYCODE_F1 + Common::ASCII_F1;
+	} else if (key >= Common::KEYCODE_KP0 && key <= Common::KEYCODE_KP9) {
+		return key - Common::KEYCODE_KP0 + '0';
+	} else if (key >= Common::KEYCODE_UP && key <= Common::KEYCODE_PAGEDOWN) {
+		return key;
+	} else if (key >= 'a' && key <= 'z' && (mod & KMOD_SHIFT)) {
+		return key & ~0x20;
+	} else if (key >= Common::KEYCODE_NUMLOCK && key <= Common::KEYCODE_EURO) {
+		return 0;
+	} else {
+		return key;
+	}
 }
 
 #endif

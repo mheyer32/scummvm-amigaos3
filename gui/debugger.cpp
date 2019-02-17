@@ -42,6 +42,7 @@
 #elif defined(USE_READLINE)
 	#include <readline/readline.h>
 	#include <readline/history.h>
+	#include "common/events.h"
 #endif
 
 
@@ -50,7 +51,6 @@ namespace GUI {
 Debugger::Debugger() {
 	_frameCountdown = 0;
 	_isActive = false;
-	_errStr = NULL;
 	_firstTime = true;
 #ifndef USE_TEXT_CONSOLE_FOR_DEBUGGER
 	_debuggerDialog = new GUI::ConsoleDialog(1.0f, 0.67f);
@@ -109,6 +109,7 @@ int Debugger::debugPrintf(const char *format, ...) {
 	count = _debuggerDialog->vprintFormat(1, format, argptr);
 #else
 	count = ::vprintf(format, argptr);
+	::fflush(stdout);
 #endif
 	va_end (argptr);
 	return count;
@@ -157,8 +158,7 @@ void Debugger::attach(const char *entry) {
 	g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, true);
 
 	// Set error string (if any)
-	free(_errStr);
-	_errStr = entry ? strdup(entry) : 0;
+	_errStr = entry ? entry : "";
 
 	// Reset frame countdown (i.e. attach immediately)
 	_frameCountdown = 1;
@@ -191,6 +191,15 @@ char *readline_completionFunction(const char *text, int state) {
 	return g_readline_debugger->readlineComplete(text, state);
 }
 
+void readline_eventFunction() {
+	Common::EventManager *eventMan = g_system->getEventManager();
+
+	Common::Event event;
+	while (eventMan->pollEvent(event)) {
+		// drop all events
+	}
+}
+
 #ifdef USE_READLINE_INT_COMPLETION
 typedef int RLCompFunc_t(const char *, int);
 #else
@@ -213,10 +222,9 @@ void Debugger::enter() {
 		_firstTime = false;
 	}
 
-	if (_errStr) {
-		debugPrintf("ERROR: %s\n\n", _errStr);
-		free(_errStr);
-		_errStr = NULL;
+	if (_errStr.size()) {
+		debugPrintf("ERROR: %s\n\n", _errStr.c_str());
+		_errStr.clear();
 	}
 
 	_debuggerDialog->runModal();
@@ -228,6 +236,7 @@ void Debugger::enter() {
 
 	g_readline_debugger = this;
 	rl_completion_entry_function = (RLCompFunc_t *)&readline_completionFunction;
+	rl_event_hook = (rl_hook_func_t *)&readline_eventFunction;
 
 	char *line_read = 0;
 	do {
@@ -248,6 +257,7 @@ void Debugger::enter() {
 
 	do {
 		printf("debug> ");
+		::fflush(stdout);
 		if (!fgets(buf, sizeof(buf), stdin))
 			return;
 
@@ -264,6 +274,8 @@ void Debugger::enter() {
 }
 
 bool Debugger::handleCommand(int argc, const char **argv, bool &result) {
+	assert(argc > 0);
+
 	if (_cmds.contains(argv[0])) {
 		assert(_cmds[argv[0]]);
 		result = (*_cmds[argv[0]])(argc, argv);
@@ -277,22 +289,18 @@ bool Debugger::handleCommand(int argc, const char **argv, bool &result) {
 bool Debugger::parseCommand(const char *inputOrig) {
 	int num_params = 0;
 	const char *param[256];
-	char *input = strdup(inputOrig);	// One of the rare occasions using strdup is OK (although avoiding strtok might be more elegant here).
 
 	// Parse out any params
-	char *tok = strtok(input, " ");
-	if (tok) {
-		do {
-			param[num_params++] = tok;
-		} while ((tok = strtok(NULL, " ")) != NULL);
-	} else {
-		param[num_params++] = input;
+	Common::String input(inputOrig);
+	splitCommand(input, num_params, &param[0]);
+
+	if (num_params == 0) {
+		return true;
 	}
 
 	// Handle commands first
 	bool result;
 	if (handleCommand(num_params, param, result)) {
-		free(input);
 		return result;
 	}
 
@@ -377,14 +385,63 @@ bool Debugger::parseCommand(const char *inputOrig) {
 				}
 			}
 
-			free(input);
 			return true;
 		}
 	}
 
 	debugPrintf("Unknown command or variable\n");
-	free(input);
 	return true;
+}
+
+void Debugger::splitCommand(Common::String &input, int &argc, const char **argv) {
+	byte c;
+	enum states { DULL, IN_WORD, IN_STRING } state = DULL;
+	const char *paramStart = nullptr;
+
+	argc = 0;
+	for (Common::String::iterator p = input.begin(); *p; ++p) {
+		c = (byte)*p;
+
+		switch (state) {
+		case DULL:
+			// not in a word, not in a double quoted string
+			if (isspace(c))
+				break;
+
+			// not a space -- if it's a double quote we go to IN_STRING, else to IN_WORD
+			if (c == '"') {
+				state = IN_STRING;
+				paramStart = p + 1; // word starts at *next* char, not this one
+			} else {
+				state = IN_WORD;
+				paramStart = p;		// word starts here
+			}
+			break;
+
+		case IN_STRING:
+			// we're in a double quoted string, so keep going until we hit a close "
+			if (c == '"') {
+				// Add entire quoted string to parameter list
+				*p = '\0';
+				argv[argc++] = paramStart;
+				state = DULL;	// back to "not in word, not in string" state
+			}
+			break;
+
+		case IN_WORD:
+			// we're in a word, so keep going until we get to a space
+			if (isspace(c)) {
+				*p = '\0';
+				argv[argc++] = paramStart;
+				state = DULL;	// back to "not in word, not in string" state
+			}
+			break;
+		}
+	}
+
+	if (state != DULL)
+		// Add in final parameter
+		argv[argc++] = paramStart;
 }
 
 // returns true if something has been completed
@@ -406,7 +463,7 @@ bool Debugger::tabComplete(const char *input, Common::String &completion) const 
 
 	CommandsMap::const_iterator i, e = _cmds.end();
 	for (i = _cmds.begin(); i != e; ++i) {
-		if (i->_key.hasPrefix(input)) {
+		if (i->_key.hasPrefixIgnoreCase(input)) {
 			uint commandlen = i->_key.size();
 			if (commandlen == inputlen) { // perfect match, so no tab completion possible
 				return false;
@@ -573,7 +630,7 @@ bool Debugger::cmdMd5(int argc, const char **argv) {
 			length = atoi(argv[2]);
 			paramOffset = 2;
 		}
-		
+
 		// Assume that spaces are part of a single filename.
 		Common::String filename = argv[1 + paramOffset];
 		for (int i = 2 + paramOffset; i < argc; i++) {
@@ -613,7 +670,7 @@ bool Debugger::cmdMd5Mac(int argc, const char **argv) {
 			length = atoi(argv[2]);
 			paramOffset = 2;
 		}
-		
+
 		// Assume that spaces are part of a single filename.
 		Common::String filename = argv[1 + paramOffset];
 		for (int i = 2 + paramOffset; i < argc; i++) {

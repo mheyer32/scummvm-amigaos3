@@ -25,6 +25,7 @@
  * Sound decoder used in engines:
  *  - agos
  *  - draci
+ *  - glk
  *  - kyra
  *  - mohawk
  *  - queen
@@ -33,6 +34,7 @@
  *  - scumm
  *  - sword1
  *  - sword2
+ *  - titanic
  *  - touche
  *  - tucker
  */

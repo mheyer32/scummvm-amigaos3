@@ -46,12 +46,13 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	_roomDesc(kNumRoomTexts), _freeDesc(kNumFreeTexts),
 	_personText(kNumPersonTexts) {
 
+	DebugMan.addDebugChannel(kDebugAnimation, "Animation", "Animation Debug Flag");
+	DebugMan.addDebugChannel(kDebugSaveLoad, "SaveLoad", "Track Save/Load Function");
+
 	_vSyncInterrupt = false;
 
 	_console = 0;
 	_sound = 0;
-	DebugMan.addDebugChannel(kDebugAnimation, "Animation", "Animation Debug Flag");
-	DebugMan.addDebugChannel(kDebugSaveLoad, "SaveLoad", "Track Save/Load Function");
 	_speed = 1;
 	_turbo = false;
 	_oldMouseState = 0;
@@ -90,7 +91,6 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	// misc variables
 	_speechCount = 0;
 	_charShift = 0;
-	_kerning = 0;
 	_brightPalette = false;
 	_roomLoaded = 0;
 	_didZoom = 0;

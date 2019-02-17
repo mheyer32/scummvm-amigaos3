@@ -2,43 +2,43 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="ai">
-			<UniqueIdentifier>082D85B9-C775-40A0-AF53-A1A72AA08E5B</UniqueIdentifier>
+			<UniqueIdentifier>690A7B1D-9F0B-4E80-BD9E-848275505943</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items">
-			<UniqueIdentifier>18061E29-B576-4C44-8287-7D9ED61736D0</UniqueIdentifier>
+			<UniqueIdentifier>BA694F11-E2DE-4AA7-BE94-1F40E15CF0F6</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items\biochips">
-			<UniqueIdentifier>5E649E1B-492C-4BCC-A32C-168C948B3A59</UniqueIdentifier>
+			<UniqueIdentifier>04419C00-16B8-42C5-B8FD-49B647A8883A</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items\inventory">
-			<UniqueIdentifier>663DA962-C81D-4A08-8D55-74BFBACBAC32</UniqueIdentifier>
+			<UniqueIdentifier>487A6E66-EC6D-4926-AA57-A8B1FE1A4E88</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood">
-			<UniqueIdentifier>85B8F054-0AFA-454B-B885-3D18B92FFD4B</UniqueIdentifier>
+			<UniqueIdentifier>F6BF9451-E966-4796-9800-234D13238C54</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\caldoria">
-			<UniqueIdentifier>A20E5C08-6F38-4A04-94C9-880981D275B0</UniqueIdentifier>
+			<UniqueIdentifier>1021511D-1D40-4428-8911-C67870C448C6</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\mars">
-			<UniqueIdentifier>376F4A22-CDFD-4806-9BDA-2A6532230770</UniqueIdentifier>
+			<UniqueIdentifier>7B77EC30-D904-4B28-AA0A-D3865EED6D1A</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad">
-			<UniqueIdentifier>C1848080-44F9-49AD-B3FE-A21921E4C06D</UniqueIdentifier>
+			<UniqueIdentifier>3E0CC342-BC97-4D36-B013-DF12DE97E93F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad\alpha">
-			<UniqueIdentifier>C80BA2E2-3D79-4625-B15F-A5A2CE5FFD86</UniqueIdentifier>
+			<UniqueIdentifier>4FDA5736-BD1A-4B10-806B-E0F8D79446C1</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad\delta">
-			<UniqueIdentifier>FB6FDAF2-9580-4C6C-81B5-DE51E443D14A</UniqueIdentifier>
+			<UniqueIdentifier>2EE7D4FC-0157-4371-B636-29F50AD268AB</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\prehistoric">
-			<UniqueIdentifier>47BF6124-4353-452E-86C4-D55B0F8C966B</UniqueIdentifier>
+			<UniqueIdentifier>97AA80B9-9DC8-4FD6-8F91-BDDBBD3DAA1B</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\tsa">
-			<UniqueIdentifier>2D0D5B38-B1D5-439C-844A-E164075EE54C</UniqueIdentifier>
+			<UniqueIdentifier>2A2EAE0D-2A00-4ABA-B444-446C6814EDD7</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\wsc">
-			<UniqueIdentifier>05AF0319-5689-4E9F-9A6B-4FE82589B434</UniqueIdentifier>
+			<UniqueIdentifier>10C3DD63-6C62-4112-B403-884537AEABB1</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>

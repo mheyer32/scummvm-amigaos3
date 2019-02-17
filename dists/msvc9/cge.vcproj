@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="cge"
-	ProjectGUID="{DCDB0B65-EF54-4E8D-AD27-633E6B07FDF8}"
+	ProjectGUID="{4604494D-2FBE-4F23-8E98-B67955DFE047}"
 	RootNamespace="cge"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

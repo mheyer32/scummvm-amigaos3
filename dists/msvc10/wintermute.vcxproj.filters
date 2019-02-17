@@ -2,46 +2,55 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="ad">
-			<UniqueIdentifier>FE40A3FA-326E-425D-B94D-62D882CC843B</UniqueIdentifier>
+			<UniqueIdentifier>C40302A1-E85E-4DBB-8CE3-88310E4A3161</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base">
-			<UniqueIdentifier>099B32C7-20B9-4D8E-A1AC-3CA1CDD039DD</UniqueIdentifier>
+			<UniqueIdentifier>2136DF24-DA64-4521-9614-3ADAEA3BF08F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\file">
-			<UniqueIdentifier>8631D4B8-D99A-4A74-A5DD-E97375A8FBDB</UniqueIdentifier>
+			<UniqueIdentifier>1F53841F-2F54-4029-AEFA-AB8358E304DD</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\font">
-			<UniqueIdentifier>401215AB-4044-4DDE-A1B4-5216C39F0F74</UniqueIdentifier>
+			<UniqueIdentifier>B8843FA7-AAB4-4C65-BE16-F77A63F0BFCF</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\gfx">
-			<UniqueIdentifier>71BE2017-92DB-495F-9ED3-9D529748523B</UniqueIdentifier>
+			<UniqueIdentifier>5C86CBF3-54DD-4C21-B4EC-887787EF56E3</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\gfx\osystem">
-			<UniqueIdentifier>DACA7DA7-FEAF-4359-A745-A17865CD4EAC</UniqueIdentifier>
+			<UniqueIdentifier>08A47C07-3978-4EB2-889A-544A699AF3CA</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\particles">
-			<UniqueIdentifier>E827638F-1EAF-47AA-8DE3-FE9FCBFC8570</UniqueIdentifier>
+			<UniqueIdentifier>8E2DA587-4BEC-4D8C-B31B-A799589267E7</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\scriptables">
-			<UniqueIdentifier>DD58E007-E333-4E57-AB1A-59E98F4C1A2B</UniqueIdentifier>
+			<UniqueIdentifier>75E92863-AE65-4862-8C09-42C73DCE4CE3</UniqueIdentifier>
+		</Filter>
+		<Filter Include="base\scriptables\debuggable">
+			<UniqueIdentifier>30817EF4-DE56-4BA2-BE00-4ACFD6E580C9</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\sound">
-			<UniqueIdentifier>466700DC-97E0-4FB4-AAB7-B0885CA153EF</UniqueIdentifier>
+			<UniqueIdentifier>35BBC667-5D46-4E5C-87F5-6671853FE2AC</UniqueIdentifier>
+		</Filter>
+		<Filter Include="debugger">
+			<UniqueIdentifier>86EB20C8-0E68-484A-9AC4-A18E3EE6E21C</UniqueIdentifier>
+		</Filter>
+		<Filter Include="debugger\listing_providers">
+			<UniqueIdentifier>53BBF71E-8333-4D55-8A96-F6BA98F48D30</UniqueIdentifier>
 		</Filter>
 		<Filter Include="math">
-			<UniqueIdentifier>37735D7F-5FDC-40C2-B9F6-82B8D893AA68</UniqueIdentifier>
+			<UniqueIdentifier>24F9AC75-D183-45CC-9488-696065801F03</UniqueIdentifier>
 		</Filter>
 		<Filter Include="system">
-			<UniqueIdentifier>C3515EF4-E9E0-484E-9B0C-F368F481B941</UniqueIdentifier>
+			<UniqueIdentifier>F6E9330F-E360-4356-A1AC-963ADEC1E7D5</UniqueIdentifier>
 		</Filter>
 		<Filter Include="ui">
-			<UniqueIdentifier>93CEA4A6-87AC-45B2-AD39-6234B1649198</UniqueIdentifier>
+			<UniqueIdentifier>0FBAAA8C-0A50-4234-8565-E0602DE488EE</UniqueIdentifier>
 		</Filter>
 		<Filter Include="utils">
-			<UniqueIdentifier>60840B2F-0946-40C7-A791-FB302B2EED46</UniqueIdentifier>
+			<UniqueIdentifier>1CE45E4E-3DC9-4777-9D86-7724C7610AB2</UniqueIdentifier>
 		</Filter>
 		<Filter Include="video">
-			<UniqueIdentifier>1ECB4C78-0D56-43A4-A045-2A3E591BE270</UniqueIdentifier>
+			<UniqueIdentifier>F28C0AFA-9284-4EBE-B9C4-DB0ACBFCA17B</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -177,6 +186,12 @@
 		<ClCompile Include="..\..\engines\wintermute\base\particles\part_particle.cpp">
 			<Filter>base\particles</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.cpp">
+			<Filter>base\scriptables\debuggable</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.cpp">
+			<Filter>base\scriptables\debuggable</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script.cpp">
 			<Filter>base\scriptables</Filter>
 		</ClCompile>
@@ -305,6 +320,42 @@
 		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\base\timer.cpp">
 			<Filter>base</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.cpp">
+			<Filter>debugger\listing_providers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing.cpp">
+			<Filter>debugger\listing_providers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.cpp">
+			<Filter>debugger\listing_providers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.cpp">
+			<Filter>debugger\listing_providers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\source_listing.cpp">
+			<Filter>debugger\listing_providers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\breakpoint.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\debugger_controller.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\error.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\script_monitor.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\watch.cpp">
+			<Filter>debugger</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\debugger\watch_instance.cpp">
+			<Filter>debugger</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\math\math_util.cpp">
 			<Filter>math</Filter>
@@ -517,6 +568,12 @@
 		<ClInclude Include="..\..\engines\wintermute\base\particles\part_particle.h">
 			<Filter>base\particles</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.h">
+			<Filter>base\scriptables\debuggable</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.h">
+			<Filter>base\scriptables\debuggable</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\dcscript.h">
 			<Filter>base\scriptables</Filter>
 		</ClInclude>
@@ -648,6 +705,48 @@
 		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\base\timer.h">
 			<Filter>base</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\source_listing.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\source_listing_provider.h">
+			<Filter>debugger\listing_providers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\breakpoint.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\debugger_controller.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\error.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_provider.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\script_monitor.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\watch.h">
+			<Filter>debugger</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\debugger\watch_instance.h">
+			<Filter>debugger</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\math\floatpoint.h">
 			<Filter>math</Filter>

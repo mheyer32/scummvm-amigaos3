@@ -532,7 +532,7 @@ void Scene2100::Action1::signal() {
 			// Wait for an event
 			Event event;
 			if (!g_globals->_events.getEvent(event)) {
-				GLOBALS._screenSurface.updateScreen();
+				GLOBALS._screen.update();
 				g_system->delayMillis(10);
 				continue;
 			}
@@ -2265,7 +2265,7 @@ void Scene2150::Action1::signal() {
 			// Wait for an event
 			Event event;
 			if (!g_globals->_events.getEvent(event)) {
-				GLOBALS._screenSurface.updateScreen();
+				GLOBALS._screen.update();
 				g_system->delayMillis(10);
 				continue;
 			}
@@ -5119,7 +5119,7 @@ void Scene2320::Action3::signal() {
 			// Wait for an event
 			Event event;
 			if (!g_globals->_events.getEvent(event)) {
-				GLOBALS._screenSurface.updateScreen();
+				GLOBALS._screen.update();
 				g_system->delayMillis(10);
 				continue;
 			}
@@ -5907,7 +5907,7 @@ void Scene2320::postInit(SceneObjectList *OwnerList) {
 			_hotspot11.setPosition(Common::Point(178, 118));
 			_hotspot11.animate(ANIM_MODE_1, NULL);
 		}
-		// Deliberate fall-through
+		// fall through
 	case 4250:
 	case 5000:
 	case 7000:

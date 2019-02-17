@@ -33,6 +33,60 @@
 #include "graphics/scaler/aspect.h"
 
 #include <proto/commodities.h>
+#include <proto/timer.h>
+
+#define REG(xn, parm) parm __asm(#xn)
+#define REGARGS __regargs
+#define STDARGS __stdargs
+#define SAVEDS __saveds
+#define ALIGNED __attribute__ ((aligned(4))
+#define FAR __far
+#define CHIP __chip
+#define INTERRUPT  __interrupt //__interrupt
+#define INLINE __inline__
+#define NOINLINE __attribute__ ((noinline))
+
+#define REGD0(x) REG(d0, x)
+#define REGD1(x) REG(d1, x)
+#define REGD2(x) REG(d2, x)
+#define REGD3(x) REG(d3, x)
+#define REGD4(x) REG(d4, x)
+#define REGD5(x) REG(d5, x)
+#define REGD6(x) REG(d6, x)
+#define REGD7(x) REG(d7, x)
+
+#define REGA0(x) REG(a0, x)
+#define REGA1(x) REG(a1, x)
+#define REGA2(x) REG(a2, x)
+#define REGA3(x) REG(a3, x)
+#define REGA4(x) REG(a4, x)
+#define REGA5(x) REG(a5, x)
+#define REGA6(x) REG(a6, x)
+
+
+static inline void StartTimer(struct EClockVal *start_timer)
+{
+	ReadEClock(start_timer);
+}
+
+static inline ULONG EndTimer(const struct EClockVal * start_timer)
+{
+	struct EClockVal end_time;
+	ReadEClock(&end_time);
+	return end_time.ev_lo - start_timer->ev_lo;
+}
+
+ULONG eclocks_per_ms; /* EClock frequency in 1000Hz */
+
+static void PrintTime(ULONG time, const char* msg, ULONG total_frames)
+{
+	ULONG usec = (time * 1000) / eclocks_per_ms;
+	printf("Total %s = %lu us  (%lu us/frame)\n", msg, usec, usec / total_frames);
+}
+
+// short cuts: assumes a 'struct EClockVal start_time;' variable in current scope
+#define start_timer() StartTimer(&start_time)
+#define end_timer() EndTimer(&start_time)
 
 static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {{"1x", "Normal", GFX_NORMAL}, {0, 0, 0}};
 
@@ -306,7 +360,7 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 	return true;
 }
 
-struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
+struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint16 width, uint16 height) {
 	// Create the hardware screen.
 	struct Screen *screen = NULL;
 	ULONG modeId = INVALID_ID;
@@ -326,7 +380,7 @@ struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
 	return screen;
 }
 
-struct Window *OSystem_AmigaOS3::createHardwareWindow(uint width, uint height, struct Screen *screen) {
+struct Window *OSystem_AmigaOS3::createHardwareWindow(uint16 width, uint16 height, struct Screen *screen) {
 	return OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, width, WA_Height, height, SA_AutoScroll, FALSE,
 						  WA_CustomScreen, (Tag)screen, WA_Backdrop, TRUE, WA_Borderless, TRUE, WA_DragBar, FALSE,
 						  WA_Activate, TRUE, WA_SimpleRefresh, TRUE, WA_NoCareRefresh, TRUE, WA_ReportMouse, TRUE,
@@ -389,7 +443,7 @@ void OSystem_AmigaOS3::setPalette(const byte *colors, uint start, uint num) {
 	}
 }
 
-void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) {
+void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) const {
 #ifndef NDEBUG
 	assert(colors);
 #endif
@@ -408,7 +462,7 @@ void OSystem_AmigaOS3::updatePalette() {
 	uint j = 1;
 	byte *color = (byte *)(_currentPalette + 3 * _paletteDirtyStart);
 
-	for (uint i = _paletteDirtyStart; i < _paletteDirtyEnd; i++) {
+	for (uint16 i = _paletteDirtyStart; i < _paletteDirtyEnd; i++) {
 		_agaPalette[j] = color[0] << 24;
 		_agaPalette[j + 1] = color[1] << 24;
 		_agaPalette[j + 2] = color[2] << 24;
@@ -417,7 +471,7 @@ void OSystem_AmigaOS3::updatePalette() {
 		color += 3;
 	}
 
-	uint numberOfEntries = (_paletteDirtyEnd - _paletteDirtyStart);
+	uint16 numberOfEntries = (_paletteDirtyEnd - _paletteDirtyStart);
 
 	_agaPalette[0] = (numberOfEntries << 16) + _paletteDirtyStart;
 
@@ -452,7 +506,7 @@ void OSystem_AmigaOS3::copyRectToScreen(const void *buf, int pitch, int x, int y
 	byte *dst = (byte *)_screen.getBasePtr(x, y);
 
 	if (_videoMode.screenWidth == pitch && pitch == w) {
-		CopyMemQuick((byte *)buf, dst, w * h);
+		CopyMemQuick((byte *)buf, dst, (unsigned)w * h);
 	} else {
 		const byte *src = (const byte *)buf;
 		do {
@@ -465,7 +519,7 @@ void OSystem_AmigaOS3::copyRectToScreen(const void *buf, int pitch, int x, int y
 
 void OSystem_AmigaOS3::fillScreen(uint32 col) {
 	if (_screen.getPixels()) {
-		memset(_screen.getPixels(), (int)col, (_videoMode.screenWidth * _videoMode.screenHeight));
+		memset(_screen.getPixels(), (int)col, ((unsigned)_videoMode.screenWidth * _videoMode.screenHeight));
 	}
 }
 
@@ -480,12 +534,18 @@ void OSystem_AmigaOS3::updateScreen() {
 		drawMouse();
 	}
 
+	struct EClockVal start_time;
+
+	static ULONG c2pTime = 0;
 	if (_overlayVisible) {
 		src = (UBYTE *)_overlayscreen8.getPixels();
 		assert(_videoMode.overlayWidth <= _videoMode.screenWidth);
 		assert(_videoMode.overlayHeight <= _videoMode.overlayScreenHeight);
+		start_timer();
 		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.overlayWidth - 1,
 						  _videoMode.overlayHeight - 1, src, _videoMode.overlayWidth);
+		c2pTime+=end_timer();
+
 	} else {
 		if (_currentShakePos != _newShakePos) {
 			// Set the 'dirty area' to black.
@@ -505,8 +565,10 @@ void OSystem_AmigaOS3::updateScreen() {
 			src = (UBYTE *)_screen.getPixels();
 		}
 
+		start_timer();
 		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth - 1,
 						  _videoMode.screenHeight - 1, src, _videoMode.screenWidth);
+		c2pTime+=end_timer();
 	}
 
 	// Check whether the palette was changed.
@@ -518,10 +580,25 @@ void OSystem_AmigaOS3::updateScreen() {
 		undrawMouse();
 	}
 
+	static ULONG flipTime = 0;
+	start_timer();
 	if (ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer])) {
 		// Flip.
 		_currentScreenBuffer = (_currentScreenBuffer + 1) % NUM_SCREENBUFFERS;
+		flipTime+=end_timer();
+	} else {
+		warning("ChangeScreenBuffer() could not flip buffers");
 	}
+
+	static byte frames = 0;
+	if (frames == 10) {
+		PrintTime(c2pTime, "c2p", frames);
+		PrintTime(flipTime, "flip", frames);
+		frames = 0;
+		flipTime = 0;
+		c2pTime = 0;
+	}
+	++frames;
 }
 
 void OSystem_AmigaOS3::setShakePos(int shakeOffset) {
@@ -657,31 +734,26 @@ void OSystem_AmigaOS3::grabOverlay(void *buf, int pitch) {
 		   (_videoMode.screenWidth * _videoMode.overlayScreenHeight) * _overlayscreen16.format.bytesPerPixel);
 }
 
-void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h) {
+void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int _pitch, int _x, int _y, int _w, int _h) {
 #ifndef NDEBUG
 	debug(4, "copyRectToOverlay()");
 
 	assert(_transactionMode == kTransactionNone);
 #endif
 
+	//FIXME: we're not using pitch
+	uint16 pitch = _pitch, x = _x, y = _y, w = _w, h = _h;
+
 	// Clip the coordinates
-	if (x < 0) {
-		return;
-	}
-
-	if (y < 0) {
-		return;
-	}
-
-	if (w > _videoMode.screenWidth - x) {
+	if (x + w > _videoMode.screenWidth) {
 		w = _videoMode.screenWidth - x;
 	}
 
-	if (h > _videoMode.overlayScreenHeight - y) {
+	if (y + h > _videoMode.overlayScreenHeight) {
 		h = _videoMode.overlayScreenHeight - y;
 	}
 
-	if (w <= 0 || h <= 0) {
+	if (w == 0 || h == 0) {
 		return;
 	}
 
@@ -691,8 +763,8 @@ void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int pitch, int x, int 
 	OverlayColor color16;
 	byte color8;
 
-	for (uint r = 0; r < h; r++) {
-		for (uint c = 0; c < w; c++) {
+	for (uint16 r = 0; r < h; r++) {
+		for (uint16 c = 0; c < w; c++) {
 			color16 = *src;
 
 			color8 = _overlayColorMap[color16];
@@ -747,12 +819,10 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 									  bool dontScale, const Graphics::PixelFormat *format) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setMouseCursor(w = %d, h = %d)", w, h);
-
-	assert(buf);
 #endif
 
 	// Sanity check.
-	if (w == 0 || h == 0) {
+	if (w == 0 || h == 0 || !buf) {
 		return;
 	}
 
@@ -768,10 +838,10 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 	_mouseCursor.hotY = hotspot_y;
 	_mouseCursor.keyColor = keycolor;
 
-	CopyMem((void *)buf, _mouseCursor.surface.getPixels(), w * h);
+	CopyMem((void *)buf, _mouseCursor.surface.getPixels(), (unsigned)w * h);
 }
 
-void OSystem_AmigaOS3::setMouseCursorPosition(uint x, uint y) {
+void OSystem_AmigaOS3::setMouseCursorPosition(uint16 x, uint16 y) {
 	_mouseCursor.x = x;
 	_mouseCursor.y = y;
 }
@@ -781,11 +851,11 @@ void OSystem_AmigaOS3::drawMouse() {
 	debug(4, "OSystem_AmigaOS3::drawMouse()");
 #endif
 
-	uint w = _mouseCursor.w;
-	uint h = _mouseCursor.h;
+	int16 w = _mouseCursor.w;
+	int16 h = _mouseCursor.h;
 
-	int x = (_mouseCursor.x - _mouseCursor.hotX);
-	int y = (_mouseCursor.y - _mouseCursor.hotY);
+	int16 x = (_mouseCursor.x - _mouseCursor.hotX);
+	int16 y = (_mouseCursor.y - _mouseCursor.hotY);
 
 	byte *mousePixels = (byte *)_mouseCursor.surface.getPixels();
 
@@ -798,16 +868,22 @@ void OSystem_AmigaOS3::drawMouse() {
 
 	if (y < 0) {
 		h += y;
-		mousePixels -= (y * _mouseCursor.surface.pitch);
+		mousePixels -= ((unsigned)y * _mouseCursor.surface.pitch);
 		y = 0;
 	}
 
-	if (w > _videoMode.screenWidth - x) {
+	if (x + w > _videoMode.screenWidth) {
 		w = _videoMode.screenWidth - x;
 	}
 
-	if (h > _videoMode.screenHeight - y) {
-		h = _videoMode.screenHeight - y;
+	if (_overlayVisible) {
+		if (y + h > _videoMode.overlayScreenHeight) {
+			h = _videoMode.overlayScreenHeight - y;
+		}
+	} else {
+		if (y + h > _videoMode.screenHeight) {
+			h = _videoMode.screenHeight - y;
+		}
 	}
 
 	if (w <= 0 || h <= 0) {
@@ -839,7 +915,7 @@ void OSystem_AmigaOS3::drawMouse() {
 		// Save a copy of this row before it's overwritten.
 		CopyMem(screenPixels, maskPixels, w);
 
-		for (uint c = 0; c < w; c++) {
+		for (uint16 c = 0; c < w; c++) {
 			color = *mousePixels;
 
 			if (color != _mouseCursor.keyColor) {
@@ -874,7 +950,7 @@ void OSystem_AmigaOS3::undrawMouse() {
 
 	byte *src = (byte *)_mouseCursorMask.surface.getPixels();
 
-	for (uint i = 0; i < _mouseCursorMask.h; i++) {
+	for (uint16 i = 0; i < _mouseCursorMask.h; i++) {
 		CopyMem(src, dst, _mouseCursorMask.w);
 		dst += _videoMode.screenWidth;
 		src += _mouseCursorMask.w;

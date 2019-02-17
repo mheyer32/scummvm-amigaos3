@@ -214,7 +214,7 @@ bool LuaScriptEngine::executeBuffer(const byte *data, uint size, const Common::S
 
 	// Run buffer contents
 	if (lua_pcall(_state, 0, 0, -2) != 0) {
-		error("An error occured while executing \"%s\":\n%s.",
+		error("An error occurred while executing \"%s\":\n%s.",
 		               name.c_str(),
 		               lua_tostring(_state, -1));
 		lua_pop(_state, 2);
@@ -395,7 +395,7 @@ bool LuaScriptEngine::persist(OutputPersistenceBlock &writer) {
 	lua_getglobal(_state, "_G");
 
 	// Lua persists and stores the data in a WriteStream
-	Common::MemoryWriteStreamDynamic writeStream;
+	Common::MemoryWriteStreamDynamic writeStream(DisposeAfterUse::YES);
 	Lua::persistLua(_state, &writeStream);
 
 	// Persistenzdaten in den Writer schreiben.

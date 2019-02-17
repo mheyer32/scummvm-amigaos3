@@ -45,6 +45,9 @@
 #include <proto/timer.h>
 
 extern struct Device *TimerBase;
+extern struct MsgPort* TimerMP;
+extern struct timerequest *TimerIOReq;
+
 static struct timeval t0;
 
 OSystem_AmigaOS3::OSystem_AmigaOS3() {
@@ -346,8 +349,18 @@ uint32 OSystem_AmigaOS3::getMillis(bool skipRecord) {
 }
 
 void OSystem_AmigaOS3::delayMillis(uint msecs) {
-	if (msecs > 0) {
-		Delay(msecs / 20);
+	if (msecs) {
+		if (msecs < 1000) {
+			TimerIOReq->tr_time.tv_secs = 0;
+			TimerIOReq->tr_time.tv_micro = msecs * 1000;
+		} else {
+			TimerIOReq->tr_time.tv_secs = msecs / 1000;
+			TimerIOReq->tr_time.tv_micro = (msecs % 1000) * 1000;
+		}
+		TimerIOReq->tr_node.io_Command = TR_ADDREQUEST;
+
+		DoIO(&TimerIOReq->tr_node);
+		WaitIO(&TimerIOReq->tr_node);
 	}
 }
 

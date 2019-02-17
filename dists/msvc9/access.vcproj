@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="access"
-	ProjectGUID="{8BE476E9-7F56-4239-9C77-DFB2CB3A7979}"
+	ProjectGUID="{36FEA96A-90A1-4F81-ABEB-D04681ADA16E}"
 	RootNamespace="access"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

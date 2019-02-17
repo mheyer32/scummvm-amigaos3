@@ -21,13 +21,11 @@
  */
 
 #include "audio/mididrv.h"
-#include "audio/mixer.h"
 
 #include "groovie/script.h"
 #include "groovie/cell.h"
 #include "groovie/cursor.h"
 #include "groovie/graphics.h"
-#include "groovie/groovie.h"
 #include "groovie/music.h"
 #include "groovie/player.h"
 #include "groovie/resource.h"
@@ -173,11 +171,19 @@ bool Script::loadScript(Common::String filename) {
 
 void Script::directGameLoad(int slot) {
 	// Reject invalid slots
-	if (slot < 0 || slot > 9) {
+	if (slot < 0 || slot > MAX_SAVES - 1) {
 		return;
 	}
 
-	// TODO: Return to the main script, likely reusing most of o_returnscript()
+	// Return to the main script if required
+	if (_savedCode) {
+		// Returning the correct spot, dealing with _savedVariables, etc
+		// is not needed as game state is getting nuked anyway
+		delete[] _code;
+		_code = _savedCode;
+		_codeSize = _savedCodeSize;
+		_savedCode = nullptr;
+	}
 
 	// HACK: We set the slot to load in the appropriate variable, and set the
 	// current instruction to the one that actually loads the saved game
@@ -398,6 +404,22 @@ void Script::loadgame(uint slot) {
 	_vm->_grvCursorMan->show(false);
 }
 
+bool Script::canDirectSave() const {
+	// Disallow when running a subscript
+	return _savedCode == nullptr;
+}
+
+void Script::directGameSave(int slot, const Common::String &desc) {
+	if (slot < 0 || slot > MAX_SAVES - 1) {
+		return;
+	}
+	const char *saveName = desc.c_str();
+	for (int i = 0; i < 15; i++) {
+		_variables[i] = saveName[i] - 0x30;
+	}
+	savegame(slot);
+}
+
 void Script::savegame(uint slot) {
 	char save[15];
 	char newchar;
@@ -417,9 +439,11 @@ void Script::savegame(uint slot) {
 	// Cache the saved name
 	for (int i = 0; i < 15; i++) {
 		newchar = _variables[i] + 0x30;
-		if ((newchar < 0x30 || newchar > 0x39) && (newchar < 0x41 || newchar > 0x7A)) {
+		if ((newchar < 0x30 || newchar > 0x39) && (newchar < 0x41 || newchar > 0x7A) && newchar != 0x2E) {
 			save[i] = '\0';
 			break;
+		} else if (newchar == 0x2E) { // '.', generated when space is pressed
+			save[i] = ' ';
 		} else {
 			save[i] = newchar;
 		}
@@ -1369,7 +1393,7 @@ void Script::o_checkvalidsaves() {
 	debugC(1, kDebugScript, "CHECKVALIDSAVES");
 
 	// Reset the array of valid saves and the savegame names cache
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < MAX_SAVES; i++) {
 		setVariable(i, 0);
 		_saveNames[i] = "E M P T Y";
 	}
@@ -1682,7 +1706,7 @@ void Script::o2_copyscreentobg() {
 	// TODO: Parameter
 	if (val)
 		warning("o2_copyscreentobg: Param is %d", val);
-	
+
 	Graphics::Surface *screen = _vm->_system->lockScreen();
 	_vm->_graphicsMan->_background.copyFrom(screen->getSubArea(Common::Rect(0, 80, 640, 320)));
 	_vm->_system->unlockScreen();

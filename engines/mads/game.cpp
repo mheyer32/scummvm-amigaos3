@@ -485,11 +485,6 @@ void Game::loadGame(int slotNumber) {
 	if (!readSavegameHeader(_saveFile, header))
 		error("Invalid savegame");
 
-	if (header._thumbnail) {
-		header._thumbnail->free();
-		delete header._thumbnail;
-	}
-
 	// Load most of the savegame data with the exception of scene specific info
 	synchronize(s, true);
 
@@ -498,7 +493,7 @@ void Game::loadGame(int slotNumber) {
 	_scene._currentSceneId = -2;
 	_sectionNumber = _scene._nextSceneId / 100;
 	_scene._frameStartTime = _vm->_events->getFrameCounter();
-	_vm->_screen._shakeCountdown = -1;
+	_vm->_screen->_shakeCountdown = -1;
 
 	// Default the selected inventory item to the first one, if the player has any
 	_scene._userInterface._selectedInvIndex = _objects._inventoryList.size() > 0 ? 0 : -1;
@@ -527,9 +522,8 @@ void Game::saveGame(int slotNumber, const Common::String &saveName) {
 const char *const SAVEGAME_STR = "MADS";
 #define SAVEGAME_STR_SIZE 4
 
-bool Game::readSavegameHeader(Common::InSaveFile *in, MADSSavegameHeader &header) {
+WARN_UNUSED_RESULT bool Game::readSavegameHeader(Common::InSaveFile *in, MADSSavegameHeader &header, bool skipThumbnail) {
 	char saveIdentBuffer[SAVEGAME_STR_SIZE + 1];
-	header._thumbnail = nullptr;
 
 	// Validate the header Id
 	in->read(saveIdentBuffer, SAVEGAME_STR_SIZE + 1);
@@ -546,9 +540,9 @@ bool Game::readSavegameHeader(Common::InSaveFile *in, MADSSavegameHeader &header
 	while ((ch = (char)in->readByte()) != '\0') header._saveName += ch;
 
 	// Get the thumbnail
-	header._thumbnail = Graphics::loadThumbnail(*in);
-	if (!header._thumbnail)
+	if (!Graphics::loadThumbnail(*in, header._thumbnail, skipThumbnail)) {
 		return false;
+	}
 
 	// Read in save date/time
 	header._year = in->readSint16LE();
@@ -600,7 +594,8 @@ void Game::createThumbnail() {
 	uint8 thumbPalette[PALETTE_SIZE];
 	_vm->_palette->grabPalette(thumbPalette, 0, PALETTE_COUNT);
 	_saveThumb = new Graphics::Surface();
-	::createThumbnail(_saveThumb, _vm->_screen.getData(), MADS_SCREEN_WIDTH, MADS_SCREEN_HEIGHT, thumbPalette);
+	::createThumbnail(_saveThumb, (const byte *)_vm->_screen->getPixels(),
+		MADS_SCREEN_WIDTH, MADS_SCREEN_HEIGHT, thumbPalette);
 }
 
 void Game::syncTimers(SyncType slaveType, int slaveId, SyncType masterType, int masterId) {

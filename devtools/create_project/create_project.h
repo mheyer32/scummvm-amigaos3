@@ -88,6 +88,11 @@ struct EngineDesc {
 	bool enable;
 
 	/**
+	 * Features required for this engine.
+	 */
+	StringList requiredFeatures;
+
+	/**
 	 * A list of all available sub engine names. Sub engines are engines
 	 * which are built on top of an existing engines and can be only
 	 * enabled when the parten engine is enabled.
@@ -207,6 +212,15 @@ StringList getFeatureLibraries(const FeatureList &features);
 bool setFeatureBuildState(const std::string &name, FeatureList &features, bool enable);
 
 /**
+ * Gets the state of a given feature.
+ *
+ * @param name Name of the feature.
+ * @param features List of features to operate on.
+ * @return "true", when the feature is enabled, "false" otherwise.
+ */
+bool getFeatureBuildState(const std::string &name, FeatureList &features);
+
+/**
  * Structure to describe a build setup.
  *
  * This includes various information about which engines to
@@ -229,15 +243,17 @@ struct BuildSetup {
 	StringList testDirs;  ///< List of all folders containing tests
 
 	bool devTools;         ///< Generate project files for the tools
-	bool tests;             ///< Generate project files for the tests
+	bool tests;            ///< Generate project files for the tests
 	bool runBuildEvents;   ///< Run build events as part of the build (generate revision number and copy engine/theme data & needed files to the build folder
-	bool createInstaller;  ///< Create NSIS installer after the build
+	bool createInstaller;  ///< Create installer after the build
+	bool useSDL2;          ///< Whether to use SDL2 or not.
 
 	BuildSetup() {
 		devTools        = false;
 		tests           = false;
 		runBuildEvents  = false;
 		createInstaller = false;
+		useSDL2         = true;
 	}
 };
 

@@ -20,6 +20,7 @@
  *
  */
 
+#include "common/config-manager.h"
 #include "common/system.h"
 
 #include "sci/sci.h"
@@ -29,12 +30,15 @@
 #include "sci/engine/kernel.h"
 #include "sci/engine/gc.h"
 #include "sci/graphics/cursor.h"
+#ifdef ENABLE_SCI32
+#include "sci/graphics/cursor32.h"
+#endif
 #include "sci/graphics/maciconbar.h"
 #include "sci/console.h"
 
 namespace Sci {
 
-reg_t kRestartGame(EngineState *s, int argc, reg_t *argv) {
+reg_t kRestartGame16(EngineState *s, int argc, reg_t *argv) {
 	s->shrinkStackToBase();
 
 	s->abortScriptProcessing = kAbortRestartGame; // Force vm to abort ASAP
@@ -243,10 +247,18 @@ reg_t kGetTime(EngineState *s, int argc, reg_t *argv) {
 		debugC(kDebugLevelTime, "GetTime(24h) returns %d", retval);
 		break;
 	case KGETTIME_DATE :
-		// Year since 1980 (0 = 1980, 1 = 1981, etc.)
-		retval = loc_time.tm_mday | ((loc_time.tm_mon + 1) << 5) | (((loc_time.tm_year - 80) & 0x7f) << 9);
+	{
+		// SCI0 late: Year since 1920 (0 = 1920, 1 = 1921, etc)
+		// SCI01 and newer: Year since 1980 (0 = 1980, 1 = 1981, etc)
+		// Atari ST SCI0 late versions use the newer base year.
+		int baseYear = 80;
+		if (getSciVersion() == SCI_VERSION_0_LATE && g_sci->getPlatform() == Common::kPlatformDOS) {
+			baseYear = 20;
+		}
+		retval = loc_time.tm_mday | ((loc_time.tm_mon + 1) << 5) | (((loc_time.tm_year - baseYear) & 0x7f) << 9);
 		debugC(kDebugLevelTime, "GetTime(date) returns %d", retval);
 		break;
+	}
 	default:
 		error("Attempt to use unknown GetTime mode %d", mode);
 		break;
@@ -401,6 +413,32 @@ reg_t kGetConfig(EngineState *s, int argc, reg_t *argv) {
 	} else if (setting == "startroom") {
 		// Debug setting in LSL7, specifies the room to start from.
 		s->_segMan->strcpy(data, "");
+	} else if (setting == "game") {
+		// Hoyle 5 startup, specifies the number of the game to start.
+		if (g_sci->getGameId() == GID_HOYLE5 &&
+			!g_sci->getResMan()->testResource(ResourceId(kResourceTypeScript, 100)) &&
+			g_sci->getResMan()->testResource(ResourceId(kResourceTypeScript, 700))) {
+			// Special case for Hoyle 5 Bridge: only one game is included (Bridge),
+			// so mimic the setting in 700.cfg and set the starting room number to 700.
+			s->_segMan->strcpy(data, "700");
+		} else {
+			s->_segMan->strcpy(data, "");
+		}
+	} else if (setting == "laptop") {
+		// Hoyle 5 startup.
+		s->_segMan->strcpy(data, "");
+	} else if (setting == "jumpto") {
+		// Hoyle 5 startup.
+		s->_segMan->strcpy(data, "");
+	} else if (setting == "klonchtsee") {
+		// Hoyle 5 - starting Solitaire.
+		s->_segMan->strcpy(data, "");
+	} else if (setting == "klonchtarr") {
+		// Hoyle 5 - starting Solitaire.
+		s->_segMan->strcpy(data, "");
+	} else if (setting == "deflang") {
+		// MGDX 4-language startup.
+		s->_segMan->strcpy(data, "");
 	} else {
 		error("GetConfig: Unknown configuration setting %s", setting.c_str());
 	}
@@ -411,6 +449,10 @@ reg_t kGetConfig(EngineState *s, int argc, reg_t *argv) {
 // Likely modelled after the Windows 3.1 function GetPrivateProfileInt:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724345%28v=vs.85%29.aspx
 reg_t kGetSierraProfileInt(EngineState *s, int argc, reg_t *argv) {
+	if (g_sci->getPlatform() != Common::kPlatformWindows) {
+		return s->r_acc;
+	}
+
 	Common::String category = s->_segMan->getString(argv[0]);	// always "config"
 	category.toLowercase();
 	Common::String setting = s->_segMan->getString(argv[1]);
@@ -436,6 +478,14 @@ reg_t kGetWindowsOption(EngineState *s, int argc, reg_t *argv) {
 		warning("GetWindowsOption: Unknown option %d", windowsOption);
 		return NULL_REG;
 	}
+}
+
+extern Common::String format(const Common::String &source, int argc, const reg_t *argv);
+
+reg_t kPrintDebug(EngineState *s, int argc, reg_t *argv) {
+	const Common::String debugString = s->_segMan->getString(argv[0]);
+	debugC(kDebugLevelGame, "%s", format(debugString, argc - 1, argv + 1).c_str());
+	return s->r_acc;
 }
 
 #endif
@@ -493,9 +543,12 @@ reg_t kMacPlatform(EngineState *s, int argc, reg_t *argv) {
 		// In SCI1, its usage is still unknown
 		// In SCI1.1, it's NOP
 		// In SCI32, it's used for remapping cursor ID's
+#ifdef ENABLE_SCI32_MAC
 		if (getSciVersion() >= SCI_VERSION_2_1_EARLY) // Set Mac cursor remap
-			g_sci->_gfxCursor->setMacCursorRemapList(argc - 1, argv + 1);
-		else if (getSciVersion() != SCI_VERSION_1_1)
+			g_sci->_gfxCursor32->setMacCursorRemapList(argc - 1, argv + 1);
+		else
+#endif
+		if (getSciVersion() != SCI_VERSION_1_1)
 			warning("Unknown SCI1 kMacPlatform(0) call");
 		break;
 	case 4: // Handle icon bar code
@@ -518,31 +571,28 @@ reg_t kMacPlatform(EngineState *s, int argc, reg_t *argv) {
 }
 
 enum kSciPlatforms {
+	kSciPlatformMacintosh = 0,
 	kSciPlatformDOS = 1,
 	kSciPlatformWindows = 2
 };
 
-enum kPlatformOps {
-	kPlatformUnk0 = 0,
-	kPlatformCDSpeed = 1,
-	kPlatformUnk2 = 2,
-	kPlatformCDCheck = 3,
-	kPlatformGetPlatform = 4,
-	kPlatformUnk5 = 5,
-	kPlatformIsHiRes = 6,
-	kPlatformIsItWindows = 7
-};
-
 reg_t kPlatform(EngineState *s, int argc, reg_t *argv) {
+	enum Operation {
+		kPlatformUnknown        = 0,
+		kPlatformGetPlatform    = 4,
+		kPlatformUnknown5       = 5,
+		kPlatformIsHiRes        = 6,
+		kPlatformWin311OrHigher = 7
+	};
+
 	bool isWindows = g_sci->getPlatform() == Common::kPlatformWindows;
 
-	if (argc == 0 && getSciVersion() < SCI_VERSION_2) {
+	if (argc == 0) {
 		// This is called in KQ5CD with no parameters, where it seems to do some
 		// graphics driver check. This kernel function didn't have subfunctions
 		// then. If 0 is returned, the game functions normally, otherwise all
 		// the animations show up like a slideshow (e.g. in the intro). So we
-		// return 0. However, the behavior changed for kPlatform with no
-		// parameters in SCI32.
+		// return 0.
 		return NULL_REG;
 	}
 
@@ -554,35 +604,144 @@ reg_t kPlatform(EngineState *s, int argc, reg_t *argv) {
 	uint16 operation = (argc == 0) ? 0 : argv[0].toUint16();
 
 	switch (operation) {
-	case kPlatformCDSpeed:
-		// TODO: Returns CD Speed?
-		warning("STUB: kPlatform(CDSpeed)");
-		break;
-	case kPlatformUnk2:
-		// Always returns 2
-		return make_reg(0, 2);
-	case kPlatformCDCheck:
-		// TODO: Some sort of CD check?
-		warning("STUB: kPlatform(CDCheck)");
-		break;
-	case kPlatformUnk0:
-		// For Mac versions, kPlatform(0) with other args has more functionality
+	case kPlatformUnknown:
+		// For Mac versions, kPlatform(0) with other args has more functionality. Otherwise, fall through.
 		if (g_sci->getPlatform() == Common::kPlatformMacintosh && argc > 1)
 			return kMacPlatform(s, argc - 1, argv + 1);
-		// Otherwise, fall through
+		// fall through
 	case kPlatformGetPlatform:
-		return make_reg(0, (isWindows) ? kSciPlatformWindows : kSciPlatformDOS);
-	case kPlatformUnk5:
+		if (isWindows)
+			return make_reg(0, kSciPlatformWindows);
+		else if (g_sci->getPlatform() == Common::kPlatformMacintosh)
+			return make_reg(0, kSciPlatformMacintosh);
+		else
+			return make_reg(0, kSciPlatformDOS);
+	case kPlatformUnknown5:
 		// This case needs to return the opposite of case 6 to get hires graphics
 		return make_reg(0, !isWindows);
 	case kPlatformIsHiRes:
-		return make_reg(0, isWindows);
-	case kPlatformIsItWindows:
+	case kPlatformWin311OrHigher:
 		return make_reg(0, isWindows);
 	default:
 		error("Unsupported kPlatform operation %d", operation);
 	}
 
+	return NULL_REG;
+}
+
+extern void showScummVMDialog(const Common::String &message);
+
+#ifdef ENABLE_SCI32
+reg_t kPlatform32(EngineState *s, int argc, reg_t *argv) {
+	enum Operation {
+		kGetPlatform   = 0,
+		kGetCDSpeed    = 1,
+		kGetColorDepth = 2,
+		kGetCDDrive    = 3
+	};
+
+	Operation operation;
+	if (getSciVersion() < SCI_VERSION_2_1_MIDDLE) {
+		if (argc == 0 || argv[0].toSint16() == 0) {
+			operation = kGetPlatform;
+		} else {
+			return NULL_REG;
+		}
+	} else {
+		operation = argc > 0 ? (Operation)argv[0].toSint16() : kGetPlatform;
+	}
+
+	switch (operation) {
+	case kGetPlatform:
+		switch (g_sci->getPlatform()) {
+		case Common::kPlatformDOS:
+			return make_reg(0, kSciPlatformDOS);
+		case Common::kPlatformWindows:
+			return make_reg(0, kSciPlatformWindows);
+		case Common::kPlatformMacintosh:
+#ifdef ENABLE_SCI32_MAC
+			// For Mac versions, kPlatform(0) with other args has more functionality
+			if (argc > 1)
+				return kMacPlatform(s, argc - 1, argv + 1);
+			else
+#endif
+				return make_reg(0, kSciPlatformMacintosh);
+		default:
+			error("Unknown platform %d", g_sci->getPlatform());
+		}
+	case kGetColorDepth:
+		if (g_sci->getGameId() == GID_PHANTASMAGORIA2) {
+			return make_reg(0, /* 16-bit color */ 3);
+		} else {
+			return make_reg(0, /* 256 color */ 2);
+		}
+	case kGetCDSpeed:
+		// The value `4` comes from Rama DOS resource.cfg installed in DOSBox,
+		// and seems to correspond to the highest expected CD speed value
+		return make_reg(0, 4);
+	case kGetCDDrive:
+	default:
+		return NULL_REG;
+	}
+}
+
+reg_t kWebConnect(EngineState *s, int argc, reg_t *argv) {
+	const Common::String baseUrl = "https://web.archive.org/web/1996/";
+	const Common::String gameUrl = argc > 0 ? s->_segMan->getString(argv[0]) : "http://www.sierra.com";
+	return make_reg(0, g_system->openUrl(baseUrl + gameUrl));
+}
+
+reg_t kWinExec(EngineState *s, int argc, reg_t *argv) {
+	return NULL_REG;
+}
+
+reg_t kWinDLL(EngineState *s, int argc, reg_t *argv) {
+	uint16 operation = argv[0].toUint16();
+	Common::String dllName = s->_segMan->getString(argv[1]);
+
+	switch (operation) {
+	case 0:	// load DLL
+		// This is originally a call to LoadLibrary() and to the Watcom function GetIndirectFunctionHandle
+		return make_reg(0, 1000);	// fake ID for loaded DLL, normally returned from Windows LoadLibrary()
+	case 1: // free DLL
+		// In the original, FreeLibrary() was called here for the loaded DLL
+		return TRUE_REG;
+	case 2:	// call DLL function
+		if (dllName == "PENGIN16.DLL") {
+			// Poker engine logic for Hoyle 5
+			// This is originally a call to the Watcom function InvokeIndirectFunction()
+			// TODO: we need to reverse the logic in PENGIN16.DLL and call it directly
+			//SciArray *data = s->_segMan->lookupArray(argv[2]);
+			warning("The Poker game logic has not been implemented yet");
+			showScummVMDialog("The Poker game logic has not been implemented yet");
+			return NULL_REG;
+		} else {
+			error("kWinDLL: Unknown DLL to invoke: %s", dllName.c_str());
+			return NULL_REG;
+		}
+	default:
+		return NULL_REG;
+	}
+}
+
+#endif
+
+reg_t kKawaHacks(EngineState *s, int argc, reg_t *argv) {
+	switch (argv[0].toUint16()) {
+	case 0: { // DoAlert
+		showScummVMDialog(s->_segMan->getString(argv[1]));
+		return NULL_REG;
+	}
+	case 1: // ZaWarudo
+		// Unused, would invert the color palette for the specified range.
+		return NULL_REG;
+	case 2: // SetTitleColors
+		// Unused, would change the colors for plain windows' title bars.
+		return NULL_REG;
+	case 3: // IsDebug
+		// Should return 1 if running with an internal debugger, 2 if we have AddMenu support, 3 if both.
+		return TRUE_REG;
+	}
 	return NULL_REG;
 }
 
@@ -597,18 +756,28 @@ reg_t kEmpty(EngineState *s, int argc, reg_t *argv) {
 reg_t kStub(EngineState *s, int argc, reg_t *argv) {
 	Kernel *kernel = g_sci->getKernel();
 	int kernelCallNr = -1;
+	int kernelSubCallNr = -1;
 
 	Common::List<ExecStack>::const_iterator callIterator = s->_executionStack.end();
 	if (callIterator != s->_executionStack.begin()) {
 		callIterator--;
 		ExecStack lastCall = *callIterator;
-		kernelCallNr = lastCall.debugSelector;
+		kernelCallNr = lastCall.debugKernelFunction;
+		kernelSubCallNr = lastCall.debugKernelSubFunction;
 	}
 
-	Common::String warningMsg = "Dummy function k" + kernel->getKernelName(kernelCallNr) +
-								Common::String::format("[%x]", kernelCallNr) +
-								" invoked. Params: " +
-								Common::String::format("%d", argc) + " (";
+	Common::String warningMsg;
+	if (kernelSubCallNr == -1) {
+		warningMsg = "Dummy function k" + kernel->getKernelName(kernelCallNr) +
+		             Common::String::format("[%x]", kernelCallNr);
+	} else {
+		warningMsg = "Dummy function k" + kernel->getKernelName(kernelCallNr, kernelSubCallNr) +
+		             Common::String::format("[%x:%x]", kernelCallNr, kernelSubCallNr);
+
+	}
+
+	warningMsg += " invoked. Params: " +
+	              Common::String::format("%d", argc) + " (";
 
 	for (int i = 0; i < argc; i++) {
 		warningMsg +=  Common::String::format("%04x:%04x", PRINT_REG(argv[i]));

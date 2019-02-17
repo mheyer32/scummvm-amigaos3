@@ -26,6 +26,7 @@
 #include "sherlock/sherlock.h"
 #include "sherlock/music.h"
 #include "sherlock/scalpel/drivers/mididriver.h"
+#include "audio/audiostream.h"
 // for Miles Audio (Sherlock Holmes 2)
 #include "audio/miles.h"
 // for 3DO digital music
@@ -181,8 +182,8 @@ bool MidiParser_SH::loadMusic(byte *musData, uint32 musDataSize) {
 	_musData     = musData;
 	_musDataSize = musDataSize;
 
-	byte  *headerPtr = _musData + 12; // skip over the already checked SPACE header
-	byte  *pos       = headerPtr;
+	byte *headerPtr = _musData + 12; // skip over the already checked SPACE header
+	byte *pos       = headerPtr;
 
 	uint16 headerSize = READ_LE_UINT16(headerPtr);
 	assert(headerSize == 0x7F); // Security check
@@ -195,7 +196,7 @@ bool MidiParser_SH::loadMusic(byte *musData, uint32 musDataSize) {
 
 	_numTracks = 1;
 	_tracks[0] = pos;
-	
+
 	_ppqn = 1;
 	setTempo(16667);
 	setTrack(0);
@@ -225,6 +226,7 @@ Music::Music(SherlockEngine *vm, Audio::Mixer *mixer) : _vm(vm), _mixer(mixer) {
 	_midiOption = false;
 	_midiMusicData = nullptr;
 	_musicVolume = ConfMan.hasKey("music_volume") ? ConfMan.getInt("music_volume") : 255;
+	_musicOn = false;
 
 	if (IS_3DO) {
 		// 3DO - uses digital samples for music

@@ -31,8 +31,6 @@
 
 namespace Common {
 
-class BitStream;
-
 /**
  * Huffman bitstream decoding
  *
@@ -49,14 +47,28 @@ public:
 	 *  @param lengths Lengths of the individual codes.
 	 *  @param symbols The symbols. If 0, assume they are identical to the code indices.
 	 */
-	Huffman(uint8 maxLength, uint32 codeCount, const uint32 *codes, const uint8 *lengths, const uint32 *symbols = 0);
+	Huffman(uint8 maxLength, uint32 codeCount, const uint32 *codes, const uint8 *lengths, const uint32 *symbols = nullptr);
 	~Huffman();
 
 	/** Modify the codes' symbols. */
-	void setSymbols(const uint32 *symbols = 0);
+	void setSymbols(const uint32 *symbols = nullptr);
 
 	/** Return the next symbol in the bitstream. */
-	uint32 getSymbol(BitStream &bits) const;
+	template<class BITSTREAM>
+	uint32 getSymbol(BITSTREAM &bits) const {
+		uint32 code = 0;
+
+		for (uint32 i = 0; i < _codes.size(); i++) {
+			bits.addBit(code, i);
+
+			for (CodeList::const_iterator cCode = _codes[i].begin(); cCode != _codes[i].end(); ++cCode)
+				if (code == cCode->code)
+					return cCode->symbol;
+		}
+
+		error("Unknown Huffman code");
+		return 0;
+	}
 
 private:
 	struct Symbol {

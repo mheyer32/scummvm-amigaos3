@@ -31,7 +31,6 @@
 #include "scumm/he/intern_he.h"
 #include "scumm/object.h"
 #include "scumm/resource.h"
-#include "scumm/saveload.h"
 #include "scumm/scumm_v7.h"
 #include "scumm/scumm_v0.h"
 #include "scumm/he/sound_he.h"
@@ -99,7 +98,7 @@ static const byte v0ActorTalk[25] = {
 	0x06, // Sandy (Cut-Scene)
 };
 
-static const byte v0WalkboxSlantedModifier[0x16] = { 
+static const byte v0WalkboxSlantedModifier[0x16] = {
 	0x00,0x01,0x02,0x03,0x03,0x04,0x05,0x06,
 	0x06,0x07,0x08,0x09,0x09,0x0A,0x0B,
 	0x0C,0x0C,0x0D,0x0E,0x0F,0x10,0x10
@@ -237,7 +236,7 @@ void Actor_v0::initActor(int mode) {
 	_costCommand = 0xFF;
 	_miscflags = 0;
 	_speaking = 0;
-	
+
 	_walkCountModulo = 0;
 	_newWalkBoxEntered = false;
 	_walkDirX = 0;
@@ -259,11 +258,123 @@ void Actor_v0::initActor(int mode) {
 		_limb_flipped[i] = false;
 	}
 
+	walkBoxQueueReset();
+
 	if (_vm->_game.features & GF_DEMO) {
 		_sound[0] = v0ActorDemoTalk[_number];
 	} else {
 		_sound[0] = v0ActorTalk[_number];
 	}
+}
+
+void Actor_v0::walkBoxQueueReset() {
+	_walkboxHistory.clear();
+	_walkboxQueueIndex = 0;
+
+	for (uint i = 0; i < ARRAYSIZE(_walkboxQueue); ++i) {
+		_walkboxQueue[i] = kInvalidBox;
+	}
+}
+
+bool Actor_v0::walkBoxQueueAdd(int box) {
+
+	if (_walkboxQueueIndex == ARRAYSIZE(_walkboxQueue))
+		return false;
+
+	_walkboxQueue[_walkboxQueueIndex++] = box;
+	_walkboxHistory.push_back(box);
+	return true;
+}
+
+void Actor_v0::walkboxQueueReverse() {
+	int j = ARRAYSIZE(_walkboxQueue) - 1;
+
+	while (_walkboxQueue[j] == kInvalidBox && j >= 1)
+		--j;
+
+	if (j <= 1)
+		return;
+
+	for (int i = 1; i < j && j >= 1 ; ++i, --j) {
+
+		byte tmp = _walkboxQueue[i];
+
+		_walkboxQueue[i] = _walkboxQueue[j];
+		_walkboxQueue[j] = tmp;
+	}
+}
+
+bool Actor_v0::walkBoxQueueFind(int box) {
+
+	for (uint i = 0; i < _walkboxHistory.size(); ++i) {
+		if (box == _walkboxHistory[i])
+			return true;
+	}
+
+	return false;
+}
+
+bool Actor_v0::walkBoxQueuePrepare() {
+	walkBoxQueueReset();
+	int BoxFound = _walkbox;
+
+	if (BoxFound == _walkdata.destbox) {
+
+		_newWalkBoxEntered = true;
+		return true;
+	}
+
+	// Build a series of walkboxes from our current position, to the target
+	do {
+		// Add the current box to the queue
+		if (!walkBoxQueueAdd(BoxFound))
+			return false;
+
+		// Loop until we find a walkbox which hasn't been tested
+		while (_walkboxQueueIndex > 0) {
+
+			// Check if the dest box is a direct neighbour
+			if ((BoxFound = _vm->getNextBox(BoxFound, _walkdata.destbox)) == kInvalidBox) {
+
+				// Its not, start hunting through this boxes immediate connections
+				byte* boxm = _vm->getBoxConnectionBase(_walkboxQueue[_walkboxQueueIndex - 1]);
+
+				// Attempt to find one, which we havn't already used
+				for (; *boxm != kInvalidBox; ++boxm) {
+					if (walkBoxQueueFind(*boxm) != true)
+						break;
+				}
+
+				BoxFound = *boxm;
+			}
+
+			// Found one?
+			if (BoxFound != kInvalidBox) {
+
+				// Did we find a connection to the final walkbox
+				if (BoxFound == _walkdata.destbox) {
+
+					_newWalkBoxEntered = true;
+
+					walkBoxQueueAdd(BoxFound);
+
+					walkboxQueueReverse();
+					return true;
+				}
+
+				// Nope, check the next box
+				break;
+			}
+
+			// Drop this box, its useless to us
+			_walkboxQueue[--_walkboxQueueIndex] = kInvalidBox;
+
+			BoxFound = _walkboxQueue[_walkboxQueueIndex - 1];
+		}
+
+	} while (_walkboxQueueIndex > 0);
+
+	return false;
 }
 
 void Actor::setBox(int box) {
@@ -453,13 +564,13 @@ int Actor::actorWalkStep() {
 				_pos.y -= 1;
 		}
 	} else {
-		tmpX = (_pos.x << 16) + _walkdata.xfrac + (_walkdata.deltaXFactor >> 8) * _scalex;
+		tmpX = (_pos.x * (1 << 16)) + _walkdata.xfrac + (_walkdata.deltaXFactor / 256) * _scalex;
 		_walkdata.xfrac = (uint16)tmpX;
-		_pos.x = (tmpX >> 16);
+		_pos.x = (tmpX / (1 << 16));
 
-		tmpY = (_pos.y << 16) + _walkdata.yfrac + (_walkdata.deltaYFactor >> 8) * _scaley;
+		tmpY = (_pos.y * (1 << 16)) + _walkdata.yfrac + (_walkdata.deltaYFactor / 256) * _scaley;
 		_walkdata.yfrac = (uint16)tmpY;
-		_pos.y = (tmpY >> 16);
+		_pos.y = (tmpY / (1 << 16));
 	}
 
 	if (ABS(_pos.x - _walkdata.cur.x) > distX) {
@@ -484,27 +595,27 @@ bool Actor_v0::calcWalkDistances() {
 	_walkYCountGreaterThanXCount = 0;
 	uint16 A = 0;
 
-	if (_CurrentWalkTo.x >= _tmp_Dest.x) {
-		A = _CurrentWalkTo.x - _tmp_Dest.x;
+	if (_CurrentWalkTo.x >= _tmp_NewPos.x) {
+		A = _CurrentWalkTo.x - _tmp_NewPos.x;
 		_walkDirX = 1;
 	} else {
-		A = _tmp_Dest.x - _CurrentWalkTo.x;
+		A = _tmp_NewPos.x - _CurrentWalkTo.x;
 	}
 
 	_walkXCountInc = A;
 
-	if (_CurrentWalkTo.y >= _tmp_Dest.y) {
-		A = _CurrentWalkTo.y - _tmp_Dest.y;
+	if (_CurrentWalkTo.y >= _tmp_NewPos.y) {
+		A = _CurrentWalkTo.y - _tmp_NewPos.y;
 		_walkDirY = 1;
 	} else {
-		A = _tmp_Dest.y - _CurrentWalkTo.y;
+		A = _tmp_NewPos.y - _CurrentWalkTo.y;
 	}
 
 	_walkYCountInc = A;
 	if (!_walkXCountInc && !_walkYCountInc)
 		return true;
 
-	if (_walkXCountInc <= _walkYCountInc) 
+	if (_walkXCountInc <= _walkYCountInc)
 		_walkYCountGreaterThanXCount = 1;
 
 	// 2FCC
@@ -520,65 +631,67 @@ bool Actor_v0::calcWalkDistances() {
 	return false;
 }
 
-byte Actor_v0::actorWalkX() {
+/* Calculate the result of moving X+1 or X-1 */
+byte Actor_v0::actorWalkXCalculate() {
 	byte A = _walkXCount;
 	A += _walkXCountInc;
 	if (A >= _walkCountModulo) {
 		if (!_walkDirX) {
-			_tmp_Dest.x--;
+			_tmp_NewPos.x--;
 		} else {
-			_tmp_Dest.x++;
+			_tmp_NewPos.x++;
 		}
 
 		A -= _walkCountModulo;
 	}
 	// 2EAC
 	_walkXCount = A;
-	setTmpFromActor();
+	setActorToTempPosition();
 	if (updateWalkbox() == kInvalidBox) {
 		// 2EB9
-		setActorFromTmp();
+		setActorToOriginalPosition();
 
 		return 3;
-	} 
+	}
 	// 2EBF
-	if (_tmp_Dest.x == _CurrentWalkTo.x)
+	if (_tmp_NewPos.x == _CurrentWalkTo.x)
 		return 1;
 
 	return 0;
 }
 
-byte Actor_v0::actorWalkY() {
+/* Calculate the result of moving Y+1 or Y-1 */
+byte Actor_v0::actorWalkYCalculate() {
 	byte A = _walkYCount;
 	A += _walkYCountInc;
 	if (A >= _walkCountModulo) {
 		if (!_walkDirY) {
-			_tmp_Dest.y--;
+			_tmp_NewPos.y--;
 		} else {
-			_tmp_Dest.y++;
+			_tmp_NewPos.y++;
 		}
 
 		A -= _walkCountModulo;
 	}
 	// 2EEB
 	_walkYCount = A;
-	setTmpFromActor();
+	setActorToTempPosition();
 	if (updateWalkbox() == kInvalidBox) {
 		// 2EF8
-		setActorFromTmp();
+		setActorToOriginalPosition();
 		return 4;
-	} 
+	}
 	// 2EFE
 	if (_walkYCountInc != 0) {
 		if (_walkYCountInc == 0xFF) {
-			setActorFromTmp();
+			setActorToOriginalPosition();
 			return 4;
 		}
 	}
 	// 2F0D
-	if (_CurrentWalkTo.y == _tmp_Dest.y)
+	if (_CurrentWalkTo.y == _tmp_NewPos.y)
 		return 1;
-	
+
 	return 0;
 }
 
@@ -634,17 +747,18 @@ void Actor::startWalkActor(int destX, int destY, int dir) {
 	_walkdata.dest.y = abr.y;
 	_walkdata.destbox = abr.box;
 	_walkdata.destdir = dir;
-	
+	_walkdata.point3.x = 32000;
+	_walkdata.curbox = _walkbox;
+
 	if (_vm->_game.version == 0) {
-		((Actor_v0*)this)->_newWalkBoxEntered = true;
+		((Actor_v0 *)this)->walkBoxQueuePrepare();
+
 	} else if (_vm->_game.version <= 2) {
 		_moving = (_moving & ~(MF_LAST_LEG | MF_IN_LEG)) | MF_NEW_LEG;
  	} else {
  		_moving = (_moving & MF_IN_LEG) | MF_NEW_LEG;
  	}
 
-	_walkdata.point3.x = 32000;
-	_walkdata.curbox = _walkbox;
 }
 
 void Actor::startWalkAnim(int cmd, int angle) {
@@ -655,7 +769,7 @@ void Actor::startWalkAnim(int cmd, int angle) {
 	 * work as usual
 	 */
 	if (_walkScript) {
-		int args[16];
+		int args[NUM_SCRIPT_LOCAL];
 		memset(args, 0, sizeof(args));
 		args[0] = _number;
 		args[1] = cmd;
@@ -768,9 +882,8 @@ void Actor_v0::walkActor() {
 	if (_NewWalkTo != _CurrentWalkTo) {
 		_CurrentWalkTo = _NewWalkTo;
 
-L2A33:;
-		_moving &= 0xF0;
-		_tmp_Dest = _pos;
+UpdateActorDirection:;
+		_tmp_NewPos = _pos;
 
 		byte tmp = calcWalkDistances();
 		_moving &= 0xF0;
@@ -791,8 +904,9 @@ L2A33:;
 		}
 
 		directionUpdate();
-		
-		if (_moving & 0x80) 
+
+		// Need to turn again?
+		if (_moving & 0x80)
 			return;
 
 		animateActor(newDirToOldDir(_facing));
@@ -800,32 +914,36 @@ L2A33:;
 	} else {
 		// 2A0A
 		if ((_moving & 0x7F) != 1) {
-			
+
 			if (_NewWalkTo == _pos)
 				return;
 		}
 	}
 
-	// 2A9A
+	// 2A9A: Nothing to do
 	if (_moving == 2)
 		return;
 
+	// Reached Target
 	if ((_moving & 0x0F) == 1)
 		return stopActorMoving();
 
-	// 2AAD
+	// 2AAD: Turn actor?
 	if (_moving & 0x80) {
 		directionUpdate();
 
+		// Turn again?
 		if (_moving & 0x80)
 			return;
 
+		// Start Walk animation
 		animateActor(newDirToOldDir(_facing));
 	}
 
+	// Walk X
 	if ((_moving & 0x0F) == 3) {
-L2C36:;
-		setTmpFromActor();
+	WalkX:;
+		setActorToTempPosition();
 
 		if (!_walkDirX) {
 			_pos.x--;
@@ -834,98 +952,110 @@ L2C36:;
 		}
 
 		// 2C51
+		// Does this move us into the walkbox?
 		if (updateWalkbox() != kInvalidBox) {
 
-			setActorFromTmp();
-			goto L2A33;
+			// Yes, Lets update our direction
+			setActorToOriginalPosition();
+			goto UpdateActorDirection;
 		}
 
-		setActorFromTmp();
+		setActorToOriginalPosition();
 
-		if (_CurrentWalkTo.y == _tmp_Dest.y) {
+		// Have we reached Y Target?
+		if (_CurrentWalkTo.y == _tmp_NewPos.y) {
 			stopActorMoving();
 			return;
 		}
 
+		// Lets check one more pixel up or down
 		if (!_walkDirY) {
-			_tmp_Dest.y--;
+			_tmp_NewPos.y--;
 		} else {
-			_tmp_Dest.y++;
+			_tmp_NewPos.y++;
 		}
 
-		setTmpFromActor();
+		setActorToTempPosition();
 
-		byte A = updateWalkbox();
-		if (A == 0xFF) {
-			setActorFromTmp();
+		// Are we still inside an invalid walkbox?
+		if (updateWalkbox() == kInvalidBox) {
+			setActorToOriginalPosition();
 			stopActorMoving();
 			return;
 		}
-		// 2C98: Yes, an exact copy of what just occured.. the original does this, so im doing it...
-		//       Just to keep me sane when going over it :)
-		if (A == 0xFF) {
-			setActorFromTmp();
-			stopActorMoving();
-			return;
-		}
+
+		// Found a valid walkbox
 		return;
 	}
 
-	// 2ADA
+	// 2ADA: Walk Y
 	if ((_moving & 0x0F) == 4) {
-L2CA3:;
-		setTmpFromActor();
+		setActorToTempPosition();
 
 		if (!_walkDirY) {
 			_pos.y--;
 		} else {
 			_pos.y++;
 		}
+
+		// Moved out of walkbox?
 		if (updateWalkbox() == kInvalidBox) {
 			// 2CC7
-			setActorFromTmp();
-			if (_CurrentWalkTo.x == _tmp_Dest.x) {
+			setActorToOriginalPosition();
+
+			// Reached X?
+			if (_CurrentWalkTo.x == _tmp_NewPos.x) {
 				stopActorMoving();
 				return;
 			}
 
+			// Lets check one more pixel to left or right
 			if (!_walkDirX) {
-				_tmp_Dest.x--;
+				_tmp_NewPos.x--;
 			} else {
-				_tmp_Dest.x++;
+				_tmp_NewPos.x++;
 			}
-			setTmpFromActor();
 
+			setActorToTempPosition();
+
+			// Still in an invalid walkbox?
 			if (updateWalkbox() == kInvalidBox) {
-				setActorFromTmp();
+
+				setActorToOriginalPosition();
 				stopActorMoving();
 			}
 
 			return;
 		} else {
-			setActorFromTmp();
-			goto L2A33;
+
+			// Lets update our direction
+			setActorToOriginalPosition();
+			goto UpdateActorDirection;
 		}
 	}
 
 	if ((_moving & 0x0F) == 0) {
 		// 2AE8
-		byte A = actorWalkX();
+		byte A = actorWalkXCalculate();
 
+		// Will X movement reach destination
 		if (A == 1) {
-			A = actorWalkY();
+
+			A = actorWalkYCalculate();
+
+			// Will Y movement also reach destination?
 			if (A == 1) {
 				_moving &= 0xF0;
 				_moving |= A;
 			} else {
-				if (A == 4) 
+				if (A == 4)
 					stopActorMoving();
 			}
 
 			return;
 
 		} else {
-			// 2B0C
+			// 2B0C: Moving X will put us in an invalid walkbox
 			if (A == 3) {
 				_moving &= 0xF0;
 				_moving |= A;
@@ -938,14 +1068,27 @@ L2CA3:;
 
 				directionUpdate();
 				animateActor(newDirToOldDir(_facing));
-				goto L2C36;
+
+				// FIXME: During the hands-free-demo in the library (room 5), Purple Tentacle gets stuck following Sandy due to the corner of the stairs, 
+				//        This is due to distance, and walkbox gap/layout. This works fine with the original engine, because it 'brute forces' 
+				//        another pixel move in the walk direction before giving up, allowing us to move enough pixels to hit the next walkbox.
+				//        Why this fails with the return is because script-10 is executing a 'walkActorToActor' every cycle, which restarts the movement process
+				//        As a work around, we implement the original engine behaviour only for Purple Tentacle in the Demo. Doing this for other actors
+				//        causes a skipping effect while transitioning walkboxes (the original has another bug in this situation, in which the actor just changes direction for 1 frame during this moment)
+				if ((_vm->_game.features & GF_DEMO) && _number == 13)
+					goto WalkX;
+
+				return;
 
 			} else {
-				// 2B39
-				A = actorWalkY();
+				// 2B39: Moving X was ok, do we also move Y
+				A = actorWalkYCalculate();
+
+				// Are we in a valid walkbox?
 				if (A != 4)
 					return;
 
+				// No, we need to change direction
 				_moving &= 0xF0;
 				_moving |= A;
 
@@ -954,10 +1097,11 @@ L2CA3:;
 				} else {
 					_targetFacing = getAngleFromPos(V12_X_MULTIPLIER*-1, V12_Y_MULTIPLIER*0, false);
 				}
-				
+
 				directionUpdate();
 				animateActor(newDirToOldDir(_facing));
-				goto L2CA3;
+
+				return;
 			}
 		}
 	}
@@ -1326,13 +1470,13 @@ void Actor::turnToDirection(int newdir) {
 
 	if (_vm->_game.version <= 6) {
 		_targetFacing = newdir;
-		
+
 		if (_vm->_game.version == 0) {
 			setDirection(newdir);
 			return;
 		}
 		_moving = MF_TURN;
-		
+
 	} else {
 		_moving &= ~MF_TURN;
 		if (newdir != _facing) {
@@ -1398,15 +1542,16 @@ void Actor::putActor(int dstX, int dstY, int newRoom) {
 			showActor();
 	}
 
-	// V0 always sets the actor to face the camera upon entering a room
 	if (_vm->_game.version == 0) {
-		_walkdata.dest = _pos;
 
-		((Actor_v0*)this)->_newWalkBoxEntered = true;
-		((Actor_v0*)this)->_CurrentWalkTo = _pos;
-
-		setDirection(oldDirToNewDir(2));
+		((Actor_v0 *)this)->_newWalkBoxEntered = false;
+		((Actor_v0 *)this)->_CurrentWalkTo = _pos;
+		((Actor_v0 *)this)->_NewWalkTo = _pos;
 	}
+
+	// V0-V1 Maniac always sets the actor to face the camera upon entering a room
+	if (_vm->_game.id == GID_MANIAC && _vm->_game.version <= 1 && _vm->_game.platform != Common::kPlatformNES)
+		setDirection(oldDirToNewDir(2));
 }
 
 static bool inBoxQuickReject(const BoxCoords &box, int x, int y, int threshold) {
@@ -1530,7 +1675,7 @@ AdjustBoxResult Actor_v0::adjustPosInBorderWalkbox(AdjustBoxResult box) {
 
 	int16 A;
 	boxMask &= 0x7C;
-	if (boxMask == 0x0C) 
+	if (boxMask == 0x0C)
 		A = 2;
 	else {
 		if (boxMask != 0x08)
@@ -1549,7 +1694,7 @@ AdjustBoxResult Actor_v0::adjustPosInBorderWalkbox(AdjustBoxResult box) {
 		if (A < box.x)
 			return box;
 
-		if (A < 0xA0 || A == 0xA0)
+		if (A <= 0xA0)
 			A = 0;
 
 		Result.x = A;
@@ -1980,9 +2125,10 @@ void ScummEngine::processActors() {
 		if (_game.version == 0) {
 			// 0x057B
 			Actor_v0 *a0 = (Actor_v0*) a;
-			if (a0->_speaking & 1)
+			if (a0->_speaking & 1) {
 				a0->_speaking ^= 0xFE;
-
+				++_V0Delay._actorRedrawCount;
+			}
 			// 0x22B5
 			if (a0->_miscflags & kActorMiscFlagHide)
 				continue;
@@ -2006,7 +2152,7 @@ void ScummEngine::processActors() {
 		// comment further up in this method for some details.
 		if (a->_costume) {
 
-			// Unfortunately in V0, the 'animateCostume' call happens right after the call to 'walkActor' (which is before drawing the actor)... 
+			// Unfortunately in V0, the 'animateCostume' call happens right after the call to 'walkActor' (which is before drawing the actor)...
 			// doing it the other way with V0, causes animation glitches (when beginnning to walk, as the costume hasnt been updated).
 			// Updating the costume directly after 'walkActor' and again, after drawing... causes frame skipping
 			if (_game.version == 0) {
@@ -2307,6 +2453,7 @@ void Actor_v0::startAnimActor(int f) {
 			return;
 
 		_speaking = 1;
+		speakCheck();
 		return;
 	}
 
@@ -2359,6 +2506,7 @@ void Actor::animateActor(int anim) {
 			setDirection(dir);
 			break;
 		}
+		// fall through
 	default:
 		if (_vm->_game.version <= 2)
 			startAnimActor(anim / 4);
@@ -2404,8 +2552,13 @@ void Actor_v0::limbFrameCheck(int limb) {
 void Actor_v0::animateCostume() {
 	speakCheck();
 
-	if (_vm->_costumeLoader->increaseAnims(this))
+	byte count = _vm->_costumeLoader->increaseAnims(this);
+
+	if (count) {
+		_vm->_V0Delay._actorLimbRedrawDrawCount += count;
+
 		_needRedraw = true;
+	}
 }
 
 void Actor_v0::speakCheck() {
@@ -2479,6 +2632,13 @@ void ScummEngine::setActorRedrawFlags() {
 			_actors[j]->_needRedraw = true;
 		}
 	} else {
+		if (_game.heversion >= 72) {
+			for (j = 1; j < _numActors; j++) {
+				if (_actors[j]->_costume && _actors[j]->_heXmapNum)
+					_actors[j]->_needRedraw = true;
+			}
+		}
+
 		for (i = 0; i < _gdi->_numStrips; i++) {
 			int strip = _screenStartStrip + i;
 			if (testGfxAnyUsageBits(strip)) {
@@ -2723,7 +2883,7 @@ void Actor::runActorTalkScript(int f) {
 
 	if (_talkScript) {
 		int script = _talkScript;
-		int args[16];
+		int args[NUM_SCRIPT_LOCAL];
 		memset(args, 0, sizeof(args));
 		args[1] = f;
 		args[0] = _number;
@@ -3247,7 +3407,7 @@ void Actor_v0::animateActor(int anim) {
 
 	} else {
 
-		if (anim > 4 && anim <= 7)
+		if (anim >= 4 && anim <= 7)
 			_facing = normalizeAngle(oldDirToNewDir(dir));
 	}
 }
@@ -3289,184 +3449,202 @@ void Actor_v0::directionUpdate() {
 	_moving &= ~0x80;
 }
 
-void Actor_v0::setTmpFromActor() {
+void Actor_v0::setActorToTempPosition() {
 	_tmp_Pos = _pos;
-	_pos = _tmp_Dest;
+	_pos = _tmp_NewPos;
 	_tmp_WalkBox = _walkbox;
 	_tmp_NewWalkBoxEntered = _newWalkBoxEntered;
 }
 
-void Actor_v0::setActorFromTmp() {
+void Actor_v0::setActorToOriginalPosition() {
 	_pos = _tmp_Pos;
-	_tmp_Dest = _tmp_Pos;
+	_tmp_NewPos = _tmp_Pos;
 	_walkbox = _tmp_WalkBox;
 	_newWalkBoxEntered = _tmp_NewWalkBoxEntered;
 }
 
 void Actor_v0::actorSetWalkTo() {
-	
+
 	if (_newWalkBoxEntered == false)
 		return;
 
 	_newWalkBoxEntered = false;
 
-	int nextBox = ((ScummEngine_v0*)_vm)->walkboxFindTarget(this, _walkdata.destbox, _walkdata.dest);
+	int nextBox = ((ScummEngine_v0 *)_vm)->walkboxFindTarget(this, _walkdata.destbox, _walkdata.dest);
 	if (nextBox != kInvalidBox) {
 		_walkdata.curbox = nextBox;
 	}
 }
 
-void Actor_v0::saveLoadWithSerializer(Serializer *ser) {
-	Actor::saveLoadWithSerializer(ser);
+void Actor_v0::saveLoadWithSerializer(Common::Serializer &s) {
+	Actor::saveLoadWithSerializer(s);
 
-	static const SaveLoadEntry actorEntries[] = {
-		MKLINE(Actor_v0, _costCommand, sleByte, VER(84)),
-		MK_OBSOLETE(Actor_v0, _costFrame, sleByte, VER(84), VER(89)),
-		MKLINE(Actor_v0, _miscflags, sleByte, VER(84)),
-		MKLINE(Actor_v0, _speaking, sleByte, VER(84)),
-		MK_OBSOLETE(Actor_v0, _speakingPrev, sleByte, VER(84), VER(89)),
-		MK_OBSOLETE(Actor_v0, _limbTemp, sleByte, VER(89), VER(89)),
-		MKLINE(Actor_v0, _animFrameRepeat, sleByte, VER(89)),
-		MKARRAY(Actor_v0, _limbFrameRepeatNew[0], sleInt8, 8, VER(89)),
-		MKARRAY(Actor_v0, _limbFrameRepeat[0], sleInt8, 8, VER(90)),
-		MKLINE(Actor_v0, _CurrentWalkTo.x, sleInt16, VER(97)),
-		MKLINE(Actor_v0, _CurrentWalkTo.y, sleInt16, VER(97)),
-		MKLINE(Actor_v0, _NewWalkTo.x, sleInt16, VER(97)),
-		MKLINE(Actor_v0, _NewWalkTo.y, sleInt16, VER(97)),
-		MKLINE(Actor_v0, _walkCountModulo, sleInt8, VER(97)),
-		MKLINE(Actor_v0, _newWalkBoxEntered, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkDirX, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkDirY, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkYCountGreaterThanXCount, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkXCount, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkXCountInc, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkYCount, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkYCountInc, sleByte, VER(97)),
-		MKLINE(Actor_v0, _walkMaxXYCountInc, sleByte, VER(97)),
-		MKEND()
-	};
+	s.syncAsByte(_costCommand, VER(84));
+	s.skip(1, VER(84), VER(89)); // _costFrame
+	s.syncAsByte(_miscflags, VER(84));
+	s.syncAsByte(_speaking, VER(84));
+	s.skip(1, VER(84), VER(89)); // _speakingPrev
+	s.skip(1, VER(89), VER(89)); // _limbTemp
+	s.syncAsByte(_animFrameRepeat, VER(89));
+	s.syncArray(_limbFrameRepeatNew, 8, Common::Serializer::SByte, VER(89));
+	s.syncArray(_limbFrameRepeat, 8, Common::Serializer::SByte, VER(90));
+	s.syncAsSint16LE(_CurrentWalkTo.x, VER(97));
+	s.syncAsSint16LE(_CurrentWalkTo.y, VER(97));
+	s.syncAsSint16LE(_NewWalkTo.x, VER(97));
+	s.syncAsSint16LE(_NewWalkTo.y, VER(97));
+	s.syncAsSByte(_walkCountModulo, VER(97));
+	s.syncAsByte(_newWalkBoxEntered, VER(97));
+	s.syncAsByte(_walkDirX, VER(97));
+	s.syncAsByte(_walkDirY, VER(97));
+	s.syncAsByte(_walkYCountGreaterThanXCount, VER(97));
+	s.syncAsByte(_walkXCount, VER(97));
+	s.syncAsByte(_walkXCountInc, VER(97));
+	s.syncAsByte(_walkYCount, VER(97));
+	s.syncAsByte(_walkYCountInc, VER(97));
+	s.syncAsByte(_walkMaxXYCountInc, VER(97));
 
-	ser->saveLoadEntries(this, actorEntries);
+	s.syncBytes(_walkboxQueue, 16, VER(98));
+	s.syncAsByte(_walkboxQueueIndex, VER(98));
+
+	// When loading, we need to ensure the limbs are restarted
+	if (s.isLoading()) {
+
+		// valid costume command?
+		if (_costCommand != 0xFF) {
+
+			// Do we have a walkbox queue?
+			if (_walkboxQueueIndex < 1) {
+				_costCommand = 0xFF;
+
+				// Standing Still
+				setDirection(_facing);
+				speakCheck();
+
+			} else {
+				// Force limb direction update
+				_facing = 0;
+				directionUpdate();
+
+				// Begin walking
+				animateActor(newDirToOldDir(_facing));
+			}
+		}
+	}
 }
 
-void Actor::saveLoadWithSerializer(Serializer *ser) {
-	static const SaveLoadEntry actorEntries[] = {
-		MKLINE(Actor, _pos.x, sleInt16, VER(8)),
-		MKLINE(Actor, _pos.y, sleInt16, VER(8)),
-		MKLINE(Actor, _heOffsX, sleInt16, VER(32)),
-		MKLINE(Actor, _heOffsY, sleInt16, VER(32)),
-		MKLINE(Actor, _top, sleInt16, VER(8)),
-		MKLINE(Actor, _bottom, sleInt16, VER(8)),
-		MKLINE(Actor, _elevation, sleInt16, VER(8)),
-		MKLINE(Actor, _width, sleUint16, VER(8)),
-		MKLINE(Actor, _facing, sleUint16, VER(8)),
-		MKLINE(Actor, _costume, sleUint16, VER(8)),
-		MKLINE(Actor, _room, sleByte, VER(8)),
-		MKLINE(Actor, _talkColor, sleByte, VER(8)),
-		MKLINE(Actor, _talkFrequency, sleInt16, VER(16)),
-		MKLINE(Actor, _talkPan, sleInt16, VER(24)),
-		MKLINE(Actor, _talkVolume, sleInt16, VER(29)),
-		MKLINE(Actor, _boxscale, sleUint16, VER(34)),
-		MKLINE(Actor, _scalex, sleByte, VER(8)),
-		MKLINE(Actor, _scaley, sleByte, VER(8)),
-		MKLINE(Actor, _charset, sleByte, VER(8)),
-
-		// Actor sound grew from 8 to 32 bytes and switched to uint16 in HE games
-		MKARRAY_OLD(Actor, _sound[0], sleByte, 8, VER(8), VER(36)),
-		MKARRAY_OLD(Actor, _sound[0], sleByte, 32, VER(37), VER(61)),
-		MKARRAY(Actor, _sound[0], sleUint16, 32, VER(62)),
-
-		// Actor animVariable grew from 8 to 27
-		MKARRAY_OLD(Actor, _animVariable[0], sleUint16, 8, VER(8), VER(40)),
-		MKARRAY(Actor, _animVariable[0], sleUint16, 27, VER(41)),
-
-		MKLINE(Actor, _targetFacing, sleUint16, VER(8)),
-		MKLINE(Actor, _moving, sleByte, VER(8)),
-		MKLINE(Actor, _ignoreBoxes, sleByte, VER(8)),
-		MKLINE(Actor, _forceClip, sleByte, VER(8)),
-		MKLINE(Actor, _initFrame, sleByte, VER(8)),
-		MKLINE(Actor, _walkFrame, sleByte, VER(8)),
-		MKLINE(Actor, _standFrame, sleByte, VER(8)),
-		MKLINE(Actor, _talkStartFrame, sleByte, VER(8)),
-		MKLINE(Actor, _talkStopFrame, sleByte, VER(8)),
-		MKLINE(Actor, _speedx, sleUint16, VER(8)),
-		MKLINE(Actor, _speedy, sleUint16, VER(8)),
-		MKLINE(Actor, _cost.animCounter, sleUint16, VER(8)),
-		MKLINE(Actor, _cost.soundCounter, sleByte, VER(8)),
-		MKLINE(Actor, _drawToBackBuf, sleByte, VER(32)),
-		MKLINE(Actor, _flip, sleByte, VER(32)),
-		MKLINE(Actor, _heSkipLimbs, sleByte, VER(32)),
-
-		// Actor palette grew from 64 to 256 bytes and switched to uint16 in HE games
-		MKARRAY_OLD(Actor, _palette[0], sleByte, 64, VER(8), VER(9)),
-		MKARRAY_OLD(Actor, _palette[0], sleByte, 256, VER(10), VER(79)),
-		MKARRAY(Actor, _palette[0], sleUint16, 256, VER(80)),
-
-		MK_OBSOLETE(Actor, _mask, sleByte, VER(8), VER(9)),
-		MKLINE(Actor, _shadowMode, sleByte, VER(8)),
-		MKLINE(Actor, _visible, sleByte, VER(8)),
-		MKLINE(Actor, _frame, sleByte, VER(8)),
-		MKLINE(Actor, _animSpeed, sleByte, VER(8)),
-		MKLINE(Actor, _animProgress, sleByte, VER(8)),
-		MKLINE(Actor, _walkbox, sleByte, VER(8)),
-		MKLINE(Actor, _needRedraw, sleByte, VER(8)),
-		MKLINE(Actor, _needBgReset, sleByte, VER(8)),
-		MKLINE(Actor, _costumeNeedsInit, sleByte, VER(8)),
-		MKLINE(Actor, _heCondMask, sleUint32, VER(38)),
-		MKLINE(Actor, _hePaletteNum, sleUint32, VER(59)),
-		MKLINE(Actor, _heXmapNum, sleUint32, VER(59)),
-
-		MKLINE(Actor, _talkPosY, sleInt16, VER(8)),
-		MKLINE(Actor, _talkPosX, sleInt16, VER(8)),
-		MKLINE(Actor, _ignoreTurns, sleByte, VER(8)),
-
-		// Actor layer switched to int32 in HE games
-		MKLINE_OLD(Actor, _layer, sleByte, VER(8), VER(57)),
-		MKLINE(Actor, _layer, sleInt32, VER(58)),
-
-		MKLINE(Actor, _talkScript, sleUint16, VER(8)),
-		MKLINE(Actor, _walkScript, sleUint16, VER(8)),
-
-		MKLINE(Actor, _walkdata.dest.x, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.dest.y, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.destbox, sleByte, VER(8)),
-		MKLINE(Actor, _walkdata.destdir, sleUint16, VER(8)),
-		MKLINE(Actor, _walkdata.curbox, sleByte, VER(8)),
-		MKLINE(Actor, _walkdata.cur.x, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.cur.y, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.next.x, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.next.y, sleInt16, VER(8)),
-		MKLINE(Actor, _walkdata.deltaXFactor, sleInt32, VER(8)),
-		MKLINE(Actor, _walkdata.deltaYFactor, sleInt32, VER(8)),
-		MKLINE(Actor, _walkdata.xfrac, sleUint16, VER(8)),
-		MKLINE(Actor, _walkdata.yfrac, sleUint16, VER(8)),
-
-		MKLINE(Actor, _walkdata.point3.x, sleUint16, VER(42)),
-		MKLINE(Actor, _walkdata.point3.y, sleUint16, VER(42)),
-
-		MKARRAY(Actor, _cost.active[0], sleByte, 16, VER(8)),
-		MKLINE(Actor, _cost.stopped, sleUint16, VER(8)),
-		MKARRAY(Actor, _cost.curpos[0], sleUint16, 16, VER(8)),
-		MKARRAY(Actor, _cost.start[0], sleUint16, 16, VER(8)),
-		MKARRAY(Actor, _cost.end[0], sleUint16, 16, VER(8)),
-		MKARRAY(Actor, _cost.frame[0], sleUint16, 16, VER(8)),
-
-		MKARRAY(Actor, _cost.heJumpOffsetTable[0], sleUint16, 16, VER(65)),
-		MKARRAY(Actor, _cost.heJumpCountTable[0], sleUint16, 16, VER(65)),
-		MKARRAY(Actor, _cost.heCondMaskTable[0], sleUint32, 16, VER(65)),
-		MKEND()
-	};
-
-	if (ser->isLoading()) {
+void Actor::saveLoadWithSerializer(Common::Serializer &s) {
+	if (s.isLoading()) {
 		// Not all actor data is saved; so when loading, we first reset
 		// the actor, to ensure completely reproducible behavior (else,
 		// some not saved value in the actor class can cause odd things)
 		initActor(-1);
 	}
 
-	ser->saveLoadEntries(this, actorEntries);
+	s.syncAsSint16LE(_pos.x, VER(8));
+	s.syncAsSint16LE(_pos.y, VER(8));
+	s.syncAsSint16LE(_heOffsX, VER(32));
+	s.syncAsSint16LE(_heOffsY, VER(32));
+	s.syncAsSint16LE(_top, VER(8));
+	s.syncAsSint16LE(_bottom, VER(8));
+	s.syncAsSint16LE(_elevation, VER(8));
+	s.syncAsUint16LE(_width, VER(8));
+	s.syncAsUint16LE(_facing, VER(8));
+	s.syncAsUint16LE(_costume, VER(8));
+	s.syncAsByte(_room, VER(8));
+	s.syncAsByte(_talkColor, VER(8));
+	s.syncAsSint16LE(_talkFrequency, VER(16));
+	s.syncAsSint16LE(_talkPan, VER(24));
+	s.syncAsSint16LE(_talkVolume, VER(29));
+	s.syncAsUint16LE(_boxscale, VER(34));
+	s.syncAsByte(_scalex, VER(8));
+	s.syncAsByte(_scaley, VER(8));
+	s.syncAsByte(_charset, VER(8));
 
-	if (ser->isLoading() && _vm->_game.version <= 2 && ser->getVersion() < VER(70)) {
+	// Actor sound grew from 8 to 32 bytes and switched to uint16 in HE games
+	s.syncArray(_sound, 8, Common::Serializer::Byte, VER(8), VER(36));
+	s.syncArray(_sound, 32, Common::Serializer::Byte, VER(37), VER(61));
+	s.syncArray(_sound, 32, Common::Serializer::Uint16LE, VER(62));
+
+	// Actor animVariable grew from 8 to 27
+	s.syncArray(_animVariable, 8, Common::Serializer::Uint16LE, VER(8), VER(40));
+	s.syncArray(_animVariable, 27, Common::Serializer::Uint16LE, VER(41));
+
+	s.syncAsUint16LE(_targetFacing, VER(8));
+	s.syncAsByte(_moving, VER(8));
+	s.syncAsByte(_ignoreBoxes, VER(8));
+	s.syncAsByte(_forceClip, VER(8));
+	s.syncAsByte(_initFrame, VER(8));
+	s.syncAsByte(_walkFrame, VER(8));
+	s.syncAsByte(_standFrame, VER(8));
+	s.syncAsByte(_talkStartFrame, VER(8));
+	s.syncAsByte(_talkStopFrame, VER(8));
+	s.syncAsUint16LE(_speedx, VER(8));
+	s.syncAsUint16LE(_speedy, VER(8));
+	s.syncAsUint16LE(_cost.animCounter, VER(8));
+	s.syncAsByte(_cost.soundCounter, VER(8));
+	s.syncAsByte(_drawToBackBuf, VER(32));
+	s.syncAsByte(_flip, VER(32));
+	s.syncAsByte(_heSkipLimbs, VER(32));
+
+	// Actor palette grew from 64 to 256 bytes and switched to uint16 in HE games
+	s.syncArray(_palette, 64, Common::Serializer::Byte, VER(8), VER(9));
+	s.syncArray(_palette, 256, Common::Serializer::Byte, VER(10), VER(79));
+	s.syncArray(_palette, 256, Common::Serializer::Uint16LE, VER(80));
+
+	s.skip(1, VER(8), VER(9)); // _mask
+	s.syncAsByte(_shadowMode, VER(8));
+	s.syncAsByte(_visible, VER(8));
+	s.syncAsByte(_frame, VER(8));
+	s.syncAsByte(_animSpeed, VER(8));
+	s.syncAsByte(_animProgress, VER(8));
+	s.syncAsByte(_walkbox, VER(8));
+	s.syncAsByte(_needRedraw, VER(8));
+	s.syncAsByte(_needBgReset, VER(8));
+	s.syncAsByte(_costumeNeedsInit, VER(8));
+	s.syncAsUint32LE(_heCondMask, VER(38));
+	s.syncAsUint32LE(_hePaletteNum, VER(59));
+	s.syncAsUint32LE(_heXmapNum, VER(59));
+
+	s.syncAsSint16LE(_talkPosY, VER(8));
+	s.syncAsSint16LE(_talkPosX, VER(8));
+	s.syncAsByte(_ignoreTurns, VER(8));
+
+	// Actor layer switched to int32 in HE games
+	s.syncAsByte(_layer, VER(8), VER(57));
+	s.syncAsSint32LE(_layer, VER(58));
+
+	s.syncAsUint16LE(_talkScript, VER(8));
+	s.syncAsUint16LE(_walkScript, VER(8));
+
+	s.syncAsSint16LE(_walkdata.dest.x, VER(8));
+	s.syncAsSint16LE(_walkdata.dest.y, VER(8));
+	s.syncAsByte(_walkdata.destbox, VER(8));
+	s.syncAsUint16LE(_walkdata.destdir, VER(8));
+	s.syncAsByte(_walkdata.curbox, VER(8));
+	s.syncAsSint16LE(_walkdata.cur.x, VER(8));
+	s.syncAsSint16LE(_walkdata.cur.y, VER(8));
+	s.syncAsSint16LE(_walkdata.next.x, VER(8));
+	s.syncAsSint16LE(_walkdata.next.y, VER(8));
+	s.syncAsSint32LE(_walkdata.deltaXFactor, VER(8));
+	s.syncAsSint32LE(_walkdata.deltaYFactor, VER(8));
+	s.syncAsUint16LE(_walkdata.xfrac, VER(8));
+	s.syncAsUint16LE(_walkdata.yfrac, VER(8));
+
+	s.syncAsUint16LE(_walkdata.point3.x, VER(42));
+	s.syncAsUint16LE(_walkdata.point3.y, VER(42));
+
+	s.syncBytes(_cost.active, 16, VER(8));
+	s.syncAsUint16LE(_cost.stopped, VER(8));
+	s.syncArray(_cost.curpos, 16, Common::Serializer::Uint16LE, VER(8));
+	s.syncArray(_cost.start, 16, Common::Serializer::Uint16LE, VER(8));
+	s.syncArray(_cost.end, 16, Common::Serializer::Uint16LE, VER(8));
+	s.syncArray(_cost.frame, 16, Common::Serializer::Uint16LE, VER(8));
+
+	s.syncArray(_cost.heJumpOffsetTable, 16, Common::Serializer::Uint16LE, VER(65));
+	s.syncArray(_cost.heJumpCountTable, 16, Common::Serializer::Uint16LE, VER(65));
+	s.syncArray(_cost.heCondMaskTable, 16, Common::Serializer::Uint32LE, VER(65));
+
+	if (s.isLoading() && _vm->_game.version <= 2 && s.getVersion() < VER(70)) {
 		_pos.x >>= V12_X_SHIFT;
 		_pos.y >>= V12_Y_SHIFT;
 
@@ -3489,6 +3667,8 @@ void Actor::saveLoadWithSerializer(Serializer *ser) {
 			_walkdata.point3.x >>= V12_X_SHIFT;
 			_walkdata.point3.y >>= V12_Y_SHIFT;
 		}
+
+		setDirection(_facing);
 	}
 }
 

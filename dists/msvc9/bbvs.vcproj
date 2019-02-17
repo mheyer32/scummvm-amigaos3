@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="bbvs"
-	ProjectGUID="{ED83AB45-D0B1-454E-A63F-E3C91204961A}"
+	ProjectGUID="{9B4CD2B2-6271-4B9C-AA8A-B8735FA8C134}"
 	RootNamespace="bbvs"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

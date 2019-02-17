@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="composer"
-	ProjectGUID="{24DC4776-A0DE-4771-872C-E5CB42FE48CF}"
+	ProjectGUID="{2970F121-4B15-41C8-942F-41DD1E04235B}"
 	RootNamespace="composer"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -49,6 +49,7 @@
 		<File RelativePath="..\..\engines\composer\module.mk" />
 		<File RelativePath="..\..\engines\composer\resource.cpp" />
 		<File RelativePath="..\..\engines\composer\resource.h" />
+		<File RelativePath="..\..\engines\composer\saveload.cpp" />
 		<File RelativePath="..\..\engines\composer\scripting.cpp" />
 	</Files>
 </VisualStudioProject>

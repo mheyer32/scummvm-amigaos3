@@ -29,6 +29,8 @@
 #define FORBIDDEN_SYMBOL_EXCEPTION_mkdir
 #define FORBIDDEN_SYMBOL_EXCEPTION_getenv
 #define FORBIDDEN_SYMBOL_EXCEPTION_exit     //Needed for IRIX's unistd.h
+#define FORBIDDEN_SYMBOL_EXCEPTION_random
+#define FORBIDDEN_SYMBOL_EXCEPTION_srandom
 
 #include "backends/fs/chroot/chroot-fs.h"
 
@@ -106,6 +108,11 @@ Common::SeekableReadStream *ChRootFilesystemNode::createReadStream() {
 
 Common::WriteStream *ChRootFilesystemNode::createWriteStream() {
 	return _realNode->createWriteStream();
+}
+
+bool ChRootFilesystemNode::create(bool isDirectoryFlag) {
+	error("Not supported");
+	return false;
 }
 
 Common::String ChRootFilesystemNode::addPathComponent(const Common::String &path, const Common::String &component) {

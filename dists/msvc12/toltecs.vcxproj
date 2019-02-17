@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{EA596BEE-D38B-43FA-AB71-70C0ED7CFB0F}</ProjectGuid>
+		<ProjectGuid>{BC537CA9-4465-4658-9B3C-55F1CA0889A1}</ProjectGuid>
 		<RootNamespace>toltecs</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

@@ -106,7 +106,7 @@ void BubbleBox::calcBubble(const Common::String &msg) {
 	if (_type == kBoxTypeFileDialog) {
 		_vm->_fonts._printMaxX = 110;
 	} else {
-		_vm->_fonts._printMaxX = _vm->_fonts._font2.stringWidth(_bubbleDisplStr);
+		_vm->_fonts._printMaxX = _vm->_fonts._font2->stringWidth(_bubbleDisplStr);
 	}
 
 	// Start of with a rect with the given starting x and y
@@ -118,7 +118,7 @@ void BubbleBox::calcBubble(const Common::String &msg) {
 	int width = 0;
 	bool lastLine;
 	do {
-		lastLine = _vm->_fonts._font2.getLine(s, screen._maxChars * 6, line, width);
+		lastLine = _vm->_fonts._font2->getLine(s, screen._maxChars * 6, line, width);
 		_vm->_fonts._printMaxX = MAX(width, _vm->_fonts._printMaxX);
 
 		screen._printOrg.y += 6;
@@ -165,7 +165,7 @@ void BubbleBox::printBubble(const Common::String &msg) {
 
 void BubbleBox::printBubble_v1(const Common::String &msg) {
 	drawBubble(_bubbles.size() - 1);
-	
+
 	// Loop through drawing the lines
 	Common::String s = msg;
 	Common::String line;
@@ -173,7 +173,7 @@ void BubbleBox::printBubble_v1(const Common::String &msg) {
 	bool lastLine;
 	do {
 		// Get next line
-		Font &font2 = _vm->_fonts._font2;
+		Font &font2 = *_vm->_fonts._font2;
 		lastLine = font2.getLine(s, _vm->_screen->_maxChars * 6, line, width);
 		// Draw the text
 		printString(line);
@@ -195,7 +195,7 @@ void BubbleBox::printBubble_v2(const Common::String &msg) {
 	bool lastLine;
 	do {
 		// Get next line
-		Font &font2 = _vm->_fonts._font2;
+		Font &font2 = *_vm->_fonts._font2;
 		lastLine = font2.getLine(s, _vm->_screen->_maxChars * 6, line, width);
 
 		// Set font colors
@@ -228,7 +228,7 @@ void BubbleBox::drawBubble(int index) {
 
 void BubbleBox::doBox(int item, int box) {
 	FontManager &fonts = _vm->_fonts;
-	ASurface &screen = *_vm->_screen;
+	Screen &screen = *_vm->_screen;
 
 	_startItem = item;
 	_startBox = box;
@@ -309,8 +309,8 @@ void BubbleBox::doBox(int item, int box) {
 	}
 
 	// Handle drawing title
-	int titleWidth = _vm->_fonts._font2.stringWidth(_bubbleDisplStr);
-	Font &font2 = _vm->_fonts._font2;
+	int titleWidth = _vm->_fonts._font2->stringWidth(_bubbleDisplStr);
+	Font &font2 = *_vm->_fonts._font2;
 	font2._fontColors[0] = 0;
 	font2._fontColors[1] = 3;
 	font2._fontColors[2] = 2;
@@ -338,7 +338,7 @@ void BubbleBox::setCursorPos(int posX, int posY) {
 
 void BubbleBox::printString(Common::String msg) {
 	warning("TODO: Proper implementation of printString");
-	_vm->_fonts._font1.drawString(_vm->_screen, msg, _vm->_screen->_printOrg);
+	_vm->_fonts._font1->drawString(_vm->_screen, msg, _vm->_screen->_printOrg);
 }
 
 void BubbleBox::displayBoxData() {
@@ -369,7 +369,7 @@ void BubbleBox::displayBoxData() {
 		_vm->_screen->drawRect();
 		_vm->_events->showCursor();
 	}
-	
+
 	_vm->_events->hideCursor();
 	int oldPStartY = _boxPStartY;
 	++_boxPStartY;
@@ -474,7 +474,7 @@ int BubbleBox::doBox_v1(int item, int box, int &btnSelected) {
 	--_vm->_screen->_orgX2;
 	--_vm->_screen->_orgY2;
 	_vm->_screen->_lColor = 0xF9;
-	
+
 	// Draw the inner border
 	_vm->_screen->drawBox();
 
@@ -605,12 +605,13 @@ int BubbleBox::doBox_v1(int item, int box, int &btnSelected) {
 	setCursorPos(newX, newY);
 
 	_vm->_fonts._charFor._lo = 0xFF;
-	_vm->_fonts._font1.drawString(_vm->_screen, _bubbleDisplStr, _vm->_screen->_printOrg);
+	_vm->_fonts._font1->drawString(_vm->_screen, _bubbleDisplStr, _vm->_screen->_printOrg);
 
 	if (_type == TYPE_2) {
 		_vm->_events->showCursor();
 		warning("TODO: pop values");
 		_vm->_screen->restoreScreen();
+		delete icons;
 		return retval_;
 	}
 
@@ -642,7 +643,9 @@ int BubbleBox::doBox_v1(int item, int box, int &btnSelected) {
 			}
 		}
 	}
-	
+
+	delete icons;
+
 	_vm->_screen->restoreScreen();
 	_vm->_boxDataStart = _startItem;
 	_vm->_boxSelectYOld = -1;
@@ -732,7 +735,7 @@ int BubbleBox::doBox_v1(int item, int box, int &btnSelected) {
 
 			if (_type != TYPE_3)
 				continue;
-			
+
 			if ((_vm->_events->_mousePos.x < tmpX) || (_vm->_events->_mousePos.x > tmpX + 144))
 				continue;
 

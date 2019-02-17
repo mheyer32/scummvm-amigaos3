@@ -24,11 +24,23 @@
 #define SCI_ENGINE_VM_TYPES_H
 
 #include "common/scummsys.h"
+#include "sci/sciversion.h"
 
 namespace Sci {
 
 // Segment ID type
 typedef uint16 SegmentId;
+#ifdef ENABLE_SCI32
+typedef uint32 Offset;
+#else
+typedef uint16 Offset;
+#endif
+
+enum {
+	kUninitializedSegment = 0x1FFF,
+	kSegmentMask = 0x1FFF,
+	kOffsetMask = 0x7FFFF
+};
 
 struct reg_t {
 	// Segment and offset. These should never be accessed directly
@@ -36,11 +48,13 @@ struct reg_t {
 	uint16 _offset;
 
 	SegmentId getSegment() const;
-	void setSegment(SegmentId segment);
-	uint32 getOffset() const;
-	void setOffset(uint32 offset);
 
-	inline void incOffset(int16 offset) {
+	void setSegment(SegmentId segment);
+
+	Offset getOffset() const;
+	void setOffset(Offset offset);
+
+	inline void incOffset(Offset offset) {
 		setOffset(getOffset() + offset);
 	}
 
@@ -61,14 +75,14 @@ struct reg_t {
 	}
 
 	bool isPointer() const {
-		return getSegment() != 0 && getSegment() != 0xFFFF;
+		return getSegment() != 0 && getSegment() != kUninitializedSegment;
 	}
 
 	uint16 requireUint16() const;
 	int16 requireSint16() const;
 
 	inline bool isInitialized() const {
-		return getSegment() != 0xFFFF;
+		return getSegment() != kUninitializedSegment;
 	}
 
 	// Comparison operators
@@ -80,48 +94,48 @@ struct reg_t {
 		return (getOffset() != x.getOffset()) || (getSegment() != x.getSegment());
 	}
 
-	bool operator>(const reg_t right) const {
+	bool operator>(const reg_t &right) const {
 		return cmp(right, false) > 0;
 	}
 
-	bool operator>=(const reg_t right) const {
+	bool operator>=(const reg_t &right) const {
 		return cmp(right, false) >= 0;
 	}
 
-	bool operator<(const reg_t right) const {
+	bool operator<(const reg_t &right) const {
 		return cmp(right, false) < 0;
 	}
 
-	bool operator<=(const reg_t right) const {
+	bool operator<=(const reg_t &right) const {
 		return cmp(right, false) <= 0;
 	}
 
 	// Same as the normal operators, but perform unsigned
 	// integer checking
-	bool gtU(const reg_t right) const {
+	bool gtU(const reg_t &right) const {
 		return cmp(right, true) > 0;
 	}
 
-	bool geU(const reg_t right) const {
+	bool geU(const reg_t &right) const {
 		return cmp(right, true) >= 0;
 	}
 
-	bool ltU(const reg_t right) const {
+	bool ltU(const reg_t &right) const {
 		return cmp(right, true) < 0;
 	}
 
-	bool leU(const reg_t right) const {
+	bool leU(const reg_t &right) const {
 		return cmp(right, true) <= 0;
 	}
 
 	// Arithmetic operators
-	reg_t operator+(const reg_t right) const;
-	reg_t operator-(const reg_t right) const;
-	reg_t operator*(const reg_t right) const;
-	reg_t operator/(const reg_t right) const;
-	reg_t operator%(const reg_t right) const;
-	reg_t operator>>(const reg_t right) const;
-	reg_t operator<<(const reg_t right) const;
+	reg_t operator+(const reg_t &right) const;
+	reg_t operator-(const reg_t &right) const;
+	reg_t operator*(const reg_t &right) const;
+	reg_t operator/(const reg_t &right) const;
+	reg_t operator%(const reg_t &right) const;
+	reg_t operator>>(const reg_t &right) const;
+	reg_t operator<<(const reg_t &right) const;
 
 	reg_t operator+(int16 right) const;
 	reg_t operator-(int16 right) const;
@@ -132,9 +146,22 @@ struct reg_t {
 	void operator-=(int16 right) { *this = *this - right; }
 
 	// Boolean operators
-	reg_t operator&(const reg_t right) const;
-	reg_t operator|(const reg_t right) const;
-	reg_t operator^(const reg_t right) const;
+	reg_t operator&(const reg_t &right) const;
+	reg_t operator|(const reg_t &right) const;
+	reg_t operator^(const reg_t &right) const;
+
+#ifdef ENABLE_SCI32
+	reg_t operator&(int16 right) const;
+	reg_t operator|(int16 right) const;
+	reg_t operator^(int16 right) const;
+
+	void operator&=(const reg_t &right) { *this = *this & right; }
+	void operator|=(const reg_t &right) { *this = *this | right; }
+	void operator^=(const reg_t &right) { *this = *this ^ right; }
+	void operator&=(int16 right) { *this = *this & right; }
+	void operator|=(int16 right) { *this = *this | right; }
+	void operator^=(int16 right) { *this = *this ^ right; }
+#endif
 
 private:
 	/**
@@ -144,10 +171,38 @@ private:
 	 * - 0 if *this == right
 	 * - a negative number if *this < right
 	 */
-	int cmp(const reg_t right, bool treatAsUnsigned) const;
-	reg_t lookForWorkaround(const reg_t right, const char *operation) const;
-	bool pointerComparisonWithInteger(const reg_t right) const;
+	int cmp(const reg_t &right, bool treatAsUnsigned) const;
+	reg_t lookForWorkaround(const reg_t &right, const char *operation) const;
+	bool pointerComparisonWithInteger(const reg_t &right) const;
+
+#ifdef ENABLE_SCI32
+	int sci32Comparison(const reg_t right) const;
+#endif
 };
+
+inline SegmentId reg_t::getSegment() const {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
+		// Return the lower 14 bits of the segment
+		return (_segment & 0x3FFF);
+	} else
+#endif
+	{
+		return _segment;
+	}
+}
+
+inline Offset reg_t::getOffset() const {
+#ifdef ENABLE_SCI32
+	if (getSciVersion() == SCI_VERSION_3) {
+		// Return the lower 16 bits from the offset, and the 17th and 18th bits from the segment
+		return ((_segment & 0xC000) << 2) | _offset;
+	} else
+#endif
+	{
+		return _offset;
+	}
+}
 
 static inline reg_t make_reg(SegmentId segment, uint16 offset) {
 	reg_t r;
@@ -156,50 +211,14 @@ static inline reg_t make_reg(SegmentId segment, uint16 offset) {
 	return r;
 }
 
-#define PRINT_REG(r) (0xffff) & (unsigned) (r).getSegment(), (unsigned) (r).getOffset()
-
-// A true 32-bit reg_t
-struct reg32_t {
-	// Segment and offset. These should never be accessed directly
-	SegmentId _segment;
-	uint32 _offset;
-
-	inline SegmentId getSegment() const {
-		return _segment;
-	}
-
-	inline void setSegment(SegmentId segment) {
-		_segment = segment;
-	}
-
-	inline uint32 getOffset() const {
-		return _offset;
-	}
-
-	inline void setOffset(uint32 offset) {
-		_offset = offset;
-	}
-
-	inline void incOffset(int32 offset) {
-		setOffset(getOffset() + offset);
-	}
-
-	// Comparison operators
-	bool operator==(const reg32_t &x) const {
-		return (getOffset() == x.getOffset()) && (getSegment() == x.getSegment());
-	}
-
-	bool operator!=(const reg32_t &x) const {
-		return (getOffset() != x.getOffset()) || (getSegment() != x.getSegment());
-	}
-};
-
-static inline reg32_t make_reg32(SegmentId segment, uint32 offset) {
-	reg32_t r;
+static inline reg_t make_reg32(SegmentId segment, uint32 offset) {
+	reg_t r;
 	r.setSegment(segment);
 	r.setOffset(offset);
 	return r;
 }
+
+#define PRINT_REG(r) (kSegmentMask) & (unsigned) (r).getSegment(), (unsigned) (r).getOffset()
 
 // Stack pointer type
 typedef reg_t *StackPtr;
@@ -218,16 +237,13 @@ extern const reg_t SIGNAL_REG;
 extern const reg_t TRUE_REG;
 
 // Selector ID
-typedef int Selector;
+typedef uint16 Selector;
 
-enum {
-	/** Special 'selector' value, used when calling add_exec_stack_entry. */
-	NULL_SELECTOR = -1
-};
+static const Selector NULL_SELECTOR = -1;
 
 // Opcode formats
-enum opcode_format {
-	Script_Invalid = -1,
+enum opcode_format : byte {
+	Script_Invalid = 0xFF,
 	Script_None = 0,
 	Script_Byte,
 	Script_SByte,

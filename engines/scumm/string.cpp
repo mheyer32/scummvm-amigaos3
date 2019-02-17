@@ -23,6 +23,7 @@
 
 
 #include "common/config-manager.h"
+#include "audio/mixer.h"
 
 #include "scumm/actor.h"
 #include "scumm/charset.h"
@@ -97,7 +98,7 @@ void ScummEngine::debugMessage(const byte *msg) {
 		if (_game.id == GID_SAMNMAX)
 			channel = VAR(VAR_V6_SOUNDMODE);
 
-		 if (channel != 2)
+		if (channel != 2)
 			_sound->talkSound(a, b, 1, channel);
 	}
 }
@@ -662,7 +663,7 @@ void ScummEngine::CHARSET_1() {
 					// Special case for HE games
 				} else if (_game.id == GID_LOOM && !ConfMan.getBool("subtitles") && (_sound->pollCD())) {
 					// Special case for Loom (CD), since it only uses CD audio.for sound
-				} else if (!ConfMan.getBool("subtitles") && (!_haveActorSpeechMsg || _mixer->isSoundHandleActive(_sound->_talkChannelHandle))) {
+				} else if (!ConfMan.getBool("subtitles") && (!_haveActorSpeechMsg || _mixer->isSoundHandleActive(*_sound->_talkChannelHandle))) {
 					// Subtitles are turned off, and there is a voice version
 					// of this message -> don't print it.
 				} else {

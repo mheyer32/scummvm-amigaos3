@@ -24,6 +24,7 @@
 #include "common/debug-channels.h"
 #include "common/system.h"
 #include "common/savefile.h"
+#include "common/translation.h"
 
 #include "engines/util.h"
 
@@ -54,13 +55,13 @@ Common::Error LureEngine::init() {
 	_initialized = false;
 	_saveLoadAllowed = false;
 
-	initGraphics(FULL_SCREEN_WIDTH, FULL_SCREEN_HEIGHT, false);
+	initGraphics(FULL_SCREEN_WIDTH, FULL_SCREEN_HEIGHT);
 
 	// Check the version of the lure.dat file
 	Common::File f;
 	VersionStructure version;
 	if (!f.open(SUPPORT_FILENAME)) {
-		GUIError("Could not locate Lure support file");
+		GUIErrorMessageFormat(_("Unable to locate the '%s' engine data file."), SUPPORT_FILENAME);
 		return Common::kUnknownError;
 	}
 
@@ -69,10 +70,10 @@ Common::Error LureEngine::init() {
 	f.close();
 
 	if (READ_LE_UINT16(&version.id) != 0xffff) {
-		GUIError("Error validating %s - file is invalid or out of date", SUPPORT_FILENAME);
+		GUIErrorMessageFormat(_("The '%s' engine data file is corrupt."), SUPPORT_FILENAME);
 		return Common::kUnknownError;
 	} else if ((version.vMajor != LURE_DAT_MAJOR) || (version.vMinor != LURE_DAT_MINOR)) {
-		GUIError("Incorrect version of %s file - expected %d.%d but got %d.%d",
+		GUIErrorMessageFormat(_("Incorrect version of the '%s' engine data file found. Expected %d.%d but got %d.%d."),
 			SUPPORT_FILENAME, LURE_DAT_MAJOR, LURE_DAT_MINOR,
 			version.vMajor, version.vMinor);
 		return Common::kUnknownError;
@@ -245,18 +246,6 @@ bool LureEngine::loadGame(uint8 slotNumber) {
 
 	delete f;
 	return true;
-}
-
-void LureEngine::GUIError(const char *msg, ...) {
-	char buffer[STRINGBUFLEN];
-	va_list va;
-
-	// Generate the full error message
-	va_start(va, msg);
-	vsnprintf(buffer, STRINGBUFLEN, msg, va);
-	va_end(va);
-
-	GUIErrorMessage(buffer);
 }
 
 GUI::Debugger *LureEngine::getDebugger() {

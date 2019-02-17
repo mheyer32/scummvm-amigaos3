@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="pegasus"
-	ProjectGUID="{6159998A-51E5-4DDD-B42E-141E418EF407}"
+	ProjectGUID="{3138930F-7942-4EA6-86C0-8D45C8F8B091}"
 	RootNamespace="pegasus"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

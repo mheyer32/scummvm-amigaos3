@@ -385,7 +385,7 @@ SeqPlayer_HOF::SeqPlayer_HOF(KyraEngine_v1 *vm, Screen_v2 *screen, OSystem *syst
 	_sequenceStrings = _vm->staticres()->loadStrings(k2SeqplayStrings, tempSize);
 	uint8 multiplier = (_vm->gameFlags().platform == Common::kPlatformFMTowns || _vm->gameFlags().platform == Common::kPlatformPC98) ? 12 : 8;
 	for (int i = 0; i < MIN(33, tempSize); i++)
-		_textDuration[i] = (int) strlen(_sequenceStrings[i]) * multiplier;
+		_textDuration[i] = (int)strlen(_sequenceStrings[i]) * multiplier;
 
 	if (_sequenceSoundList) {
 		for (int i = 0; i < _sequenceSoundListSize; i++) {
@@ -3378,7 +3378,7 @@ void KyraEngine_HoF::seq_showStarcraftLogo() {
 
 int KyraEngine_HoF::seq_playIntro() {
 	bool startupSaveLoadable = saveFileLoadable(0);
-	return SeqPlayer_HOF(this, _screen, _system, startupSaveLoadable).play(kSequenceVirgin, startupSaveLoadable? kSequenceTitle : kSequenceNoLooping);
+	return SeqPlayer_HOF(this, _screen, _system, startupSaveLoadable).play(kSequenceVirgin, startupSaveLoadable ? kSequenceTitle : kSequenceNoLooping);
 }
 
 int KyraEngine_HoF::seq_playOutro() {

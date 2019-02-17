@@ -42,11 +42,11 @@ namespace LastExpress {
 
 Vassili::Vassili(LastExpressEngine *engine) : Entity(engine, kEntityVassili) {
 	ADD_CALLBACK_FUNCTION(Vassili, reset);
-	ADD_CALLBACK_FUNCTION(Vassili, draw);
-	ADD_CALLBACK_FUNCTION(Vassili, savegame);
+	ADD_CALLBACK_FUNCTION_S(Vassili, draw);
+	ADD_CALLBACK_FUNCTION_II(Vassili, savegame);
 	ADD_CALLBACK_FUNCTION(Vassili, chapter1);
 	ADD_CALLBACK_FUNCTION(Vassili, chapter1Handler);
-	ADD_CALLBACK_FUNCTION(Vassili, function6);
+	ADD_CALLBACK_FUNCTION(Vassili, inBed);
 	ADD_CALLBACK_FUNCTION(Vassili, function7);
 	ADD_CALLBACK_FUNCTION(Vassili, function8);
 	ADD_CALLBACK_FUNCTION(Vassili, function9);
@@ -103,16 +103,12 @@ IMPLEMENT_FUNCTION(5, Vassili, chapter1Handler)
 		if (params->param1) {
 			getData()->entityPosition = getEntityData(kEntityTatiana)->entityPosition;
 			getData()->location = getEntityData(kEntityTatiana)->location;
+			getData()->car = getEntityData(kEntityTatiana)->car;
 		} else {
-			if (params->param3 && params->param3 >= getState()->time) {
+			if (!Entity::updateParameterCheck(params->param3, getState()->time, 450))
 				break;
-			}else {
-				params->param3 = (uint)getState()->time + 450;
-				if (params->param3 == 0)
-					break;
-			}
 
-			if (!params->param2 && getObjects()->get(kObjectCompartmentA).status == kObjectLocation1) {
+			if (!params->param2 && getObjects()->get(kObjectCompartmentA).model == kObjectModel1) {
 				params->param2 = 1;
 				getEntities()->drawSequenceLeft(kEntityVassili, "303A");
 				getObjects()->update(kObjectCompartmentA, kEntityPlayer, kObjectLocationNone, kCursorHandKnock, kCursorHand);
@@ -126,7 +122,7 @@ IMPLEMENT_FUNCTION(5, Vassili, chapter1Handler)
 		break;
 
 	case kAction122732000:
-		setup_function6();
+		setup_inBed();
 		break;
 
 	case kAction168459827:
@@ -137,7 +133,7 @@ IMPLEMENT_FUNCTION(5, Vassili, chapter1Handler)
 IMPLEMENT_FUNCTION_END
 
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_FUNCTION(6, Vassili, function6)
+IMPLEMENT_FUNCTION(6, Vassili, inBed)
 	switch (savepoint.action) {
 	default:
 		break;
@@ -215,9 +211,9 @@ IMPLEMENT_FUNCTION(7, Vassili, function7)
 		if (params->param1 != kTimeInvalid && getState()->time > kTime1503000) {
 
 			 if (getState()->time <= kTime1512000) {
-				 if (getEntities()->isPlayerInCar(kCarRedSleeping) || !params->param1) {
+				 if (!getEntities()->isPlayerInCar(kCarRedSleeping) || !params->param1) {
 					 params->param1 = (uint)getState()->time + 150;
-					 if (params->param1) {
+					 if (!params->param1) {
 						 setup_function8();
 						 break;
 					 }
@@ -269,7 +265,7 @@ IMPLEMENT_FUNCTION(8, Vassili, function8)
 		getSavePoints()->push(kEntityVassili, kEntityAnna, kAction226031488);
 		getSavePoints()->push(kEntityVassili, kEntityVerges, kAction226031488);
 		getSavePoints()->push(kEntityVassili, kEntityCoudert, kAction226031488);
-		getSound()->playSound(kEntityVassili, "VAS1027", kFlagDefault);
+		getSound()->playSound(kEntityVassili, "VAS1027", kVolumeFull);
 		break;
 	}
 IMPLEMENT_FUNCTION_END
@@ -296,12 +292,12 @@ IMPLEMENT_FUNCTION(9, Vassili, function9)
 		|| getEntities()->isPlayerPosition(kCarRedSleeping, 41)) {
 
 			if (savepoint.action == kActionDrawScene)
-				getSoundQueue()->processEntry(kEntityVassili);
+				getSoundQueue()->fade(kEntityVassili);
 
 			setup_seizure();
 		} else {
 			if (savepoint.action == kActionDefault)
-				getSound()->playSound(kEntityVassili, "VAS1028", kFlagDefault);
+				getSound()->playSound(kEntityVassili, "VAS1028", kVolumeFull);
 		}
 		break;
 	}
@@ -317,19 +313,19 @@ IMPLEMENT_FUNCTION(10, Vassili, seizure)
 		// Check that we have removed the body from the train and changed jacket
 		if (!getProgress().eventCorpseMovedFromFloor) {
 			getAction()->playAnimation(kEventMertensCorpseFloor);
-			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, false);
+			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, true);
 			break;
 		}
 
 		if (!getProgress().eventCorpseThrown) {
 			getAction()->playAnimation(kEventMertensCorpseBed);
-			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, false);
+			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, true);
 			break;
 		}
 
 		if (getProgress().jacket == kJacketBlood) {
 			getAction()->playAnimation(kEventMertensBloodJacket);
-			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, false);
+			getLogic()->gameOver(kSavegameTypeIndex, 0, kSceneNone, true);
 			break;
 		}
 
@@ -345,7 +341,7 @@ IMPLEMENT_FUNCTION(10, Vassili, seizure)
 		if (getCallback() != 1)
 			break;
 
-		getData()->location = kLocationInsideCompartment;
+		getEntityData(kEntityPlayer)->location = kLocationInsideCompartment;
 		getAction()->playAnimation(kEventVassiliSeizure);
 
 		getObjects()->update(kObjectCompartmentA, kEntityPlayer, kObjectLocationNone, kCursorHandKnock, kCursorHand);
@@ -414,7 +410,7 @@ IMPLEMENT_FUNCTION(13, Vassili, sleeping)
 		break;
 
 	case kActionDefault:
-		params->param5 = 5 * (3 * rnd(25) + 15);
+		params->param1 = 5 * (3 * rnd(25) + 15);
 		getEntities()->drawSequenceLeft(kEntityVassili, "303A");
 		break;
 
@@ -479,7 +475,7 @@ IMPLEMENT_FUNCTION(15, Vassili, stealEgg)
 		break;
 
 	case kActionDefault:
-		params->param5 = 5 * (3 * rnd(25) + 15);
+		params->param1 = 5 * (3 * rnd(25) + 15);
 		getEntities()->drawSequenceLeft(kEntityVassili, "303A");
 		break;
 
@@ -559,7 +555,7 @@ IMPLEMENT_FUNCTION(17, Vassili, chapter4Handler)
 		break;
 
 	case kActionDefault:
-		params->param5 = 5 * (3 * rnd(25) + 15);
+		params->param1 = 5 * (3 * rnd(25) + 15);
 		getEntities()->drawSequenceLeft(kEntityVassili, "303A");
 		break;
 

@@ -320,7 +320,7 @@ void Parallaction_br::changeLocation() {
 
 	freeLocation(false);
 	// load new location
-	strcpy(_location._name, _newLocationName.c_str());
+	Common::strlcpy(_location._name, _newLocationName.c_str(), 100);
 	parseLocation(_location._name);
 
 	if (_location._startPosition.x != -1000) {
@@ -430,8 +430,8 @@ void Parallaction_br::parseLocation(const char *filename) {
 		restoreOrSaveZoneFlags(*ait, visited);
 
 		// load the script
-		if ((*ait)->_scriptName) {
-			loadProgram(*ait, (*ait)->_scriptName);
+		if (!(*ait)->_scriptName.empty()) {
+			loadProgram(*ait, (*ait)->_scriptName.c_str());
 		}
 	}
 

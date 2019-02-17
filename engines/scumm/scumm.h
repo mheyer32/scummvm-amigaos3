@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef SCUMM_H
-#define SCUMM_H
+#ifndef SCUMM_SCUMM_H
+#define SCUMM_SCUMM_H
 
 #include "engines/engine.h"
 
@@ -33,6 +33,7 @@
 #include "common/random.h"
 #include "common/rect.h"
 #include "common/rendermode.h"
+#include "common/serializer.h"
 #include "common/str.h"
 #include "common/textconsole.h"
 #include "graphics/surface.h"
@@ -88,7 +89,6 @@ class MusicEngine;
 class Player_Towns;
 class ScummEngine;
 class ScummDebugger;
-class Serializer;
 class Sound;
 
 struct Box;
@@ -169,7 +169,8 @@ enum {
 	DEBUG_SOUND	=	1 << 7,		// General Sound Debug
 	DEBUG_ACTORS	=	1 << 8,		// General Actor Debug
 	DEBUG_INSANE	=	1 << 9,		// Track INSANE
-	DEBUG_SMUSH	=	1 << 10		// Track SMUSH
+	DEBUG_SMUSH	=	1 << 10,		// Track SMUSH
+	DEBUG_MOONBASE_AI = 1 << 11		// Moonbase AI
 };
 
 struct VerbSlot;
@@ -295,7 +296,14 @@ struct StringTab : StringSlot {
 	}
 };
 
+struct ScummEngine_v0_Delays {
+	bool _screenScroll;
+	uint _objectRedrawCount;
+	uint _objectStripRedrawCount;
+	uint _actorRedrawCount;
+	uint _actorLimbRedrawDrawCount;
 
+};
 
 enum WhereIsObject {
 	WIO_NOT_FOUND = -1,
@@ -364,7 +372,7 @@ class ResourceManager;
 /**
  * Base class for all SCUMM engines.
  */
-class ScummEngine : public Engine {
+class ScummEngine : public Engine, public Common::Serializable {
 	friend class ScummDebugger;
 	friend class CharsetRenderer;
 	friend class CharsetRendererTownsClassic;
@@ -597,10 +605,10 @@ protected:
 	bool saveState(int slot, bool compat, Common::String &fileName);
 	bool loadState(int slot, bool compat);
 	bool loadState(int slot, bool compat, Common::String &fileName);
-	virtual void saveOrLoad(Serializer *s);
-	void saveResource(Serializer *ser, ResType type, ResId idx);
-	void loadResource(Serializer *ser, ResType type, ResId idx);
-	void loadResourceOLD(Serializer *ser, ResType type, ResId idx);	// "Obsolete"
+	virtual void saveLoadWithSerializer(Common::Serializer &s);
+	void saveResource(Common::Serializer &ser, ResType type, ResId idx);
+	void loadResource(Common::Serializer &ser, ResType type, ResId idx);
+	void loadResourceOLD(Common::Serializer &ser, ResType type, ResId idx);	// "Obsolete"
 
 	virtual Common::SeekableReadStream *openSaveFileForReading(int slot, bool compat, Common::String &fileName);
 	virtual Common::WriteStream *openSaveFileForWriting(int slot, bool compat, Common::String &fileName);
@@ -701,6 +709,7 @@ protected:
 	virtual int readVar(uint var);
 	virtual void writeVar(uint var, int value);
 
+protected:
 	void beginCutscene(int *args);
 	void endCutscene();
 	void abortCutscene();
@@ -1093,6 +1102,8 @@ public:
 	// Indy4 Amiga specific
 	byte *_verbPalette;
 
+	ScummEngine_v0_Delays _V0Delay;
+
 protected:
 	int _shadowPaletteSize;
 	byte _currentPalette[3 * 256];
@@ -1127,6 +1138,8 @@ public:
 
 	byte getNumBoxes();
 	byte *getBoxMatrixBaseAddr();
+	byte *getBoxConnectionBase(int box);
+
 	int getNextBox(byte from, byte to);
 
 	void setBoxFlags(int box, int val);
@@ -1150,6 +1163,7 @@ protected:
 		int x1, y1, scale1;
 		int x2, y2, scale2;
 	};
+	friend void syncWithSerializer(Common::Serializer &, ScaleSlot &);
 	ScaleSlot _scaleSlots[20];
 	void setScaleSlot(int slot, int x1, int y1, int scale1, int x2, int y2, int scale2);
 	void setBoxScaleSlot(int box, int slot);

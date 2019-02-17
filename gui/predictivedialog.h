@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef GLOBAL_DIALOGS_H
-#define GLOBAL_DIALOGS_H
+#ifndef GUI_PREDICTIVEDIALOG_H
+#define GUI_PREDICTIVEDIALOG_H
 
 #include "gui/dialog.h"
 #include "common/str.h"
@@ -43,7 +43,6 @@ public:
 	virtual void handleCommand(GUI::CommandSender *sender, uint32 cmd, uint32 data);
 	virtual void handleKeyUp(Common::KeyState state);
 	virtual void handleKeyDown(Common::KeyState state);
-	virtual void handleTickle();
 
 	const char *getResult() const { return _predictiveResult; }
 
@@ -85,6 +84,7 @@ private:
 	struct Dict {
 		Dict() : dictLine(nullptr), dictText(nullptr), dictActLine(nullptr),
 		         dictLineCount(0), dictTextSize(0) {}
+		~Dict() { free(dictText); }
 		char **dictLine;
 		char *dictText;
 		char *dictActLine; // using only for united dict...

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{430E6C40-1094-4D86-B9F3-8775118B3133}</ProjectGuid>
+		<ProjectGuid>{D900CD3A-0FDB-4552-8139-DB9FE2B114B4}</ProjectGuid>
 		<RootNamespace>wintermute</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>
@@ -154,6 +154,8 @@
 		<ClCompile Include="..\..\engines\wintermute\base\particles\part_emitter.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\particles\part_force.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\particles\part_particle.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_engine.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_array.cpp" />
@@ -197,6 +199,18 @@
 		<ClCompile Include="..\..\engines\wintermute\base\save_thumb_helper.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\saveload.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\timer.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing_providers\source_listing.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\breakpoint.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\debugger_controller.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\error.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\listing.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\script_monitor.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\watch.cpp" />
+		<ClCompile Include="..\..\engines\wintermute\debugger\watch_instance.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\math\math_util.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\math\matrix4.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\math\vector2.cpp" />
@@ -272,6 +286,8 @@
 		<ClInclude Include="..\..\engines\wintermute\base\particles\part_emitter.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\particles\part_force.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\particles\part_particle.h" />
+		<ClInclude Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script.h" />
+		<ClInclude Include="..\..\engines\wintermute\base\scriptables\debuggable\debuggable_script_engine.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\dcscript.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_engine.h" />
@@ -316,6 +332,20 @@
 		<ClInclude Include="..\..\engines\wintermute\base\save_thumb_helper.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\saveload.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\timer.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\basic_source_listing_provider.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\blank_listing_provider.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\cached_source_listing_provider.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\source_listing.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_providers\source_listing_provider.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\breakpoint.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\debugger_controller.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\error.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\listing_provider.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\script_monitor.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\watch.h" />
+		<ClInclude Include="..\..\engines\wintermute\debugger\watch_instance.h" />
 		<ClInclude Include="..\..\engines\wintermute\math\floatpoint.h" />
 		<ClInclude Include="..\..\engines\wintermute\math\math_util.h" />
 		<ClInclude Include="..\..\engines\wintermute\math\matrix4.h" />

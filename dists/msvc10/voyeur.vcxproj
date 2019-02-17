@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{52A56875-FA42-42AB-A417-E0AF7ED99D2C}</ProjectGuid>
+		<ProjectGuid>{2DD62302-6FB9-4B04-B723-C3839C96C056}</ProjectGuid>
 		<RootNamespace>voyeur</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>
@@ -117,7 +117,7 @@
 		<ClCompile Include="..\..\engines\voyeur\events.cpp" />
 		<ClCompile Include="..\..\engines\voyeur\files.cpp" />
 		<ClCompile Include="..\..\engines\voyeur\files_threads.cpp" />
-		<ClCompile Include="..\..\engines\voyeur\graphics.cpp" />
+		<ClCompile Include="..\..\engines\voyeur\screen.cpp" />
 		<ClCompile Include="..\..\engines\voyeur\sound.cpp" />
 		<ClCompile Include="..\..\engines\voyeur\staticres.cpp" />
 		<ClCompile Include="..\..\engines\voyeur\voyeur.cpp" />
@@ -130,7 +130,7 @@
 		<ClInclude Include="..\..\engines\voyeur\detection_tables.h" />
 		<ClInclude Include="..\..\engines\voyeur\events.h" />
 		<ClInclude Include="..\..\engines\voyeur\files.h" />
-		<ClInclude Include="..\..\engines\voyeur\graphics.h" />
+		<ClInclude Include="..\..\engines\voyeur\screen.h" />
 		<ClInclude Include="..\..\engines\voyeur\sound.h" />
 		<ClInclude Include="..\..\engines\voyeur\staticres.h" />
 		<ClInclude Include="..\..\engines\voyeur\voyeur.h" />

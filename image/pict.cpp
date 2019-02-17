@@ -340,6 +340,8 @@ void PICTDecoder::unpackBitsRect(Common::SeekableReadStream &stream, bool withPa
 	uint32 lineSize = MAX<int>(width * bytesPerPixel + (8 * 2 / packBitsData.pixMap.pixelSize), packBitsData.pixMap.rowBytes);
 	byte *buffer = new byte[lineSize * height];
 
+	memset(buffer, 0, lineSize * height);
+
 	// Read in amount of data per row
 	for (uint16 i = 0; i < packBitsData.pixMap.bounds.height(); i++) {
 		// NOTE: Compression 0 is "default". The format in SCI games is packed when 0.
@@ -575,9 +577,14 @@ void PICTDecoder::decodeCompressedQuickTime(Common::SeekableReadStream &stream) 
 		_outputSurface = new Graphics::Surface();
 		_outputSurface->create(_imageRect.width(), _imageRect.height(), surface->format);
 	}
+	assert(_outputSurface->format == surface->format);
 
-	for (uint16 y = 0; y < surface->h; y++)
-		memcpy(_outputSurface->getBasePtr(0 + xOffset, y + yOffset), surface->getBasePtr(0, y), surface->w * surface->format.bytesPerPixel);
+	Common::Rect outputRect(surface->w, surface->h);
+	outputRect.translate(xOffset, yOffset);
+	outputRect.clip(_imageRect);
+
+	for (uint16 y = 0; y < outputRect.height(); y++)
+		memcpy(_outputSurface->getBasePtr(outputRect.left, y + outputRect.top), surface->getBasePtr(0, y), outputRect.width() * surface->format.bytesPerPixel);
 
 	stream.seek(startPos + dataSize);
 	delete codec;

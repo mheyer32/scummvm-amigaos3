@@ -2,10 +2,12 @@ MODULE := gui
 
 MODULE_OBJS := \
 	about.o \
+	browser.o \
 	chooser.o \
 	console.o \
 	debugger.o \
 	dialog.o \
+	editgamedialog.o \
 	error.o \
 	EventRecorder.o \
 	filebrowser-dialog.o \
@@ -24,32 +26,25 @@ MODULE_OBJS := \
 	ThemeLayout.o \
 	ThemeParser.o \
 	Tooltip.o \
+	unknown-game-dialog.o \
+	animation/Animation.o \
+	animation/RepeatAnimationWrapper.o \
+	animation/SequenceAnimationComposite.o \
 	widget.o \
 	widgets/editable.o \
 	widgets/edittext.o \
 	widgets/list.o \
 	widgets/popup.o \
 	widgets/scrollbar.o \
+	widgets/scrollcontainer.o \
 	widgets/tab.o
 
-# HACK: create_project's XCode generator relies on the following ifdef
-# structure to pick up the right browser implementations for iOS and Mac OS X.
-# Please keep it like this or XCode project generation will be broken.
-# FIXME: This only works because of a bug in how we handle ifdef statements in
-# create_project's module.mk parser. create_project will think that both
-# browser.o and browser_osx.o is built when both IPHONE and MACOSX is set.
-# When we do proper ifdef handling, only browser.o will be picked up, breaking
-# XCode generation.
-ifdef IPHONE
+ifdef USE_CLOUD
+ifdef USE_LIBCURL
 MODULE_OBJS += \
-	browser.o
-else
-ifdef MACOSX
-MODULE_OBJS += \
-	browser_osx.o
-else
-MODULE_OBJS += \
-	browser.o
+	downloaddialog.o \
+	remotebrowser.o \
+	storagewizarddialog.o
 endif
 endif
 

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{D7E13EC8-81CA-4289-A7F2-8976B04BA9E2}</ProjectGuid>
+		<ProjectGuid>{A6D1734F-14AD-4A4B-B6A5-4D8A23BCA0D7}</ProjectGuid>
 		<RootNamespace>sky</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

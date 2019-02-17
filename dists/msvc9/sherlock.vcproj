@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="sherlock"
-	ProjectGUID="{B2789815-431E-471C-8392-27A5654ADDC8}"
+	ProjectGUID="{13008A94-34F3-4D24-A3A0-77DDC0FEA4E0}"
 	RootNamespace="sherlock"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -43,6 +43,8 @@
 			<Filter	Name="3do">
 				<File RelativePath="..\..\engines\sherlock\scalpel\3do\movie_decoder.cpp" />
 				<File RelativePath="..\..\engines\sherlock\scalpel\3do\movie_decoder.h" />
+				<File RelativePath="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.cpp" />
+				<File RelativePath="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.h" />
 			</Filter>
 			<Filter	Name="drivers">
 				<File RelativePath="..\..\engines\sherlock\scalpel\drivers\adlib.cpp" />
@@ -124,6 +126,8 @@
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_resources.h" />
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_scene.cpp" />
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_scene.h" />
+			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_screen.cpp" />
+			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_screen.h" />
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_talk.cpp" />
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_talk.h" />
 			<File RelativePath="..\..\engines\sherlock\tattoo\tattoo_user_interface.cpp" />

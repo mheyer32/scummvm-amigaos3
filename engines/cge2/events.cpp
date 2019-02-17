@@ -26,12 +26,9 @@
  */
 
 #include "gui/saveload.h"
-#include "gui/about.h"
-#include "gui/message.h"
 #include "common/config-manager.h"
 #include "common/events.h"
 #include "common/translation.h"
-#include "engines/advancedDetector.h"
 #include "cge2/events.h"
 #include "cge2/text.h"
 #include "cge2/cge2_main.h"

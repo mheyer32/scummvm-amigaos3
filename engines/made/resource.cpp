@@ -43,6 +43,7 @@ Resource::~Resource() {
 
 PictureResource::PictureResource() : _picture(NULL), _picturePalette(NULL) {
 	_hasPalette = false;
+	_paletteColorCount = 0;
 }
 
 PictureResource::~PictureResource() {
@@ -182,6 +183,9 @@ void PictureResource::loadChunked(byte *source, int size) {
 /* AnimationResource */
 
 AnimationResource::AnimationResource() {
+	_flags = 0;
+	_width = 0;
+	_height = 0;
 }
 
 AnimationResource::~AnimationResource() {
@@ -396,7 +400,8 @@ ResourceReader::~ResourceReader() {
 // V2
 void ResourceReader::open(const char *filename) {
 	_fd = new Common::File();
-	_fd->open(filename);
+	if (!_fd->open(filename))
+		error("ResourceReader::open() Could not open '%s'", filename);
 
 	_fd->skip(0x18); // skip header for now
 

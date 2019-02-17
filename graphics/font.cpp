@@ -21,6 +21,7 @@
  */
 
 #include "graphics/font.h"
+#include "graphics/managed_surface.h"
 
 #include "common/array.h"
 #include "common/util.h"
@@ -59,11 +60,11 @@ Common::Rect getBoundingBoxImpl(const Font &font, const StringType &str, int x, 
 		const typename StringType::unsigned_type cur = *i;
 		x += font.getKerningOffset(last, cur);
 		last = cur;
-		w = font.getCharWidth(cur);
-		if (x+w > rightX)
+
+		Common::Rect charBox = font.getBoundingBox(cur);
+		if (x + charBox.right > rightX)
 			break;
-		if (x+w >= leftX) {
-			Common::Rect charBox = font.getBoundingBox(cur);
+		if (x + charBox.right >= leftX) {
 			charBox.translate(x, y);
 			if (first) {
 				bbox = charBox;
@@ -72,7 +73,8 @@ Common::Rect getBoundingBoxImpl(const Font &font, const StringType &str, int x, 
 				bbox.extend(charBox);
 			}
 		}
-		x += w;
+
+		x += font.getCharWidth(cur);
 	}
 
 	return bbox;
@@ -112,12 +114,14 @@ void drawStringImpl(const Font &font, Surface *dst, const StringType &str, int x
 		const typename StringType::unsigned_type cur = *i;
 		x += font.getKerningOffset(last, cur);
 		last = cur;
-		w = font.getCharWidth(cur);
-		if (x+w > rightX)
+
+		Common::Rect charBox = font.getBoundingBox(cur);
+		if (x + charBox.right > rightX)
 			break;
-		if (x+w >= leftX)
+		if (x + charBox.right >= leftX)
 			font.drawChar(dst, cur, x, y, color);
-		x += w;
+
+		x += font.getCharWidth(cur);
 	}
 }
 
@@ -141,11 +145,11 @@ struct WordWrapper {
 };
 
 template<class StringType>
-int wordWrapTextImpl(const Font &font, const StringType &str, int maxWidth, Common::Array<StringType> &lines) {
+int wordWrapTextImpl(const Font &font, const StringType &str, int maxWidth, Common::Array<StringType> &lines, int initWidth) {
 	WordWrapper<StringType> wrapper(lines);
 	StringType line;
 	StringType tmpStr;
-	int lineWidth = 0;
+	int lineWidth = initWidth;
 	int tmpWidth = 0;
 
 	// The rough idea behind this algorithm is as follows:
@@ -163,8 +167,18 @@ int wordWrapTextImpl(const Font &font, const StringType &str, int maxWidth, Comm
 
 	typename StringType::unsigned_type last = 0;
 	for (typename StringType::const_iterator x = str.begin(); x != str.end(); ++x) {
-		const typename StringType::unsigned_type c = *x;
-		const int w = font.getCharWidth(c) + font.getKerningOffset(last, c);
+		typename StringType::unsigned_type c = *x;
+
+		// Convert Windows and Mac line breaks into plain \n
+		if (c == '\r') {
+			if (x != str.end() && *(x + 1) == '\n') {
+				++x;
+			}
+			c = '\n';
+		}
+
+		const int currentCharWidth = font.getCharWidth(c);
+		const int w = currentCharWidth + font.getKerningOffset(last, c);
 		last = c;
 		const bool wouldExceedWidth = (lineWidth + tmpWidth + w > maxWidth);
 
@@ -201,6 +215,15 @@ int wordWrapTextImpl(const Font &font, const StringType &str, int maxWidth, Comm
 					// This is not very fast, but it is the simplest way to
 					// assure we do not mess something up because of kerning.
 					tmpWidth = font.getStringWidth(tmpStr);
+				}
+
+				if (tmpStr.empty()) {
+					// If tmpStr is empty, we might have removed the space before 'c'.
+					// That means we have to recompute the kerning.
+
+					tmpWidth += currentCharWidth + font.getKerningOffset(0, c);
+					tmpStr += c;
+					continue;
 				}
 			} else {
 				wrapper.add(tmpStr, tmpWidth);
@@ -264,21 +287,43 @@ int Font::getStringWidth(const Common::U32String &str) const {
 	return getStringWidthImpl(*this, str);
 }
 
+void Font::drawChar(ManagedSurface *dst, uint32 chr, int x, int y, uint32 color) const {
+	drawChar(&dst->_innerSurface, chr, x, y, color);
+
+	Common::Rect charBox = getBoundingBox(chr);
+	charBox.translate(x, y);
+	dst->addDirtyRect(charBox);
+}
+
 void Font::drawString(Surface *dst, const Common::String &str, int x, int y, int w, uint32 color, TextAlign align, int deltax, bool useEllipsis) const {
 	Common::String renderStr = useEllipsis ? handleEllipsis(str, w) : str;
 	drawStringImpl(*this, dst, renderStr, x, y, w, color, align, deltax);
 }
 
-void Font::drawString(Surface *dst, const Common::U32String &str, int x, int y, int w, uint32 color, TextAlign align) const {
-	drawStringImpl(*this, dst, str, x, y, w, color, align, 0);
+void Font::drawString(Surface *dst, const Common::U32String &str, int x, int y, int w, uint32 color, TextAlign align, int deltax) const {
+	drawStringImpl(*this, dst, str, x, y, w, color, align, deltax);
 }
 
-int Font::wordWrapText(const Common::String &str, int maxWidth, Common::Array<Common::String> &lines) const {
-	return wordWrapTextImpl(*this, str, maxWidth, lines);
+void Font::drawString(ManagedSurface *dst, const Common::String &str, int x, int y, int w, uint32 color, TextAlign align, int deltax, bool useEllipsis) const {
+	drawString(&dst->_innerSurface, str, x, y, w, color, align, deltax, useEllipsis);
+	if (w != 0) {
+		dst->addDirtyRect(getBoundingBox(str, x, y, w, align, deltax, useEllipsis));
+	}
 }
 
-int Font::wordWrapText(const Common::U32String &str, int maxWidth, Common::Array<Common::U32String> &lines) const {
-	return wordWrapTextImpl(*this, str, maxWidth, lines);
+void Font::drawString(ManagedSurface *dst, const Common::U32String &str, int x, int y, int w, uint32 color, TextAlign align, int deltax) const {
+	drawString(&dst->_innerSurface, str, x, y, w, color, align, deltax);
+	if (w != 0) {
+		dst->addDirtyRect(getBoundingBox(str, x, y, w, align));
+	}
+}
+
+int Font::wordWrapText(const Common::String &str, int maxWidth, Common::Array<Common::String> &lines, int initWidth) const {
+	return wordWrapTextImpl(*this, str, maxWidth, lines, initWidth);
+}
+
+int Font::wordWrapText(const Common::U32String &str, int maxWidth, Common::Array<Common::U32String> &lines, int initWidth) const {
+	return wordWrapTextImpl(*this, str, maxWidth, lines, initWidth);
 }
 
 Common::String Font::handleEllipsis(const Common::String &input, int w) const {

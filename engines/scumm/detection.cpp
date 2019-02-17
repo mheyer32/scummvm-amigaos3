@@ -29,6 +29,7 @@
 #include "common/md5.h"
 #include "common/savefile.h"
 #include "common/system.h"
+#include "common/translation.h"
 
 #include "audio/mididrv.h"
 
@@ -185,6 +186,11 @@ Common::String ScummEngine_v70he::generateFilename(const int room) const {
 		}
 
 		if (_filenamePattern.genMethod == kGenHEPC || _filenamePattern.genMethod == kGenHEIOS) {
+			if (id == '3' && _game.id == GID_MOONBASE) {
+				result = Common::String::format("%s.u32", _filenamePattern.pattern);
+				break;
+			}
+
 			// For HE >= 98, we already called snprintf above.
 			if (_game.heversion < 98 || room < 0)
 				result = Common::String::format("%s.he%c", _filenamePattern.pattern, id);
@@ -654,6 +660,12 @@ static void detectGames(const Common::FSList &fslist, Common::List<DetectorResul
 		if (d.md5Entry)
 			continue;
 
+		// Prevent executables being detected as Steam variant. If we don't
+		// know the md5, then it's just the regular executable. Otherwise we
+		// will most likely fail on trying read the index from the executable.
+		// Fixes bug #10290
+		if (gfp->genMethod == kGenRoomNumSteam || gfp->genMethod == kGenDiskNumSteam)
+			continue;
 
 		//  ____            _     ____
 		// |  _ \ __ _ _ __| |_  |___ \ *
@@ -947,9 +959,9 @@ public:
 	virtual const char *getOriginalCopyright() const;
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual GameList getSupportedGames() const;
-	virtual GameDescriptor findGame(const char *gameid) const;
-	virtual GameList detectGames(const Common::FSList &fslist) const;
+	PlainGameList getSupportedGames() const override;
+	PlainGameDescriptor findGame(const char *gameid) const override;
+	virtual DetectedGames detectGames(const Common::FSList &fslist) const override;
 
 	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
 
@@ -957,6 +969,7 @@ public:
 	virtual int getMaximumSaveSlot() const;
 	virtual void removeSaveState(const char *target, int slot) const;
 	virtual SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	virtual const ExtraGuiOptions getExtraGuiOptions(const Common::String &target) const;
 };
 
 bool ScummMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -967,7 +980,8 @@ bool ScummMetaEngine::hasFeature(MetaEngineFeature f) const {
 		(f == kSavesSupportMetaInfo) ||
 		(f == kSavesSupportThumbnail) ||
 		(f == kSavesSupportCreationDate) ||
-		(f == kSavesSupportPlayTime);
+		(f == kSavesSupportPlayTime) ||
+		(f == kSimpleSavesNames);
 }
 
 bool ScummEngine::hasFeature(EngineFeature f) const {
@@ -978,11 +992,11 @@ bool ScummEngine::hasFeature(EngineFeature f) const {
 		(f == kSupportsSubtitleOptions);
 }
 
-GameList ScummMetaEngine::getSupportedGames() const {
-	return GameList(gameDescriptions);
+PlainGameList ScummMetaEngine::getSupportedGames() const {
+	return PlainGameList(gameDescriptions);
 }
 
-GameDescriptor ScummMetaEngine::findGame(const char *gameid) const {
+PlainGameDescriptor ScummMetaEngine::findGame(const char *gameid) const {
 	return Engines::findGameID(gameid, gameDescriptions, obsoleteGameIDsTable);
 }
 
@@ -1012,29 +1026,26 @@ static Common::String generatePreferredTarget(const DetectorResult &x) {
 	return res;
 }
 
-GameList ScummMetaEngine::detectGames(const Common::FSList &fslist) const {
-	GameList detectedGames;
+DetectedGames ScummMetaEngine::detectGames(const Common::FSList &fslist) const {
+	DetectedGames detectedGames;
 	Common::List<DetectorResult> results;
-
 	::detectGames(fslist, results, 0);
 
 	for (Common::List<DetectorResult>::iterator
 	          x = results.begin(); x != results.end(); ++x) {
 		const PlainGameDescriptor *g = findPlainGameDescriptor(x->game.gameid, gameDescriptions);
 		assert(g);
-		GameDescriptor dg(x->game.gameid, g->description, x->language, x->game.platform);
 
-		// Append additional information, if set, to the description.
-		dg.updateDesc(x->extra);
+		DetectedGame game = DetectedGame(x->game.gameid, g->description, x->language, x->game.platform, x->extra);
 
 		// Compute and set the preferred target name for this game.
 		// Based on generateComplexID() in advancedDetector.cpp.
-		dg["preferredtarget"] = generatePreferredTarget(*x);
+		game.preferredTarget = generatePreferredTarget(*x);
 
-		dg.setGUIOptions(x->game.guioptions + MidiDriver::musicType2GUIO(x->game.midi));
-		dg.appendGUIOptions(getGameGUIOptionsDescriptionLanguage(x->language));
+		game.setGUIOptions(x->game.guioptions + MidiDriver::musicType2GUIO(x->game.midi));
+		game.appendGUIOptions(getGameGUIOptionsDescriptionLanguage(x->language));
 
-		detectedGames.push_back(dg);
+		detectedGames.push_back(game);
 	}
 
 	return detectedGames;
@@ -1109,14 +1120,14 @@ Common::Error ScummMetaEngine::createInstance(OSystem *syst, Engine **engine) co
 	if (!findInMD5Table(res.md5.c_str())) {
 		Common::String md5Warning;
 
-		md5Warning = "Your game version appears to be unknown. If this is *NOT* a fan-modified\n";
-		md5Warning += "version (in particular, not a fan-made translation), please, report the\n";
-		md5Warning += "following data to the ScummVM team along with name of the game you tried\n";
-		md5Warning += "to add and its version/language/etc.:\n";
+		md5Warning = _("Your game version appears to be unknown. If this is *NOT* a fan-modified\n"
+		               "version (in particular, not a fan-made translation), please, report the\n"
+		               "following data to the ScummVM team along with the name of the game you tried\n"
+		               "to add and its version, language, etc.:\n");
 
 		md5Warning += Common::String::format("  SCUMM gameid '%s', file '%s', MD5 '%s'\n\n",
 				res.game.gameid,
-				generateFilenameForDetection(res.fp.pattern, res.fp.genMethod, Common::kPlatformUnknown).c_str(),
+				generateFilenameForDetection(res.fp.pattern, res.fp.genMethod, res.game.platform).c_str(),
 				res.md5.c_str());
 
 		g_system->logMessage(LogMessageType::kWarning, md5Warning.c_str());
@@ -1127,8 +1138,8 @@ Common::Error ScummMetaEngine::createInstance(OSystem *syst, Engine **engine) co
 	// We don't support the "Lite" version off puttzoo iOS because it contains
 	// the full game.
 	if (!strcmp(res.game.gameid, "puttzoo") && !strcmp(res.extra, "Lite")) {
-		GUIErrorMessage("The Lite version of Putt-Putt Saves the Zoo iOS is not supported to avoid piracy.\n"
-		                "The full version is available for purchase from the iTunes Store.");
+		GUIErrorMessage(_("The Lite version of Putt-Putt Saves the Zoo iOS is not supported to avoid piracy.\n"
+		                  "The full version is available for purchase from the iTunes Store."));
 		return Common::kUnsupportedGameidError;
 	}
 
@@ -1271,7 +1282,6 @@ SaveStateList ScummMetaEngine::listSaves(const char *target) const {
 	pattern += ".s##";
 
 	filenames = saveFileMan->listSavefiles(pattern);
-	sort(filenames.begin(), filenames.end());	// Sort (hopefully ensuring we are sorted numerically..)
 
 	SaveStateList saveList;
 	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); ++file) {
@@ -1288,6 +1298,8 @@ SaveStateList ScummMetaEngine::listSaves(const char *target) const {
 		}
 	}
 
+	// Sort saves based on slot number.
+	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
 	return saveList;
 }
 
@@ -1309,6 +1321,14 @@ SaveStateDescriptor ScummMetaEngine::querySaveMetaInfos(const char *target, int 
 	}
 
 	SaveStateDescriptor desc(slot, saveDesc);
+
+	// Do not allow save slot 0 (used for auto-saving) to be deleted or
+	// overwritten.
+	if (slot == 0) {
+		desc.setWriteProtectedFlag(true);
+		desc.setDeletableFlag(false);
+	}
+
 	desc.setThumbnail(thumbnail);
 
 	if (infoPtr) {
@@ -1326,6 +1346,21 @@ SaveStateDescriptor ScummMetaEngine::querySaveMetaInfos(const char *target, int 
 	}
 
 	return desc;
+}
+
+static const ExtraGuiOption comiObjectLabelsOption = {
+	_s("Show Object Line"),
+	_s("Show the names of objects at the bottom of the screen"),
+	"object_labels",
+	true
+};
+
+const ExtraGuiOptions ScummMetaEngine::getExtraGuiOptions(const Common::String &target) const {
+	ExtraGuiOptions options;
+	if (target.empty() || ConfMan.get("gameid", target) == "comi") {
+		options.push_back(comiObjectLabelsOption);
+	}
+	return options;
 }
 
 #if PLUGIN_ENABLED_DYNAMIC(SCUMM)

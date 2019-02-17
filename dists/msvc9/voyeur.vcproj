@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="voyeur"
-	ProjectGUID="{52A56875-FA42-42AB-A417-E0AF7ED99D2C}"
+	ProjectGUID="{2DD62302-6FB9-4B04-B723-C3839C96C056}"
 	RootNamespace="voyeur"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -52,9 +52,9 @@
 		<File RelativePath="..\..\engines\voyeur\files.cpp" />
 		<File RelativePath="..\..\engines\voyeur\files.h" />
 		<File RelativePath="..\..\engines\voyeur\files_threads.cpp" />
-		<File RelativePath="..\..\engines\voyeur\graphics.cpp" />
-		<File RelativePath="..\..\engines\voyeur\graphics.h" />
 		<File RelativePath="..\..\engines\voyeur\module.mk" />
+		<File RelativePath="..\..\engines\voyeur\screen.cpp" />
+		<File RelativePath="..\..\engines\voyeur\screen.h" />
 		<File RelativePath="..\..\engines\voyeur\sound.cpp" />
 		<File RelativePath="..\..\engines\voyeur\sound.h" />
 		<File RelativePath="..\..\engines\voyeur\staticres.cpp" />

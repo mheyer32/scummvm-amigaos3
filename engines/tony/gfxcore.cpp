@@ -912,7 +912,7 @@ void RMGfxSourceBuffer8RLE::draw(CORO_PARAM, RMGfxTargetBuffer &bigBuf, RMGfxPri
 	if (prim->isFlipped()) {
 // Eliminate horizontal clipping
 //		width = m_dimx;
-//		x1=prim->Dst().x1;
+//		x1=prim->getDst()._x1;
 
 		// Clipping
 		u = _dimx - (width + u);
@@ -1699,7 +1699,7 @@ void RMGfxSourceBuffer8AA::drawAA(RMGfxTargetBuffer &bigBuf, RMGfxPrimitive *pri
 	}
 
 	//width = _dimx;
-	//x1 = prim->Dst().x1;
+	//x1 = prim->getDst()._x1;
 
 	// Position into the destination buffer
 	buf = bigBuf;
@@ -1714,7 +1714,7 @@ void RMGfxSourceBuffer8AA::drawAA(RMGfxTargetBuffer &bigBuf, RMGfxPrimitive *pri
 	// Loop
 	buf += bigBuf.getDimx(); // Skip the first line
 	for (int y = 1; y < height - 1; y++) {
-		// if (prim->IsFlipped())
+		// if (prim->isFlipped())
 		//	mybuf=&buf[x1+m_dimx-1];
 		// else
 		mybuf = &buf[x1];
@@ -1733,13 +1733,6 @@ void RMGfxSourceBuffer8AA::drawAA(RMGfxTargetBuffer &bigBuf, RMGfxPrimitive *pri
 				g /= 5;
 				b /= 5;
 
-				if (r > 0x1f)
-					r = 0x1f;
-				if (g > 0x3f)
-					g = 0x3f;
-				if (b > 0x1f)
-					b = 0x1f;
-
 				mybuf[0] = (r << 11) | (g << 5) | b;
 			}
 		}
@@ -1755,7 +1748,7 @@ void RMGfxSourceBuffer8AA::drawAA(RMGfxTargetBuffer &bigBuf, RMGfxPrimitive *pri
 	// Looppone
 	buf += bigBuf.getDimx();
 	for (int y = 1; y < height - 1; y++) {
-		// if (prim->IsFlipped())
+		// if (prim->isFlipped())
 		// 	mybuf=&buf[x1+m_dimx-1];
 		// else
 		mybuf = &buf[x1];
@@ -1773,13 +1766,6 @@ void RMGfxSourceBuffer8AA::drawAA(RMGfxTargetBuffer &bigBuf, RMGfxPrimitive *pri
 				r /= 6;
 				g /= 6;
 				b /= 6;
-
-				if (r > 0x1f)
-					r = 0x1f;
-				if (g > 0x3f)
-					g = 0x3f;
-				if (b > 0x1f)
-					b = 0x1f;
 
 				mybuf[0] = (r << 11) | (g << 5) | b;
 			}

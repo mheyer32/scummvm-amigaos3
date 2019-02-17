@@ -157,7 +157,6 @@ private:
 	void initOverlay();
 
 #ifdef USE_RGB_COLOR
-	Common::String getPixelFormatName(const Graphics::PixelFormat &format) const;
 	void initTexture(GLESBaseTexture **texture, uint width, uint height,
 						const Graphics::PixelFormat *format);
 #endif
@@ -234,7 +233,7 @@ private:
 protected:
 	// PaletteManager API
 	virtual void setPalette(const byte *colors, uint start, uint num);
-	virtual void grabPalette(byte *colors, uint start, uint num);
+	virtual void grabPalette(byte *colors, uint start, uint num) const;
 
 public:
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y,
@@ -286,6 +285,10 @@ public:
 	virtual void logMessage(LogMessageType::Type type, const char *message);
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s,
 											int priority = 0);
+	virtual bool openUrl(const Common::String &url);
+	virtual bool hasTextInClipboard();
+	virtual Common::String getTextFromClipboard();
+	virtual bool setTextInClipboard(const Common::String &text);
 	virtual Common::String getSystemLanguage() const;
 };
 

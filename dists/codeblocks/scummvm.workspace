@@ -3,6 +3,7 @@
 	<Workspace title="ScummVM">
 		<Project filename="scummvm.cbp" active="1">
 			<Depends filename="access.cbp" />
+			<Depends filename="adl.cbp" />
 			<Depends filename="agi.cbp" />
 			<Depends filename="agos.cbp" />
 			<Depends filename="bbvs.cbp" />
@@ -14,6 +15,8 @@
 			<Depends filename="draci.cbp" />
 			<Depends filename="drascula.cbp" />
 			<Depends filename="dreamweb.cbp" />
+			<Depends filename="fullpipe.cbp" />
+			<Depends filename="gnap.cbp" />
 			<Depends filename="gob.cbp" />
 			<Depends filename="groovie.cbp" />
 			<Depends filename="hopkins.cbp" />
@@ -28,6 +31,7 @@
 			<Depends filename="neverhood.cbp" />
 			<Depends filename="parallaction.cbp" />
 			<Depends filename="pegasus.cbp" />
+			<Depends filename="plumbers.cbp" />
 			<Depends filename="queen.cbp" />
 			<Depends filename="saga.cbp" />
 			<Depends filename="sci.cbp" />
@@ -40,6 +44,7 @@
 			<Depends filename="sword25.cbp" />
 			<Depends filename="teenagent.cbp" />
 			<Depends filename="tinsel.cbp" />
+			<Depends filename="titanic.cbp" />
 			<Depends filename="toltecs.cbp" />
 			<Depends filename="tony.cbp" />
 			<Depends filename="toon.cbp" />
@@ -51,6 +56,7 @@
 			<Depends filename="zvision.cbp" />
 		</Project>
 		<Project filename="access.cbp" />
+		<Project filename="adl.cbp" />
 		<Project filename="agi.cbp" />
 		<Project filename="agos.cbp" />
 		<Project filename="bbvs.cbp" />
@@ -62,6 +68,8 @@
 		<Project filename="draci.cbp" />
 		<Project filename="drascula.cbp" />
 		<Project filename="dreamweb.cbp" />
+		<Project filename="fullpipe.cbp" />
+		<Project filename="gnap.cbp" />
 		<Project filename="gob.cbp" />
 		<Project filename="groovie.cbp" />
 		<Project filename="hopkins.cbp" />
@@ -76,6 +84,7 @@
 		<Project filename="neverhood.cbp" />
 		<Project filename="parallaction.cbp" />
 		<Project filename="pegasus.cbp" />
+		<Project filename="plumbers.cbp" />
 		<Project filename="queen.cbp" />
 		<Project filename="saga.cbp" />
 		<Project filename="sci.cbp" />
@@ -87,6 +96,7 @@
 		<Project filename="sword25.cbp" />
 		<Project filename="teenagent.cbp" />
 		<Project filename="tinsel.cbp" />
+		<Project filename="titanic.cbp" />
 		<Project filename="toltecs.cbp" />
 		<Project filename="tony.cbp" />
 		<Project filename="toon.cbp" />

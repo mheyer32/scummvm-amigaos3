@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{90340840-03F2-4B9F-B54C-ED7EDA9DEBC3}</ProjectGuid>
+		<ProjectGuid>{21911766-CE5D-4F00-92EA-230FE71292D2}</ProjectGuid>
 		<RootNamespace>hugo</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>

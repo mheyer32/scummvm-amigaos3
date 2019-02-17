@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{A9523B4C-C66B-439A-9817-7575ED5A05F6}</ProjectGuid>
+		<ProjectGuid>{CAEFE093-30AD-4DAA-B13B-E155B54C2DCD}</ProjectGuid>
 		<RootNamespace>tinsel</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>

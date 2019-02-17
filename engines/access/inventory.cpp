@@ -223,6 +223,7 @@ int InventoryManager::displayInv() {
 	else
 		_vm->_useItem = -1;
 
+	free(names);
 	free(inv);
 	return 0;
 }
@@ -396,7 +397,7 @@ void InventoryManager::outlineIcon(int itemIndex) {
 	screen.frameRect(_invCoords[itemIndex], 7);
 
 	Common::String s = _tempLOff[itemIndex];
-	Font &font = _vm->_fonts._font2;
+	Font &font = *_vm->_fonts._font2;
 	int strWidth = font.stringWidth(s);
 
 	font._fontColors[0] = 0;

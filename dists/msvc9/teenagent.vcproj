@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="teenagent"
-	ProjectGUID="{23717C8A-4DFD-40EB-98F0-27BBF7771262}"
+	ProjectGUID="{CC7DAFB7-CD7B-4E23-B862-80E4147EB799}"
 	RootNamespace="teenagent"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

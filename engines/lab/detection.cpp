@@ -115,7 +115,7 @@ uint32 LabEngine::getFeatures() const {
 class LabMetaEngine : public AdvancedMetaEngine {
 public:
 	LabMetaEngine() : AdvancedMetaEngine(labDescriptions, sizeof(ADGameDescription), lab_setting) {
-		_singleid = "lab";
+		_singleId = "lab";
 
 		_maxScanDepth = 4;
 		_directoryGlobs = directoryGlobs;
@@ -123,11 +123,11 @@ public:
 	}
 
 	virtual const char *getName() const {
-		return "Lab";
+		return "Labyrinth of Time";
 	}
 
 	virtual const char *getOriginalCopyright() const {
-		return "Labyrinth of Time (c) 2004 The Wyrmkeep Entertainment Co. and Terra Nova Development";
+		return "Labyrinth of Time (C) 2004 The Wyrmkeep Entertainment Co. and Terra Nova Development";
 	}
 
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {
@@ -151,7 +151,8 @@ bool LabMetaEngine::hasFeature(MetaEngineFeature f) const {
 		(f == kSavesSupportMetaInfo) ||
 		(f == kSavesSupportThumbnail) ||
 		(f == kSavesSupportCreationDate) ||
-		(f == kSavesSupportPlayTime);
+		(f == kSavesSupportPlayTime) ||
+		(f == kSimpleSavesNames);
 }
 
 bool Lab::LabEngine::hasFeature(EngineFeature f) const {
@@ -169,7 +170,6 @@ SaveStateList LabMetaEngine::listSaves(const char *target) const {
 
 	Common::StringArray filenames;
 	filenames = saveFileMan->listSavefiles(pattern.c_str());
-	Common::sort(filenames.begin(), filenames.end());   // Sort (hopefully ensuring we are sorted numerically..)*/
 
 	SaveStateList saveList;
 
@@ -187,6 +187,8 @@ SaveStateList LabMetaEngine::listSaves(const char *target) const {
 		}
 	}
 
+	// Sort saves based on slot number.
+	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
 	return saveList;
 }
 
@@ -206,7 +208,7 @@ SaveStateDescriptor LabMetaEngine::querySaveMetaInfos(const char *target, int sl
 	if (in) {
 		Lab::SaveGameHeader header;
 
-		bool successfulRead = Lab::readSaveGameHeader(in, header);
+		bool successfulRead = Lab::readSaveGameHeader(in, header, false);
 		delete in;
 
 		if (successfulRead) {

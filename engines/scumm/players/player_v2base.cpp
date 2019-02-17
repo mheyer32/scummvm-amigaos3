@@ -331,6 +331,8 @@ Player_V2Base::Player_V2Base(ScummEngine *scumm, Audio::Mixer *mixer, bool pcjr)
 	_current_nr = _next_nr = 0;
 	_current_data = _next_data = 0;
 
+	_retaddr = 0;
+
 	// Initialize channel code
 	for (int i = 0; i < 4; ++i)
 		clear_channel(i);
@@ -600,8 +602,8 @@ void Player_V2Base::next_freqs(ChannelInfo *channel) {
 		channel->d.freqmod_offset -= channel->d.freqmod_modulo;
 
 	channel->d.freq =
-		(int) (freqmod_table[channel->d.freqmod_table + (channel->d.freqmod_offset >> 4)])
-		* (int) channel->d.freqmod_multiplier / 256
+		(int)(freqmod_table[channel->d.freqmod_table + (channel->d.freqmod_offset >> 4)])
+		* (int)channel->d.freqmod_multiplier / 256
 		+ channel->d.base_freq;
 
 	debug(9, "Freq: %d/%d, %d/%d/%d*%d %d",

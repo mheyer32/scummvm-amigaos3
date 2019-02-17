@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="sky"
-	ProjectGUID="{9CA8AE22-E26B-494D-80C8-CB4DA3A189EF}"
+	ProjectGUID="{9166FA05-F876-4CC4-8BC8-0FD3DF5B8B62}"
 	RootNamespace="sky"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

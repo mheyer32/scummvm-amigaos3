@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{A92ED472-D54C-4A91-8C3E-ADD5D5E6196E}</ProjectGuid>
+		<ProjectGuid>{8980A386-5126-43B2-9CDD-8B637626B9BA}</ProjectGuid>
 		<RootNamespace>sword2</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

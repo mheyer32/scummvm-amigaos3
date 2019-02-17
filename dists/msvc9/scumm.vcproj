@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="scumm"
-	ProjectGUID="{DB4A30B0-647C-4189-97BD-E74FFAC3DC29}"
+	ProjectGUID="{70669276-B8EB-4CEB-81A0-D214CB6D8A07}"
 	RootNamespace="scumm"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -45,9 +45,35 @@
 				<File RelativePath="..\..\engines\scumm\he\logic\basketball.cpp" />
 				<File RelativePath="..\..\engines\scumm\he\logic\football.cpp" />
 				<File RelativePath="..\..\engines\scumm\he\logic\funshop.cpp" />
-				<File RelativePath="..\..\engines\scumm\he\logic\moonbase.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\logic\moonbase_logic.cpp" />
 				<File RelativePath="..\..\engines\scumm\he\logic\puttrace.cpp" />
 				<File RelativePath="..\..\engines\scumm\he\logic\soccer.cpp" />
+			</Filter>
+			<Filter	Name="moonbase">
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_defenseunit.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_defenseunit.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_main.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_main.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_node.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_node.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_pattern.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_targetacquisition.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_targetacquisition.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_traveller.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_traveller.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_tree.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_tree.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_types.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_types.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_weapon.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\ai_weapon.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\distortion.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\moonbase.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\moonbase.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\moonbase_fow.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\net_defines.h" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\net_main.cpp" />
+				<File RelativePath="..\..\engines\scumm\he\moonbase\net_main.h" />
 			</Filter>
 			<File RelativePath="..\..\engines\scumm\he\animation_he.cpp" />
 			<File RelativePath="..\..\engines\scumm\he\animation_he.h" />
