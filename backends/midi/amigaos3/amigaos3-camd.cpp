@@ -35,7 +35,7 @@
 #include "common/textconsole.h"
 #include "common/util.h"
 
-#include "camd/camd.h"
+#include <proto/camd.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 
@@ -76,7 +76,8 @@ int MidiDriver_CAMD::open() {
 		return -1;
 	}
 
-	_midi_node = CreateMidi(MIDI_MsgQueue, 0L, MIDI_SysExSize, 4096L, MIDI_Name, (Tag) "scummvm", TAG_END);
+	TagItem tags[] = {MIDI_MsgQueue, 0L, MIDI_SysExSize, 4096L, MIDI_Name, (Tag) "scummvm", TAG_END, 0};
+	_midi_node = CreateMidiA(tags);
 	if (!_midi_node) {
 		closeAll();
 		error("Could not create CAMD MIDI node");
