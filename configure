@@ -3228,7 +3228,7 @@ if test -n "$_host"; then
 			append_var LDFLAGS  "$_machine_flags"
 
 			# try producing smaller,faster executable
-			append_var CXXFLAGS "-fno-rtti -fno-exceptions -fstack-reuse=all"
+			append_var CXXFLAGS "-fno-rtti -fno-exceptions -fshort-enums -fstack-reuse=all"
 			if test "$_debug_build" != yes; then
 				# no logging, warning etc...
 				append_var DEFINES "-DDISABLE_TEXT_CONSOLE"
