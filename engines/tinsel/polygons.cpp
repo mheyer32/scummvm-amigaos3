@@ -163,7 +163,7 @@ public:
 	const LINEINFO *getLineinfo(int i) const { return ((const LINEINFO *)(_pStart + (int)FROM_32(plinelist))) + i; }
 
 protected:
-	POLY_TYPE type;		///< type of polygon
+	uint32 type;		///< type of polygon
 public:
 	int32 x[4], y[4];	// Polygon definition
 	uint32 xoff, yoff;	// DW2 - polygon offset
@@ -229,10 +229,10 @@ void Poly::nextPoly() {
 	// at some point, and remove all endian conversions from the code that uses POLY's
 	const byte *pRecord = _pData;
 
-	int typeVal = nextLong(_pData);
+	uint32 typeVal = nextLong(_pData);
 	if ((FROM_32(typeVal) == 5) && TinselV2)
 		typeVal = TO_32(6);
-	type = (POLY_TYPE)typeVal;
+	type = typeVal;
 
 	for (int i = 0; i < 4; ++i)
 		x[i] = nextLong(_pData);
