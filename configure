@@ -2805,7 +2805,7 @@ case $_host_os in
 		append_var DEFINES "-D__USE_MINGW_ANSI_STDIO=0"
 		append_var LDFLAGS "-static-libgcc -static-libstdc++"
 		append_var LIBS "-lmingw32 -lwinmm -lgdi32"
-		append_var OBJS "scummvmwinres.o"
+		append_var OBJS "dists/scummvm.o"
 		add_line_to_config_mk 'WIN32 = 1'
 		_port_mk="backends/platform/sdl/win32/win32.mk"
 		;;
@@ -4901,7 +4901,7 @@ if test "$_libunity" = yes ; then
 		LIBUNITY_CFLAGS="$LIBUNITY_CFLAGS `pkg-config --cflags 'unity > 3.8.1' 2>> "$TMPLOG"`"
 	fi
 	append_var LIBS "$LIBUNITY_LIBS"
-	append_var INCLUDES "$LIBUNITY_CFLAGS"
+	append_var CXXFLAGS "$LIBUNITY_CFLAGS"
 fi
 define_in_config_h_if_yes "$_libunity" 'USE_UNITY'
 fi
@@ -4975,7 +4975,7 @@ EOF
 
 		if test "$_freetype2" = "yes"; then
 			append_var LIBS "$FREETYPE2_LIBS"
-			append_var INCLUDES "$FREETYPE2_CFLAGS"
+			append_var CXXFLAGS "$FREETYPE2_CFLAGS"
 		fi
 	fi
 
@@ -5725,6 +5725,7 @@ vpath %.mm \$(srcdir)
 vpath %.asm \$(srcdir)
 vpath %.s \$(srcdir)
 vpath %.S \$(srcdir)
+vpath %.rc \$(srcdir)
 include \$(srcdir)/Makefile
 EOF
 

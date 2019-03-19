@@ -114,9 +114,8 @@ int VQAPlayer::update(bool forceDraw, bool advanceFrame, bool useTime, Graphics:
 		_decoder.readFrame(_frameNext, kVQAReadVideo);
 		_decoder.decodeVideoFrame(customSurface != nullptr ? customSurface : _surface, _frameNext);
 
-		int audioPreloadFrames = 14;
-
 		if (_hasAudio) {
+			int audioPreloadFrames = 14;
 			if (!_audioStarted) {
 				for (int i = 0; i < audioPreloadFrames; i++) {
 					if (_frameNext + i < _frameEnd) {
@@ -133,11 +132,13 @@ int VQAPlayer::update(bool forceDraw, bool advanceFrame, bool useTime, Graphics:
 			}
 		}
 		if (useTime) {
-			if (_frameNextTime == 0) {
+			_frameNextTime += 60000 / 15;
+
+			// In some cases (as overlay paused by kia or game window is moved) new time might be still in the past.
+			// This can cause rapid playback of video where every refresh renders different frame of the video.
+			// Can be avoided by setting next time to the future.
+			if (_frameNextTime < now) {
 				_frameNextTime = now + 60000 / 15;
-			}
-			else {
-				_frameNextTime += 60000 / 15;
 			}
 		}
 		_frameNext++;
@@ -193,8 +194,6 @@ bool VQAPlayer::setBeginAndEndFrame(int begin, int end, int repeatsCount, int lo
 	if (_repeatsCount == 0 && loopSetMode == kLoopSetModeEnqueue) {
 		loopSetMode = kLoopSetModeImmediate;
 	}
-
-	//TODO: there is code in original game which deals with changing loop at start of loop, is it nescesarry? loc_46EA04
 
 	_frameBegin = begin;
 

@@ -95,12 +95,15 @@ bool SliceAnimations::openCoreAnim() {
 }
 
 bool SliceAnimations::openFrames(int fileNumber) {
+
 	if (_framesPageFile._fileNumber == -1) { // Running for the first time, need to probe
 		// First, try HDFRAMES.DAT
 		if (_framesPageFile.open("HDFRAMES.DAT")) {
 			_framesPageFile._fileNumber = 0;
 
 			return true;
+		} else {
+			warning("SliceAnimations::openFrames: HDFRAMES.DAT resource not found. Falling back to using CDFRAMESx.DAT files instead...");
 		}
 	}
 
@@ -112,10 +115,16 @@ bool SliceAnimations::openFrames(int fileNumber) {
 
 	_framesPageFile.close();
 
-	if (fileNumber == 1 && _framesPageFile.open("CDFRAMES.DAT")) // For Chapter1 we try both CDFRAMES.DAT and CDFRAMES1.DAT
-		return true;
+	_framesPageFile._fileNumber = fileNumber;
 
-	return _framesPageFile.open(Common::String::format("CDFRAMES%d.DAT", fileNumber));
+	if (fileNumber == 1 && _framesPageFile.open("CDFRAMES.DAT")) {// For Chapter1 we try both CDFRAMES.DAT and CDFRAMES1.DAT
+		return true;
+	}
+
+	if (_framesPageFile.open(Common::String::format("CDFRAMES%d.DAT", fileNumber))) {
+		return true;
+	}
+	return false;
 }
 
 bool SliceAnimations::PageFile::open(const Common::String &name) {
@@ -168,20 +177,44 @@ void *SliceAnimations::PageFile::loadPage(uint32 pageNumber) {
 }
 
 void *SliceAnimations::getFramePtr(uint32 animation, uint32 frame) {
-	assert(frame < _animations[animation].frameCount);
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	// FIXME: Maybe there's a better way?
+	// Sanitize bad frame value
+	// For some actors (currently only happened with hawkers_barkeep) it is possible
+	// to SAVE a frame value (while saving a game)
+	// that in conjunction with other actor script vars not being re-initialized
+	// upon LOADING that game (for hawkers_barkeep this variable is "_var2")
+	// will lead to an invalid frame here and an assertion fault (now commented out).
+	// Example of faulty case:
+	// hawkers_barkeep was SAVED as:
+	// (animationState, animationFrame, animationStateNext, nextAnimation) = (0, 19, 0, 0)
+	// while his animationID was 705
+	// if _var1, _var2, _var3  == (0, 6, 1) when LOADING that save file,
+	// then animationFrame will remain 19, which is invalid for his 705 animation
+	// and the assert will produce a fault when trying to call drawInWorld for him.
+	if (frame >= _animations[animation].frameCount) {
+		debug("Bad frame: %u max: %u animation: %u", frame, _animations[animation].frameCount, animation);
+		frame = 0;
+	}
+//	assert(frame < _animations[animation].frameCount);
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 	uint32 frameOffset = _animations[animation].offset + frame * _animations[animation].frameSize;
 	uint32 page        = frameOffset / _pageSize;
 	uint32 pageOffset  = frameOffset % _pageSize;
 
-	if (!_pages[page]._data)
-		_pages[page]._data = _coreAnimPageFile.loadPage(page);
+	if (_pages[page]._data == nullptr) {                          // if not cached already
+		_pages[page]._data = _coreAnimPageFile.loadPage(page);    // look in COREANIM first
 
-	if (!_pages[page]._data)
-		_pages[page]._data = _framesPageFile.loadPage(page);
+		if (_pages[page]._data == nullptr) {                      // if not in COREAMIM
+			_pages[page]._data = _framesPageFile.loadPage(page);  // Look in CDFRAMES or HDFRAMES loaded data
 
-	if (!_pages[page]._data)
-		error("Unable to locate page %d for animation %d frame %d", page, animation, frame);
+			if (_pages[page]._data == nullptr) {
+				error("Unable to locate page %d for animation %d frame %d", page, animation, frame);
+			}
+		}
+	}
 
 	_pages[page]._lastAccess = _vm->_time->currentSystem();
 

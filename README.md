@@ -621,7 +621,7 @@ ScummVM will skip copy protection in the following games:
 For a comprehensive list of required Datafiles for supported games
 visit:
 
-<http://wiki.scummvm.org/index.php/Datafiles>
+<https://wiki.scummvm.org/index.php/Datafiles>
 
 ### 3.3) Multi-CD games notes
 
@@ -2935,7 +2935,7 @@ debug messages (see
       - Mac OS X Crosscompiling:
       
           - Please refer to:
-            <httpe://wiki.scummvm.org/index.php/Compiling_ScummVM/Mac_OS_X_Crosscompiling>
+            <https://wiki.scummvm.org/index.php/Compiling_ScummVM/Mac_OS_X_Crosscompiling>
 
   - Maemo:
     

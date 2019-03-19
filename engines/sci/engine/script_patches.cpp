@@ -116,14 +116,21 @@ static const char *const selectorNameTable[] = {
 	"has",          // King's Quest 6, GK1
 	"modeless",     // King's Quest 6 CD
 	"cycler",       // Space Quest 4 / system selector
+	"setCel",       // Space Quest 4, Phant2, GK1
+	"addToPic",     // Space Quest 4
+	"stop",         // Space Quest 4
+	"canControl",   // Space Quest 4
+	"looper",       // Space Quest 4
 	"loop",         // Laura Bow 1 Colonel's Bequest, QFG4
 	"setLoop",      // Laura Bow 1 Colonel's Bequest, QFG4
 	"ignoreActors", // Laura Bow 1 Colonel's Bequest
+	"setVol",       // Laura Bow 2 CD
 	"at",           // Longbow, QFG4
 	"owner",        // Longbow
 	"delete",       // EcoQuest 1
 	"size",         // EcoQuest 1
 	"signal",       // EcoQuest 1, GK1
+	"obstacles",    // EcoQuest 1, QFG4
 #ifdef ENABLE_SCI32
 	"newWith",      // SCI2 array script
 	"scrollSelections", // GK2
@@ -142,7 +149,6 @@ static const char *const selectorNameTable[] = {
 	"data",         // Phant2, QFG4
 	"format",       // Phant2
 	"setSize",      // Phant2
-	"setCel",       // Phant2, GK1
 	"iconV",        // Phant2
 	"update",       // Phant2
 	"xOff",         // Phant2
@@ -162,10 +168,10 @@ static const char *const selectorNameTable[] = {
 	"state",        // RAMA
 	"getSubscriberObj", // RAMA
 	"approachVerbs", // QFG4
+	"changeState",  // QFG4
 	"cue",          // QFG4
 	"heading",      // QFG4
 	"moveSpeed",    // QFG4
-	"obstacles",    // QFG4
 	"sayMessage",   // QFG4
 	"setLooper",    // QFG4
 	"setSpeed",     // QFG4
@@ -209,14 +215,21 @@ enum ScriptPatcherSelectors {
 	SELECTOR_has,
 	SELECTOR_modeless,
 	SELECTOR_cycler,
+	SELECTOR_setCel,
+	SELECTOR_addToPic,
+	SELECTOR_stop,
+	SELECTOR_canControl,
+	SELECTOR_looper,
 	SELECTOR_loop,
 	SELECTOR_setLoop,
 	SELECTOR_ignoreActors,
+	SELECTOR_setVol,
 	SELECTOR_at,
 	SELECTOR_owner,
 	SELECTOR_delete,
 	SELECTOR_size,
-	SELECTOR_signal
+	SELECTOR_signal,
+	SELECTOR_obstacles
 #ifdef ENABLE_SCI32
 	,
 	SELECTOR_newWith,
@@ -236,7 +249,6 @@ enum ScriptPatcherSelectors {
 	SELECTOR_data,
 	SELECTOR_format,
 	SELECTOR_setSize,
-	SELECTOR_setCel,
 	SELECTOR_iconV,
 	SELECTOR_update,
 	SELECTOR_xOff,
@@ -256,10 +268,10 @@ enum ScriptPatcherSelectors {
 	SELECTOR_state,
 	SELECTOR_getSubscriberObj,
 	SELECTOR_approachVerbs,
+	SELECTOR_changeState,
 	SELECTOR_cue,
 	SELECTOR_heading,
 	SELECTOR_moveSpeed,
-	SELECTOR_obstacles,
 	SELECTOR_sayMessage,
 	SELECTOR_setLooper,
 	SELECTOR_setSpeed,
@@ -616,6 +628,30 @@ static const uint16 ecoquest1PatchProphecyScroll[] = {
 	PATCH_END
 };
 
+// The empty apartments have several broken messages in the CD version due to
+//  not setting the global that holds the current room's noun, so we set it.
+//
+// Applies to: PC CD
+// Responsible method: rm220:init
+// Fixes bug #10903
+static const uint16 ecoquest1SignatureEmptyApartmentMessages[] = {
+    SIG_MAGICDWORD,
+    0x54, 0x0c,                     // self 0c [ self setRegions: 51, addObstacle: ... ]
+    0x39, SIG_SELECTOR8(init),      // pushi init
+    0x76,                           // push0
+    0x59, 0x01,                     // &rest 01 [ unused by ApartmentRoom:init ]
+    0x57, 0x96, 0x04,               // super ApartmentRoom 04 [ super init: &rest ]
+    SIG_END
+};
+
+static const uint16 ecoquest1PatchEmptyApartmentMessages[] = {
+    0x35, 0x01,                     // ldi 01 [ the room's noun ]
+    PATCH_ADDTOOFFSET(+3),
+    0xa1, 0xfa,                     // sag fa [ global250 = 1 ]
+    0x57, 0x96, 0x10,               // super ApartmentRoom 10 [ combine self and super ]
+    PATCH_END
+};
+
 // The temple has a complex script bug in the CD version which can crash the
 //  interpreter when solving the mosaic puzzle after loading a game that was
 //  saved during the puzzle. The bug causes invalid memory access which locks up
@@ -718,14 +754,124 @@ static const uint16 ecoquest1PatchColumnPuzzleFix[] = {
 	PATCH_END
 };
 
+// The ocean cliffs that border rooms 320 and 321 aren't displayed in the CD
+//  version. Instead they are drawn above the visible area and on more screens
+//  than they should. This also occurs in the original.
+//
+// Cliff views 325 and 326 have y displacements greater than 127 in the floppy
+//  versions. In the CD version these offsets were changed to zero. Sierra
+//  attempted to compensate for this by adding rows of empty pixels to the views
+//  but it appears that someone mistook the unsigned offsets for negative values
+//  and added the wrong number of rows to the wrong side of the views, causing
+//  the cliffs to be drawn 256 pixels higher than normal.
+//
+// The ocean scripts were changed to use different techniques for adding and
+//  removing the cliffs but this introduced more errors. Room 321 reinitializes
+//  the cliffs instead of disposing them, causing them to be redrawn on the
+//  wrong screens, and room 320 disposes the eastern cliffs instead of western.
+//
+// We fix the cliffs by adjusting their positions by 256 and disposing of them
+//  in room 321. We leave room 320's incorrect cliff disposal in place since
+//  both are automatically disposed of when that room's pic changes.
+//
+// Applies to: PC CD
+// Responsible methods: Heap in scripts 320 and 321, toEast:changeState, toWest:changeState
+// Fixes bug #10893
+static const uint16 ecoquest1SignatureSouthCliffsPosition[] = {
+	SIG_MAGICDWORD,
+	SIG_UINT16(0x0095),             // easternCliffs:x = 149
+	SIG_UINT16(0x0033),             // easternCliffs:y = 51
+	SIG_ADDTOOFFSET(+88),
+	SIG_UINT16(0x0004),             // westernCliffs:x = 4
+	SIG_UINT16(0x0014),             // westernCliffs:y = 20
+	SIG_END
+};
 
-//          script, description,                                      signature                          patch
+static const uint16 ecoquest1PatchSouthCliffsPosition[] = {
+	PATCH_ADDTOOFFSET(+2),
+	PATCH_UINT16(0x0133),           // easternCliffs:y = 307
+	PATCH_ADDTOOFFSET(+90),
+	PATCH_UINT16(0x0114),           // westernCliffs:y = 276
+	PATCH_END
+};
+
+static const uint16 ecoquest1SignatureNorthCliffsPosition[] = {
+	SIG_MAGICDWORD,
+	SIG_UINT16(0x00eb),             // easternCliffs:x = 236
+	SIG_UINT16(0x0038),             // easternCliffs:y = 56
+	SIG_ADDTOOFFSET(+88),
+	SIG_UINT16(0x0000),             // westernCliffs:x = 0
+	SIG_UINT16(0x0032),             // westernCliffs:y = 50
+	SIG_END
+};
+
+static const uint16 ecoquest1PatchNorthCliffsPosition[] = {
+	PATCH_ADDTOOFFSET(+2),
+	PATCH_UINT16(0x0138),           // easternCliffs:y = 312
+	PATCH_ADDTOOFFSET(+90),
+	PATCH_UINT16(0x0132),           // westernCliffs:y = 306
+	PATCH_END
+};
+
+static const uint16 ecoquest1SignatureNorthCliffsDisposal[] = {
+	0x39, SIG_SELECTOR8(init),          // pushi init
+	0x76,                               // push0
+	0x72, SIG_ADDTOOFFSET(+2),          // lofsa easternCliffs or westernCliffs
+	0x4a, SIG_MAGICDWORD, 0x04,         // send 04 [ cliffs init: ]
+	0x38, SIG_SELECTOR16(obstacles),    // pushi obstacles
+	SIG_END
+};
+
+static const uint16 ecoquest1PatchNorthCliffsDisposal[] = {
+	0x39, PATCH_SELECTOR8(dispose),     // pushi dispose
+	PATCH_END
+};
+
+// The Spanish version of EcoQuest accidentally shipped with temporary test code
+//  that breaks the game when entering Olympia's apartment. (room 226)
+//
+// A message box's position was localized in the Spanish version. This message
+//  occurs after saving Olympia by pumping bleach out of the window. To test
+//  this change, a developer added code to forcibly run the usePump script upon
+//  entering the room, but then forgot to remove it. This breaks the puzzle and
+//  locks up the game upon re-entering the room.
+//
+// We fix this by disabling the test code that should not have been shipped.
+//
+// Applies to: Spanish PC Floppy
+// Responsible method: rm226:init
+// Fixes bug #10900
+static const uint16 ecoquest1SignatureBleachPumpTest[] = {
+	SIG_MAGICDWORD,
+	0x78,                               // push1
+	0x39, 0x35,                         // pushi 35
+	0x46, SIG_UINT16(0x0333),           // calle proc819_3 [ set recycled-bleach flag ]
+	      SIG_UINT16(0x0003), 0x02,
+	0x38, SIG_SELECTOR16(setScript),    // pushi setScript
+	0x78,                               // push1
+	0x72, SIG_UINT16(0x0a44),           // lofsa usePump
+	0x36,                               // push
+	0x54, 0x06,                         // self 06 [ self setScript: usePump ]
+	SIG_END
+};
+
+static const uint16 ecoquest1PatchBleachPumpTest[] = {
+	0x32, PATCH_UINT16(0x0010),         // jmp 0010 [ skip test code ]
+	PATCH_END
+};
+
+//          script, description,                                      signature                                 patch
 static const SciScriptPatcherEntry ecoquest1Signatures[] = {
-	{  true,   140, "CD: mosaic puzzle fix",                       2, ecoquest1SignatureMosaicPuzzleFix, ecoquest1PatchMosaicPuzzleFix },
-	{  true,   160, "CD: give superfluous oily shell",             1, ecoquest1SignatureGiveOilyShell,   ecoquest1PatchGiveOilyShell },
-	{  true,   160, "CD/Floppy: column puzzle fix",                1, ecoquest1SignatureColumnPuzzleFix, ecoquest1PatchColumnPuzzleFix },
-	{  true,   660, "CD: bad messagebox and freeze",               1, ecoquest1SignatureStayAndHelp,     ecoquest1PatchStayAndHelp },
-	{  true,   816, "CD: prophecy scroll",                         1, ecoquest1SignatureProphecyScroll,  ecoquest1PatchProphecyScroll },
+	{  true,   140, "CD: mosaic puzzle fix",                       2, ecoquest1SignatureMosaicPuzzleFix,        ecoquest1PatchMosaicPuzzleFix },
+	{  true,   160, "CD: give superfluous oily shell",             1, ecoquest1SignatureGiveOilyShell,          ecoquest1PatchGiveOilyShell },
+	{  true,   160, "CD/Floppy: column puzzle fix",                1, ecoquest1SignatureColumnPuzzleFix,        ecoquest1PatchColumnPuzzleFix },
+	{  true,   220, "CD: empty apartment messages",                1, ecoquest1SignatureEmptyApartmentMessages, ecoquest1PatchEmptyApartmentMessages },
+	{  true,   226, "Spanish: disable bleach pump test",           1, ecoquest1SignatureBleachPumpTest,         ecoquest1PatchBleachPumpTest },
+	{  true,   320, "CD: south cliffs position",                   1, ecoquest1SignatureSouthCliffsPosition,    ecoquest1PatchSouthCliffsPosition },
+	{  true,   321, "CD: north cliffs position",                   1, ecoquest1SignatureNorthCliffsPosition,    ecoquest1PatchNorthCliffsPosition },
+	{  true,   321, "CD: north cliffs disposal",                   2, ecoquest1SignatureNorthCliffsDisposal,    ecoquest1PatchNorthCliffsDisposal },
+	{  true,   660, "CD: bad messagebox and freeze",               1, ecoquest1SignatureStayAndHelp,            ecoquest1PatchStayAndHelp },
+	{  true,   816, "CD: prophecy scroll",                         1, ecoquest1SignatureProphecyScroll,         ecoquest1PatchProphecyScroll },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
@@ -3997,6 +4143,29 @@ static const uint16 longbowPatchAmigaPubFix[] = {
 	PATCH_END
 };
 
+// WORKAROUND: Script needed, because of differences in our pathfinding
+// algorithm
+// When the guards kick Robin out of archery room 320 the game locks up due to
+//  pathfinding algorithm differences. Ours sends ego in the wrong direction,
+//  colliding with a guard, and preventing the script from continuing.
+//
+// Applies to: English PC Floppy, German PC Floppy, English Amiga Floppy
+// Responsible method: takeHimOut:changeState(1)
+// Fixes bug: #10896
+static const uint16 longbowSignatureArcherPathfinding[] = {
+	SIG_MAGICDWORD,
+	0x38, SIG_UINT16(0x00c8),       // pushi 00c8 [ y = 200 ]
+	0x7c,                           // pushSelf
+	0x81, 0x00,                     // lag 00
+	0x4a, 0x0c,                     // send 0c [ ego setMotion: PolyPath (ego x?) 200 self ]
+	SIG_END
+};
+
+static const uint16 longbowPatchArcherPathfinding[] = {
+	0x38, PATCH_UINT16(0x00c4),     // pushi 00c4 [ y = 196 ]
+	PATCH_END
+};
+
 //          script, description,                                      signature                          patch
 static const SciScriptPatcherEntry longbowSignatures[] = {
 	{  true,   150, "day 5/6 camp sunset fix",                     2, longbowSignatureCampSunsetFix,     longbowPatchCampSunsetFix },
@@ -4005,6 +4174,7 @@ static const SciScriptPatcherEntry longbowSignatures[] = {
 	{  true,   225, "arithmetic berry bush fix",                   1, longbowSignatureBerryBushFix,      longbowPatchBerryBushFix },
 	{  true,   250, "day 5/6 rescue flag fix",                     1, longbowSignatureRescueFlagFix,     longbowPatchRescueFlagFix },
 	{  true,   260, "day 5/6 town map sunset fix",                 1, longbowSignatureTownMapSunsetFix,  longbowPatchTownMapSunsetFix },
+	{  true,   320, "day 8 archer pathfinding workaround",         1, longbowSignatureArcherPathfinding, longbowPatchArcherPathfinding },
 	{  true,   350, "day 9 cobbler hut fix",                      10, longbowSignatureCobblerHut,        longbowPatchCobblerHut },
 	{  true,   530, "amiga pub fix",                               1, longbowSignatureAmigaPubFix,       longbowPatchAmigaPubFix },
 	SCI_SIGNATUREENTRY_TERMINATOR
@@ -5286,27 +5456,24 @@ static const uint16 laurabow2PatchRememberWiredEastDoor[] = {
 // algorithm
 // It's possible to walk through the closed door in room 448 and enter the crate
 //  room before act 5 due to differences in our pathfinding algorithm from Sierra's.
-//  Ego is able to stand one pixel farther than Sierra's algorithm allowed and
-//  reach the control area behind the door which triggers the room change.
-//  We work around this by expanding the closed door's polygon points by one
-//  pixel to prevent ego from being able to reach the control area.
+//  This edge case appears to be due to one of the door's points being one pixel
+//  within the room's walkable boundary, allowing ego to walk through this edge
+//  from certain positions. We work around this by moving the door's point by
+//  two pixels so that it's outside the room's walkable boundary.
 //
 // Applies to: All Floppy and CD versions
 // Responsible method: transomDoor:createPoly
 // Fixes bug: #9952
 static const uint16 laurabow2SignatureFixArmorHallDoorPathfinding[] = {
 	SIG_MAGICDWORD,
-	0x39, 0x6c,                         // pushi 6c [ x = 108 ]
-	0x39, 0x78,                         // pushi 78 [ y = 120 ]
-	0x39, 0x58,                         // pushi 58 [ x =  88 ]
-	0x38, SIG_UINT16(0x0083),           // pushi 83 [ y = 131 ]
+	0x39, 0x50,                         // pushi 50 [ x =  80 ]
+	0x39, 0x7d,                         // pushi 7d [ y = 125 ]
 	SIG_END
 };
 
 static const uint16 laurabow2PatchFixArmorHallDoorPathfinding[] = {
-	0x39, 0x6d,                         // pushi 6d [ x = 109 ]
-	PATCH_ADDTOOFFSET(+4),
-	0x38, PATCH_UINT16(0x0084),         // pushi 84 [ y = 132 ]
+	PATCH_ADDTOOFFSET(+2),
+	0x39, 0x7f,                         // pushi 7f [ y = 127 ]
 	PATCH_END
 };
 
@@ -5427,6 +5594,54 @@ static const uint16 laurabow2PatchFixBackRubEastEntranceLockup[] = {
 	PATCH_END
 };
 
+// The act 4 back rub scene in Yvette's (room 550) doesn't draw the typewriter,
+//  desk lamp, and wastebasket when returning from Laura's close-up. These views
+//  are added to the room pic and so they are disposed of when the pic changes.
+//  This also occurs in Sierra's interpreter.
+//
+// We fix this by removing the addToPic call from these views so that they are
+//  members of the cast like the other views in the room and survive pic change.
+//
+// Applies to: All Floppy and CD versions
+// Responsible method: rm550:init/<noname110>
+// Fixes bug #10894
+static const uint16 laurabow2SignatureFixDisappearingDeskItems[] = {
+	SIG_MAGICDWORD,
+	0x39, 0x64,                         // pushi 64
+	0x39, 0x7e,                         // pushi 7e
+	0x38, SIG_ADDTOOFFSET(+2),          // pushi addToPic
+	0x76,                               // push0
+	SIG_ADDTOOFFSET(+3),
+	0x4a, 0x20,                         // send 20 [ typewriter ... addToPic: ]
+	SIG_ADDTOOFFSET(+26),
+	0x38, SIG_ADDTOOFFSET(+2),          // pushi addToPic
+	0x76,                               // push0
+	SIG_ADDTOOFFSET(+3),
+	0x4a, 0x18,                         // send 18 [ deskLamp ... addToPic: ]
+	SIG_ADDTOOFFSET(+27),
+	0x38, SIG_ADDTOOFFSET(+2),          // pushi addToPic
+	0x76,                               // push0
+	SIG_ADDTOOFFSET(+17),
+	0x4a, 0x16,                         // send 16 [ wasteBasket ... addToPic: ... ]
+	SIG_END
+};
+
+static const uint16 laurabow2PatchFixDisappearingDeskItems[] = {
+	PATCH_ADDTOOFFSET(+4),
+	0x32, PATCH_UINT16(0x0001),         // jmp 0001
+	PATCH_ADDTOOFFSET(+4),
+	0x4a, 0x1c,                         // send 1c [ init typewriter without addToPic ]
+	PATCH_ADDTOOFFSET(+26),
+	0x32, PATCH_UINT16(0x0001),         // jmp 0001
+	PATCH_ADDTOOFFSET(+4),
+	0x4a, 0x14,                         // send 14 [ init deskLamp without addToPic ]
+	PATCH_ADDTOOFFSET(+27),
+	0x32, PATCH_UINT16(0x0001),         // jmp 0001
+	PATCH_ADDTOOFFSET(+18),
+	0x4a, 0x12,                         // send 12 [ init wasteBasket without addToPic ]
+	PATCH_END
+};
+
 // LB2 Floppy 1.0 doesn't initialize act 4 correctly when triggered by finding
 //  the dagger, causing the act 4 scene in Yvette's (room 550) to lockup.
 //
@@ -5504,49 +5719,37 @@ static const uint16 laurabow2PatchMissingDeskLampMessage[] = {
 	PATCH_END
 };
 
-// LB2 Floppy 1.0 doesn't handle events for the inset of the corpse in the armor in room 440,
-//  preventing its messages from being displayed.
+// The armor exhibit rooms (440 and 448) have event handlers that fail to handle
+//  all events, preventing messages from being displayed.
 //
-// The inset has messages that respond to look, do, and the magnifying glass, but rm440:<noname133>,
-//  which is really handleEvent, never passes events to it. Sierra fixed this in later floppy and
-//  cd versions by adding a condition to rm440:handleEvent that first tests if the room has an inset
-//  and calls its handleEvent if so.
+// Both armor rooms implement handleEvent to handle joystick events in certain
+//  situations, but they only pass move events on to super:handleEvent, blocking
+//  all other event types. Clicking on either room does nothing even though both
+//  have messages to respond with. This also prevents messages when clicking on
+//  Pippin Carter's armor inset. Sierra fixed the armor problem after the first
+//  floppy release by adding code to detect and handle the inset's events,
+//  instead of handling all events, leaving the room messages broken.
 //
-// We fix this by patching rm440:handleEvent to call super:handleEvent if the room has an inset.
-//  This is equivalent to Sierra's fix but can be done within the existing space as there is already
-//  code to call super:handleEvent on Move events. This patch just extends that condition to also
-//  include if an inset exists. This works because Rm:handleEvent contains the same inset handling
-//  code that Sierra added to rm440:handleEvent.
+// We fix this by handling verb events in both rooms. This fixes room messages
+//  in all versions and fixes armor inset messages in English floppy 1.0.
 //
-// This fix is for floppy 1.0 but the signature also matches later floppy versions. That's okay,
-//  it's compatible with their fix. Making the signature only match 1.0 would add almost 100 bytes
-//  as the closest difference is at the start of the method and the patch is at the end.
-//
-// Applies to: English floppy 1.000
-// Responsible method: rm440:<noname133>, which is really handleEvent
-// Fixes bug: #10709
-static const uint16 laurabow2SignatureHandleArmorInsetEvents[] = {
+// Applies to: All Floppy and CD versions
+// Responsible methods: rm440:handleEvent/<noname133>, rm448:handleEvent/<noname133>
+// Fixes bugs #10709, #10895
+static const uint16 laurabow2SignatureHandleArmorRoomEvents[] = {
+	0x87, 0x01,                         // lap 01
+	0x4a, 0x04,                         // send 04 [ event type? ]
 	SIG_MAGICDWORD,
-	0x31, 0x0b,                         // bnt 0b [ event type isn't Move ]
-	0x38, SIG_UINT16(0x0085),           // pushi 0085 [ <noname113> aka handleEvent ]
-	0x78,                               // push1
-	0x8f, 0x01,                         // lsp param[1]
-	0x57, 0x7a, 0x06,                   // super LBRoom[7a], 6 [ handle event ]
-	0x33, 0x03,                         // jmp 3
-	0x35, 0x00,                         // ldi 0 [ event not handled ]
-	0x48,                               // ret
-	0x48,                               // ret
+	0x36,                               // push
+	0x34, SIG_UINT16(0x1000),           // ldi 1000 [ move event ]
+	0x12,                               // and
+	0x31,                               // bnt [ don't handle event ]
 	SIG_END
 };
 
-static const uint16 laurabow2PatchHandleArmorInsetEvents[] = {
-	0x2f, 0x04,                         // bt 4 [ event type is Move ]
-	0x63, 0x3a,                         // pToa <noname365> aka inset
-	0x31, 0x09,                         // bnt 9 [ room has no inset, event not handled ]
-	0x38, PATCH_UINT16(0x0085),         // pushi 0085 [ <noname113> aka handleEvents ]
-	0x78,                               // push1
-	0x8f, 0x01,                         // lsp param[1]
-	0x57, 0x7a, 0x06,                   // super LBRoom[7a], 6 [ handle event ]
+static const uint16 laurabow2PatchHandleArmorRoomEvents[] = {
+	PATCH_ADDTOOFFSET(+5),
+	0x34, PATCH_UINT16(0x5000),         // ldi 5000 [ move event | verb event ]
 	PATCH_END
 };
 
@@ -5706,6 +5909,62 @@ static const uint16 laurabow2PatchDisableSpeedTest[] = {
 	PATCH_END
 };
 
+// LB2CD reduces the music volume significantly during the introduction when
+//  characters talk while disembarking the ship in room 120. This is done so
+//  that their speech can be heard but it also occurs in text-only mode.
+//
+// Interestingly, this is the only script that manually reduces volume during
+//  speech, as it's a workaround for bugs in the Narrator and Talker scripts.
+//  They're supposed to automatically reduce music volume, but this scheme fails
+//  when multiple appear at once, which seems to only occur in the introduction.
+//
+// We patch the introduction to skip the volume reduction when in text-only mode
+//  so that the music doesn't abruptly go away and come back.
+//
+// Applies to: All CD versions
+// Responsible method: sDisembark:changeState
+// Fixes bug #10916
+static const uint16 laurabow2CDSignatureIntroVolumeChange[] = {
+	0x31, 0x2a,                         // bnt 2a [ state 3 ]
+	SIG_ADDTOOFFSET(+2),
+	0x31, 0x1f,                         // bnt 1f
+	SIG_ADDTOOFFSET(+28),
+	0x32, SIG_UINT16(0x00f7),           // jmp 00f7 [ end of method ]
+	0x35, 0x02,                         // ldi 02
+	0x65, 0x1a,                         // aTop cycles [ cycles = 2 ]
+	0x32, SIG_UINT16(0x00f0),           // jmp 00f0 [ end of method ]
+	0x3c,                               // dup
+	0x35, 0x03,                         // ldi 03
+	0x1a,                               // eq?
+	0x31, 0x25,                         // bnt 25 [ state 4 ]
+	0x38, SIG_SELECTOR16(setVol),       // pushi setVol
+	0x78,                               // push1
+	SIG_MAGICDWORD,
+	0x39, 0x28,                         // pushi 28
+	0x81, 0x66,                         // lag 66
+	0x4a, 0x06,                         // send 06 [ gameMusic1 setVol: 40 ]
+	SIG_END
+};
+
+static const uint16 laurabow2CDPatchIntroVolumeChange[] = {
+	0x31, 0x25,                         // bnt 25 [ state 3 ]
+	PATCH_ADDTOOFFSET(+2),
+	0x31, 0x1e,                         // bnt 1e
+	PATCH_ADDTOOFFSET(+28),
+	0x3a,                               // toss
+	0x48,                               // ret
+	0x7a,                               // push2
+	0x69, 0x1a,                         // sTop cycles [ cycles = 2 ]
+	0x3c,                               // dup
+	0x35, 0x03,                         // ldi 03
+	0x1a,                               // eq?
+	0x31, 0x2a,                         // bnt 2a [ state 4 ]
+	0x89, 0x5a,                         // lsg 5a [ message mode ]
+	0x1a,                               // eq?    [ is text-only mode? ]
+	0x2f, 0x0a,                         // bt 0a  [ skip volume reduction ]
+	PATCH_END
+};
+
 // Laura Bow 2 CD resets the audio mode to speech on init/restart
 //  We already sync the settings from ScummVM (see SciEngine::syncIngameAudioOptions())
 //  and this script code would make it impossible to see the intro using "dual" mode w/o using debugger command
@@ -5803,13 +6062,16 @@ static const SciScriptPatcherEntry laurabow2Signatures[] = {
 	{  true,   460, "CD/Floppy: fix crate room east door lockup",     1, laurabow2SignatureFixCrateRoomEastDoorLockup,   laurabow2PatchFixCrateRoomEastDoorLockup },
 	{  true,  2660, "CD/Floppy: fix elevator lockup",                 1, laurabow2SignatureFixElevatorLockup,            laurabow2PatchFixElevatorLockup },
 	{  true,   550, "CD/Floppy: fix back rub east entrance lockup",   1, laurabow2SignatureFixBackRubEastEntranceLockup, laurabow2PatchFixBackRubEastEntranceLockup },
+	{  true,   550, "CD/Floppy: fix disappearing desk items",         1, laurabow2SignatureFixDisappearingDeskItems,     laurabow2PatchFixDisappearingDeskItems },
 	{  true,    26, "Floppy: fix act 4 initialization",               1, laurabow2SignatureFixAct4Initialization,        laurabow2PatchFixAct4Initialization },
 	{  true,   550, "Floppy: missing desk lamp message",              1, laurabow2SignatureMissingDeskLampMessage,       laurabow2PatchMissingDeskLampMessage },
-	{  true,   440, "Floppy: handle armor inset events",              1, laurabow2SignatureHandleArmorInsetEvents,       laurabow2PatchHandleArmorInsetEvents },
+	{  true,   440, "CD/Floppy: handle armor room events",            1, laurabow2SignatureHandleArmorRoomEvents,        laurabow2PatchHandleArmorRoomEvents },
+	{  true,   448, "CD/Floppy: handle armor hall room events",       1, laurabow2SignatureHandleArmorRoomEvents,        laurabow2PatchHandleArmorRoomEvents },
 	{  true,   600, "Floppy: fix bugs with meat",                     1, laurabow2FloppySignatureFixBugsWithMeat,        laurabow2FloppyPatchFixBugsWithMeat },
 	{  true,   600, "CD: fix bugs with meat",                         1, laurabow2CDSignatureFixBugsWithMeat,            laurabow2CDPatchFixBugsWithMeat },
 	{  true,   480, "CD: fix act 5 finale music",                     1, laurabow2CDSignatureFixAct5FinaleMusic,         laurabow2CDPatchFixAct5FinaleMusic },
 	{  true,    28, "CD/Floppy: disable speed test",                  1, laurabow2SignatureDisableSpeedTest,             laurabow2PatchDisableSpeedTest },
+	{  true,   120, "CD: disable intro volume change in text mode",   1, laurabow2CDSignatureIntroVolumeChange,          laurabow2CDPatchIntroVolumeChange },
 	// King's Quest 6 and Laura Bow 2 share basic patches for audio + text support
 	{ false,   924, "CD: audio + text support 1",                     1, kq6laurabow2CDSignatureAudioTextSupport1,       kq6laurabow2CDPatchAudioTextSupport1 },
 	{ false,   924, "CD: audio + text support 2",                     1, kq6laurabow2CDSignatureAudioTextSupport2,       kq6laurabow2CDPatchAudioTextSupport2 },
@@ -7341,6 +7603,35 @@ static const uint16 qfg1vgaPatchFunnyRoomFix[] = {
 	PATCH_END
 };
 
+// In Yorick's room, room 96, walking in certain spots in front of the rightmost
+//  door locks up the game. This also occurs in Sierra's interpreter.
+//
+// rm96:doit runs the script goTo2 when ego enters a rect in front of the door.
+//  This rect is low enough that ego can collide with the door's boundary
+//  obstacle on the right and prevent goTo2 from restoring control to the user.
+//
+// We fix this by raising the bottom of the door rect. Sierra fixed this bug in
+//  the Mac version by rewriting the door code, switching to control areas, and
+//  tweaking the sizes and locations of all the relevant objects.
+//
+// Applies to: PC Floppy
+// Responsible method: rm96:doit
+// Fixes bug #6410
+static const uint16 qfg1vgaSignatureYorickDoorTwoRect[] = {
+	SIG_MAGICDWORD,
+	0x38, SIG_UINT16(0x0135),               // pushi 0135 [ x = 309 ]
+	0x39, 0x64,                             // pushi 64   [ y = 100 ]
+	0x38, SIG_UINT16(0x013f),               // pushi 013f [ x = 319 ]
+	0x39, 0x70,                             // pushi 70   [ y = 112 ]
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchYorickDoorTwoRect[] = {
+	PATCH_ADDTOOFFSET(+8),
+	0x39, 0x6d,                             // pushi 6d [ y = 109 ]
+	PATCH_END
+};
+
 // The player is able to buy (and also steal) potions in the healer's hut
 //  Strangely Sierra delays the actual buy/get potion code for 60 ticks
 //  Why they did that is unknown. The code is triggered anyway only after
@@ -7642,6 +7933,7 @@ static const SciScriptPatcherEntry qfg1vgaSignatures[] = {
 	{  true,    77, "white stag dagger throw animation glitch",    1, qfg1vgaSignatureWhiteStagDagger,     qfg1vgaPatchWhiteStagDagger },
 	{  true,    78, "mac: enable antwerp controls",                1, qfg1vgaSignatureMacAntwerpControls,  qfg1vgaPatchMacAntwerpControls },
 	{  true,    96, "funny room script bug fixed",                 1, qfg1vgaSignatureFunnyRoomFix,        qfg1vgaPatchFunnyRoomFix },
+	{  true,    96, "yorick door #2 lockup fixed",                 1, qfg1vgaSignatureYorickDoorTwoRect,   qfg1vgaPatchYorickDoorTwoRect },
 	{  true,   210, "cheetaur description fixed",                  1, qfg1vgaSignatureCheetaurDescription, qfg1vgaPatchCheetaurDescription },
 	{  true,   215, "fight event issue",                           1, qfg1vgaSignatureFightEvents,         qfg1vgaPatchFightEvents },
 	{  true,   216, "weapon master event issue",                   1, qfg1vgaSignatureFightEvents,         qfg1vgaPatchFightEvents },
@@ -8880,6 +9172,192 @@ static const uint16 qfg4CrestBookshelfMotionSignature[] = {
 
 static const uint16 qfg4CrestBookshelfMotionPatch[] = {
 	0x51, PATCH_GETORIGINALBYTEADJUST(+1, +6), // class PolyPath
+	PATCH_END
+};
+
+// In the crest bookshelf room (663) connected to the upper door of the
+// bat-infested stairway, peering through the keyhole *always* reports bats.
+//
+// As you kill the bats, global plot flags are set. Normally flags 331-334
+// would be checked via proc0_4(). They're in a bitmask, among other flags, so
+// we can check all simultaneously (0000000000011110).
+//
+// global[520] & 30 == 30
+//
+// Patch 1: There was no space for this in the responsible method. Instead, we
+//  rewrite a different method that became obsolete after the crest bookshelf
+//  patch: sCloseSecretDoor::changeState().
+//
+// Patch 2: We modify sPeepingTom to call our rewritten sCloseSecretDoor. This
+//  has two variants, toggled to match the detected edition with enablePatch()
+//  below. Aside from the patched lofsa value, they are identical.
+//
+// Requires patch: qfg4CrestBookshelf (CD or Floppy)
+// Applies to at least: English CD, English floppy, German floppy
+// Responsible method: sPeepingTom::changeState(1) in script 663
+// Fixes bug: #10789
+static const uint16 qfg4UpperPeerBatsSignature1[] = {
+	0x87, 0x01,                         // lap param[1]
+	SIG_ADDTOOFFSET(+41),               // ...
+	SIG_MAGICDWORD,
+	0x4a, SIG_UINT16(0x0006),           // send 6d
+	0x35, 0x1e,                         // ldi 30d
+	0x65, SIG_ADDTOOFFSET(+1),          // aTop ticks
+	SIG_ADDTOOFFSET(+9),                // ...
+	0x38, SIG_SELECTOR16(setCycle),     // pushi setCycle
+	SIG_END
+};
+
+static const uint16 qfg4UpperPeerBatsPatch1[] = {
+	0x38, PATCH_SELECTOR16(say),        // pushi say (decide the message as args are stacked up)
+	0x39, 0x06,                         // pushi 6d
+	0x7a,                               // push2
+	0x38, PATCH_UINT16(0x009b),         // pushi 155d
+
+	0x39, 0x1e,                         // pushi 30d (stack up for eq)
+	0x3c,                               // dup (stack up another for AND)
+	0x80, PATCH_UINT16(0x0208),         // lag global[520] (plot flags bitmask)
+	0x12,                               // and
+	0x1a,                               // eq? (Were all dead bat flags set?)
+	0x2f, 0x04,                         // bt 4d [after this jmp]
+	0x39, 0x1d,                         // pushi 29d (bat message)
+	0x33, 0x02,                         // jmp 2d [after deciding message]
+
+	0x39, 0x1b,                         // pushi 27d (killed all bats, generic message)
+
+	0x78,                               // push1
+	0x76,                               // push0 (don't cue() afterward)
+	0x38, PATCH_UINT16(0x0280),         // pushi 640d
+	0x81, 0x5b,                         // lag global[91] (gloryMessager)
+	0x4a, PATCH_UINT16(0x0010),         // send 16d
+	0x48,                               // ret
+	0x34, PATCH_UINT16(0x0000),         // ldi 0 (erase 3 bytes to keep disasm aligned)
+	PATCH_END
+};
+
+// Applies to at least: English CD
+static const uint16 qfg4UpperPeerBatsCDSignature2[] = {
+	0x38, SIG_SELECTOR16(say),          // pushi say
+	SIG_ADDTOOFFSET(+3),
+	SIG_MAGICDWORD,
+	0x7a,                               // push2
+	0x38, SIG_UINT16(0x009b),           // pushi 155d
+	0x39, 0x1d,                         // pushi 29d (bat message)
+	SIG_ADDTOOFFSET(+7),
+	0x4a, SIG_UINT16(0x0010),           // send 16d (say: 2 155 29 1 self 640)
+	PATCH_END
+};
+
+static const uint16 qfg4UpperPeerBatsCDPatch2[] = {
+	0x38, PATCH_SELECTOR16(changeState), // pushi changeState
+	0x78,                               // push1
+	0x76,                               // push0
+	0x72, PATCH_UINT16(0x0176),         // lofsa sCloseSecretDoor
+	0x4a, PATCH_UINT16(0x0006),         // send 6d (call the rewritten method)
+	0x38, PATCH_SELECTOR16(cue),        // pushi cue
+	0x76,                               // push0
+	0x54, PATCH_UINT16(0x0004),         // self 4d (self-cue)
+	0x35, 0x00,                         // ldi 0 (waste 2 bytes)
+	0x35, 0x00,                         // ldi 0 (waste 2 bytes)
+	PATCH_END
+};
+
+// Applies to at least: English floppy, German floppy
+static const uint16 qfg4UpperPeerBatsFloppySignature2[] = {
+	0x38, SIG_SELECTOR16(say),          // pushi say
+	SIG_ADDTOOFFSET(+3),
+	SIG_MAGICDWORD,
+	0x7a,                               // push2
+	0x38, SIG_UINT16(0x009b),           // pushi 155d
+	0x39, 0x1d,                         // pushi 29d (bat message)
+	SIG_ADDTOOFFSET(+7),
+	0x4a, SIG_UINT16(0x0010),           // send 16d (say: 2 155 29 1 self 640)
+	PATCH_END
+};
+
+static const uint16 qfg4UpperPeerBatsFloppyPatch2[] = {
+	0x38, PATCH_SELECTOR16(changeState), // pushi changeState
+	0x78,                               // push1
+	0x76,                               // push0
+	0x72, PATCH_UINT16(0x0160),         // lofsa sCloseSecretDoor
+	0x4a, PATCH_UINT16(0x0006),         // send 6d (call the rewritten method)
+	0x38, PATCH_SELECTOR16(cue),        // pushi cue
+	0x76,                               // push0
+	0x54, PATCH_UINT16(0x0004),         // self 4d (self-cue)
+	0x35, 0x00,                         // ldi 0 (waste 2 bytes)
+	0x35, 0x00,                         // ldi 0 (waste 2 bytes)
+	PATCH_END
+};
+
+// In the room (644) connected to the lower door of the bat-infested stairway,
+// peering through the keyhole *always* reports bats.
+//
+// As you kill the bats, global plot flags are set. Normally flags 331-334
+// would be checked via proc0_4(). They're in a bitmask, among other flags, so
+// we can check all simultaneously (0000000000011110).
+//
+// global[520] & 30 == 30
+//
+// Room 644 has an IF-ELSE deciding between largely redundant calls to
+// gloryMessager::say(). We make room by combining them.
+//
+// Applies to at least: English CD, English floppy, German floppy
+// Responsible method: sPeepingTom::changeState(1) in script 644
+// Fixes bug: #10789
+static const uint16 qfg4LowerPeerBatsSignature[] = {
+	SIG_MAGICDWORD,
+	0x78,                               // push1 x (check if hero's near the left door)
+	0x76,                               // push0
+	0x81, 0x00,                         // lag global[0] (hero)
+	0x4a, SIG_UINT16(0x0004),           // send 4d
+	0x36,                               // push
+	0x35, 0x3c,                         // ldi 60d
+	0x22,                               // lt?
+	0x31, 0x18,                         // bnt 24d [else right door w/ bats]
+	0x38, SIG_SELECTOR16(say),          // pushi say (left door, generic message)
+	SIG_ADDTOOFFSET(+14),               // ...
+	0x81, 0x5b,                         // lag global[91] (gloryMessager)
+	0x4a, SIG_UINT16(0x0010),           // send 16d (say: 2 155 27 1 self 640)
+	0x33, SIG_ADDTOOFFSET(+1),          // jmp [end the case]
+	SIG_ADDTOOFFSET(+22),               // (right door, say(), 3rd arg is 29 for bat message)
+	0x33, SIG_ADDTOOFFSET(+1),          // jmp [end the case]
+	SIG_END
+};
+
+static const uint16 qfg4LowerPeerBatsPatch[] = {
+	0x38, PATCH_SELECTOR16(say),        // pushi say (decide the message as args are stacked up)
+	0x39, 0x06,                         // pushi 6d
+	0x7a,                               // push2
+	0x38, PATCH_UINT16(0x009b),         // pushi 155d
+
+	0x78,                               // push1 x (check if left door)
+	0x76,                               // push0
+	0x81, 0x00,                         // lag global[0] (hero)
+	0x4a, PATCH_UINT16(0x0004),         // send 4d
+	0x36,                               // push
+	0x35, 0x3c,                         // ldi 60d
+	0x22,                               // lt?
+	0x31, 0x04,                         // bnt 4d [after this jmp]
+	0x39, 0x1b,                         // pushi 27d (left door, generic message)
+	0x33, 0x10,                         // jmp 16d [after deciding message]
+
+	0x39, 0x1e,                         // pushi 30d (stack up for eq)
+	0x3c,                               // dup (stack up another for AND)
+	0x80, PATCH_UINT16(0x0208),         // lag global[520] (plot flags bitmask)
+	0x12,                               // and
+	0x1a,                               // eq? (Were all dead bat flags set?)
+	0x2f, 0x04,                         // bt 4d [after this jmp]
+	0x39, 0x1d,                         // pushi 29d (right door, bat message)
+	0x33, 0x02,                         // jmp 2d [after deciding message]
+
+	0x39, 0x1b,                         // pushi 27d (right door, killed all bats, generic message)
+
+	0x78,                               // push1
+	0x7c,                               // pushSelf
+	0x38, PATCH_UINT16(0x0280),         // pushi 640d
+	0x81, 0x5b,                         // lag global[91] (gloryMessager)
+	0x4a, PATCH_UINT16(0x0010),         // send 16d
+	0x33, PATCH_GETORIGINALBYTEADJUST(60, +7), // jmp [end the case]
 	PATCH_END
 };
 
@@ -10285,10 +10763,14 @@ static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,   643, "fix iron safe's east door sending hero west", 1, qfg4SafeDoorEastSignature,     qfg4SafeDoorEastPatch },
 	{  true,   643, "fix iron safe's door oil flags",              1, qfg4SafeDoorOilSignature,      qfg4SafeDoorOilPatch },
 	{  true,   644, "fix castle door open message for rogue",      2, qfg4StuckDoorSignature,        qfg4StuckDoorPatch },
+	{  true,   644, "fix peer bats, lower door",                   1, qfg4LowerPeerBatsSignature,    qfg4LowerPeerBatsPatch },
 	{  true,   645, "fix extraneous door sound in the castle",     1, qfg4DoubleDoorSoundSignature,  qfg4DoubleDoorSoundPatch },
-	{  false,  663, "CD: fix crest bookshelf",                     1, qfg4CrestBookshelfCDSignature, qfg4CrestBookshelfCDPatch },
+	{  false,  663, "CD: fix crest bookshelf",                     1, qfg4CrestBookshelfCDSignature,     qfg4CrestBookshelfCDPatch },
 	{  false,  663, "Floppy: fix crest bookshelf",                 1, qfg4CrestBookshelfFloppySignature, qfg4CrestBookshelfFloppyPatch },
 	{  true,   663, "CD/Floppy: fix crest bookshelf motion",       1, qfg4CrestBookshelfMotionSignature, qfg4CrestBookshelfMotionPatch },
+	{  true,   663, "CD/Floppy: fix peer bats, upper door (1/2)",  1, qfg4UpperPeerBatsSignature1,       qfg4UpperPeerBatsPatch1 },
+	{  false,  663, "CD: fix peer bats, upper door (2/2)",         1, qfg4UpperPeerBatsCDSignature2,     qfg4UpperPeerBatsCDPatch2 },
+	{  false,  663, "Floppy: fix peer bats, upper door (2/2)",     1, qfg4UpperPeerBatsFloppySignature2, qfg4UpperPeerBatsFloppyPatch2 },
 	{  true,   710, "fix tentacle wriggle cycler",                 1, qfg4TentacleWriggleSignature,  qfg4TentacleWrigglePatch },
 	{  true,   710, "fix tentacle retraction for fighter",         1, qfg4PitRopeFighterSignature,   qfg4PitRopeFighterPatch },
 	{  true,   710, "fix tentacle retraction for mage (1/2)",      1, qfg4PitRopeMageSignature1,     qfg4PitRopeMagePatch1 },
@@ -10616,6 +11098,448 @@ static const uint16 sq4CdPatchGettingShotWhileGettingRope[] = {
 	PATCH_END
 };
 
+// During the SQ4 introduction logo, EGA versions increase the number of calls
+//  to kPaletteAnimate by 40x. This was probably to achieve the same delay as
+//  VGA even though no palette animation occurred. This adjustment interferes
+//  with our kPaletteAnimate speed throttling for SQ4 scripts such as this, bug
+//  #6057. We remove the EGA delay, making all versions consistent, otherwise
+//  the logo is displayed for over 3 minutes instead of 5 seconds.
+//
+// Applies to: English PC EGA Floppy, Japanese PC-98
+// Responsible method: rmScript:changeState
+// Fixes bug #6193
+static const uint16 sq4SignatureEgaIntroDelay[] = {
+	SIG_MAGICDWORD,
+	0x89, 0x69,                         // lsg 69 [ system colors ]
+	0x35, 0x10,                         // ldi 10
+	0x1e,                               // gt?    [ system colors > 16 ]
+	0x30,                               // bnt    [ use EGA delay ]
+	SIG_END
+};
+
+static const uint16 sq4PatchEgaIntroDelay[] = {
+	0x33, 0x06,                         // jmp 06 [ don't use EGA delay ]
+	PATCH_END
+};
+
+// Talking in room 520 results in a missing message due to passing the wrong
+//  modNum to the narrator.
+//
+// Applies to: English PC CD
+// Responsible method: rm520:doVerb(2)
+// Fixes bug #10915
+static const uint16 sq4CdSignatureMazeTalkMessage[] = {
+	0x38, SIG_SELECTOR16(modNum),       // pushi modNum
+	SIG_MAGICDWORD,
+	0x78,                               // push1
+	0x38, SIG_UINT16(0x01fe),           // pushi 01fe [ incorrect modNum: 510 ]
+	0x38, SIG_SELECTOR16(say),          // pushi say
+	SIG_END,
+};
+
+static const uint16 sq4CdPatchMazeTalkMessage[] = {
+	PATCH_ADDTOOFFSET(+4),
+	0x38, PATCH_UINT16(0x01f4),         // pushi 01f4 [ correct modNum: 500 ]
+	PATCH_END
+};
+
+// Smelling the sidewalk in room 35 results in a missing message due to not
+//  passing the cond parameter to Sq4GlobalNarrator:say. We pass the parameter
+//  and make room by removing an unused parameter passed to theRoom:doVerb.
+//
+// Applies to: English PC CD
+// Responsible method: sidewalk1:doVerb(6)
+// Fixes bug #10917
+static const uint16 sq4CdSignatureSidewalkSmellMessage[] = {
+	0x31, 0x10,                         // bnt 10
+	SIG_ADDTOOFFSET(+9),
+	SIG_MAGICDWORD,
+	0x76,                               // push0
+	0x81, 0x59,                         // lag 59
+	0x4a, 0x0a,                         // send 0a [ Sq4GlobalNarrator modNum: 25 say: ]
+	0x33, 0x24,                         // jmp 24  [ end of method ]
+	0x3c,                               // dup
+	0x35, 0x09,                         // ldi 09 [ rope ]
+	0x1a,                               // eq?
+	0x31, 0x15,                         // bnt 15
+	0x38, SIG_ADDTOOFFSET(+2),          // pushi doVerb
+	0x7a,                               // push2
+	0x8f, 0x01,                         // lsp 01 [ verb ]
+	0x8f, 0x02,                         // lsp 02 [ unused by theRoom:doVerb ]
+	SIG_ADDTOOFFSET(+9),
+	0x4a, 0x08,                         // send 08 [ theRoom doVerb: verb param2 ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchSidewalkSmellMessage[] = {
+	0x31, 0x12,                         // bnt 12
+	PATCH_ADDTOOFFSET(+9),
+	0x78,                               // push1
+	0x39, 0x0b,                         // push 0b
+	0x81, 0x59,                         // lag 59
+	0x4a, 0x0c,                         // send 0c [ Sq4GlobalNarrator modNum: 25 say: 11 ]
+	0x33, 0x22,                         // jmp 22  [ end of method ]
+	0x3c,                               // dup
+	0x35, 0x09,                         // ldi 09 [ rope ]
+	0x1a,                               // eq?
+	0x31, 0x13,                         // bnt 13
+	0x38, PATCH_GETORIGINALUINT16(+25), // pushi doVerb
+	0x78,                               // push1
+	0x8f, 0x01,                         // lsp 01 [ verb ]
+	PATCH_ADDTOOFFSET(+9),
+	0x4a, 0x06,                         // send 06 [ theRoom doVerb: verb ]
+	PATCH_END
+};
+
+// Talking to the red shopper in the mall has a 5% chance of a funny message but
+//  this script is broken in the CD version. After the first time the wrong
+//  message tuple is attempted by the narrator as its modNum value is cleared.
+//  The message text is also accidentally repeated in a message box.
+//
+// We fix this by specifying the modNum when saying the message and removing
+//  the erroneous message box call.
+//
+// Applies to: English PC CD
+// Responsible method: shopper3:doVerb(2)
+// Fixes bug #10911
+static const uint16 sq4CdSignatureRedShopperMessageFix[] = {
+	0x38, SIG_SELECTOR16(say),          // pushi say
+	0x78,                               // push1
+	SIG_MAGICDWORD,
+	0x78,                               // push1
+	0x72, SIG_UINT16(0x057a),           // lofsa wierdNar
+	0x4a, 0x06,                         // send 06 [ wierdNar say: 1 ]
+	0x78,                               // push1
+	0x72, SIG_UINT16(0x0660),           // lofsa "Mr. Carlos sent me..."
+	0x36,                               // push
+	0x46, SIG_UINT16(0x0399),           // calle proc921_0 [ message box ]
+	      SIG_UINT16(0x0000), 0x02,
+	SIG_END
+};
+
+static const uint16 sq4CdPatchRedShopperMessageFix[] = {
+	0x38, PATCH_SELECTOR16(modNum),     // pushi modNum
+	0x38, PATCH_UINT16(0x0001),         // pushi 0001
+	0x38, PATCH_UINT16(0x02bc),         // pushi 02bc
+	0x38, PATCH_SELECTOR16(say),        // pushi say
+	0x39, 0x01,                         // pushi 01
+	0x39, 0x01,                         // pushi 01
+	0x72, PATCH_UINT16(0x057a),         // lofsa wierdNar
+	0x4a, 0x0c,                         // send 0c [ wierdNar modNum: 700 say: 1 ]
+	PATCH_END
+};
+
+// When swimming in zero gravity in the mall, the game can lock up if the Sequel
+//  Police shoot while ego swims past the edge of the screen.
+//
+// When the Sequel Police shoot, the object "blast" animates near ego. blast is
+//  an obstacle that ego can collide with. If ego is shot at while going beyond
+//  the edge of the screen and blast is in the right position then stayInScript
+//  can lock up due to ego getting stuck on the invisible blast object and never
+//  reaching his destination.
+//
+// We fix this by setting blast's ignore-actors flag so that ego can't collide
+//  with it and get stuck. This does not affect whether or not ego gets shot.
+//
+// Applies to at least: English PC Floppy, English PC CD, probably all versions
+// Responsible method: Heap in scripts 405, 406, 410, and 411
+// Fixes bug #10912
+static const uint16 sq4SignatureZeroGravityBlast[] = {
+	SIG_MAGICDWORD,                     // blast
+	SIG_UINT16(0x0002),                 // yStep = 2
+	SIG_UINT16(0x001c),                 // view = 128
+	SIG_UINT16(0x0000),                 // loop = 0
+	SIG_UINT16(0x0000),                 // cel = 0
+	SIG_UINT16(0x0000),                 // priority = 0
+	SIG_UINT16(0x0000),                 // underBits = 0
+	SIG_UINT16(0x0000),                 // signal = 0
+	SIG_END
+};
+
+static const uint16 sq4PatchZeroGravityBlast[] = {
+	PATCH_ADDTOOFFSET(+12),
+	PATCH_UINT16(0x4000),               // signal = $4000 [ set ignore-actors flag ]
+	PATCH_END
+};
+
+// Cedric the owl from KQ5 appears in the CD version of Ms. Astro Chicken, but a
+//  bug in this easter egg makes it a much rarer occurrence than intended.
+//
+// Every 50 ticks there's a 1 in 21 chance of Cedric appearing if there's no
+//  rock on screen and he hasn't already been killed by colliding with the
+//  player or getting shot by the farmer. The problem is that unless Cedric
+//  appears before the farmer, which is very unlikely, then the farmer's first
+//  bullet will kill Cedric off-screen due to incorrect collision testing.
+//  buckShot:doit tests for collision by calling cedric:onMe, but Cedric isn't
+//  initialized until he first appears, and View:onMe always returns true no
+//  matter what coordinates are being tested if its rectangle isn't initialized.
+//
+// We fix this by initializing Cedric's actor-hidden signal flag on the heap.
+//  This prevents View:onMe from returning true before Cedric is initialized.
+//  The flag is later cleared by cedric:init when he is placed on screen.
+//
+// Applies to: English PC CD
+// Responsible method: Heap in script 290
+// Fixes bug #10920
+static const uint16 sq4CdSignatureCedricEasterEgg[] = {
+	SIG_MAGICDWORD,                     // cedric
+	SIG_UINT16(0x0110),                 // view = 272
+	SIG_UINT16(0x0000),                 // loop = 0
+	SIG_UINT16(0x0000),                 // cel = 0
+	SIG_UINT16(0x000d),                 // priority = 13
+	SIG_UINT16(0x0000),                 // underBits = 0
+	SIG_UINT16(0x0810),                 // signal = $0810
+	SIG_END
+};
+
+static const uint16 sq4CdPatchCedricEasterEgg[] = {
+	PATCH_ADDTOOFFSET(+10),
+	PATCH_UINT16(0x0890),               // signal = $0890 [ set actor-hidden flag ]
+	PATCH_END
+};
+
+// Colliding with Cedric in Ms. Astro Chicken after colliding with an obstacle
+//  locks up the game. cedric:doit doesn't check if the player has been hit
+//  before running killCedricScript. This interferes with the collision scripts'
+//  animations and prevents them from continuing.
+//
+// We fix this by not running killCedricScript if the player has been hit.
+//  Unfortunately there's no single property that can be tested as each
+//  collision script does things differently, so this is a two-part patch.
+//  First, ScrollActor:doChicken is patched to set User:canControl to 0, making
+//  it consistent with the other collision scripts. Second, cedric:doit is
+//  patched to test this value. To make room for this we replace testing
+//  killCedricScript with testing the flag that killCedricScript sets.
+//
+// Applies to: English PC CD
+// Responsible methods: ScrollActor:doChicken, cedric:doit
+// Fixes bug #10920
+static const uint16 sq4CdSignatureCedricLockup1[] = {
+	SIG_MAGICDWORD,
+	0x18,                               // not
+	0x30, SIG_UINT16(0x0049),           // bnt 0049 [ end of method ]
+	0x63, 0x84,                         // pToa deathLoop
+	0x30, SIG_UINT16(0x0044),           // bnt 0044 [ end of method ]
+	0x38, SIG_SELECTOR16(stop),         // pushi stop
+	0x76,                               // push0
+	0x81, 0x64,                         // lag 64
+	0x4a, 0x04,                         // send 04 [ longSong2 stop: ]
+	0x38, SIG_SELECTOR16(stop),         // pushi stop
+	0x76,                               // push0
+	0x72, SIG_UINT16(0x0108),           // lofsa eggSplatting
+	0x4a, 0x04,                         // send 04 [ eggSplatting stop: ]
+	0x39, SIG_SELECTOR8(number),        // pushi number
+	0x78,                               // push1
+	0x67, 0x86,                         // pTos deathMusic
+	0x39, SIG_SELECTOR8(loop),          // pushi loop
+	0x78,                               // push1
+	0x78,                               // push1 [ unnecessary, loop is initialized to 1 on heap ]
+	SIG_ADDTOOFFSET(+7),
+	0x4a, 0x12,                         // send 12 [ theSound number: deathMusic loop: 1 play: self ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchCedricLockup1[] = {
+	0x2f, 0x4b,                         // bt 4b [ end of method ]
+	0x63, 0x84,                         // pToa deathLoop
+	0x31, 0x47,                         // bnt 47 [ end of method ]
+	0x38, PATCH_SELECTOR16(stop),       // pushi stop
+	0x3c,                               // dup
+	0x76,                               // push0
+	0x81, 0x64,                         // lag 64
+	0x4a, 0x04,                         // send 04 [ longSong2 stop: ]
+	0x76,                               // push0
+	0x72, PATCH_UINT16(0x0108),         // lofsa eggSplatting
+	0x4a, 0x04,                         // send 04 [ eggSplatting stop: ]
+	0x39, PATCH_SELECTOR8(number),      // pushi number
+	0x78,                               // push1
+	0x67, 0x86,                         // pTos deathMusic
+	0x38, PATCH_SELECTOR16(canControl), // pushi canControl
+	0x78,                               // push1
+	0x76,                               // push0
+	0x81, 0x50,                         // lag 50
+	0x4a, 0x06,                         // send 06 [ User canControl: 0 ]
+	PATCH_ADDTOOFFSET(+7),
+	0x4a, 0x0c,                         // send 0c [ theSound number: deathMusic play: self ]
+	PATCH_END
+};
+
+static const uint16 sq4CdSignatureCedricLockup2[] = {
+	SIG_MAGICDWORD,
+	0x31, 0x17,                         // bnt 17 [ end of method ]
+	0x38, SIG_SELECTOR16(script),       // pushi script
+	0x76,                               // push0
+	0x51, 0x9c,                         // class astroChicken
+	0x4a, 0x04,                         // send 04 [ astroChicken script? ]
+	0x18,                               // not     [ acc = 1 if killCedricScript not running ]
+	0x31, 0x0c,                         // bnt 0c  [ end of method ]
+	0x38, SIG_SELECTOR16(setScript),    // pushi setScript
+	0x78,                               // push1
+	0x72, SIG_UINT16(0x0f7c),           // lofsa killCedricScript
+	0x36,                               // push
+	0x51, 0x9c,                         // class astroChicken
+	0x4a, 0x06,                         // send 06 [ astroChicken setScript: killCedricScript ]
+	0x48,                               // ret
+	0x48,                               // ret
+	SIG_END
+};
+
+static const uint16 sq4CdPatchCedricLockup2[] = {
+	0x31, 0x18,                         // bnt 18 [ end of method ]
+	0x38, PATCH_SELECTOR16(canControl), // pushi canControl
+	0x76,                               // push0
+	0x81, 0x50,                         // lag 50
+	0x4a, 0x04,                         // send 04 [ User canControl? ]
+	0x8b, 0x21,                         // lsl 21  [ local33 = 0 if cedric is alive, 1 if dead ]
+	0x22,                               // lt?     [ acc = 1 if cedric is alive and user has control ]
+	0x31, 0x0b,                         // bnt 0b  [ end of method ]
+	0x38, PATCH_SELECTOR16(setScript),  // pushi setScript
+	0x78,                               // push1
+	0x74, PATCH_UINT16(0x0f7c),         // lofss killCedricScript
+	0x51, 0x9c,                         // class astroChicken
+	0x4a, 0x06,                         // send 06 [ astroChicken setScript: killCedricScript ]
+	PATCH_END
+};
+
+// Dodging a biker in Ulence Flats before they've reached their first checkpoint
+//  causes the player to prematurely regain control, allowing them to break the
+//  game by walking to another room before the dodge sequence completes. This is
+//  due to the biker scripts in each room having an unnecessary handsOn call, so
+//  we remove it. This does not reduce the time that the player has to react,
+//  the scripts theDodgeL and theDodgeR call handsOn when ego crouches.
+//
+// Biker bugs like this only occur in the CD version due to its slower bikes.
+//
+// Applies to: English PC CD
+// Responsible methods: runOverScript1-3:changeState, runOver:changeState,
+//                      runOver2:changeState, runOverScript:changeState
+// Fixes bug #9806
+static const uint16 sq4CdSignatureBikerHandsOn[] = {
+	0x38, SIG_UINT16(0x02bb),           // pushi status [ hard-coded for CD ]
+	0x78,                               // push1
+	SIG_MAGICDWORD,
+	0x39, 0x04,                         // pushi 04
+	0x51, 0x98,                         // class ulence
+	0x4a, 0x06,                         // send 06 [ ulence status: 4 ]
+	0x76,                               // push0
+	0x45, 0x03, 0x00,                   // callb proc0_3 [ handsOn ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchBikerHandsOn[] = {
+	PATCH_ADDTOOFFSET(+10),
+	0x33, 0x02,                         // jmp 02 [ skip handsOn ]
+	PATCH_END
+};
+
+// Clicking Look/Do/etc on an object in Ulence Flats while a biker approaches
+//  can bring ego out of crouch-mode and allow the player to break the game by
+//  walking to another room before the dodge sequence completes. This occurs if
+//  ego isn't facing the object. Ego's heading will be changed and ultimately
+//  stopGroop:doit will reset ego's view to walking.
+//
+// We fix this by clearing ego:looper when placing ego into crouch mode. This
+//  causes Actor:setHeading to instead use kDirLoop which respects the flag
+//  kSignalDoesntTurn. ego:looper is automatically restored after dodging.
+//
+// Applies to: English PC CD
+// Responsible methods: theDodgeR:changeState, theDodgeL:changeState
+// Fixes bug #9806
+static const uint16 sq4CdSignatureBikerCrouchVerb[] = {
+	0x35, 0x01,                         // ldi 01
+	0x1a,                               // eq?
+	0x31, 0x1a,                         // bnt 1a [ state 2 ]
+	0x76,                               // push0
+	SIG_MAGICDWORD,
+	0x45, 0x03, 0x00,                   // callb proc0_3 [ handsOn ]
+	0x7a,                               // push2 [ view ]
+	0x78,                               // push1
+	0x38, SIG_UINT16(0x027b),           // pushi 027b [ crouch ]
+	0x38, SIG_SELECTOR16(setLoop),      // pushi setLoop
+	0x78,                               // push1
+	SIG_ADDTOOFFSET(+1),                // push0 in theDodgeR, push1 in theDodgeL
+	0x38, SIG_SELECTOR16(setCel),       // pushi setCel
+	0x78,                               // push1
+	0x76,                               // push0
+	0x81, 0x00,                         // lag 00
+	0x4a, 0x12,                         // send 12 [ ego view: 635 setLoop: * setCel: 0 ]
+	0x32,                               // jmp [ end of method ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchBikerCrouchVerb[] = {
+	0x18,                               // not [ save a byte ]
+	0x1a,                               // eq?
+	0x31, 0x1b,                         // bnt 1b [ state 2 ]
+	0x76,                               // push0
+	0x39, PATCH_SELECTOR8(looper),      // pushi looper
+	0x78,                               // push1
+	0x76,                               // push0
+	PATCH_ADDTOOFFSET(+17),
+	0x4a, 0x18,                         // send 18 [ ego looper: 0 view: 635 setLoop: * setCel: 0 ]
+	0x45, 0x03, 0x00,                   // callb proc0_3 [ handsOn ]
+	PATCH_END
+};
+
+// Clicking Do on the Ulence Flats bar door in room 610 while a biker approaches
+//  causes ego to enter the bar before the dodge sequence completes, breaking
+//  the game. Sierra forgot to test ulence:egoBusy as they did when clicking on
+//  the timepod in room 613.
+//
+// We fix this by testing ulence:egoBusy before running enterBar in door:doVerb.
+//  Fortunately there is already an unnecessary script test we can overwrite.
+//  This script test was copied from rm610:doit where it is necessary.
+//
+// Applies to: English PC CD
+// Responsible method: door:doVerb(4)
+// Fixes bug #9806
+static const uint16 sq4CdSignatureBikerBarDoor[] = {
+	0x38, SIG_SELECTOR16(script),       // pushi script
+	0x76,                               // push0
+	0x81, 0x02,                         // lag 02
+	0x4a, 0x04,                         // send 04 [ rm610 script? ]
+	0x36,                               // push
+	0x72, SIG_UINT16(0x014a),           // lofsa enterBar
+	SIG_MAGICDWORD,
+	0x1a,                               // eq? [ rm610:script == enterBar ]
+	0x18,                               // not
+	0x30, SIG_UINT16(0x0019),           // bnt 0019 [ don't run enterBar ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchBikerBarDoor[] = {
+	0x38, PATCH_UINT16(0x02cc),         // pushi egoBusy [ hard-coded for CD ]
+	0x76,                               // push0
+	0x51, 0x98,                         // class ulence
+	0x4a, 0x04,                         // send 04 [ ulence egoBusy? ]
+	0x18,                               // not
+	0x32, PATCH_UINT16(0x0002),         // jmp 0002
+	PATCH_END
+};
+
+// The door to Sock's is immediately disposed of in the CD version, breaking its
+//  Look message and preventing it from being drawn when restoring a saved game.
+//  We remove the incorrect dispose call along with a redundant addToPic.
+//
+// Applies to: English PC CD
+// Responsible method: rm370:init
+// Fixes bug #10914
+static const uint16 sq4CdSignatureSocksDoor[] = {
+	0x38, SIG_SELECTOR16(addToPic),     // pushi addToPic
+	0x76,                               // push0
+	0x39, SIG_SELECTOR8(dispose),       // pushi dispose
+	0x76,                               // push0
+	SIG_MAGICDWORD,
+	0x72, SIG_UINT16(0x0176),           // lofsa door
+	0x4a, 0x08,                         // send 08 [ door addToPic: dispose: ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchSocksDoor[] = {
+	0x32, PATCH_UINT16(0x0009),         // jmp 0009
+	PATCH_END
+};
+
 // The scripts in SQ4CD support simultaneous playing of speech and subtitles,
 // but this was not available as an option. The following two patches enable
 // this functionality in the game's GUI options dialog.
@@ -10712,12 +11636,31 @@ static const uint16 sq4CdPatchTextOptions[] = {
 
 //          script, description,                                      signature                                      patch
 static const SciScriptPatcherEntry sq4Signatures[] = {
+	{  true,     1, "Floppy: EGA intro delay fix",                    2, sq4SignatureEgaIntroDelay,                     sq4PatchEgaIntroDelay },
 	{  true,   298, "Floppy: endless flight",                         1, sq4FloppySignatureEndlessFlight,               sq4FloppyPatchEndlessFlight },
 	{  true,   700, "Floppy: throw stuff at sequel police bug",       1, sq4FloppySignatureThrowStuffAtSequelPoliceBug, sq4FloppyPatchThrowStuffAtSequelPoliceBug },
+	{  true,    35, "CD: sidewalk smell message fix",                 1, sq4CdSignatureSidewalkSmellMessage,            sq4CdPatchSidewalkSmellMessage },
 	{  true,    45, "CD: walk in from below for room 45 fix",         1, sq4CdSignatureWalkInFromBelowRoom45,           sq4CdPatchWalkInFromBelowRoom45 },
+	{  true,   290, "CD: cedric easter egg fix",                      1, sq4CdSignatureCedricEasterEgg,                 sq4CdPatchCedricEasterEgg },
+	{  true,   290, "CD: cedric lockup fix (1/2)",                    1, sq4CdSignatureCedricLockup1,                   sq4CdPatchCedricLockup1 },
+	{  true,   290, "CD: cedric lockup fix (2/2)",                    1, sq4CdSignatureCedricLockup2,                   sq4CdPatchCedricLockup2 },
+	{  true,   370, "CD: sock's door restore and message fix",        1, sq4CdSignatureSocksDoor,                       sq4CdPatchSocksDoor },
 	{  true,   391, "CD: missing Audio for universal remote control", 1, sq4CdSignatureMissingAudioUniversalRemote,     sq4CdPatchMissingAudioUniversalRemote },
 	{  true,   396, "CD: get points for changing back clothes fix",   1, sq4CdSignatureGetPointsForChangingBackClothes, sq4CdPatchGetPointsForChangingBackClothes },
+	{  true,   405, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
+	{  true,   406, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
+	{  true,   410, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
+	{  true,   411, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
+	{  true,   520, "CD: maze talk message fix",                      1, sq4CdSignatureMazeTalkMessage,                 sq4CdPatchMazeTalkMessage },
+	{  true,   610, "CD: biker bar door fix",                         1, sq4CdSignatureBikerBarDoor,                    sq4CdPatchBikerBarDoor },
+	{  true,   610, "CD: biker hands-on fix",                         3, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   611, "CD: biker hands-on fix",                         1, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   612, "CD: biker hands-on fix",                         2, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   613, "CD: biker hands-on fix",                         2, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   614, "CD: biker hands-on fix",                         1, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   700, "CD: red shopper message fix",                    1, sq4CdSignatureRedShopperMessageFix,            sq4CdPatchRedShopperMessageFix },
 	{  true,   701, "CD: getting shot, while getting rope",           1, sq4CdSignatureGettingShotWhileGettingRope,     sq4CdPatchGettingShotWhileGettingRope },
+	{  true,   706, "CD: biker crouch verb fix",                      2, sq4CdSignatureBikerCrouchVerb,                 sq4CdPatchBikerCrouchVerb },
 	{  true,     0, "CD: Babble icon speech and subtitles fix",       1, sq4CdSignatureBabbleIcon,                      sq4CdPatchBabbleIcon },
 	{  true,   818, "CD: Speech and subtitles option",                1, sq4CdSignatureTextOptions,                     sq4CdPatchTextOptions },
 	{  true,   818, "CD: Speech and subtitles option button",         1, sq4CdSignatureTextOptionsButton,               sq4CdPatchTextOptionsButton },
@@ -12147,9 +13090,11 @@ void ScriptPatcher::processScript(uint16 scriptNr, SciSpan<byte> scriptData) {
 					// Similar signatures that patch with different addresses/offsets
 					enablePatch(signatureTable, "CD: fix guild tunnel access (3/3)");
 					enablePatch(signatureTable, "CD: fix crest bookshelf");
+					enablePatch(signatureTable, "CD: fix peer bats, upper door (2/2)");
 				} else {
 					enablePatch(signatureTable, "Floppy: fix guild tunnel access (3/3)");
 					enablePatch(signatureTable, "Floppy: fix crest bookshelf");
+					enablePatch(signatureTable, "Floppy: fix peer bats, upper door (2/2)");
 				}
 				break;
 			default:

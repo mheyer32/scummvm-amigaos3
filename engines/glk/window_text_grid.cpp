@@ -265,6 +265,9 @@ void TextGridWindow::requestLineEvent(char *buf, uint maxlen, uint initlen) {
 
 	if (g_vm->gli_register_arr)
 		_inArrayRock = (*g_vm->gli_register_arr)(buf, maxlen, "&+#!Cn");
+
+	// Switch focus to the new window
+	_windows->inputGuessFocus();
 }
 
 void TextGridWindow::requestLineEventUni(uint32 *buf, uint maxlen, uint initlen) {
@@ -317,6 +320,23 @@ void TextGridWindow::requestLineEventUni(uint32 *buf, uint maxlen, uint initlen)
 
 	if (g_vm->gli_register_arr)
 		_inArrayRock = (*g_vm->gli_register_arr)(buf, maxlen, "&+#!Iu");
+
+	// Switch focus to the new window
+	_windows->inputGuessFocus();
+}
+
+void TextGridWindow::requestCharEvent() {
+	_charRequest = true;
+
+	// Switch focus to the new window
+	_windows->inputGuessFocus();
+}
+
+void TextGridWindow::requestCharEventUni() {
+	_charRequestUni = true;
+
+	// Switch focus to the new window
+	_windows->inputGuessFocus();
 }
 
 void TextGridWindow::cancelLineEvent(Event *ev) {
@@ -370,7 +390,7 @@ void TextGridWindow::cancelLineEvent(Event *ev) {
 	_lineRequestUni = false;
 
 	if (_lineTerminators) {
-		free(_lineTerminators);
+		delete[] _lineTerminators;
 		_lineTerminators = nullptr;
 	}
 
@@ -443,7 +463,7 @@ void TextGridWindow::acceptLine(uint32 keycode) {
 		if (val2 == keycode_Return)
 			val2 = 0;
 		g_vm->_events->store(evtype_LineInput, this, _inLen, val2);
-		free(_lineTerminators);
+		delete[] _lineTerminators;
 		_lineTerminators = nullptr;
 	} else {
 		g_vm->_events->store(evtype_LineInput, this, _inLen, 0);
@@ -624,6 +644,13 @@ void TextGridWindow::redraw() {
 			w += _bbox.right - (x + w);
 			screen.fillRect(Rect::fromXYWH(x, y, w, _font._leading), bgcolor);
 
+			// Draw the caret if necessary
+			if (_windows->getFocusWindow() == this && i == _curY &&
+					(_lineRequest || _lineRequestUni || _charRequest || _charRequestUni)) {
+				_font.drawCaret(Point((x0 + _curX * _font._cellW) * GLI_SUBPIX, y + _font._baseLine));
+			}
+
+			// Write out the text
 			for (k = a, o = x; k < b; k++, o += _font._cellW) {
 				screen.drawStringUni(Point(o * GLI_SUBPIX, y + _font._baseLine), font,
 									 fgcolor, Common::U32String(&ln->_chars[k], 1));

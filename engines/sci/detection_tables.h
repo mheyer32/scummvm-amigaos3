@@ -3261,7 +3261,7 @@ static const struct ADGameDescription SciGameDescriptions[] = {
 	// Censored versions (data files are currently unknown to us): UK, Australia, first English release in Germany
 
 	// for more information on this matter, see:
-	// http://wiki.scummvm.org/index.php/SCI/Phantasmagoria_2_Censorship
+	// https://wiki.scummvm.org/index.php/SCI/Phantasmagoria_2_Censorship
 
 	// Phantasmagoria 2 - English Windows (from jvprat) - US release
 	// Note: Fully uncensored
@@ -5127,6 +5127,14 @@ static const struct ADGameDescription SciGameDescriptions[] = {
 		AD_LISTEND},
 		Common::EN_ANY, Common::kPlatformDOS, ADGF_DEMO, GUIO4(GUIO_NOSPEECH, GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI) },
 
+	// The Dating Pool - English DOSBox Interactive Demo
+	// Itch.IO 2019 release: more bug fixes and polish
+	{ "catdate", "Demo", {
+		{"resource.000", 0, "094b9d3c841fe60076f06cdef3fb1383", 1555073},
+		{"resource.map", 0, "1f7b68ed422eadbf373cc8611bc56f94", 1393},
+		AD_LISTEND},
+		Common::EN_ANY, Common::kPlatformDOS, ADGF_DEMO, GUIO4(GUIO_NOSPEECH, GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI) },
+
 	// SCI Fanmade Games
 	FANMADE("120 Degrees Below Zero", "57f6135bd073802215c9b97f32d6aea3", 504, "03adf530a34557dfc20f848c9572f4d0", 320749),
 	FANMADE("Al Pond: Island Quest 2", "4cba6a5a4c8f66f21935ed78b0511a92", 870, "876587dc9a5ec569287a3dc4b29139d8", 613769),
@@ -5135,7 +5143,8 @@ static const struct ADGameDescription SciGameDescriptions[] = {
 	FANMADE("Another DG Game: I Want My C64 Back", "4a8ca7ca2abd18899ef856f47665e2e9", 588, "12ff558d20c72e42cc6adb408f34d6d8", 150513),
 	FANMADE_L("Another DG Game: I Want My C64 Back", "13dc1d9ebc57daf8895412eee5e39fea", 576, "e2ad60b3a280171429db5c85f158f84a", 141697, Common::FR_FRA),
 	FANMADE("Aquarius: An Aquatic Experience", "2e23bc3b82f22a454be202ea593fb478", 480, "01555c8de683d25405bda270aa1ff014", 272372),
-	FANMADE("Betrayed Alliance", "b1f43f496a83cb8503f290a838b26242", 4062, "e637255aae6191ee92b9e843ad276288", 2367197),
+	FANMADE("Betrayed Alliance 1.0", "b1f43f496a83cb8503f290a838b26242", 4062, "e637255aae6191ee92b9e843ad276288", 2367197),
+	FANMADE("Betrayed Alliance 1.1", "bb776e42e93f8b98006d6481fb73a588", 4080, "ad7bcfa11f914f23ddbe32723700391e", 2391020),
 	FANMADE("Bluntman and Chronic (Politically Correct Version)", "c3ef9fa6c7c5fb840078bf28d87c7f8b", 1362, "441636a9f6f86710844868fded868ee7", 596688),
 	FANMADE("Cascade Quest", "c94efc10d18c040b6e22a1dc6d3adfe1", 3468, "8ada33dfa945f81531e5508240b573de", 1432195),
 	FANMADE("Circus Quest", "35871f6b4e1df56af4113c0203a0b223", 630, "7d6f97d7935d8733f488d4cb74315e5b", 279627),
