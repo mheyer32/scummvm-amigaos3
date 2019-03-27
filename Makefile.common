@@ -195,6 +195,10 @@ AMIGA_DATE = $(shell gdate '+%d.%m.%Y')
 base/version.o: CXXFLAGS:=$(CXXFLAGS) -DAMIGA_DATE=\"$(AMIGA_DATE)\"
 endif
 
+ifdef MORPHOS
+base/version.o: CXXFLAGS:=$(CXXFLAGS)
+endif
+
 ######################################################################
 # Get git's working copy information
 ######################################################################
