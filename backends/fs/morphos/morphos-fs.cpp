@@ -328,7 +328,7 @@ AbstractFSNode *MorphOSFilesystemNode::getParent() const {
 
 	if (isRootNode()) {
 		debug(6, "Root node");
-		LEAVE();
+		//LEAVE();
 		return new MorphOSFilesystemNode(*this);
 	}
 
