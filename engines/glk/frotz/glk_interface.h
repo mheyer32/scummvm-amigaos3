@@ -61,30 +61,20 @@ private:
 public:
 	Pics *_pics;
 	zchar statusline[256];
-	int zcolors[zcolor_NUMCOLORS];
-	int oldstyle;
-	int curstyle;
-	int cury;
-	int curx;
+	uint zcolors[zcolor_NUMCOLORS];
 	int fixforced;
-
-	int curr_font;
-	int prev_font;
-	int temp_font;
 
 	int curr_status_ht;
 	int mach_status_ht;
 
 	Windows _wp;
 	winid_t gos_status;
-	winid_t gos_curwin;
 	int gos_linepending;
 	zchar *gos_linebuf;
 	winid_t gos_linewin;
 	schanid_t gos_channel;
 
-	// Current window and mouse data
-	int cwin;
+	// Mouse data
 	int mwin;
 	int mouse_y;
 	int mouse_x;
@@ -252,11 +242,6 @@ protected:
 	 * Waits for the user to type an input line
 	 */
 	zchar os_read_line(int max, zchar *buf, int timeout, int width, int continued);
-
-	/**
-	 * Set whether reverse video mode is active
-	 */
-	void os_set_reverse_video(bool flag);
 public:
 	/**
 	 * Constructor

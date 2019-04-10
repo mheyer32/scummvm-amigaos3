@@ -316,14 +316,14 @@ struct WindowStyle {
  * Window attributes
  */
 struct Attributes {
-	unsigned fgset   : 1;
-	unsigned bgset   : 1;
-	unsigned reverse : 1;
-	unsigned         : 1;
-	unsigned style   : 4;
-	unsigned fgcolor : 24;
-	unsigned bgcolor : 24;
-	unsigned hyper   : 32;
+	bool fgset      : 1;
+	bool bgset      : 1;
+	bool reverse    : 1;
+	unsigned        : 1;
+	unsigned style  : 4;
+	uint fgcolor;
+	uint bgcolor;
+	uint hyper;
 
 	/**
 	 * Constructor

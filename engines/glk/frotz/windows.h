@@ -63,32 +63,33 @@ class Window {
 		/**
 		 * Get
 		 */
-		operator zword() const {
+		operator uint() const {
 			return _owner->getProperty(_prop);
 		}
 
 		/**
 		 * Set
 		 */
-		PropertyAccessor &operator=(zword val) {
+		PropertyAccessor &operator=(uint val) {
 			_owner->setProperty(_prop, val);
 			return *this;
 		}
 	};
 private:
 	Windows *_windows;
+	int _index;
 	winid_t _win;
-	zword _properties[TRUE_BG_COLOR + 1];
+	uint _properties[TRUE_BG_COLOR + 1];
 private:
 	/**
 	 * Get a property value
 	 */
-	const zword &getProperty(WindowProperty propType);
+	const uint &getProperty(WindowProperty propType);
 
 	/**
 	 * Set a property value
 	 */
-	void setProperty(WindowProperty propType, zword value);
+	void setProperty(WindowProperty propType, uint value);
 
 	/**
 	 * Called when trying to reposition or resize windows. Does special handling for the lower window
@@ -99,6 +100,25 @@ private:
 	 * Updates the local window properties based on an attached Glk window
 	 */
 	void update();
+
+	/**
+	 * Creates a new Glk window to attach to the window
+	 */
+	void createGlkWindow();
+
+	/**
+	 * Updates the current font/style
+	 */
+	void updateStyle();
+public:
+	int _currFont;
+	int _prevFont;
+	int _tempFont;
+	int _currStyle;
+	int _oldStyle;
+	int _quotes;
+	int _dashes;
+	int _spaces;
 public:
 	/**
 	 * Constructor
@@ -108,10 +128,7 @@ public:
 	/**
 	 * Assignment operator
 	 */
-	Window &operator=(winid_t win) {
-		_win = win;
-		return *this;
-	}
+	Window &operator=(winid_t win);
 
 	/**
 	 * Cast operator for getting a Glk window
@@ -120,6 +137,11 @@ public:
 		assert(_win);
 		return _win;
 	}
+
+	/**
+	 * Equality operator
+	 */
+	inline bool operator==(const Window &rhs) { return this == &rhs; }
 
 	/**
 	 * Cast operator for testing if the window has a proper Glk window attached to it
@@ -140,6 +162,41 @@ public:
 	 * Set the position of a window
 	 */
 	void setPosition(const Point &newPos);
+
+	/**
+	 * Set the cursor position
+	 */
+	void setCursor(const Point &newPos);
+
+	/**
+	 * Clear the window
+	 */
+	void clear();
+
+	/**
+	 * Update colors for the window
+	 */
+	void updateColors();
+
+	/**
+	 * Update colors for the window
+	 */
+	void updateColors(uint fore, uint back);
+
+	/**
+	 * Set the font
+	 */
+	uint setFont(uint font);
+
+	/**
+	 * Set the textstyle
+	 */
+	void setStyle(int style = -1);
+
+	/**
+	 * Set reverse video
+	 */
+	void setReverseVideo(bool reverse);
 };
 
 /**
@@ -152,6 +209,7 @@ public:
 	winid_t _background;
 	Window &_lower;
 	Window &_upper;
+	int _cwin;
 public:
 	/**
 	 * Constructor
@@ -172,6 +230,26 @@ public:
 	 * Setup the screen
 	 */
 	void setup(bool isVersion6);
+
+	/**
+	 * Set current window
+	 */
+	void setWindow(int win);
+
+	/**
+	 * Get the current window
+	 */
+	Window &currWin() {
+		return _windows[_cwin];
+	}
+
+	/**
+	 * Get the current window pointer
+	 */
+	winid_t glkWin() const {
+		assert(_windows[_cwin]._win);
+		return _windows[_cwin]._win;
+	}
 };
 
 } // End of namespace Frotz

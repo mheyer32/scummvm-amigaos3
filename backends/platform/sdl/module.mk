@@ -32,6 +32,12 @@ MODULE_OBJS += \
 	amigaos/amigaos.o
 endif
 
+ifdef MORPHOS
+MODULE_OBJS += \
+	morphos/morphos-main.o \
+	morphos/morphos.o
+endif
+
 ifdef RISCOS
 MODULE_OBJS += \
 	riscos/riscos-main.o \

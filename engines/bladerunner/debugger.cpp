@@ -49,6 +49,9 @@
 #include "bladerunner/vqa_player.h"
 #include "bladerunner/waypoints.h"
 #include "bladerunner/zbuffer.h"
+#include "bladerunner/overlays.h"
+#include "bladerunner/subtitles.h"
+
 
 #include "common/debug.h"
 #include "common/str.h"
@@ -88,6 +91,8 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("friend", WRAP_METHOD(Debugger, cmdFriend));
 	registerCmd("load", WRAP_METHOD(Debugger, cmdLoad));
 	registerCmd("save", WRAP_METHOD(Debugger, cmdSave));
+	registerCmd("overlay", WRAP_METHOD(Debugger, cmdOverlay));
+	registerCmd("subtitle", WRAP_METHOD(Debugger, cmdSubtitle));
 }
 
 Debugger::~Debugger() {
@@ -125,7 +130,7 @@ bool Debugger::cmdAnimation(int argc, const char **argv) {
 
 bool Debugger::cmdDraw(int argc, const char **argv) {
 	if (argc != 2) {
-		debugPrintf("Enables debug rendering of actors, screen effect, fogs, lights, scene objects, obstacles, regsions, ui elements, walk boxes, waypoints, zbuffer or disables debug rendering.\n");
+		debugPrintf("Enables debug rendering of actors, screen effect, fogs, lights, scene objects, obstacles, regions, ui elements, walk boxes, waypoints, zbuffer or disables debug rendering.\n");
 		debugPrintf("Usage: %s (act | eff | fog | lit | obj | obstacles | reg | ui | walk | way | zbuf | reset)\n", argv[0]);
 		return true;
 	}
@@ -720,6 +725,136 @@ bool Debugger::cmdSave(int argc, const char **argv) {
 	return false;
 }
 
+/**
+* Will use overlay videos that the game has loaded for the scene
+* at the time of running the command
+* or otherwise will attempt to load the specified overlay to the scene.
+*/
+bool Debugger::cmdOverlay(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 1 && argc != 2 && argc != 3 && argc != 5) {
+		invalidSyntax = true;
+	}
+
+	// Make sure all MIX with VQAs are loaded (including MODE.MIX)
+	if (!_vm->openArchive("MODE.MIX")) {
+		debugPrintf("Error: Could not load resource MODE.MIX\n");
+	}
+	if (!_vm->openArchive("VQA1.MIX")) {
+		debugPrintf("Error: Could not load resource VQA1.MIX\n");
+	}
+	if (!_vm->openArchive("VQA2.MIX")) {
+		debugPrintf("Error: Could not load resource VQA2.MIX\n");
+	}
+	if (!_vm->openArchive("VQA3.MIX")) {
+		debugPrintf("Error: Could not load resource VQA3.MIX\n");
+	}
+
+	if (argc == 1) {
+		// print info for all overlays loaded for the scene
+		debugPrintf("name animationId startFrame endFrame\n");
+		for (int i = 0; i < _vm->_overlays->kOverlayVideos; ++i) {
+			if (_vm->_overlays->_videos[i].loaded) {
+				VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[i].vqaPlayer->_decoder._loopInfo;
+				for (int j = 0; j < loopInfo.loopCount; ++j) {
+					debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[i].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+				}
+			}
+		}
+		return true;
+	}
+
+	if (argc == 2) {
+		// Check if we need to reset (remove) the overlays loaded for the scene
+		Common::String argName = argv[1];
+		if (argName == "reset") {
+			_vm->_overlays->removeAll();
+		} else {
+			debugPrintf("Invalid command usage\n");
+			invalidSyntax = true;
+		}
+	}
+
+	if (argc == 3 || argc == 5) {
+		Common::String overlayName = argv[1];
+		int overlayAnimationId = atoi(argv[2]);
+		bool loopForever = false;
+		LoopSetModes startNowFlag = kLoopSetModeEnqueue;
+
+		if (argc == 5 && atoi(argv[3]) != 0) {
+			loopForever = true;
+		}
+
+		if (argc == 5 && atoi(argv[4]) != 0) {
+			startNowFlag = kLoopSetModeImmediate;
+		}
+
+		if (overlayAnimationId < 0) {
+			debugPrintf("Animation id value must be >= 0!\n");
+			return true;
+		}
+		//
+		// Attempt to load the overlay even if not already loaded for the scene (in _vm->_overlays->_videos)
+		int overlayVideoIdx = _vm->_overlays->play(overlayName, overlayAnimationId, loopForever, startNowFlag, 0);
+		if( overlayVideoIdx == -1 ) {
+			debugPrintf("Could not load the overlay animation: %s in this scene. Try reseting overlays first to free up slots!\n", overlayName.c_str());
+		} else {
+			debugPrintf("Loading overlay animation: %s...\n", overlayName.c_str());
+			VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[overlayVideoIdx].vqaPlayer->_decoder._loopInfo;
+			int overlayAnimationLoopCount = loopInfo.loopCount;
+			if (overlayAnimationLoopCount == 0) {
+				debugPrintf("Error: No valid loops were found for overlay animation named: %s!\n", overlayName.c_str());
+				_vm->_overlays->remove(overlayName.c_str());
+			} else if (overlayAnimationId >= overlayAnimationLoopCount) {
+				debugPrintf("Invalid loop id: %d for overlay animation: %s. Try from 0 to %d.\n",  overlayAnimationId, overlayName.c_str(), overlayAnimationLoopCount-1);
+			} else {
+				// print info about available loops too
+				debugPrintf("Animation: %s loaded. Running loop %d...\n", overlayName.c_str(), overlayAnimationId);
+				for (int j = 0; j < overlayAnimationLoopCount; ++j) {
+					debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[overlayVideoIdx].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+				}
+			}
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Load, list or play loaded overlay animations. Values for loopForever and startNow are boolean.\n");
+		debugPrintf("Usage: %s [[<name> <animationId> [<loopForever> <startNow>]] | reset ]\n", argv[0]);
+	}
+	return true;
+}
+
+/**
+*
+* Show an explicitly specified string as a subtitle
+*/
+bool Debugger::cmdSubtitle(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 2) {
+		invalidSyntax = true;
+	} else {
+		Common::String subtitleText = argv[1];
+		if (subtitleText == "reset") {
+			_vm->_subtitles->setGameSubsText("", false);
+		} else {
+			debugPrintf("Showing text: %s\n", subtitleText.c_str());
+			_vm->_subtitles->setGameSubsText(subtitleText, true);
+			_vm->_subtitles->show();
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Show specified text as subtitle or clear the current subtitle (with the reset option).\n");
+		debugPrintf("Use double quotes to encapsulate the text.\n");
+		debugPrintf("Usage: %s (\"<text_to_display>\" | reset)\n", argv[0]);
+	}
+	return true;
+
+}
+
+
 void Debugger::drawDebuggerOverlay() {
 	if (_viewSceneObjects) drawSceneObjects();
 	if (_viewScreenEffects) drawScreenEffects();
@@ -812,7 +947,6 @@ void Debugger::drawLights() {
 		Light *light = _vm->_lights->_lights[i];
 		Matrix4x3 m = light->_matrix;
 		m = invertMatrix(m);
-		//todo do this properly
 		Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
 		float t = posOrigin.y;
 		posOrigin.y = posOrigin.z;
@@ -847,7 +981,6 @@ void Debugger::drawFogs() {
 		// m = invertMatrix(m);
 		Matrix4x3 m = fog->_inverted;
 
-		//todo do this properly
 		Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
 		float t = posOrigin.y;
 		posOrigin.y = posOrigin.z;

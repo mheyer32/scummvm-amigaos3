@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: ScummVM 1.10.0git\n"
 "Report-Msgid-Bugs-To: scummvm-devel@lists.scummvm.org\n"
 "POT-Creation-Date: 2019-02-06 20:18+0100\n"
-"PO-Revision-Date: 2019-02-16 10:16+0000\n"
+"PO-Revision-Date: 2019-02-17 19:56+0000\n"
 "Last-Translator: Lothar Serra Mari <serra@scummvm.org>\n"
 "Language-Team: German <https://translations.scummvm.org/projects/scummvm/"
 "scummvm/de/>\n"
@@ -1230,7 +1230,7 @@ msgstr ""
 
 #: gui/options.cpp:1710
 msgid "Use native system file browser"
-msgstr "verwende betriebsystemeigenen Dateimanager"
+msgstr "Verwende betriebsystemeigenen Dateimanager"
 
 #: gui/options.cpp:1711
 msgid ""
@@ -5305,12 +5305,12 @@ msgstr ""
 #~ "You're missing the 'teenagent.dat' file. Get it from the ScummVM website"
 #~ msgstr ""
 #~ "Ihnen fehlt die Datei \"teenagent.dat\". Laden Sie sich diese von der "
-#~ "ScummVM-Website unter http://www.scummvm.org herunter"
+#~ "ScummVM-Website unter https://www.scummvm.org herunter"
 
 #~ msgid "You're missing the 'toon.dat' file. Get it from the ScummVM website"
 #~ msgstr ""
 #~ "Ihnen fehlt die Datei \"toon.dat\". Laden Sie sich diese von der ScummVM-"
-#~ "Website unter http://www.scummvm.org herunter"
+#~ "Website unter https://www.scummvm.org herunter"
 
 #~ msgid "File 'toon.dat' is corrupt. Get it from the ScummVM website"
 #~ msgstr ""

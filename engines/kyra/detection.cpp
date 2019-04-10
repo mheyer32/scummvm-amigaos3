@@ -20,12 +20,12 @@
  *
  */
 
-#include "kyra/kyra_lok.h"
-#include "kyra/lol.h"
-#include "kyra/kyra_hof.h"
-#include "kyra/kyra_mr.h"
-#include "kyra/eob.h"
-#include "kyra/darkmoon.h"
+#include "kyra/engine/kyra_lok.h"
+#include "kyra/engine/lol.h"
+#include "kyra/engine/kyra_hof.h"
+#include "kyra/engine/kyra_mr.h"
+#include "kyra/engine/eob.h"
+#include "kyra/engine/darkmoon.h"
 
 #include "common/config-manager.h"
 #include "common/system.h"
@@ -245,7 +245,7 @@ bool KyraMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGame
 		 if (Common::parseRenderMode(ConfMan.get("render_mode")) == Common::kRenderEGA)
 			 flags.useHiRes = true;
 		 if (platform == Common::kPlatformFMTowns && !flags.useHiColorMode)
-			 error("EOB ÌI FM-TOWNS requires support of 16bit color modes which has not been activated in your ScummVM build (The 'USE_RGB_COLOR' define has not been set).");
+			 error("EOB II FM-TOWNS requires support of 16bit color modes which has not been activated in your ScummVM build (The 'USE_RGB_COLOR' define has not been set).");
 		*engine = new Kyra::DarkMoonEngine(syst, flags);
 		break;
 #endif // ENABLE_EOB

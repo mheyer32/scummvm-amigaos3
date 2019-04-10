@@ -185,8 +185,10 @@ void Events::pollEvents() {
 
 		switch (event.type) {
 		case Common::EVENT_KEYDOWN:
-			setCursor(CURSOR_NONE);
-			handleKeyDown(event.kbd);
+			if (!isModifierKey(event.kbd.keycode)) {
+				setCursor(CURSOR_NONE);
+				handleKeyDown(event.kbd);
+			}
 			return;
 
 		case Common::EVENT_LBUTTONDOWN:
@@ -220,28 +222,29 @@ void Events::handleKeyDown(const Common::KeyState &ks) {
 	Windows &windows = *g_vm->_windows;
 
 	if (ks.flags & Common::KBD_CTRL) {
-		if (ks.keycode == Common::KEYCODE_a)
-			windows.inputHandleKey(keycode_Home);
-		else if (ks.keycode == Common::KEYCODE_c)
-			clipboard.clipboardSend(CLIPBOARD);
-		else if (ks.keycode == Common::KEYCODE_e)
-			windows.inputHandleKey(keycode_End);
-		else if (ks.keycode == Common::KEYCODE_u)
-			windows.inputHandleKey(keycode_Escape);
-		else if (ks.keycode == Common::KEYCODE_v)
-			clipboard.clipboardReceive(CLIPBOARD);
-		else if (ks.keycode == Common::KEYCODE_x)
-			clipboard.clipboardSend(CLIPBOARD);
-		else if (ks.keycode == Common::KEYCODE_LEFT || ks.keycode == Common::KEYCODE_KP4)
-			windows.inputHandleKey(keycode_SkipWordLeft);
-		else if (ks.keycode == Common::KEYCODE_RIGHT || ks.keycode == Common::KEYCODE_KP6)
-			windows.inputHandleKey(keycode_SkipWordRight);
+		do {
+			if (ks.keycode == Common::KEYCODE_a)
+				windows.inputHandleKey(keycode_Home);
+			else if (ks.keycode == Common::KEYCODE_c)
+				clipboard.clipboardSend(CLIPBOARD);
+			else if (ks.keycode == Common::KEYCODE_e)
+				windows.inputHandleKey(keycode_End);
+			else if (ks.keycode == Common::KEYCODE_u)
+				windows.inputHandleKey(keycode_Escape);
+			else if (ks.keycode == Common::KEYCODE_v)
+				clipboard.clipboardReceive(CLIPBOARD);
+			else if (ks.keycode == Common::KEYCODE_x)
+				clipboard.clipboardSend(CLIPBOARD);
+			else if (ks.keycode == Common::KEYCODE_LEFT || ks.keycode == Common::KEYCODE_KP4)
+				windows.inputHandleKey(keycode_SkipWordLeft);
+			else if (ks.keycode == Common::KEYCODE_RIGHT || ks.keycode == Common::KEYCODE_KP6)
+				windows.inputHandleKey(keycode_SkipWordRight);
+			else
+				break;
 
-		return;
+			return;
+		} while (false);
 	}
-
-	if (ks.flags & Common::KBD_ALT)
-		return;
 
 	switch (ks.keycode) {
 	case Common::KEYCODE_RETURN:
@@ -322,7 +325,6 @@ void Events::handleKeyDown(const Common::KeyState &ks) {
 	default:
 		windows.inputHandleKey(ks.ascii);
 		break;
-		break;
 	}
 }
 
@@ -365,6 +367,15 @@ void Events::handleButtonUp(bool isLeft, const Point &pos) {
 	}
 }
 
+bool Events::isModifierKey(const Common::KeyCode &keycode) const {
+	return keycode == Common::KEYCODE_LCTRL || keycode == Common::KEYCODE_LALT
+		|| keycode == Common::KEYCODE_RCTRL || keycode == Common::KEYCODE_RALT
+		|| keycode == Common::KEYCODE_LSHIFT || keycode == Common::KEYCODE_RSHIFT
+		|| keycode == Common::KEYCODE_LSUPER || keycode == Common::KEYCODE_RSUPER
+		|| keycode == Common::KEYCODE_CAPSLOCK || keycode == Common::KEYCODE_NUMLOCK
+		|| keycode == Common::KEYCODE_SCROLLOCK;
+}
+
 void Events::waitForPress() {
 	Common::Event e;
 
@@ -372,9 +383,8 @@ void Events::waitForPress() {
 		g_system->getEventManager()->pollEvent(e);
 		g_system->delayMillis(10);
 		checkForNextFrameCounter();
-	} while (!g_vm->shouldQuit() && e.type != Common::EVENT_KEYDOWN &&
-	         e.type != Common::EVENT_LBUTTONDOWN && e.type != Common::EVENT_RBUTTONDOWN &&
-	         e.type != Common::EVENT_MBUTTONDOWN);
+	} while (!g_vm->shouldQuit() && (e.type != Common::EVENT_KEYDOWN || isModifierKey(e.kbd.keycode))
+		&& e.type != Common::EVENT_LBUTTONDOWN && e.type != Common::EVENT_RBUTTONDOWN && e.type != Common::EVENT_MBUTTONDOWN);
 }
 
 void Events::setCursor(CursorId cursorId) {
