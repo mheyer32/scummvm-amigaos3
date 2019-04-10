@@ -60,7 +60,7 @@ def buildStep(ext) {
 
 			freshUpRoot(ext)
 
-			sh "cd ${env.WORKSPACE}/ && ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --disable-mad --prefix=/opt/toolchains/${ext}/ --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
+			sh "cd ${env.WORKSPACE}/ && CC="ccache ${ext}-gcc" CPP="ccache ${ext}-cpp" CXX="ccache ${ext}-g++" ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --disable-mad --prefix=/opt/toolchains/${ext}/ --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
 			if (!env.CHANGE_ID) {
 				sh "mkdir -p ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
       }
@@ -72,15 +72,10 @@ def buildStep(ext) {
 
 
 			if (!env.CHANGE_ID) {
-
-				sh "echo '${env.BUILD_NUMBER}|${env.BUILD_URL}' > ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/BUILD"
-
 				sh "cd ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/ && lha c ../scummvm-${ext}.lha *"
-				
 				sh "rm -rfv ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/*"
-				
+				sh "echo '${env.BUILD_NUMBER}|${env.BUILD_URL}' > ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/BUILD"
 				sh "mv -fv ${env.WORKSPACE}/publishing/deploy/scummvm/scummvm-${ext}.lha ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
-				
 			}
 
 			if (env.TAG_NAME) {
