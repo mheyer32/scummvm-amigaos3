@@ -123,14 +123,19 @@ node('master') {
 	def fixed_job_name = env.JOB_NAME.replace('%2F','/')
 	slackSend color: "good", channel: "#jenkins", message: "Build Started: ${fixed_job_name} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
 	parallel (
-		'Build Amiga OS3.x version': {
+		'Build AmigaOS3.x version': {
 			node {			
 				buildStep('m68k-amigaos')
 			}
 		},
-    'Build Amiga OS4 version': {
+  		'Build AmigaOS4.x version': {
 			node {			
 				buildStep('ppc-amigaos')
+			}
+		},
+  		'Build MorphOS version': {
+			node {			
+				buildStep('ppc-morphos')
 			}
 		}
 	)
