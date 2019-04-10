@@ -64,7 +64,7 @@ def buildStep(ext) {
 			if (!env.CHANGE_ID) {
 				sh "mkdir -p ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
       }
-			sh "cd ${env.WORKSPACE}/build-${ext} && make -j8 "
+			//sh "cd ${env.WORKSPACE}/build-${ext} && make -j8 "
 
 
 			sh "cd ${env.WORKSPACE}/build-${ext} && make amigaos3dist -j8"
