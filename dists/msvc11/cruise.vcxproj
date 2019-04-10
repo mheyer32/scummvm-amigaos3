@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{71D7E128-C108-4AEC-9548-3181535CA908}</ProjectGuid>
+		<ProjectGuid>{2407AFF1-84C7-4EA2-BF3D-D5DBBB737A77}</ProjectGuid>
 		<RootNamespace>cruise</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>

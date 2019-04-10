@@ -85,7 +85,7 @@ static const PlainGameDescriptor tinselGames[] = {
 class TinselMetaEngine : public AdvancedMetaEngine {
 public:
 	TinselMetaEngine() : AdvancedMetaEngine(Tinsel::gameDescriptions, sizeof(Tinsel::TinselGameDescription), tinselGames) {
-		_singleid = "tinsel";
+		_singleId = "tinsel";
 	}
 
 	virtual const char *getName() const {
@@ -97,11 +97,12 @@ public:
 	}
 
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
-	const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const;
+	ADDetectedGame fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const override;
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
 	virtual SaveStateList listSaves(const char *target) const;
 	virtual int getMaximumSaveSlot() const;
+	virtual SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
 	virtual void removeSaveState(const char *target, int slot) const;
 };
 
@@ -109,7 +110,11 @@ bool TinselMetaEngine::hasFeature(MetaEngineFeature f) const {
 	return
 		(f == kSupportsListSaves) ||
 		(f == kSupportsLoadingDuringStartup) ||
-		(f == kSupportsDeleteSave);
+		(f == kSupportsDeleteSave) ||
+		(f == kSimpleSavesNames) ||
+		(f == kSavesSupportMetaInfo) ||
+		(f == kSavesSupportPlayTime) ||
+		(f == kSavesSupportCreationDate);
 }
 
 bool Tinsel::TinselEngine::hasFeature(EngineFeature f) const {
@@ -128,6 +133,44 @@ bool Tinsel::TinselEngine::hasFeature(EngineFeature f) const {
 		(f == kSupportsLoadingDuringRuntime);
 }
 
+SaveStateDescriptor TinselMetaEngine::querySaveMetaInfos(const char *target, int slot) const {
+	Common::String fileName;
+	fileName = Common::String::format("%s.%03u", target, slot);
+
+	Common::InSaveFile *file = g_system->getSavefileManager()->openForLoading(fileName);
+
+	if (!file) {
+		return SaveStateDescriptor();
+	}
+
+	file->readUint32LE();		// skip id
+	file->readUint32LE();		// skip size
+	uint32 ver = file->readUint32LE();
+	char saveDesc[Tinsel::SG_DESC_LEN];
+	file->read(saveDesc, sizeof(saveDesc));
+
+	saveDesc[Tinsel::SG_DESC_LEN - 1] = 0;
+	SaveStateDescriptor desc(slot, saveDesc);
+
+	int8 tm_year = file->readUint16LE();
+	int8 tm_mon = file->readSByte();
+	int8 tm_mday = file->readSByte();
+	int8 tm_hour = file->readSByte();
+	int8 tm_min = file->readSByte();
+	file->readSByte(); // skip secs
+
+	desc.setSaveDate(1900 + tm_year, 1 + tm_mon, tm_mday);
+	desc.setSaveTime(tm_hour, tm_min);
+
+	if (ver >= 3) {
+		uint32 playTime = file->readUint32LE(); // playTime in seconds
+		desc.setPlayTime(playTime);
+	}
+
+	delete file;
+	return desc;
+}
+
 namespace Tinsel {
 extern int getList(Common::SaveFileManager *saveFileMan, const Common::String &target);
 }
@@ -136,7 +179,6 @@ SaveStateList TinselMetaEngine::listSaves(const char *target) const {
 	Common::String pattern = target;
 	pattern = pattern + ".###";
 	Common::StringArray files = g_system->getSavefileManager()->listSavefiles(pattern);
-	sort(files.begin(), files.end());	// Sort (hopefully ensuring we are sorted numerically..)
 
 	SaveStateList saveList;
 	int slotNum = 0;
@@ -160,6 +202,8 @@ SaveStateList TinselMetaEngine::listSaves(const char *target) const {
 		}
 	}
 
+	// Sort saves based on slot number.
+	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
 	return saveList;
 }
 
@@ -183,7 +227,7 @@ typedef Common::Array<const ADGameDescription *> ADGameDescList;
  * Fallback detection scans the list of Discworld 2 targets to see if it can detect an installation
  * where the files haven't been renamed (i.e. don't have the '1' just before the extension)
  */
-const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFilesXXX, const Common::FSList &fslist) const {
+ADDetectedGame TinselMetaEngine::fallbackDetect(const FileMap &allFilesXXX, const Common::FSList &fslist) const {
 	Common::String extra;
 	FileMap allFiles;
 	SizeMD5Map filesSizeMD5;
@@ -192,7 +236,7 @@ const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFile
 	const Tinsel::TinselGameDescription *g;
 
 	if (fslist.empty())
-		return NULL;
+		return ADDetectedGame();
 
 	// TODO: The following code is essentially a slightly modified copy of the
 	// complete code of function detectGame() in engines/advancedDetector.cpp.
@@ -227,14 +271,14 @@ const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFile
 
 	// Check which files are included in some dw2 ADGameDescription *and* present
 	// in fslist without a '1' suffix character. Compute MD5s and file sizes for these files.
-	for (g = &Tinsel::gameDescriptions[0]; g->desc.gameid != 0; ++g) {
-		if (strcmp(g->desc.gameid, "dw2") != 0)
+	for (g = &Tinsel::gameDescriptions[0]; g->desc.gameId != 0; ++g) {
+		if (strcmp(g->desc.gameId, "dw2") != 0)
 			continue;
 
 		for (fileDesc = g->desc.filesDescriptions; fileDesc->fileName; fileDesc++) {
 			// Get the next filename, stripping off any '1' suffix character
 			char tempFilename[50];
-			strcpy(tempFilename, fileDesc->fileName);
+			Common::strlcpy(tempFilename, fileDesc->fileName, 50);
 			char *pOne = strchr(tempFilename, '1');
 			if (pOne) {
 				do {
@@ -260,12 +304,12 @@ const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFile
 		}
 	}
 
-	ADGameDescList matched;
+	ADDetectedGame matched;
 	int maxFilesMatched = 0;
 
 	// MD5 based matching
-	for (g = &Tinsel::gameDescriptions[0]; g->desc.gameid != 0; ++g) {
-		if (strcmp(g->desc.gameid, "dw2") != 0)
+	for (g = &Tinsel::gameDescriptions[0]; g->desc.gameId != 0; ++g) {
+		if (strcmp(g->desc.gameId, "dw2") != 0)
 			continue;
 
 		bool fileMissing = false;
@@ -274,7 +318,7 @@ const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFile
 		for (fileDesc = g->desc.filesDescriptions; fileDesc->fileName; fileDesc++) {
 			// Get the next filename, stripping off any '1' suffix character
 			char tempFilename[50];
-			strcpy(tempFilename, fileDesc->fileName);
+			Common::strlcpy(tempFilename, fileDesc->fileName, 50);
 			char *pOne = strchr(tempFilename, '1');
 			if (pOne) {
 				do {
@@ -308,22 +352,15 @@ const ADGameDescription *TinselMetaEngine::fallbackDetect(const FileMap &allFile
 			for (fileDesc = g->desc.filesDescriptions; fileDesc->fileName; fileDesc++)
 				curFilesMatched++;
 
-			if (curFilesMatched > maxFilesMatched) {
+			if (curFilesMatched >= maxFilesMatched) {
 				maxFilesMatched = curFilesMatched;
 
-				matched.clear();	// Remove any prior, lower ranked matches.
-				matched.push_back((const ADGameDescription *)g);
-			} else if (curFilesMatched == maxFilesMatched) {
-				matched.push_back((const ADGameDescription *)g);
+				matched = ADDetectedGame(&g->desc);
 			}
 		}
 	}
 
-	// We didn't find a match
-	if (matched.empty())
-		return NULL;
-
-	return *matched.begin();
+	return matched;
 }
 
 int TinselMetaEngine::getMaximumSaveSlot() const { return 99; }

@@ -68,8 +68,8 @@ static const ADExtraGuiOptionsMap optionsList[] = {
 	{
 		GAMEOPTION_ORIGINAL_SAVES,
 		{
-			_s("Use original savegame dialog"),
-			_s("Files button in-game shows original savegame dialog rather than the ScummVM menu"),
+			_s("Use original save/load screens"),
+			_s("Use the original save/load screens instead of the ScummVM ones"),
 			"originalsaveload",
 			false
 		}
@@ -137,11 +137,11 @@ public:
 		sherlockGames, optionsList) {}
 
 	virtual const char *getName() const {
-		return "Sherlock Engine";
+		return "Sherlock";
 	}
 
 	virtual const char *getOriginalCopyright() const {
-		return "Sherlock Engine (C) 1992-1996 Mythos Software, 1992-1996 (C) Electronic Arts";
+		return "Sherlock (C) 1992-1996 Mythos Software, (C) 1992-1996 Electronic Arts";
 	}
 
 	/**
@@ -199,7 +199,10 @@ bool SherlockMetaEngine::hasFeature(MetaEngineFeature f) const {
 		(f == kSupportsLoadingDuringStartup) ||
 		(f == kSupportsDeleteSave) ||
 		(f == kSavesSupportMetaInfo) ||
-		(f == kSavesSupportThumbnail);
+		(f == kSavesSupportThumbnail) ||
+		(f == kSavesSupportCreationDate) ||
+		(f == kSavesSupportPlayTime) ||
+		(f == kSimpleSavesNames);
 }
 
 bool Sherlock::SherlockEngine::hasFeature(EngineFeature f) const {
@@ -232,7 +235,10 @@ SaveStateDescriptor SherlockMetaEngine::querySaveMetaInfos(const char *target, i
 
 	if (f) {
 		Sherlock::SherlockSavegameHeader header;
-		Sherlock::SaveManager::readSavegameHeader(f, header);
+		if (!Sherlock::SaveManager::readSavegameHeader(f, header, false)) {
+			delete f;
+			return SaveStateDescriptor();
+		}
 		delete f;
 
 		// Create the return descriptor

@@ -21,6 +21,7 @@
  */
 
 #include "common/config-manager.h"
+#include "audio/mixer.h"
 
 #include "agi/agi.h"
 #include "agi/graphics.h"
@@ -68,7 +69,7 @@ byte AgiEngine::getVar(int16 varNr) {
 	switch (varNr) {
 	case VM_VAR_SECONDS:
 		getVarSecondsHeuristicTrigger();
-		// is supposed to fall through
+		// fall through
 	case VM_VAR_MINUTES:
 	case VM_VAR_HOURS:
 	case VM_VAR_DAYS:
@@ -111,7 +112,7 @@ void AgiEngine::setVolumeViaScripts(byte newVolume) {
 	if (!_setVolumeBrokenFangame) {
 		// In AGI 15 is mute, 0 is loudest
 		// Some fan games set this incorrectly as 15 for loudest, 0 for mute
-		newVolume = 15 - newVolume; // turn volume around
+	newVolume = 15 - newVolume; // turn volume around
 	}
 
 	int scummVMVolume = newVolume * Audio::Mixer::kMaxMixerVolume / 15;
@@ -246,7 +247,7 @@ void AgiEngine::setVarSecondsTrigger(byte newSeconds) {
 // This is also called in the main loop, because the game needs to be sync'd to 20 cycles per second
 void AgiEngine::inGameTimerUpdate() {
 	uint32 curPlayTimeMilliseconds = inGameTimerGet();
-	uint32 curPlayTimeCycles = curPlayTimeMilliseconds / 50;
+	uint32 curPlayTimeCycles = curPlayTimeMilliseconds / 25;
 
 	if (curPlayTimeCycles == _lastUsedPlayTimeInCycles) {
 		// No difference, skip updating
@@ -293,7 +294,7 @@ void AgiEngine::inGameTimerUpdate() {
 		}
 		if (secondsLeft >= 3600) {
 			curHours += secondsLeft / 3600;
-			secondsLeft = secondsLeft % 3600;
+	secondsLeft = secondsLeft % 3600;
 		}
 		if (secondsLeft >= 60) {
 			curMinutes += secondsLeft / 60;
@@ -315,10 +316,10 @@ void AgiEngine::inGameTimerUpdate() {
 		}
 
 		// directly set them
-		_game.vars[VM_VAR_SECONDS] = curSeconds;
-		_game.vars[VM_VAR_MINUTES] = curMinutes;
-		_game.vars[VM_VAR_HOURS] = curHours;
-		_game.vars[VM_VAR_DAYS] = curDays;
+	_game.vars[VM_VAR_SECONDS] = curSeconds;
+	_game.vars[VM_VAR_MINUTES] = curMinutes;
+	_game.vars[VM_VAR_HOURS] = curHours;
+	_game.vars[VM_VAR_DAYS] = curDays;
 	}
 
 	_lastUsedPlayTimeInSeconds = curPlayTimeSeconds;

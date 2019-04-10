@@ -38,7 +38,7 @@ bool LoLEngine::snd_playCharacterSpeech(int id, int8 speaker, int) {
 
 	if (speaker < 65) {
 		if (_characters[speaker].flags & 1)
-			speaker = (int) _characters[speaker].name[0];
+			speaker = (int)_characters[speaker].name[0];
 		else
 			speaker = 0;
 	}
@@ -161,11 +161,11 @@ void LoLEngine::snd_playSoundEffect(int track, int volume) {
 		return;
 
 	_lastSfxTrack = track;
-	if (track == -1 || track >= _ingameSoundIndexSize)
+	if (track == -1 || track >= _ingameSoundIndexSize / 2)
 		return;
 
 	volume &= 0xFF;
-	int16 prIndex = (int16)READ_LE_UINT16(&_ingameSoundIndex[track * 2 + 1]);
+	int16 prIndex = _ingameSoundIndex[track * 2 + 1];
 	uint16 priority = (prIndex > 0) ? (prIndex * volume) >> 8 : -prIndex;
 
 	static const uint8 volTable1[] = { 223, 159, 95, 47, 15, 0 };
@@ -178,7 +178,7 @@ void LoLEngine::snd_playSoundEffect(int track, int volume) {
 		}
 	}
 
-	int16 vocIndex = (int16)READ_LE_UINT16(&_ingameSoundIndex[track * 2]);
+	int16 vocIndex = _ingameSoundIndex[track * 2];
 
 	bool hasVocFile = false;
 	if (vocIndex != -1) {

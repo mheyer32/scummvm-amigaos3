@@ -23,6 +23,7 @@
 #define FORBIDDEN_SYMBOL_EXCEPTION_printf
 
 #include "common/config-manager.h"
+#include "common/str.h"
 #include "common/zlib.h"
 
 // #include "backends/saves/compressed/compressed-saves.h"
@@ -82,7 +83,11 @@ void Ps2SaveFileManager::mcSplit(char *full, char *game, char *ext) {
 	// TODO
 }
 
-Common::InSaveFile *Ps2SaveFileManager::openForLoading(const Common::String &filename) {
+void Ps2SaveFileManager::updateSavefilesList(Common::StringArray &lockedFiles) {
+	// TODO: implement this (locks files, preventing them from being listed, saved or loaded)
+}
+
+Common::InSaveFile *Ps2SaveFileManager::openRawFile(const Common::String &filename) {
 	Common::FSNode savePath(ConfMan.get("savepath")); // TODO: is this fast?
 	Common::SeekableReadStream *sf;
 
@@ -111,8 +116,8 @@ Common::InSaveFile *Ps2SaveFileManager::openForLoading(const Common::String &fil
 			strcpy(temp, filename.c_str());
 
 			// mcSplit(temp, game, ext);
-			char *game = strdup(strtok(temp, "."));
-			char *ext = strdup(strtok(NULL, "*"));
+			char *game = scumm_strdup(strtok(temp, "."));
+			char *ext = scumm_strdup(strtok(NULL, "*"));
 			sprintf(path, "mc0:ScummVM/%s", game); // per game path
 
 			// mcCheck(path); // needed on load ?
@@ -141,7 +146,12 @@ Common::InSaveFile *Ps2SaveFileManager::openForLoading(const Common::String &fil
 
 	// _screen->wantAnim(false);
 
-	return Common::wrapCompressedReadStream(sf);
+	return sf;
+}
+
+Common::InSaveFile *Ps2SaveFileManager::openForLoading(const Common::String &filename) {
+	Common::SeekableReadStream *sf = openRawFile(filename);
+	return (sf == NULL ? NULL : Common::wrapCompressedReadStream(sf));
 }
 
 Common::OutSaveFile *Ps2SaveFileManager::openForSaving(const Common::String &filename, bool compress) {
@@ -174,8 +184,8 @@ Common::OutSaveFile *Ps2SaveFileManager::openForSaving(const Common::String &fil
 			strcpy(temp, filename.c_str());
 
 			// mcSplit(temp, game, ext);
-			char *game = strdup(strtok(temp, "."));
-			char *ext = strdup(strtok(NULL, "*"));
+			char *game = scumm_strdup(strtok(temp, "."));
+			char *ext = scumm_strdup(strtok(NULL, "*"));
 			sprintf(path, "mc0:ScummVM/%s", game); // per game path
 			mcCheck(path);
 			sprintf(path, "mc0:ScummVM/%s/%s.sav", game, ext);
@@ -192,7 +202,7 @@ Common::OutSaveFile *Ps2SaveFileManager::openForSaving(const Common::String &fil
 	}
 
 	_screen->wantAnim(false);
-	return compress ? Common::wrapCompressedWriteStream(sf) : sf;
+	return new Common::OutSaveFile(compress ? Common::wrapCompressedWriteStream(sf) : sf);
 }
 
 bool Ps2SaveFileManager::removeSavefile(const Common::String &filename) {
@@ -208,8 +218,8 @@ bool Ps2SaveFileManager::removeSavefile(const Common::String &filename) {
 		strcpy(temp, filename.c_str());
 
 		// mcSplit(temp, game, ext);
-		char *game = strdup(strtok(temp, "."));
-		char *ext = strdup(strtok(NULL, "*"));
+		char *game = scumm_strdup(strtok(temp, "."));
+		char *ext = scumm_strdup(strtok(NULL, "*"));
 		sprintf(path, "mc0:ScummVM/%s", game); // per game path
 		mcCheck(path);
 		sprintf(path, "mc0:ScummVM/%s/%s.sav", game, ext);
@@ -245,7 +255,7 @@ Common::StringArray Ps2SaveFileManager::listSavefiles(const Common::String &patt
 		strcpy(temp, pattern.c_str());
 
 		// mcSplit(temp, game, ext);
-		game = strdup(strtok(temp, "."));
+		game = scumm_strdup(strtok(temp, "."));
 		sprintf(path, "mc0:ScummVM/%s", game); // per game path
 		mcCheck(path);
 

@@ -1808,7 +1808,7 @@ void Gdi::drawBitmap(const byte *ptr, VirtScreen *vs, int x, const int y, const 
 	// It was added as a kind of hack to fix some corner cases, but it compares
 	// the room width to the virtual screen width; but the former should always
 	// be bigger than the latter (except for MM NES, maybe)... strange
-	int limit = MAX(_vm->_roomWidth, (int) vs->w) / 8 - x;
+	int limit = MAX(_vm->_roomWidth, (int)vs->w) / 8 - x;
 	if (limit > numstrip)
 		limit = numstrip;
 	if (limit > _numStrips - sx)
@@ -3794,6 +3794,11 @@ void ScummEngine::fadeOut(int effect) {
 	if (_game.version == 3 && _game.platform == Common::kPlatformFMTowns)
 		_textSurface.fillRect(Common::Rect(0, vs->topline * _textSurfaceMultiplier, _textSurface.pitch, (vs->topline + vs->h) * _textSurfaceMultiplier), 0);
 #endif
+
+	// V0 wipes the text area before fading out
+	if (_game.version == 0) {
+		updateDirtyScreen(kTextVirtScreen);
+	}
 
 	// TheDig can disable fadeIn(), and may call fadeOut() several times
 	// successively. Disabling the _screenEffectFlag check forces the screen

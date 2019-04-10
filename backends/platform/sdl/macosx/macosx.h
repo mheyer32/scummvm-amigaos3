@@ -28,16 +28,31 @@
 class OSystem_MacOSX : public OSystem_POSIX {
 public:
 	OSystem_MacOSX();
+	~OSystem_MacOSX();
 
 	virtual bool hasFeature(Feature f);
 
 	virtual bool displayLogFile();
+
+	virtual bool hasTextInClipboard();
+	virtual Common::String getTextFromClipboard();
+	virtual bool setTextInClipboard(const Common::String &text);
+
+	virtual bool openUrl(const Common::String &url);
 
 	virtual Common::String getSystemLanguage() const;
 
 	virtual void init();
 	virtual void initBackend();
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s, int priority = 0);
+
+	//Screenshots
+	virtual Common::String getScreenshotsPath();
+
+protected:
+	// Override createAudioCDManager() to get our Mac-specific
+	// version.
+	virtual AudioCDManager *createAudioCDManager();
 };
 
 #endif

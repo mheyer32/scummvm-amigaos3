@@ -38,7 +38,7 @@
 
 namespace Mohawk {
 
-VideoEntry::VideoEntry() : _video(0), _id(-1), _x(0), _y(0), _loop(false), _enabled(true) {
+VideoEntry::VideoEntry() : _video(nullptr), _id(-1), _x(0), _y(0), _loop(false), _enabled(true) {
 }
 
 VideoEntry::VideoEntry(Video::VideoDecoder *video, const Common::String &fileName) : _video(video), _fileName(fileName), _id(-1), _x(0), _y(0), _loop(false), _enabled(true) {
@@ -53,7 +53,7 @@ VideoEntry::~VideoEntry() {
 
 void VideoEntry::close() {
 	delete _video;
-	_video = 0;
+	_video = nullptr;
 }
 
 bool VideoEntry::endOfVideo() const {
@@ -138,15 +138,9 @@ void VideoEntry::setVolume(int volume) {
 	_video->setVolume(CLIP(volume, 0, 255));
 }
 
-VideoHandle::VideoHandle(VideoEntryPtr ptr) : _ptr(ptr) {
-}
-
-VideoHandle::VideoHandle(const VideoHandle &handle) : _ptr(handle._ptr) {
-}
-
-VideoManager::VideoManager(MohawkEngine* vm) : _vm(vm) {
+VideoManager::VideoManager(MohawkEngine *vm) : _vm(vm) {
 	// Set dithering enabled, if required
-	_enableDither = _vm->getGameType() == GType_MYST && !(_vm->getFeatures() & GF_ME);
+	_enableDither = (_vm->getGameType() == GType_MYST || _vm->getGameType() == GType_MAKINGOF) && !(_vm->getFeatures() & GF_ME);
 }
 
 VideoManager::~VideoManager() {
@@ -170,121 +164,19 @@ void VideoManager::stopVideos() {
 	_videos.clear();
 }
 
-void VideoManager::playMovieBlocking(const Common::String &fileName, uint16 x, uint16 y, bool clearScreen) {
-	VideoEntryPtr ptr = open(fileName);
+VideoEntryPtr VideoManager::playMovie(const Common::String &fileName, Audio::Mixer::SoundType soundType) {
+	VideoEntryPtr ptr = open(fileName, soundType);
 	if (!ptr)
-		return;
-
-	ptr->moveTo(x, y);
-
-	// Clear screen if requested
-	if (clearScreen) {
-		_vm->_system->fillScreen(_vm->_system->getScreenFormat().RGBToColor(0, 0, 0));
-		_vm->_system->updateScreen();
-	}
-
-	ptr->start();
-	waitUntilMovieEnds(ptr);
-}
-
-void VideoManager::playMovieBlockingCentered(const Common::String &fileName, bool clearScreen) {
-	VideoEntryPtr ptr = open(fileName);
-	if (!ptr)
-		return;
-
-	// Clear screen if requested
-	if (clearScreen) {
-		_vm->_system->fillScreen(_vm->_system->getScreenFormat().RGBToColor(0, 0, 0));
-		_vm->_system->updateScreen();
-	}
-
-	ptr->center();
-	ptr->start();
-	waitUntilMovieEnds(ptr);
-}
-
-void VideoManager::waitUntilMovieEnds(VideoHandle videoHandle) {
-	if (!videoHandle)
-		return;
-
-	// Sanity check
-	if (videoHandle._ptr->isLooping())
-		error("Called waitUntilMovieEnds() on a looping video");
-
-	bool continuePlaying = true;
-
-	while (!videoHandle->endOfVideo() && !_vm->shouldQuit() && continuePlaying) {
-		if (updateMovies())
-			_vm->_system->updateScreen();
-
-		Common::Event event;
-		while (_vm->_system->getEventManager()->pollEvent(event)) {
-			switch (event.type) {
-			case Common::EVENT_RTL:
-			case Common::EVENT_QUIT:
-				continuePlaying = false;
-				break;
-			case Common::EVENT_KEYDOWN:
-				switch (event.kbd.keycode) {
-				case Common::KEYCODE_SPACE:
-					_vm->pauseGame();
-					break;
-				case Common::KEYCODE_ESCAPE:
-					continuePlaying = false;
-					_vm->doVideoTimer(videoHandle, true);
-					break;
-				default:
-					break;
-			}
-			default:
-				break;
-			}
-		}
-
-		// Cut down on CPU usage
-		_vm->_system->delayMillis(10);
-	}
-
-	// Ensure it's removed
-	removeEntry(videoHandle._ptr);
-}
-
-void VideoManager::delayUntilMovieEnds(VideoHandle videoHandle) {
-	// FIXME: Why is this separate from waitUntilMovieEnds?
-	// It seems to only cut out the event loop (which is bad).
-
-	if (!videoHandle)
-		return;
-
-	// Sanity check
-	if (videoHandle._ptr->isLooping())
-		error("Called delayUntilMovieEnds() on a looping video");
-
-	while (!videoHandle->endOfVideo() && !_vm->shouldQuit()) {
-		if (updateMovies())
-			_vm->_system->updateScreen();
-
-		// Cut down on CPU usage
-		_vm->_system->delayMillis(10);
-	}
-
-	// Ensure it's removed
-	removeEntry(videoHandle._ptr);
-}
-
-VideoHandle VideoManager::playMovie(const Common::String &fileName) {
-	VideoEntryPtr ptr = open(fileName);
-	if (!ptr)
-		return VideoHandle();
+		return VideoEntryPtr();
 
 	ptr->start();
 	return ptr;
 }
 
-VideoHandle VideoManager::playMovie(uint16 id) {
+VideoEntryPtr VideoManager::playMovie(uint16 id) {
 	VideoEntryPtr ptr = open(id);
 	if (!ptr)
-		return VideoHandle();
+		return VideoEntryPtr();
 
 	ptr->start();
 	return ptr;
@@ -317,50 +209,10 @@ bool VideoManager::updateMovies() {
 
 		// Check if we need to draw a frame
 		if (video->needsUpdate()) {
-			const Graphics::Surface *frame = video->decodeNextFrame();
-			Graphics::Surface *convertedFrame = 0;
-
-			if (frame && (*it)->isEnabled()) {
-				Graphics::PixelFormat pixelFormat = _vm->_system->getScreenFormat();
-
-				if (frame->format != pixelFormat) {
-					// We don't support downconverting to 8bpp without having
-					// support in the codec. Set _enableDither if shows up.
-					if (pixelFormat.bytesPerPixel == 1) {
-						warning("Cannot convert high color video frame to 8bpp");
-						(*it)->close();
-						it = _videos.erase(it);
-						continue;
-					}
-
-					// Convert to the current screen format
-					convertedFrame = frame->convertTo(pixelFormat, video->getPalette());
-					frame = convertedFrame;
-				} else if (pixelFormat.bytesPerPixel == 1 && video->hasDirtyPalette()) {
-					// Set the palette when running in 8bpp mode only
-					// Don't do this for Myst, which has its own per-stack handling
-					if (_vm->getGameType() != GType_MYST)
-						_vm->_system->getPaletteManager()->setPalette(video->getPalette(), 0, 256);
-				}
-
-				// Clip the width/height to make sure we stay on the screen (Myst does this a few times)
-				uint16 width = MIN<int32>(video->getWidth(), _vm->_system->getWidth() - (*it)->getX());
-				uint16 height = MIN<int32>(video->getHeight(), _vm->_system->getHeight() - (*it)->getY());
-				_vm->_system->copyRectToScreen(frame->getPixels(), frame->pitch, (*it)->getX(), (*it)->getY(), width, height);
-
-				// We've drawn something to the screen, make sure we update it
+			if (drawNextFrame(*it)) {
 				updateScreen = true;
-
-				// Delete 8bpp conversion surface
-				if (convertedFrame) {
-					convertedFrame->free();
-					delete convertedFrame;
-				}
 			}
 		}
-
-		// Check the video time
-		_vm->doVideoTimer(*it, false);
 
 		// Remember to increase the iterator
 		it++;
@@ -370,105 +222,79 @@ bool VideoManager::updateMovies() {
 	return updateScreen;
 }
 
-void VideoManager::activateMLST(uint16 mlstId, uint16 card) {
-	Common::SeekableReadStream *mlstStream = _vm->getResource(ID_MLST, card);
-	uint16 recordCount = mlstStream->readUint16BE();
+bool VideoManager::drawNextFrame(VideoEntryPtr videoEntry) {
+	Video::VideoDecoder *video = videoEntry->_video;
+	const Graphics::Surface *frame = video->decodeNextFrame();
 
-	for (uint16 i = 0; i < recordCount; i++) {
-		MLSTRecord mlstRecord;
-		mlstRecord.index = mlstStream->readUint16BE();
-		mlstRecord.movieID = mlstStream->readUint16BE();
-		mlstRecord.code = mlstStream->readUint16BE();
-		mlstRecord.left = mlstStream->readUint16BE();
-		mlstRecord.top = mlstStream->readUint16BE();
-
-		for (byte j = 0; j < 2; j++)
-			if (mlstStream->readUint16BE() != 0)
-				warning("u0[%d] in MLST non-zero", j);
-
-		if (mlstStream->readUint16BE() != 0xFFFF)
-			warning("u0[2] in MLST not 0xFFFF");
-
-		mlstRecord.loop = mlstStream->readUint16BE();
-		mlstRecord.volume = mlstStream->readUint16BE();
-		mlstRecord.u1 = mlstStream->readUint16BE();
-
-		if (mlstRecord.u1 != 1)
-			warning("mlstRecord.u1 not 1");
-
-		// We've found a match, add it
-		if (mlstRecord.index == mlstId) {
-			// Make sure we don't have any duplicates
-			for (uint32 j = 0; j < _mlstRecords.size(); j++)
-				if (_mlstRecords[j].index == mlstRecord.index || _mlstRecords[j].code == mlstRecord.code) {
-					_mlstRecords.remove_at(j);
-					j--;
-				}
-
-			_mlstRecords.push_back(mlstRecord);
-			break;
-		}
+	if (!frame || !videoEntry->isEnabled()) {
+		return false;
 	}
 
-	delete mlstStream;
-}
+	Graphics::Surface *convertedFrame = nullptr;
+	Graphics::PixelFormat pixelFormat = _vm->_system->getScreenFormat();
 
-void VideoManager::clearMLST() {
-	_mlstRecords.clear();
-}
-
-VideoHandle VideoManager::playMovieRiven(uint16 id) {
-	for (uint16 i = 0; i < _mlstRecords.size(); i++) {
-		if (_mlstRecords[i].code == id) {
-			debug(1, "Play tMOV %d (non-blocking) at (%d, %d) %s, Volume = %d", _mlstRecords[i].movieID, _mlstRecords[i].left, _mlstRecords[i].top, _mlstRecords[i].loop != 0 ? "looping" : "non-looping", _mlstRecords[i].volume);
-
-			VideoEntryPtr ptr = open(_mlstRecords[i].movieID);
-			if (ptr) {
-				ptr->moveTo(_mlstRecords[i].left, _mlstRecords[i].top);
-				ptr->setLooping(_mlstRecords[i].loop != 0);
-				ptr->setVolume(_mlstRecords[i].volume);
-				ptr->start();
-			}
-
-			return ptr;
+	if (frame->format != pixelFormat) {
+		// We don't support downconverting to 8bpp without having
+		// support in the codec. Set _enableDither if shows up.
+		if (pixelFormat.bytesPerPixel == 1) {
+			warning("Cannot convert high color video frame to 8bpp");
+			return false;
 		}
+
+		// Convert to the current screen format
+		convertedFrame = frame->convertTo(pixelFormat, video->getPalette());
+		frame = convertedFrame;
+	} else if (pixelFormat.bytesPerPixel == 1 && video->hasDirtyPalette()) {
+		// Set the palette when running in 8bpp mode only
+		// Don't do this for Myst, which has its own per-stack handling
+		if (_vm->getGameType() != GType_MYST)
+			_vm->_system->getPaletteManager()->setPalette(video->getPalette(), 0, 256);
 	}
 
-	return VideoHandle();
-}
+	// Clip the video to make sure it stays on the screen (Myst does this a few times)
+	Common::Rect targetRect = Common::Rect(video->getWidth(), video->getHeight());
+	targetRect.translate(videoEntry->getX(), videoEntry->getY());
 
-void VideoManager::playMovieBlockingRiven(uint16 id) {
-	for (uint16 i = 0; i < _mlstRecords.size(); i++) {
-		if (_mlstRecords[i].code == id) {
-			debug(1, "Play tMOV %d (blocking) at (%d, %d), Volume = %d", _mlstRecords[i].movieID, _mlstRecords[i].left, _mlstRecords[i].top, _mlstRecords[i].volume);
-			VideoEntryPtr ptr = open(_mlstRecords[i].movieID);
-			ptr->moveTo(_mlstRecords[i].left, _mlstRecords[i].top);
-			ptr->setVolume(_mlstRecords[i].volume);
-			ptr->start();
-			waitUntilMovieEnds(ptr);
-			return;
-		}
+	Common::Rect frameRect = Common::Rect(video->getWidth(), video->getHeight());
+
+	if (targetRect.left < 0) {
+		frameRect.left -= targetRect.left;
+		targetRect.left = 0;
 	}
-}
 
-void VideoManager::stopMovieRiven(uint16 id) {
-	debug(2, "Stopping movie %d", id);
-	VideoHandle handle = findVideoHandleRiven(id);
-	if (handle)
-		removeEntry(handle._ptr);
-}
+	if (targetRect.top < 0) {
+		frameRect.top -= targetRect.top;
+		targetRect.top = 0;
+	}
 
-void VideoManager::disableAllMovies() {
-	debug(2, "Disabling all movies");
-	for (VideoList::iterator it = _videos.begin(); it != _videos.end(); it++)
-		(*it)->setEnabled(false);
+	if (targetRect.right > _vm->_system->getWidth()) {
+		frameRect.right -= targetRect.right - _vm->_system->getWidth();
+		targetRect.right = _vm->_system->getWidth();
+	}
+
+	if (targetRect.bottom > _vm->_system->getHeight()) {
+		frameRect.bottom -= targetRect.bottom - _vm->_system->getHeight();
+		targetRect.bottom = _vm->_system->getHeight();
+	}
+
+	_vm->_system->copyRectToScreen(frame->getBasePtr(frameRect.left, frameRect.top), frame->pitch,
+	                               targetRect.left, targetRect.top, targetRect.width(), targetRect.height());
+
+	// Delete 8bpp conversion surface
+	if (convertedFrame) {
+		convertedFrame->free();
+		delete convertedFrame;
+	}
+
+	// We've drawn something to the screen, make sure we update it
+	return true;
 }
 
 VideoEntryPtr VideoManager::open(uint16 id) {
 	// If this video is already playing, return that handle
-	VideoHandle oldHandle = findVideoHandle(id);
-	if (oldHandle._ptr)
-		return oldHandle._ptr;
+	VideoEntryPtr oldVideo = findVideo(id);
+	if (oldVideo)
+		return oldVideo;
 
 	// Otherwise, create a new entry
 	Video::QuickTimeDecoder *video = new Video::QuickTimeDecoder();
@@ -487,11 +313,11 @@ VideoEntryPtr VideoManager::open(uint16 id) {
 	return entry;
 }
 
-VideoEntryPtr VideoManager::open(const Common::String &fileName) {
+VideoEntryPtr VideoManager::open(const Common::String &fileName, Audio::Mixer::SoundType soundType) {
 	// If this video is already playing, return that entry
-	VideoHandle oldHandle = findVideoHandle(fileName);
-	if (oldHandle._ptr)
-		return oldHandle._ptr;
+	VideoEntryPtr oldVideo = findVideo(fileName);
+	if (oldVideo)
+		return oldVideo;
 
 	// Otherwise, create a new entry
 	Common::SeekableReadStream *stream = SearchMan.createReadStreamForMember(fileName);
@@ -499,6 +325,7 @@ VideoEntryPtr VideoManager::open(const Common::String &fileName) {
 		return VideoEntryPtr();
 
 	Video::VideoDecoder *video = new Video::QuickTimeDecoder();
+	video->setSoundType(soundType);
 	if (!video->loadStream(stream)) {
 		// FIXME: Better error handling
 		delete video;
@@ -517,36 +344,26 @@ VideoEntryPtr VideoManager::open(const Common::String &fileName) {
 	return entry;
 }
 
-VideoHandle VideoManager::findVideoHandleRiven(uint16 id) {
-	for (uint16 i = 0; i < _mlstRecords.size(); i++)
-		if (_mlstRecords[i].code == id)
-			for (VideoList::iterator it = _videos.begin(); it != _videos.end(); it++)
-				if ((*it)->getID() == _mlstRecords[i].movieID)
-					return *it;
-
-	return VideoHandle();
-}
-
-VideoHandle VideoManager::findVideoHandle(uint16 id) {
+VideoEntryPtr VideoManager::findVideo(uint16 id) {
 	if (id == 0)
-		return VideoHandle();
+		return VideoEntryPtr();
 
 	for (VideoList::iterator it = _videos.begin(); it != _videos.end(); it++)
 		if ((*it)->getID() == id)
 			return *it;
 
-	return VideoHandle();
+	return VideoEntryPtr();
 }
 
-VideoHandle VideoManager::findVideoHandle(const Common::String &fileName) {
+VideoEntryPtr VideoManager::findVideo(const Common::String &fileName) {
 	if (fileName.empty())
-		return VideoHandle();
+		return VideoEntryPtr();
 
 	for (VideoList::iterator it = _videos.begin(); it != _videos.end(); it++)
 		if ((*it)->getFileName().equalsIgnoreCase(fileName))
 			return *it;
 
-	return VideoHandle();
+	return VideoEntryPtr();
 }
 
 bool VideoManager::isVideoPlaying() {
@@ -557,21 +374,19 @@ bool VideoManager::isVideoPlaying() {
 	return false;
 }
 
-void VideoManager::drawVideoFrame(VideoHandle handle, const Audio::Timestamp &time) {
-	// FIXME: This should be done separately from the "playing"
-	// videos eventually.
-	assert(handle);
-	handle->seek(time);
-	updateMovies();
-	handle->close();
+void VideoManager::drawVideoFrame(const VideoEntryPtr &video, const Audio::Timestamp &time) {
+	assert(video);
+	video->seek(time);
+	drawNextFrame(video);
+	video->stop();
 }
 
 VideoManager::VideoList::iterator VideoManager::findEntry(VideoEntryPtr ptr) {
 	return Common::find(_videos.begin(), _videos.end(), ptr);
 }
 
-void VideoManager::removeEntry(VideoEntryPtr ptr) {
-	VideoManager::VideoList::iterator it = findEntry(ptr);
+void VideoManager::removeEntry(const VideoEntryPtr &video) {
+	VideoManager::VideoList::iterator it = findEntry(video);
 	if (it != _videos.end())
 		_videos.erase(it);
 }

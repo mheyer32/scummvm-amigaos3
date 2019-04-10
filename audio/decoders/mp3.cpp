@@ -119,6 +119,7 @@ public:
 
 	// AudioStream API
 	int readBuffer(int16 *buffer, const int numSamples);
+	bool endOfData() const;
 	bool endOfStream() const;
 
 	// PacketizedAudioStream API
@@ -438,6 +439,7 @@ PacketizedMP3Stream::PacketizedMP3Stream(uint channels, uint rate) :
 }
 
 PacketizedMP3Stream::~PacketizedMP3Stream() {
+	Common::StackLock lock(_mutex);
 	while (!_queue.empty()) {
 		delete _queue.front();
 		_queue.pop();
@@ -447,12 +449,16 @@ PacketizedMP3Stream::~PacketizedMP3Stream() {
 int PacketizedMP3Stream::readBuffer(int16 *buffer, const int numSamples) {
 	int samples = 0;
 
+	Common::StackLock lock(_mutex);
 	while (samples < numSamples) {
-		Common::StackLock lock(_mutex);
-
-		// Empty? Bail out for now
-		if (_queue.empty())
+		// Empty? Bail out for now, and mark the stream as ended
+		if (_queue.empty()) {
+			// EOS state is only valid once a packet has been received at least
+			// once
+			if (_state == MP3_STATE_READY)
+				_state = MP3_STATE_EOS;
 			return samples;
+		}
 
 		Common::SeekableReadStream *packet = _queue.front();
 
@@ -473,15 +479,26 @@ int PacketizedMP3Stream::readBuffer(int16 *buffer, const int numSamples) {
 		}
 	}
 
+	// This will happen if the audio runs out just as the last sample is
+	// decoded. But there may still be more audio queued up.
+	if (_state == MP3_STATE_EOS && !_queue.empty()) {
+		_state = MP3_STATE_READY;
+	}
+
 	return samples;
 }
 
+bool PacketizedMP3Stream::endOfData() const {
+	Common::StackLock lock(_mutex);
+	return BaseMP3Stream::endOfData();
+}
+
 bool PacketizedMP3Stream::endOfStream() const {
+	Common::StackLock lock(_mutex);
+
 	if (!endOfData())
 		return false;
 
-	// Lock the mutex
-	Common::StackLock lock(_mutex);
 	if (!_queue.empty())
 		return false;
 
@@ -492,6 +509,12 @@ void PacketizedMP3Stream::queuePacket(Common::SeekableReadStream *packet) {
 	Common::StackLock lock(_mutex);
 	assert(!_finished);
 	_queue.push(packet);
+
+	// If the audio had finished (buffer underrun?), there is more to
+	// decode now.
+	if (_state == MP3_STATE_EOS) {
+		_state = MP3_STATE_READY;
+	}
 }
 
 void PacketizedMP3Stream::finish() {

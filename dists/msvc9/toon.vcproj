@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="toon"
-	ProjectGUID="{809322D6-6199-4FC2-9A1D-02A4FD254ADC}"
+	ProjectGUID="{AFBA47B3-E0B6-4CF8-8E7E-986C0E2A75F2}"
 	RootNamespace="toon"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

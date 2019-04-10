@@ -506,6 +506,9 @@ const char *SagaEngine::getTextString(int textStringId) {
 		case Common::RU_RUS:
 			lang = 4;
 			break;
+		case Common::FR_FRA:
+			lang = 5;
+			break;
 		default:
 			lang = 0;
 			break;
@@ -582,7 +585,7 @@ ColorId SagaEngine::KnownColor2ColorId(KnownColor knownColor) {
 		// Fixes bug #1848016 - "IHNM: Wrong Subtitles Color (Spanish)". This
 		// also applies to the German and French versions (bug #7064 - "IHNM:
 		// text mistake in german version").
-		int offset = (getLanguage() == Common::ES_ESP || getLanguage() == Common::DE_DEU || getLanguage() == Common::FR_FRA) ? 1 : 0;
+		int offset = (getFeatures() & GF_IHNM_COLOR_FIX) ? 1 : 0;
 
 		switch (knownColor) {
 		case(kKnownColorTransparent):

@@ -31,8 +31,10 @@
 
 namespace Sci {
 
-#define SCI_SCREEN_UPSCALEDMAXHEIGHT 200
-#define SCI_SCREEN_UPSCALEDMAXWIDTH  320
+enum {
+	SCI_SCREEN_UPSCALEDMAXHEIGHT = 200,
+	SCI_SCREEN_UPSCALEDMAXWIDTH  = 320
+};
 
 enum GfxScreenUpscaledMode {
 	GFX_SCREEN_UPSCALED_DISABLED	= 0,
@@ -84,51 +86,16 @@ public:
 	void copyDisplayRectToScreen(const Common::Rect &rect);
 	void copyRectToScreen(const Common::Rect &rect, int16 x, int16 y);
 
-	// calls to code pointers
-	void inline vectorAdjustCoordinate (int16 *x, int16 *y) {
-		(this->*_vectorAdjustCoordinatePtr)(x, y);
-	}
-	void inline vectorAdjustLineCoordinates (int16 *left, int16 *top, int16 *right, int16 *bottom, byte drawMask, byte color, byte priority, byte control) {
-		(this->*_vectorAdjustLineCoordinatesPtr)(left, top, right, bottom, drawMask, color, priority, control);
-	}
-	byte inline vectorIsFillMatch (int16 x, int16 y, byte screenMask, byte t_color, byte t_pri, byte t_con, bool isEGA) {
-		return (this->*_vectorIsFillMatchPtr)(x, y, screenMask, t_color, t_pri, t_con, isEGA);
-	}
-	void inline vectorPutPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
-		(this->*_vectorPutPixelPtr)(x, y, drawMask, color, priority, control);
-	}
-	void inline vectorPutLinePixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
-		(this->*_vectorPutLinePixelPtr)(x, y, drawMask, color, priority, control);
-	}
-	byte inline vectorGetVisual(int16 x, int16 y) {
-		return (this->*_vectorGetPixelPtr)(_visualScreen, x, y);
-	}
-	byte inline vectorGetPriority(int16 x, int16 y) {
-		return (this->*_vectorGetPixelPtr)(_priorityScreen, x, y);
-	}
-	byte inline vectorGetControl(int16 x, int16 y) {
-		return (this->*_vectorGetPixelPtr)(_controlScreen, x, y);
-	}
+	// Vector drawing
+private:
+	void vectorPutLinePixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
+	void vectorPutLinePixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
 
-
-	void inline putPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) {
-		(this->*_putPixelPtr)(x, y, drawMask, color, priority, control);
-	}
-
-	byte inline getVisual(int16 x, int16 y) {
-		return (this->*_getPixelPtr)(_visualScreen, x, y);
-	}
-	byte inline getPriority(int16 x, int16 y) {
-		return (this->*_getPixelPtr)(_priorityScreen, x, y);
-	}
-	byte inline getControl(int16 x, int16 y) {
-		return (this->*_getPixelPtr)(_controlScreen, x, y);
-	}
+public:
+	void vectorAdjustLineCoordinates(int16 *left, int16 *top, int16 *right, int16 *bottom, byte drawMask, byte color, byte priority, byte control);
+	byte vectorIsFillMatch(int16 x, int16 y, byte screenMask, byte checkForColor, byte checkForPriority, byte checkForControl, bool isEGA);
 
 	byte getDrawingMask(byte color, byte prio, byte control);
-	//void putPixel(int16 x, int16 y, byte drawMask, byte color, byte prio, byte control);
-	void putFontPixel(int16 startingY, int16 x, int16 y, byte color);
-	void putPixelOnDisplay(int16 x, int16 y, byte color);
 	void drawLine(Common::Point startPoint, Common::Point endPoint, byte color, byte prio, byte control);
 	void drawLine(int16 left, int16 top, int16 right, int16 bottom, byte color, byte prio, byte control) {
 		drawLine(Common::Point(left, top), Common::Point(right, bottom), color, prio, control);
@@ -150,10 +117,10 @@ public:
 	void bitsGetRect(byte *memoryPtr, Common::Rect *destRect);
 	void bitsRestore(byte *memoryPtr);
 
-	void scale2x(const byte *src, byte *dst, int16 srcWidth, int16 srcHeight, byte bytesPerPixel = 1);
+	void scale2x(const SciSpan<const byte> &src, SciSpan<byte> &dst, int16 srcWidth, int16 srcHeight, byte bytesPerPixel = 1);
 
-	void adjustToUpscaledCoordinates(int16 &y, int16 &x, Sci32ViewNativeResolution viewScalingType = SCI_VIEW_NATIVERES_NONE);
-	void adjustBackUpscaledCoordinates(int16 &y, int16 &x, Sci32ViewNativeResolution viewScalingType = SCI_VIEW_NATIVERES_NONE);
+	void adjustToUpscaledCoordinates(int16 &y, int16 &x);
+	void adjustBackUpscaledCoordinates(int16 &y, int16 &x);
 
 	void dither(bool addToFlag);
 
@@ -192,11 +159,32 @@ private:
 
 	void setVerticalShakePos(uint16 shakePos);
 
+	void  REGPARM putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
+	void  REGPARM putPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
+	void  REGPARM putPixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
+	void  REGPARM putPixel480x300Worker(int16 x, int16 y, int offset, byte *screen, byte byteToSet) const;
+	void  REGPARM vectorPutPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
+
+	// Vector related public code - in here, so that it can be inlined
+	byte REGPARM getPixel320(const byte *screen, int16 x, int16 y) const {
+		return screen[((uint)y  << 8)  + ((uint)y << 6) + x];
+	}
+
+
 	/**
 	 * If this flag is true, undithering is enabled, otherwise disabled.
 	 */
 	bool _unditheringEnabled;
 	int16 _ditheredPicColors[DITHERED_BG_COLORS_SIZE];
+
+
+	typedef byte REGPARM (GfxScreen::*GetPixelFunc)(const byte *screen, int16 x, int16) const;
+	GetPixelFunc _getPixelFunc = &GfxScreen::getPixel320;
+	GetPixelFunc _vectorGetPixelFunc = &GfxScreen::getPixel320;
+
+	typedef void  REGPARM  (GfxScreen::*PutPixelFunc)(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control)  const;
+	PutPixelFunc _putPixelFunc = &GfxScreen::putPixel320;
+	PutPixelFunc _vectorPutPixelFunc = &GfxScreen::putPixel320;
 
 	// These screens have the real resolution of the game engine (320x200 for
 	// SCI0/SCI1/SCI11 games, 640x480 for SCI2 games). SCI0 games will be
@@ -206,8 +194,8 @@ private:
 	byte *_controlScreen;
 
 	/**
-	 * This screen is the one that is actually displayed to the user. It may be
-	 * 640x400 for japanese SCI1 games. SCI0 games may be undithered in here.
+	 * This screen is the one, where pixels are copied out of into the frame buffer.
+	 * It may be 640x400 for japanese SCI1 games. SCI0 games may be undithered in here.
 	 * Only read from this buffer for Save/ShowBits usage.
 	 */
 	byte *_displayScreen;
@@ -215,8 +203,8 @@ private:
 	ResourceManager *_resMan;
 
 	/**
-	 * Pointer to the currently active screen (changing it only required for
-	 * debug purposes).
+	 * Pointer to the currently active screen (changing only required for
+	 * debug purposes, to show for example the priority screen).
 	 */
 	byte *_activeScreen;
 
@@ -239,38 +227,84 @@ private:
 	 */
 	bool _fontIsUpscaled;
 
-	// dynamic code
-	void (GfxScreen::*_vectorAdjustCoordinatePtr) (int16 *x, int16 *y);
-	void vectorAdjustCoordinateNOP (int16 *x, int16 *y);
-	void vectorAdjustCoordinate480x300Mac (int16 *x, int16 *y);
+	// pixel related code, in header so that it can be inlined for performance
+public:
 
-	void (GfxScreen::*_vectorAdjustLineCoordinatesPtr) (int16 *left, int16 *top, int16 *right, int16 *bottom, byte drawMask, byte color, byte priority, byte control);
-	void vectorAdjustLineCoordinatesNOP (int16 *left, int16 *top, int16 *right, int16 *bottom, byte drawMask, byte color, byte priority, byte control);
-	void vectorAdjustLineCoordinates480x300Mac (int16 *left, int16 *top, int16 *right, int16 *bottom, byte drawMask, byte color, byte priority, byte control);
-	
-	byte (GfxScreen::*_vectorIsFillMatchPtr) (int16 x, int16 y, byte screenMask, byte t_color, byte t_pri, byte t_con, bool isEGA);
-	byte vectorIsFillMatchNormal (int16 x, int16 y, byte screenMask, byte t_color, byte t_pri, byte t_con, bool isEGA);
-	byte vectorIsFillMatch480x300Mac (int16 x, int16 y, byte screenMask, byte t_color, byte t_pri, byte t_con, bool isEGA);
+	FORCEINLINE void REGPARM putPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+		(this->*_putPixelFunc)(x, y, drawMask, color, priority, control);
+	}
 
-	void (GfxScreen::*_vectorPutPixelPtr) (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
-	void vectorPutPixel480x300Mac (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
+	// This is called from vector drawing to put a pixel at a certain location
+	FORCEINLINE void REGPARM vectorPutPixel(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
+		(this->*_vectorPutPixelFunc)(x, y, drawMask, color, priority, control);
+	}
 
-	void (GfxScreen::*_vectorPutLinePixelPtr) (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
-	void vectorPutLinePixel480x300Mac (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
+	/**
+	 * This will just change a pixel directly on displayscreen. It is supposed to be
+	 * only used on upscaled-Hires games where hires content needs to get drawn ONTO
+	 * the upscaled display screen (like japanese fonts, hires portraits, etc.).
+	 */
+	FORCEINLINE void REGPARM putPixelOnDisplay(int16 x, int16 y, byte color) const {
+		int offset = y * _displayWidth + x;
+		_displayScreen[offset] = color;
+	}
 
-	byte (GfxScreen::*_vectorGetPixelPtr) (byte *screen, int16 x, int16 y);
+	// Upscales a pixel and puts it on display screen only
+	void REGPARM putScaledPixelOnDisplay(int16 x, int16 y, byte color) const;
 
-	void (GfxScreen::*_putPixelPtr) (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
-	void putPixelNormal (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
-	void putPixelDisplayUpscaled (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
-	void putPixelAllUpscaled (int16 x, int16 y, byte drawMask, byte color, byte priority, byte control);
+	/**
+	 * This is used to put font pixels onto the screen - we adjust differently, so that we won't
+	 *  do triple pixel lines in any case on upscaled hires. That way the font will not get distorted
+	 *  Sierra SCI didn't do this
+	 */
+	void REGPARM putFontPixel(int16 startingY, int16 x, int16 y, byte color) const;
 
-	byte (GfxScreen::*_getPixelPtr) (byte *screen, int16 x, int16 y);
-	byte getPixelNormal (byte *screen, int16 x, int16 y);
-	byte getPixelUpscaled (byte *screen, int16 x, int16 y);
 
-	// pixel helper
-	void putScaledPixelOnScreen(byte *screen, int16 x, int16 y, byte color);
+	FORCEINLINE byte REGPARM getPixel(const byte *screen, int16 x, int16 y) const {
+		return (this->*_getPixelFunc)(screen, x, y);
+	}
+
+	FORCEINLINE byte REGPARM vectorGetPixel(const byte *screen, int16 x, int16 y) const {
+		return (this->*_vectorGetPixelFunc)(screen, x, y);
+	}
+
+	byte REGPARM getPixelGeneric(const byte *screen, int16 x, int16 y) const;
+
+	byte REGPARM getVisual(int16 x, int16 y) const {
+		return getPixel(_visualScreen, x, y);
+	}
+	byte REGPARM getPriority(int16 x, int16 y) const {
+		return getPixel(_priorityScreen, x, y);
+	}
+	byte REGPARM getControl(int16 x, int16 y) const {
+		return getPixel(_controlScreen, x, y);
+	}
+
+	// Vector related public code - in here, so that it can be inlined
+	byte REGPARM vectorGetPixelGeneric(const byte *screen, int16 x, int16 y) const {
+		return screen[y * _width + x];
+	}
+
+	byte REGPARM vectorGetVisual(int16 x, int16 y) const {
+		return vectorGetPixel(_visualScreen, x, y);
+	}
+	byte REGPARM vectorGetPriority(int16 x, int16 y) const {
+		return vectorGetPixel(_priorityScreen, x, y);
+	}
+	byte REGPARM vectorGetControl(int16 x, int16 y) const {
+		return vectorGetPixel(_controlScreen, x, y);
+	}
+
+	void REGPARM vectorAdjustCoordinate(int16 *x, int16 *y) const {
+		switch (_upscaledHires) {
+		case GFX_SCREEN_UPSCALED_480x300:
+			*x = (*x * 3) / 2;
+			*y = (*y * 3) / 2;
+			break;
+		default:
+			break;
+		}
+	}
 };
 
 } // End of namespace Sci

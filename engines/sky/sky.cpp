@@ -187,6 +187,7 @@ Common::Error SkyEngine::go() {
 		}
 
 		if (!shouldQuit()) {
+			_skyScreen->clearScreen(true);
 			// restartGame() takes us to the first scene, without showing the
 			// initial animation where Foster is being chased. initScreen0()
 			// shows the first scene together with that animation. We can't
@@ -259,7 +260,7 @@ Common::Error SkyEngine::go() {
 }
 
 Common::Error SkyEngine::init() {
-	initGraphics(320, 200, false);
+	initGraphics(320, 200);
 
 	_skyDisk = new Disk();
 	_skySound = new Sound(_mixer, _skyDisk, Audio::Mixer::kMaxChannelVolume);

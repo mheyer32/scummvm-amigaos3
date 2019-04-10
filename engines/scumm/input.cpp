@@ -24,9 +24,7 @@
 #include "common/events.h"
 #include "common/system.h"
 #include "common/translation.h"
-
-#include "gui/message.h"
-#include "gui/gui-manager.h"
+#include "audio/mixer.h"
 
 #include "scumm/debugger.h"
 #include "scumm/dialogs.h"
@@ -562,7 +560,7 @@ void ScummEngine::processKeyboard(Common::KeyState lastKeyHit) {
 	} else if (pauseKeyEnabled && (lastKeyHit.keycode == Common::KEYCODE_SPACE && lastKeyHit.hasFlags(0))) {
 		pauseGame();
 
-	} else if (talkstopKeyEnabled && (lastKeyHit.keycode == Common::KEYCODE_PERIOD && lastKeyHit.hasFlags(0))) {
+	} else if (talkstopKeyEnabled && lastKeyHit.ascii == '.') {
 		_talkDelay = 0;
 		if (_sound->_sfxMode & 2)
 			stopTalk();

@@ -74,7 +74,7 @@ protected:
 	 * @param n		number of bits to get
 	 * @return n-bits number
 	 */
-	uint32 getBitsMSB(int n);
+	uint32 getBitsMSB(unsigned n);
 
 	/**
 	 * Get a number of bits from _src stream, starting with the least
@@ -82,7 +82,7 @@ protected:
 	 * @param n		number of bits to get
 	 * @return n-bits number
 	 */
-	uint32 getBitsLSB(int n);
+	uint32 getBitsLSB(unsigned n);
 
 	/**
 	 * Get one byte from _src stream.

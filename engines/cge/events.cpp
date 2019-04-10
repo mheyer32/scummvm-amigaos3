@@ -26,8 +26,6 @@
  */
 
 #include "gui/saveload.h"
-#include "gui/about.h"
-#include "gui/message.h"
 #include "common/config-manager.h"
 #include "common/events.h"
 #include "common/translation.h"
@@ -113,7 +111,7 @@ bool Keyboard::getKey(Common::Event &event) {
 			_vm->_commandHandler->addCommand(kCmdLevel, -1, keycode - Common::KEYCODE_0, NULL);
 			return false;
 		}
-		// Fallthrough intended
+		// fall through
 	case Common::KEYCODE_5:
 	case Common::KEYCODE_6:
 	case Common::KEYCODE_7:

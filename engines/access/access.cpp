@@ -34,6 +34,12 @@ namespace Access {
 AccessEngine::AccessEngine(OSystem *syst, const AccessGameDescription *gameDesc)
 	: _gameDescription(gameDesc), Engine(syst), _randomSource("Access"),
 	  _useItem(_flags[99]), _startup(_flags[170]), _manScaleOff(_flags[172]) {
+	// Set up debug channels
+	DebugMan.addDebugChannel(kDebugPath, "path", "Pathfinding debug level");
+	DebugMan.addDebugChannel(kDebugScripts, "scripts", "Game scripts");
+	DebugMan.addDebugChannel(kDebugGraphics, "graphics", "Graphics handling");
+	DebugMan.addDebugChannel(kDebugSound, "sound", "Sound and Music handling");
+
 	_aboutBox = nullptr;
 	_animation = nullptr;
 	_bubbleBox = nullptr;
@@ -147,16 +153,10 @@ AccessEngine::~AccessEngine() {
 }
 
 void AccessEngine::setVGA() {
-	initGraphics(320, 200, false);
+	initGraphics(320, 200);
 }
 
 void AccessEngine::initialize() {
-	// Set up debug channels
-	DebugMan.addDebugChannel(kDebugPath, "Path", "Pathfinding debug level");
-	DebugMan.addDebugChannel(kDebugScripts, "scripts", "Game scripts");
-	DebugMan.addDebugChannel(kDebugGraphics, "graphics", "Graphics handling");
-	DebugMan.addDebugChannel(kDebugSound, "sound", "Sound and Music handling");
-
 	if (isCD()) {
 		const Common::FSNode gameDataDir(ConfMan.get("path"));
 		// The CD version contains two versions of the game.
@@ -244,7 +244,7 @@ void AccessEngine::freeCells() {
 	}
 }
 
-void AccessEngine::speakText(ASurface *s, const Common::String &msg) {
+void AccessEngine::speakText(BaseSurface *s, const Common::String &msg) {
 	Common::String lines = msg;
 	Common::String line;
 	int curPage = 0;
@@ -255,15 +255,15 @@ void AccessEngine::speakText(ASurface *s, const Common::String &msg) {
 		_events->zeroKeys();
 
 		int width = 0;
-		bool lastLine = _fonts._font2.getLine(lines, s->_maxChars * 6, line, width);
+		bool lastLine = _fonts._font2->getLine(lines, s->_maxChars * 6, line, width);
 
 		// Set font colors
-		_fonts._font2._fontColors[0] = 0;
-		_fonts._font2._fontColors[1] = 28;
-		_fonts._font2._fontColors[2] = 29;
-		_fonts._font2._fontColors[3] = 30;
+		Font::_fontColors[0] = 0;
+		Font::_fontColors[1] = 28;
+		Font::_fontColors[2] = 29;
+		Font::_fontColors[3] = 30;
 
-		_fonts._font2.drawString(s, line, s->_printOrg);
+		_fonts._font2->drawString(s, line, s->_printOrg);
 		s->_printOrg = Common::Point(s->_printStart.x, s->_printOrg.y + 9);
 
 		if ((s->_printOrg.y > _printEnd) && (!lastLine)) {
@@ -325,20 +325,20 @@ void AccessEngine::speakText(ASurface *s, const Common::String &msg) {
 	}
 }
 
-void AccessEngine::printText(ASurface *s, const Common::String &msg) {
+void AccessEngine::printText(BaseSurface *s, const Common::String &msg) {
 	Common::String lines = msg;
 	Common::String line;
 	int width = 0;
 
 	for (;;) {
-		bool lastLine = _fonts._font2.getLine(lines, s->_maxChars * 6, line, width);
+		bool lastLine = _fonts._font2->getLine(lines, s->_maxChars * 6, line, width);
 
 		// Set font colors
-		_fonts._font2._fontColors[0] = 0;
-		_fonts._font2._fontColors[1] = 28;
-		_fonts._font2._fontColors[2] = 29;
-		_fonts._font2._fontColors[3] = 30;
-		_fonts._font2.drawString(s, line, s->_printOrg);
+		_fonts._font2->_fontColors[0] = 0;
+		_fonts._font2->_fontColors[1] = 28;
+		_fonts._font2->_fontColors[2] = 29;
+		_fonts._font2->_fontColors[3] = 30;
+		_fonts._font2->drawString(s, line, s->_printOrg);
 
 		s->_printOrg = Common::Point(s->_printStart.x, s->_printOrg.y + 9);
 
@@ -436,20 +436,9 @@ void AccessEngine::copyBF1BF2() {
 }
 
 void AccessEngine::copyBF2Vid() {
-	const byte *srcP = (const byte *)_buffer2.getPixels();
-	byte *destP = (byte *)_screen->getBasePtr(_screen->_windowXAdd,
-		_screen->_windowYAdd + _screen->_screenYOff);
-
-	for (int yp = 0; yp < _screen->_vWindowLinesTall; ++yp) {
-		Common::copy(srcP, srcP + _screen->_vWindowBytesWide, destP);
-		srcP += _buffer2.pitch;
-		destP += _screen->pitch;
-	}
-
-	// Add dirty rect for affected area
-	Common::Rect r(_screen->_vWindowBytesWide, _screen->_vWindowLinesTall);
-	r.moveTo(_screen->_windowXAdd, _screen->_windowYAdd + _screen->_screenYOff);
-	_screen->addDirtyRect(r);
+	_screen->blitFrom(_buffer2,
+		Common::Rect(0, 0, _screen->_vWindowBytesWide, _screen->_vWindowLinesTall),
+		Common::Point(_screen->_windowXAdd, _screen->_windowYAdd));
 }
 
 void AccessEngine::playVideo(int videoNum, const Common::Point &pt) {
@@ -499,11 +488,6 @@ Common::Error AccessEngine::loadGameState(int slot) {
 	if (!readSavegameHeader(saveFile, header))
 		error("Invalid savegame");
 
-	if (header._thumbnail) {
-		header._thumbnail->free();
-		delete header._thumbnail;
-	}
-
 	// Load most of the savegame data
 	synchronize(s);
 	delete saveFile;
@@ -548,9 +532,8 @@ void AccessEngine::synchronize(Common::Serializer &s) {
 const char *const SAVEGAME_STR = "ACCESS";
 #define SAVEGAME_STR_SIZE 6
 
-bool AccessEngine::readSavegameHeader(Common::InSaveFile *in, AccessSavegameHeader &header) {
+WARN_UNUSED_RESULT bool AccessEngine::readSavegameHeader(Common::InSaveFile *in, AccessSavegameHeader &header, bool skipThumbnail) {
 	char saveIdentBuffer[SAVEGAME_STR_SIZE + 1];
-	header._thumbnail = nullptr;
 
 	// Validate the header Id
 	in->read(saveIdentBuffer, SAVEGAME_STR_SIZE + 1);
@@ -568,9 +551,9 @@ bool AccessEngine::readSavegameHeader(Common::InSaveFile *in, AccessSavegameHead
 		header._saveName += ch;
 
 	// Get the thumbnail
-	header._thumbnail = Graphics::loadThumbnail(*in);
-	if (!header._thumbnail)
+	if (!Graphics::loadThumbnail(*in, header._thumbnail, skipThumbnail)) {
 		return false;
+	}
 
 	// Read in save date/time
 	header._year = in->readSint16LE();
@@ -615,7 +598,7 @@ void AccessEngine::writeSavegameHeader(Common::OutSaveFile *out, AccessSavegameH
 
 void AccessEngine::SPRINTCHR(char c, int fontNum) {
 	warning("TODO: SPRINTCHR");
-	_fonts._font1.drawChar(_screen, c, _screen->_printOrg);
+	_fonts._font1->drawChar(_screen, c, _screen->_printOrg);
 }
 
 void AccessEngine::PRINTCHR(Common::String msg, int fontNum) {
@@ -624,7 +607,7 @@ void AccessEngine::PRINTCHR(Common::String msg, int fontNum) {
 
 	for (int i = 0; msg[i]; i++) {
 		if (!(_fonts._charSet._hi & 8)) {
-			_fonts._font1.drawChar(_screen, msg[i], _screen->_printOrg);
+			_fonts._font1->drawChar(_screen, msg[i], _screen->_printOrg);
 			continue;
 		} else if (_fonts._charSet._hi & 2) {
 			Common::Point oldPos = _screen->_printOrg;

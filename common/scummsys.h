@@ -29,7 +29,11 @@
 
 // This is a convenience macro to test whether the compiler used is a GCC
 // version, which is at least major.minor.
-#define GCC_ATLEAST(major, minor) (defined(__GNUC__) && (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+#ifdef __GNUC__
+	#define GCC_ATLEAST(major, minor) (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#else
+	#define GCC_ATLEAST(major, minor) 0
+#endif
 
 #if defined(_WIN32_WCE) && _WIN32_WCE < 300
 	#define NONSTANDARD_PORT
@@ -113,11 +117,6 @@
 
 		#endif
 
-		#if defined(ARRAYSIZE)
-		// VS2005beta2 introduces new stuff in winnt.h
-		#undef ARRAYSIZE
-		#endif
-
 	#endif
 
 	#if defined(__QNXNTO__)
@@ -128,6 +127,7 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include <stdarg.h>
+	#include <stddef.h>
 	#include <assert.h>
 	#include <ctype.h>
 	// MSVC does not define M_PI, M_SQRT2 and other math defines by default.
@@ -146,6 +146,33 @@
 	#if !defined(__SYMBIAN32__)
 	#include <new>
 	#endif
+#endif
+
+#ifndef STATIC_ASSERT
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER > 1600)
+	/**
+	 * Generates a compile-time assertion.
+	 *
+	 * @param expression An expression that can be evaluated at compile time.
+	 * @param message An underscore-delimited message to be presented at compile
+	 * time if the expression evaluates to false.
+	 */
+	#define STATIC_ASSERT(expression, message) \
+		static_assert((expression), #message)
+#else
+	/**
+	 * Generates a compile-time assertion.
+	 *
+	 * @param expression An expression that can be evaluated at compile time.
+	 * @param message An underscore-delimited message to be presented at compile
+	 * time if the expression evaluates to false.
+	 */
+	#define STATIC_ASSERT(expression, message) \
+		do { \
+			extern int STATIC_ASSERT_##message[(expression) ? 1 : -1]; \
+			(void)(STATIC_ASSERT_##message); \
+		} while (false)
+#endif
 #endif
 
 // The following math constants are usually defined by the system math.h header, but
@@ -252,7 +279,6 @@
 	#if defined(__DC__) || \
 		  defined(__DS__) || \
 		  defined(__3DS__) || \
-		  defined(__GP32__) || \
 		  defined(IPHONE) || \
 		  defined(__PLAYSTATION2__) || \
 		  defined(__PSP__) || \
@@ -291,7 +317,6 @@
 	#endif
 #endif
 
-
 //
 // Some more system specific settings.
 // TODO/FIXME: All of these should be moved to backend specific files (such as portdefs.h)
@@ -313,6 +338,9 @@
 
 #endif
 
+#if defined(USE_TREMOR) && !defined(USE_VORBIS)
+#define USE_VORBIS // make sure this one is defined together with USE_TREMOR!
+#endif
 
 //
 // Fallbacks / default values for various special macros
@@ -367,6 +395,18 @@
 	#endif
 #endif
 
+#ifndef WARN_UNUSED_RESULT
+	#if __cplusplus >= 201703L
+		#define WARN_UNUSED_RESULT [[nodiscard]]
+	#elif GCC_ATLEAST(3, 4)
+		#define WARN_UNUSED_RESULT __attribute__((__warn_unused_result__))
+	#elif defined(_Check_return_)
+		#define WARN_UNUSED_RESULT _Check_return_
+	#else
+		#define WARN_UNUSED_RESULT
+	#endif
+#endif
+
 #ifndef STRINGBUFLEN
 	#if defined(__N64__) || defined(__DS__) || defined(__3DS__)
 		#define STRINGBUFLEN 256
@@ -415,11 +455,27 @@
 	#endif
 #endif
 
+//
+// Determine 64 bitness
+// Reference: http://nadeausoftware.com/articles/2012/02/c_c_tip_how_detect_processor_type_using_compiler_predefined_macros
+//
+#if !defined(HAVE_CONFIG_H)
 
-//
-// Overlay color type (FIXME: shouldn't be declared here)
-//
-typedef uint16 OverlayColor;
+#if defined(__x86_64__) || \
+		  defined(_M_X64) || \
+		  defined(__ppc64__) || \
+		  defined(__powerpc64__) || \
+		  defined(__LP64__)
+
+typedef uint64 uintptr;
+
+#else
+
+typedef uint32 uintptr;
+
+#endif
+
+#endif
 
 #include "common/forbidden.h"
 

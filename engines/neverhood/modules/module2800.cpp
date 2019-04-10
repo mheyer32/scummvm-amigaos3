@@ -23,6 +23,7 @@
 #include "neverhood/diskplayerscene.h"
 #include "neverhood/gamemodule.h"
 #include "neverhood/scene.h"
+#include "neverhood/smackerplayer.h"
 #include "neverhood/modules/module1000_sprites.h"
 #include "neverhood/modules/module1200_sprites.h"
 #include "neverhood/modules/module1700_sprites.h"
@@ -752,7 +753,7 @@ uint32 Scene2803::handleMessage(int messageNum, const MessageParam &param, Entit
 	switch (messageNum) {
 	case NM_KLAYMEN_LOWER_LEVER:
 		toggleBackground();
-		// NOTE Intentional fall-through
+		// fall through
 	case NM_ANIMATION_START:
 		if (param.asInteger() == 0x84251F82)
 			setMessageList(0x004B7A50);

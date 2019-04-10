@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{C2EFC5C1-5A21-4343-85BB-BA5D721B4A8A}</ProjectGuid>
+		<ProjectGuid>{705E170E-D96F-4566-94DE-F2CBB73E9468}</ProjectGuid>
 		<RootNamespace>touche</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>

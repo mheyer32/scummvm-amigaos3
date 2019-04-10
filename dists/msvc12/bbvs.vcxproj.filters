@@ -2,7 +2,7 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="minigames">
-			<UniqueIdentifier>9A8EF881-9A73-4310-9A5C-16F5ED795F4B</UniqueIdentifier>
+			<UniqueIdentifier>536F30AB-9E5B-4ECA-85C7-21D9620D5D81</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>

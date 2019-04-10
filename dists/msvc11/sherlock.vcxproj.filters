@@ -2,23 +2,26 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="scalpel">
-			<UniqueIdentifier>2F668A7E-9C7C-4246-979B-A769FD73C71C</UniqueIdentifier>
+			<UniqueIdentifier>A8C85F29-7054-48FE-B5F5-21A6C7404DEA</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\3do">
-			<UniqueIdentifier>64638ADB-B005-4170-8523-9DC90B4B869C</UniqueIdentifier>
+			<UniqueIdentifier>7AEFCB40-B2F2-4931-8A44-C3A5E5923783</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\drivers">
-			<UniqueIdentifier>749F98CC-DD08-4E9B-B0AE-BBFCF41AFEF3</UniqueIdentifier>
+			<UniqueIdentifier>E64E8B39-2DF2-424E-8692-5B1863C881B3</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\tsage">
-			<UniqueIdentifier>0C85D091-C9B6-4F74-8322-7DE8522C5F9B</UniqueIdentifier>
+			<UniqueIdentifier>11C7623C-A71A-4ED6-86BB-C9846AF13245</UniqueIdentifier>
 		</Filter>
 		<Filter Include="tattoo">
-			<UniqueIdentifier>47B6B08A-DEFA-4D88-8BE9-68FE74E05A2C</UniqueIdentifier>
+			<UniqueIdentifier>55CFB58B-AD8B-4B27-AA4E-5216AE9D8675</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
 		<ClCompile Include="..\..\engines\sherlock\scalpel\3do\movie_decoder.cpp">
+			<Filter>scalpel\3do</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.cpp">
 			<Filter>scalpel\3do</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\sherlock\scalpel\drivers\adlib.cpp">
@@ -105,6 +108,9 @@
 		<ClCompile Include="..\..\engines\sherlock\tattoo\tattoo_scene.cpp">
 			<Filter>tattoo</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\sherlock\tattoo\tattoo_screen.cpp">
+			<Filter>tattoo</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\engines\sherlock\tattoo\tattoo_talk.cpp">
 			<Filter>tattoo</Filter>
 		</ClCompile>
@@ -175,6 +181,9 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ClInclude Include="..\..\engines\sherlock\scalpel\3do\movie_decoder.h">
+			<Filter>scalpel\3do</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\sherlock\scalpel\3do\scalpel_3do_screen.h">
 			<Filter>scalpel\3do</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\sherlock\scalpel\drivers\mididriver.h">
@@ -256,6 +265,9 @@
 			<Filter>tattoo</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\sherlock\tattoo\tattoo_scene.h">
+			<Filter>tattoo</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\sherlock\tattoo\tattoo_screen.h">
 			<Filter>tattoo</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\sherlock\tattoo\tattoo_talk.h">

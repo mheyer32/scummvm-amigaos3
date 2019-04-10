@@ -128,28 +128,21 @@ class ToucheMetaEngine : public AdvancedMetaEngine {
 public:
 	ToucheMetaEngine() : AdvancedMetaEngine(Touche::gameDescriptions, sizeof(ADGameDescription), toucheGames) {
 		_md5Bytes = 4096;
-		_singleid = "touche";
+		_singleId = "touche";
 		_maxScanDepth = 2;
 		_directoryGlobs = directoryGlobs;
 	}
 
-	virtual const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const {
-		ADFilePropertiesMap filesProps;
-
-		const ADGameDescription *matchedDesc = detectGameFilebased(allFiles, fslist, Touche::fileBasedFallback, &filesProps);
-		if (!matchedDesc)
-			return 0;
-
-		reportUnknown(fslist.begin()->getParent(), filesProps);
-		return matchedDesc;
+	ADDetectedGame fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const override {
+		return detectGameFilebased(allFiles, fslist, Touche::fileBasedFallback);
 	}
 
 	virtual const char *getName() const {
-		return "Touche";
+		return "Touche: The Adventures of the Fifth Musketeer";
 	}
 
 	virtual const char *getOriginalCopyright() const {
-		return "Touche: The Adventures of the 5th Musketeer (C) Clipper Software";
+		return "Touche: The Adventures of the Fifth Musketeer (C) Clipper Software";
 	}
 
 	virtual bool hasFeature(MetaEngineFeature f) const;

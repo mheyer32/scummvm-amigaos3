@@ -57,6 +57,7 @@ public:
 
 	virtual Common::SeekableReadStream *createReadStream();
 	virtual Common::WriteStream *createWriteStream() { return 0; }
+	virtual bool create(bool isDirectoryFlag) { return false; }
 
 	static AbstractFSNode *makeFileNodePath(const Common::String &path);
 };
@@ -166,5 +167,5 @@ AbstractFSNode *OSystem_Dreamcast::makeCurrentDirectoryFileNode() const {
 
 AbstractFSNode *OSystem_Dreamcast::makeFileNodePath(const Common::String &path) const {
 	AbstractFSNode *node = RoninCDFileNode::makeFileNodePath(path);
-	return (node? node : new RoninCDNonexistingNode(path));
+	return (node ? node : new RoninCDNonexistingNode(path));
 }

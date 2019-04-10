@@ -29,10 +29,11 @@
 #include "cruise/sound.h"
 #include "cruise/volume.h"
 
-#include "audio/audiostream.h"
 #include "audio/fmopl.h"
-#include "audio/mixer.h"
-#include "audio/mods/soundfx.h"
+
+namespace Audio {
+class Mixer;
+}
 
 namespace Cruise {
 
@@ -40,7 +41,11 @@ class PCSoundDriver {
 public:
 	typedef void (*UpdateCallback)(void *);
 
-	PCSoundDriver() { _upCb = NULL, _upRef = NULL, _musicVolume = 0, _sfxVolume = 0; }
+	PCSoundDriver() :
+		_upCb(nullptr),
+		_upRef(nullptr),
+		_musicVolume(0),
+		_sfxVolume(0) {}
 	virtual ~PCSoundDriver() {}
 
 	virtual void setupChannel(int channel, const byte *data, int instrument, int volume) = 0;
@@ -329,11 +334,7 @@ void AdLibSoundDriver::syncSounds() {
 void AdLibSoundDriver::adjustVolume(int channel, int volume) {
 	_channelsVolumeTable[channel].original = volume;
 
-	if (volume > 80) {
-		volume = 80;
-	} else if (volume < 0) {
-		volume = 0;
-	}
+	volume = CLIP(volume, 0, 80);
 	volume += volume / 4;
 	// The higher possible value for volume is 100
 

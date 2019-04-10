@@ -49,13 +49,14 @@ CineEngine::CineEngine(OSystem *syst, const CINEGameDescription *gameDesc)
 	: Engine(syst),
 	_gameDescription(gameDesc),
 	_rnd("cine") {
-	// Setup mixer
-	syncSoundSettings();
-
 	DebugMan.addDebugChannel(kCineDebugScript,    "Script",    "Script debug level");
 	DebugMan.addDebugChannel(kCineDebugPart,      "Part",      "Part debug level");
 	DebugMan.addDebugChannel(kCineDebugSound,     "Sound",     "Sound debug level");
 	DebugMan.addDebugChannel(kCineDebugCollision, "Collision", "Collision debug level");
+
+	// Setup mixer
+	syncSoundSettings();
+
 	_console = new CineConsole(this);
 
 	g_cine = this;
@@ -93,12 +94,18 @@ void CineEngine::syncSoundSettings() {
 }
 
 Common::Error CineEngine::run() {
+	Graphics::ModeList modes;
+	modes.push_back(Graphics::Mode(320, 200));
 	if (g_cine->getGameType() == GType_FW && (g_cine->getFeatures() & GF_CD)) {
+		modes.push_back(Graphics::Mode(640, 480));
+		initGraphicsModes(modes);
 		showSplashScreen();
+	} else {
+		initGraphicsModes(modes);
 	}
 
 	// Initialize backend
-	initGraphics(320, 200, false);
+	initGraphics(320, 200);
 
 	if (g_cine->getGameType() == GType_FW && (g_cine->getFeatures() & GF_CD))
 		checkCD();
@@ -258,7 +265,7 @@ void CineEngine::showSplashScreen() {
 
 	const Graphics::Surface *surface = decoder.getSurface();
 	if (surface->w == 640 && surface->h == 480) {
-		initGraphics(640, 480, true);
+		initGraphics(640, 480);
 
 		const byte *palette = decoder.getPalette();
 		int paletteColorCount = decoder.getPaletteColorCount();

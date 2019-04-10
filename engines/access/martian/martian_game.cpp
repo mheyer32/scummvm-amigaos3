@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -107,7 +107,7 @@ void MartianEngine::displayNote(const Common::String &msg) {
 
 	_screen->_maxChars = 40;
 	_screen->_printOrg = _screen->_printStart = Common::Point(59, 124);
-	
+
 	setNoteParams();
 
 	Common::String lines = msg;
@@ -115,7 +115,7 @@ void MartianEngine::displayNote(const Common::String &msg) {
 	int width = 0;
 	bool lastLine = false;
 	do {
-		lastLine = _fonts._font1.getLine(lines, _screen->_maxChars * 6, line, width);
+		lastLine = _fonts._font1->getLine(lines, _screen->_maxChars * 6, line, width);
 		_bubbleBox->printString(line);
 		_screen->_printOrg = Common::Point(_screen->_printStart.x, _screen->_printOrg.y + 6);
 
@@ -158,7 +158,7 @@ void MartianEngine::doSpecial5(int param1) {
 		msg += c;
 
 	displayNote(msg);
-	
+
 	_midi->stopSong();
 	_midi->freeMusic();
 
@@ -299,9 +299,8 @@ void MartianEngine::setupGame() {
 	}
 
 	// Miscellaneous
-	Amazon::AmazonResources &res = *((Amazon::AmazonResources *)_res);
-	_fonts._font1.load(&res.FONT6x6_INDEX[0], &res.FONT6x6_DATA[0]);
-	_fonts._font2.load(&res.FONT2_INDEX[0], &res.FONT2_DATA[0]);
+	Martian::MartianResources &res = *((Martian::MartianResources *)_res);
+	_fonts.load(res._font6x6, res._font3x5);
 
 	// Set player room and position
 	_player->_roomNumber = 7;
@@ -314,7 +313,7 @@ void MartianEngine::showDeathText(Common::String msg) {
 	int width = 0;
 	bool lastLine;
 	do {
-		lastLine = _fonts._font2.getLine(msg, _screen->_maxChars * 6, line, width);
+		lastLine = _fonts._font2->getLine(msg, _screen->_maxChars * 6, line, width);
 		// Draw the text
 		_bubbleBox->printString(line);
 
@@ -348,10 +347,10 @@ void MartianEngine::dead(int deathId) {
 	_screen->_maxChars = 50;
 	_screen->_printOrg = Common::Point(24, 18);
 	_screen->_printStart = Common::Point(24, 18);
-	
+
 	// Display death message
 	showDeathText(_deaths[deathId]._msg);
-	
+
 	_screen->forceFadeOut();
 	_room->clearRoom();
 	freeChar();

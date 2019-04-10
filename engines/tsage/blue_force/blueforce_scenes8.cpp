@@ -21,7 +21,6 @@
  */
 
 #include "tsage/blue_force/blueforce_scenes8.h"
-#include "tsage/blue_force/blueforce_dialogs.h"
 #include "tsage/scenes.h"
 #include "tsage/tsage.h"
 #include "tsage/staticres.h"
@@ -2625,7 +2624,7 @@ void Scene860::Action1::signal() {
 			BF_GLOBALS._player.setStrip(2);
 		}
 		signal();
-		// Deliberate fall-through
+		// fall through
 	case 2:
 		BF_GLOBALS._player.animate(ANIM_MODE_1, NULL);
 		ADD_MOVER_NULL(BF_GLOBALS._player, scene->_destPos.x, scene->_destPos.y);

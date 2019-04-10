@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -26,6 +26,35 @@
 namespace Access {
 
 namespace Martian {
+
+MartianResources::~MartianResources() {
+	delete _font6x6;
+	delete _font3x5;
+}
+
+void MartianResources::load(Common::SeekableReadStream &s) {
+	Resources::load(s);
+	uint count;
+
+	// Get the offset of the general shared data for the game
+	uint entryOffset = findEntry(_vm->getGameID(), 2, 0, (Common::Language)0);
+	s.seek(entryOffset);
+
+	// Read in the cursor list
+	count = s.readUint16LE();
+	CURSORS.resize(count);
+	for (uint idx = 0; idx < count; ++idx) {
+		uint count2 = s.readUint16LE();
+		CURSORS[idx].resize(count2);
+		s.read(&CURSORS[idx][0], count2);
+	}
+
+	// Load font data
+	_font6x6 = new MartianFont(6, s);
+	_font3x5 = new MartianFont(5, s);
+}
+
+/*------------------------------------------------------------------------*/
 
 const int SIDEOFFR[] = {  4, 0, 7, 10,  3, 1, 2, 13, 0, 0, 0, 0 };
 const int SIDEOFFL[] = { 11, 6, 1,  4, 10, 6, 1,  4, 0, 0, 0, 0 };
@@ -58,7 +87,7 @@ const byte ICON_PALETTE[] = {
 	0x00, 0x0A, 0x1A, 0x00, 0x0D, 0x1F,
 	0x00, 0x11, 0x28, 0x00, 0x15, 0x30,
 	0x00, 0x19, 0x39, 0x00, 0x1B, 0x3F,
-	0x00, 0x2D, 0x3A 
+	0x00, 0x2D, 0x3A
 };
 
 const int RMOUSE[10][2] = {

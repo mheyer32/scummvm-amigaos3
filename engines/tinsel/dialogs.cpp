@@ -1671,10 +1671,10 @@ static void Select(int i, bool force) {
 #else
 			// Current description with cursor appended
 			if (cd.box[i].boxText != NULL) {
-				strcpy(g_sedit, cd.box[i].boxText);
-				strcat(g_sedit, sCursor);
+				Common::strlcpy(g_sedit, cd.box[i].boxText, SG_DESC_LEN+2);
+				Common::strlcat(g_sedit, sCursor, SG_DESC_LEN+2);
 			} else {
-				strcpy(g_sedit, sCursor);
+				Common::strlcpy(g_sedit, sCursor, SG_DESC_LEN+2);
 			}
 #endif
 
@@ -1907,6 +1907,11 @@ extern void HoldItem(int item, bool bKeepFilm) {
 				invObj = GetInvObject(item);
 				SetAuxCursor(invObj->hIconFilm);	// and is aux. cursor
 			}
+
+			// WORKAROUND: If a held item is being removed that's not in either inventory (i.e. it was picked up
+			// but never put in them), then when removing it from being held, drop it in the luggage
+			if (g_heldItem != INV_NOICON && InventoryPos(g_heldItem) == INV_HELDNOTIN)
+				AddToInventory(INV_1, g_heldItem);
 		}
 
 		g_heldItem = item;			// Item held
@@ -3676,13 +3681,13 @@ extern void HideConversation(bool bHide) {
 				ConstructInventory(FULL);
 			else {
 				// Move it all back on-screen
-				for (i = 0; g_objArray[i] && i < MAX_WCOMP; i++) {
+				for (i = 0; i < MAX_WCOMP && g_objArray[i]; i++) {
 					MultiAdjustXY(g_objArray[i], -2 * SCREEN_WIDTH, 0);
 				}
 
 				// Don't flash if items changed. If they have, will be redrawn anyway.
 				if (TinselV2 || !g_ItemsChanged) {
-					for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++) {
+					for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++) {
 						MultiAdjustXY(g_iconArray[i], -2*SCREEN_WIDTH, 0);
 					}
 				}
@@ -3739,10 +3744,10 @@ extern void HideConversation(bool bHide) {
 				deltay = g_InvD[INV_CONV].inventoryY - deltay;
 
 				// Move it all
-				for (i = 0; g_objArray[i] && i < MAX_WCOMP; i++) {
+				for (i = 0; i < MAX_WCOMP && g_objArray[i]; i++) {
 					MultiMoveRelXY(g_objArray[i], x - center, deltay);
 				}
-				for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++) {
+				for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++) {
 					MultiMoveRelXY(g_iconArray[i], x - center, deltay);
 				}
 				g_InvD[INV_CONV].inventoryX += x - center;
@@ -3771,10 +3776,10 @@ extern void HideConversation(bool bHide) {
 					y = 0;
 
 				if (x || y) {
-					for (i = 0; g_objArray[i] && i < MAX_WCOMP; i++) {
+					for (i = 0; i < MAX_WCOMP && g_objArray[i]; i++) {
 						MultiMoveRelXY(g_objArray[i], x, y);
 					}
-					for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++) {
+					for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++) {
 						MultiMoveRelXY(g_iconArray[i], x, y);
 					}
 					g_InvD[INV_CONV].inventoryX += x;
@@ -3786,10 +3791,10 @@ extern void HideConversation(bool bHide) {
 				 */
 				if (MultiLowest(g_RectObject) > SCREEN_BOX_HEIGHT2 - SysVar(SV_CONV_MINY)) {
 					y = (SCREEN_BOX_HEIGHT2 - SysVar(SV_CONV_MINY)) - MultiLowest(g_RectObject);
-					for (i = 0; g_objArray[i] && i < MAX_WCOMP; i++) {
+					for (i = 0; i < MAX_WCOMP && g_objArray[i]; i++) {
 						MultiMoveRelXY(g_objArray[i], 0, y);
 					}
-					for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++) {
+					for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++) {
 						MultiMoveRelXY(g_iconArray[i], 0, y);
 					}
 					g_InvD[INV_CONV].inventoryY += y;
@@ -4617,9 +4622,9 @@ extern void Xmovement(int x) {
 			GetAniPosition(g_objArray[0], &g_InvD[g_ino].inventoryX, &aniY);
 			g_InvD[g_ino].inventoryX +=x;
 			MultiSetAniX(g_objArray[0], g_InvD[g_ino].inventoryX);
-			for (i = 1; g_objArray[i] && i < MAX_WCOMP; i++)
+			for (i = 1; i < MAX_WCOMP && g_objArray[i]; i++)
 				MultiMoveRelXY(g_objArray[i], x, 0);
-			for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++)
+			for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++)
 				MultiMoveRelXY(g_iconArray[i], x, 0);
 			break;
 
@@ -4665,9 +4670,9 @@ extern void Ymovement(int y) {
 			GetAniPosition(g_objArray[0], &aniX, &g_InvD[g_ino].inventoryY);
 			g_InvD[g_ino].inventoryY +=y;
 			MultiSetAniY(g_objArray[0], g_InvD[g_ino].inventoryY);
-			for (i = 1; g_objArray[i] && i < MAX_WCOMP; i++)
+			for (i = 1; i < MAX_WCOMP && g_objArray[i]; i++)
 				MultiMoveRelXY(g_objArray[i], 0, y);
-			for (i = 0; g_iconArray[i] && i < MAX_ICONS; i++)
+			for (i = 0; i < MAX_ICONS && g_iconArray[i]; i++)
 				MultiMoveRelXY(g_iconArray[i], 0, y);
 			break;
 

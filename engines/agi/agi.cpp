@@ -37,7 +37,6 @@
 #include "graphics/cursorman.h"
 
 #include "audio/mididrv.h"
-#include "audio/mixer.h"
 
 #include "agi/agi.h"
 #include "agi/font.h"
@@ -174,6 +173,7 @@ int AgiEngine::agiInit() {
 #endif
 
 	_keyHoldMode = false;
+	_keyHoldModeLastKey = Common::KEYCODE_INVALID;
 
 	_game.mouseFence.setWidth(0); // Reset
 
@@ -214,7 +214,7 @@ int AgiEngine::agiDeinit() {
 	agiUnloadResources();    // unload resources in memory
 	_loader->unloadResource(RESOURCETYPE_LOGIC, 0);
 	ec = _loader->deinit();
-	unloadObjects();
+	_objects.clear();
 	_words->unloadDictionary();
 
 	clearImageStack();
@@ -283,18 +283,7 @@ void AgiBase::initRenderMode() {
 
 	switch (platform) {
 	case Common::kPlatformDOS:
-		switch (configRenderMode) {
-		case Common::kRenderCGA:
-			_renderMode = Common::kRenderCGA;
-			break;
-		// Hercules is not supported atm
-		//case Common::kRenderHercA:
-		//case Common::kRenderHercG:
-		//	_renderMode = Common::kRenderHercG;
-		//	break;
-		default:
-			break;
-		}
+		// Keep EGA
 		break;
 	case Common::kPlatformAmiga:
 		_renderMode = Common::kRenderAmiga;
@@ -322,6 +311,12 @@ void AgiBase::initRenderMode() {
 		break;
 	case Common::kRenderVGA:
 		_renderMode = Common::kRenderVGA;
+		break;
+	case Common::kRenderHercG:
+		_renderMode = Common::kRenderHercG;
+		break;
+	case Common::kRenderHercA:
+		_renderMode = Common::kRenderHercA;
 		break;
 	case Common::kRenderAmiga:
 		_renderMode = Common::kRenderAmiga;
@@ -391,15 +386,12 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 
 	memset(&_stringdata, 0, sizeof(struct StringData));
 
-	_objects = NULL;
-
 	_restartGame = false;
 
 	_firstSlot = 0;
 
 	resetControllers();
 
-	setupOpcodes();
 	_game._curLogic = NULL;
 	_veryFirstInitialCycle = true;
 	_instructionCounter = 0;
@@ -408,6 +400,11 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 	_setVolumeBrokenFangame = false; // for further study see AgiEngine::setVolumeViaScripts()
 
 	_lastSaveTime = 0;
+
+	_playTimeInSecondsAdjust = 0;
+	_lastUsedPlayTimeInCycles = 0;
+	_lastUsedPlayTimeInSeconds = 0;
+	_passedPlayTimeCycles = 0;
 
 	memset(_keyQueue, 0, sizeof(_keyQueue));
 
@@ -424,6 +421,10 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 	_inventory = nullptr;
 
 	_keyHoldMode = false;
+	_keyHoldModeLastKey = Common::KEYCODE_INVALID;
+
+	_artificialDelayCurrentRoom = 0;
+	_artificialDelayCurrentPicture = 0;
 }
 
 void AgiEngine::initialize() {
@@ -466,7 +467,7 @@ void AgiEngine::initialize() {
 	_console = new Console(this);
 	_words = new Words(this);
 	_font = new GfxFont(this);
-	_gfx = new GfxMgr(this);
+	_gfx = new GfxMgr(this, _font);
 	_sound = new SoundMgr(this, _mixer);
 	_picture = new PictureMgr(this, _gfx);
 	_sprites = new SpritesMgr(this, _gfx);
@@ -474,9 +475,9 @@ void AgiEngine::initialize() {
 	_systemUI = new SystemUI(this, _gfx, _text);
 	_inventory = new InventoryMgr(this, _gfx, _text, _systemUI);
 
+	_font->init();
 	_gfx->initVideo();
 
-	_font->init();
 	_text->init(_systemUI);
 
 	_game.gameFlags = 0;
@@ -494,6 +495,8 @@ void AgiEngine::initialize() {
 	} else {
 		warning("Could not open AGI game");
 	}
+	// finally set up actual VM opcodes, because we should now have figured out the right AGI version
+	setupOpCodes(getVersion());
 
 	debugC(2, kDebugLevelMain, "Init sound");
 }
@@ -510,19 +513,6 @@ void AgiEngine::redrawScreen() {
 	_picture->showPic();
 	_text->statusDraw();
 	_text->promptRedraw();
-}
-
-// Adjust a given coordinate to the local game screen
-// Used on mouse cursor coordinates before passing them to scripts
-void AgiEngine::adjustPosToGameScreen(int16 &x, int16 &y) {
-	x = x / 2; // 320 -> 160
-	y = y - _gfx->getRenderStartOffsetY(); // remove status bar line
-	if (y < 0) {
-		y = 0;
-	}
-	if (y >= SCRIPT_HEIGHT) {
-		y = SCRIPT_HEIGHT + 1; // 1 beyond
-	}
 }
 
 AgiEngine::~AgiEngine() {

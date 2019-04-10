@@ -2,25 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="he">
-			<UniqueIdentifier>5A135309-0724-4A52-A9BB-7C6EED952B8C</UniqueIdentifier>
+			<UniqueIdentifier>9A59BDAE-B9A5-4529-B3A9-45100A78677C</UniqueIdentifier>
 		</Filter>
 		<Filter Include="he\logic">
-			<UniqueIdentifier>30AEBF17-7FA7-4D05-BAF2-7BF06A7E1E86</UniqueIdentifier>
+			<UniqueIdentifier>81B7EC12-6CE7-4FEF-B256-4E9BBB6FAECB</UniqueIdentifier>
+		</Filter>
+		<Filter Include="he\moonbase">
+			<UniqueIdentifier>C387C603-C248-4702-8941-3F84C4F462C6</UniqueIdentifier>
 		</Filter>
 		<Filter Include="imuse">
-			<UniqueIdentifier>1E3011F7-7E95-4CCE-A367-1386874B6A29</UniqueIdentifier>
+			<UniqueIdentifier>D3677376-A5AC-42EC-95E8-B5855C17131C</UniqueIdentifier>
 		</Filter>
 		<Filter Include="imuse_digi">
-			<UniqueIdentifier>A75C9BC2-8ADB-4885-A93D-06E00E06B54A</UniqueIdentifier>
+			<UniqueIdentifier>8E077536-81D5-4B4C-883F-23BABD8F9BEB</UniqueIdentifier>
 		</Filter>
 		<Filter Include="insane">
-			<UniqueIdentifier>D07305CA-B9B2-456E-B368-5CD914CC9125</UniqueIdentifier>
+			<UniqueIdentifier>E0738AF9-6BED-4161-AFF1-F8CEA45970DE</UniqueIdentifier>
 		</Filter>
 		<Filter Include="players">
-			<UniqueIdentifier>1F9EA207-4C87-4BB8-AD64-26CCBE153F6E</UniqueIdentifier>
+			<UniqueIdentifier>B308711B-77BD-4CE2-9D84-599EEF4620E1</UniqueIdentifier>
 		</Filter>
 		<Filter Include="smush">
-			<UniqueIdentifier>29105773-2820-42D7-839B-BADA79390A65</UniqueIdentifier>
+			<UniqueIdentifier>68D66B17-92E9-45E9-ADEB-1AB2D242F7DD</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -36,7 +39,7 @@
 		<ClCompile Include="..\..\engines\scumm\he\logic\funshop.cpp">
 			<Filter>he\logic</Filter>
 		</ClCompile>
-		<ClCompile Include="..\..\engines\scumm\he\logic\moonbase.cpp">
+		<ClCompile Include="..\..\engines\scumm\he\logic\moonbase_logic.cpp">
 			<Filter>he\logic</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\he\logic\puttrace.cpp">
@@ -44,6 +47,42 @@
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\he\logic\soccer.cpp">
 			<Filter>he\logic</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_defenseunit.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_main.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_node.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_targetacquisition.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_traveller.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_tree.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_types.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\ai_weapon.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\distortion.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\moonbase.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\moonbase_fow.cpp">
+			<Filter>he\moonbase</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\he\moonbase\net_main.cpp">
+			<Filter>he\moonbase</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\he\animation_he.cpp">
 			<Filter>he</Filter>
@@ -281,6 +320,42 @@
 		<ClCompile Include="..\..\engines\scumm\verbs.cpp" />
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_defenseunit.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_main.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_node.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_pattern.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_targetacquisition.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_traveller.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_tree.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_types.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_weapon.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\moonbase.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\net_defines.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\he\moonbase\net_main.h">
+			<Filter>he\moonbase</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\he\animation_he.h">
 			<Filter>he</Filter>
 		</ClInclude>

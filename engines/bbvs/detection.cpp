@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -69,7 +69,7 @@ static const char * const directoryGlobs[] = {
 class BbvsMetaEngine : public AdvancedMetaEngine {
 public:
 	BbvsMetaEngine() : AdvancedMetaEngine(Bbvs::gameDescriptions, sizeof(ADGameDescription), bbvsGames) {
-		_singleid = "bbvs";
+		_singleId = "bbvs";
 		_maxScanDepth = 3;
 		_directoryGlobs = directoryGlobs;
 	}
@@ -97,7 +97,8 @@ bool BbvsMetaEngine::hasFeature(MetaEngineFeature f) const {
 	    (f == kSupportsLoadingDuringStartup) ||
 	    (f == kSavesSupportMetaInfo) ||
 	    (f == kSavesSupportThumbnail) ||
-	    (f == kSavesSupportCreationDate);
+	    (f == kSavesSupportCreationDate) ||
+		(f == kSimpleSavesNames);
 }
 
 void BbvsMetaEngine::removeSaveState(const char *target, int slot) const {
@@ -116,7 +117,6 @@ SaveStateList BbvsMetaEngine::listSaves(const char *target) const {
 	pattern += ".###";
 	Common::StringArray filenames;
 	filenames = saveFileMan->listSavefiles(pattern.c_str());
-	Common::sort(filenames.begin(), filenames.end());	// Sort (hopefully ensuring we are sorted numerically..)
 	SaveStateList saveList;
 	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); ++file) {
 		// Obtain the last 3 digits of the filename, since they correspond to the save slot
@@ -124,13 +124,15 @@ SaveStateList BbvsMetaEngine::listSaves(const char *target) const {
 		if (slotNum >= 0 && slotNum <= 999) {
 			Common::InSaveFile *in = saveFileMan->openForLoading(file->c_str());
 			if (in) {
-				if (Bbvs::BbvsEngine::readSaveHeader(in, false, header) == Bbvs::BbvsEngine::kRSHENoError) {
+				if (Bbvs::BbvsEngine::readSaveHeader(in, header) == Bbvs::BbvsEngine::kRSHENoError) {
 					saveList.push_back(SaveStateDescriptor(slotNum, header.description));
 				}
 				delete in;
 			}
 		}
 	}
+	// Sort saves based on slot number.
+	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
 	return saveList;
 }
 
@@ -140,7 +142,7 @@ SaveStateDescriptor BbvsMetaEngine::querySaveMetaInfos(const char *target, int s
 	if (in) {
 		Bbvs::BbvsEngine::SaveHeader header;
 		Bbvs::BbvsEngine::kReadSaveHeaderError error;
-		error = Bbvs::BbvsEngine::readSaveHeader(in, true, header);
+		error = Bbvs::BbvsEngine::readSaveHeader(in, header, false);
 		delete in;
 		if (error == Bbvs::BbvsEngine::kRSHENoError) {
 			SaveStateDescriptor desc(slot, header.description);

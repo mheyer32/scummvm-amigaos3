@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="kyra"
-	ProjectGUID="{6EEFB5F1-80D4-4894-BBC2-5C2466C675FB}"
+	ProjectGUID="{185C57CF-CAEA-4DC7-8885-63B784305959}"
 	RootNamespace="kyra"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

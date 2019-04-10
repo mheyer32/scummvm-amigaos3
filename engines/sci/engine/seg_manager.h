@@ -29,6 +29,9 @@
 #include "sci/engine/vm.h"
 #include "sci/engine/vm_types.h"
 #include "sci/engine/segment.h"
+#ifdef ENABLE_SCI32
+#include "sci/graphics/celobj32.h" // kLowResX, kLowResY
+#endif
 
 namespace Sci {
 
@@ -301,11 +304,10 @@ public:
 	 * Return the string referenced by pointer.
 	 * pointer can point to either a raw or non-raw segment.
 	 * @param pointer The pointer to dereference
-	 * @parm entries The number of values expected (for checking)
 	 * @return The string referenced, or an empty string if not enough
 	 * entries were available.
 	 */
-	Common::String getString(reg_t pointer, int entries = 0);
+	Common::String getString(reg_t pointer);
 
 
 	/**
@@ -374,6 +376,7 @@ public:
 
 	// TODO: document this
 	SegmentObj *getSegmentObj(SegmentId seg) const;
+	SegmentObj* findSegmentObj(SegmentId seg) const;
 
 	// TODO: document this
 	SegmentType getSegmentType(SegmentId seg) const;
@@ -386,14 +389,14 @@ public:
 	 * @param[in] offset	Location (segment, offset) of the object
 	 * @return				The object in question, or NULL if there is none
 	 */
-	Object *getObject(reg_t pos) const;
+	Object *getObject(const reg_t &pos) const;
 
 	/**
 	 * Checks whether a heap address contains an object
 	 * @parm obj The address to check
 	 * @return True if it is an object, false otherwise
 	 */
-	bool isObject(reg_t obj) const { return getObject(obj) != NULL; }
+	bool isObject(const reg_t &obj) const { return getObject(obj) != NULL; }
 
 	// TODO: document this
 	bool isHeapObject(reg_t pos) const;
@@ -407,6 +410,11 @@ public:
 	 * 					it be modified).
 	 */
 	const char *getObjectName(reg_t pos);
+
+	/**
+	 * Finds the addresses of all objects with the given name.
+	 */
+	Common::Array<reg_t> findObjectsByName(const Common::String &name);
 
 	/**
 	 * Find the address of an object by its name. In case multiple objects
@@ -430,13 +438,21 @@ public:
 	reg_t getParserPtr() const { return _parserPtr; }
 
 #ifdef ENABLE_SCI32
-	SciArray<reg_t> *allocateArray(reg_t *addr);
-	SciArray<reg_t> *lookupArray(reg_t addr);
+	bool isValidAddr(reg_t reg, SegmentType expected) const {
+		SegmentObj *mobj = getSegmentObj(reg.getSegment());
+		return (mobj &&
+				mobj->getType() == expected &&
+				mobj->isValidOffset(reg.getOffset()));
+	}
+
+	SciArray *allocateArray(SciArrayType type, uint16 size, reg_t *addr);
+	SciArray *lookupArray(reg_t addr);
 	void freeArray(reg_t addr);
-	SciString *allocateString(reg_t *addr);
-	SciString *lookupString(reg_t addr);
-	void freeString(reg_t addr);
-	SegmentId getStringSegmentId() { return _stringSegId; }
+	bool isArray(reg_t addr) const;
+
+	SciBitmap *allocateBitmap(reg_t *addr, const int16 width, const int16 height, const uint8 skipColor = kDefaultSkipColor, const int16 originX = 0, const int16 originY = 0, const int16 xResolution = kLowResX, const int16 yResolution = kLowResY, const uint32 paletteSize = 0, const bool remap = false, const bool gc = true);
+	SciBitmap *lookupBitmap(reg_t addr);
+	void freeBitmap(reg_t addr);
 #endif
 
 	const Common::Array<SegmentObj *> &getSegments() const { return _heap; }
@@ -461,7 +477,7 @@ private:
 
 #ifdef ENABLE_SCI32
 	SegmentId _arraysSegId;
-	SegmentId _stringSegId;
+	SegmentId _bitmapSegId;
 #endif
 
 public:
@@ -488,4 +504,17 @@ private:
 
 } // End of namespace Sci
 
+namespace Sci {
+
+inline reg_t* ObjVarRef::getPointer(SegManager* segMan) const {
+	Object *o = segMan->getObject(obj);
+	return o ? &o->getVariableRef(varindex) : 0;
+}
+
+inline reg_t*ExecStack::getVarPointer(SegManager* segMan) const {
+	assert(type == EXEC_STACK_TYPE_VARSELECTOR);
+	return addr.varp.getPointer(segMan);
+}
+
+} // End of namespace Sci
 #endif // SCI_ENGINE_SEGMAN_H

@@ -1,10 +1,10 @@
 
-ronindir = /usr/local/ronin
-
 CC := $(CXX)
 ASFLAGS := $(CXXFLAGS)
 
 dist : SCUMMVM.BIN IP.BIN plugin_dist
+
+clean : dcclean
 
 plugin_dist : plugins
 	@[ -z "$(PLUGINS)" ] || for p in $(or $(PLUGINS),none); do \
@@ -37,3 +37,10 @@ ip.txt : $(srcdir)/backends/platform/dc/ip.txt.in
 dcdist : dist
 	mkdir -p dcdist/scummvm
 	cp scummvm.elf SCUMMVM.BIN IP.BIN *.PLG dcdist/scummvm/
+
+dcclean :
+	$(RM) backends/platform/dc/plugin_head.o
+	$(RM) scummvm.bin SCUMMVM.BIN ip.txt IP.BIN *.PLG
+	$(RM_REC) dcdist
+
+.PHONY: dcclean

@@ -23,38 +23,35 @@
 #ifndef SCI_GRAPHICS_VIEW_H
 #define SCI_GRAPHICS_VIEW_H
 
+#include "sci/util.h"
+
 namespace Sci {
 
-enum Sci32ViewNativeResolution {
-	SCI_VIEW_NATIVERES_NONE = -1,
-	SCI_VIEW_NATIVERES_320x200 = 0,
-	SCI_VIEW_NATIVERES_640x480 = 1,
-	SCI_VIEW_NATIVERES_640x400 = 2
-};
-
 struct CelInfo {
+	uint32 offsetRLE;
+	uint32 offsetLiteral;
+	uint16 offsetEGA;
 	int16 width, height;
 	int16 scriptWidth, scriptHeight;
 	int16 displaceX;
 	int16 displaceY;
 	byte clearKey;
-	uint16 offsetEGA;
-	uint32 offsetRLE;
-	uint32 offsetLiteral;
-	byte *rawBitmap;
+	Common::SpanOwner<SciSpan<const byte> > rawBitmap;
 };
 
 struct LoopInfo {
 	bool mirrorFlag;
-	uint16 celCount;
-	CelInfo *cel;
+	Common::Array<CelInfo> cel;
 };
 
-#define SCI_VIEW_EGAMAPPING_SIZE 16
-#define SCI_VIEW_EGAMAPPING_COUNT 8
+enum {
+	SCI_VIEW_EGAMAPPING_SIZE = 16,
+	SCI_VIEW_EGAMAPPING_COUNT = 8
+};
 
 class GfxScreen;
 class GfxPalette;
+class Resource;
 
 /**
  * View class, handles loading of view resources and drawing contained cels to screen
@@ -72,45 +69,36 @@ public:
 	void getCelRect(int16 loopNo, int16 celNo, int16 x, int16 y, int16 z, Common::Rect &outRect) const;
 	void getCelSpecialHoyle4Rect(int16 loopNo, int16 celNo, int16 x, int16 y, int16 z, Common::Rect &outRect) const;
 	void getCelScaledRect(int16 loopNo, int16 celNo, int16 x, int16 y, int16 z, int16 scaleX, int16 scaleY, Common::Rect &outRect) const;
-	const byte *getBitmap(int16 loopNo, int16 celNo);
-	void draw(const Common::Rect &rect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated, int16 loopNo, int16 celNo, byte priority, uint16 EGAmappingNr, bool upscaledHires);
-	void drawScaled(const Common::Rect &rect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated, int16 loopNo, int16 celNo, byte priority, int16 scaleX, int16 scaleY);
-	uint16 getLoopCount() const { return _loopCount; }
+	const SciSpan<const byte> &getBitmap(int16 loopNo, int16 celNo);
+	void draw(const Common::Rect &rect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated, int16 loopNo, int16 celNo, byte priority, uint16 EGAmappingNr, bool upscaledHires, uint16 scaleSignal = 0);
+	void drawScaled(const Common::Rect &rect, const Common::Rect &clipRect, const Common::Rect &clipRectTranslated, int16 loopNo, int16 celNo, byte priority, int16 scaleX, int16 scaleY, uint16 scaleSignal = 0);
+	uint16 getLoopCount() const { return _loop.size(); }
 	uint16 getCelCount(int16 loopNo) const;
 	Palette *getPalette();
 
 	bool isScaleable();
-	bool isSci2Hires();
 
 	void adjustToUpscaledCoordinates(int16 &y, int16 &x);
 	void adjustBackUpscaledCoordinates(int16 &y, int16 &x);
 
-	byte getColorAtCoordinate(int16 loopNo, int16 celNo, int16 x, int16 y);
-
 private:
 	void initData(GuiResourceId resourceId);
-	void unpackCel(int16 loopNo, int16 celNo, byte *outPtr, uint32 pixelCount);
-	void unditherBitmap(byte *bitmap, int16 width, int16 height, byte clearKey);
+	void unpackCel(int16 loopNo, int16 celNo, SciSpan<byte> &outPtr);
+	void unditherBitmap(SciSpan<byte> &bitmap, int16 width, int16 height, byte clearKey);
 
 	ResourceManager *_resMan;
-	GfxCoordAdjuster *_coordAdjuster;
+	GfxCoordAdjuster16 *_coordAdjuster;
 	GfxScreen *_screen;
 	GfxPalette *_palette;
 
 	GuiResourceId _resourceId;
 	Resource *_resource;
-	byte *_resourceData;
-	int _resourceSize;
 
-	uint16 _loopCount;
-	LoopInfo *_loop;
+	Common::Array<LoopInfo> _loop;
 	bool _embeddedPal;
 	Palette _viewPalette;
 
-	// specifies scaling resolution for SCI2 views (see gk1/windows, Wolfgang in room 720)
-	Sci32ViewNativeResolution _sci2ScaleRes;
-
-	byte *_EGAmapping;
+	SciSpan<const byte> _EGAmapping;
 
 	// this is set for sci0early to adjust for the getCelRect() change
 	int16 _adjustForSci0Early;

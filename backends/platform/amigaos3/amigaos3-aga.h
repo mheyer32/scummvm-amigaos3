@@ -62,89 +62,91 @@ public:
 	void init(int audioThreadPriority);
 
 	// Override functions from ModularBackend and OSystem
-	void initBackend();
+	virtual void initBackend();
 
-	void quit();
+	virtual void quit();
 
 	// Logging
-	void logMessage(LogMessageType::Type type, const char *message);
+	virtual void logMessage(LogMessageType::Type type, const char *message);
 
-	Common::SeekableReadStream *createConfigReadStream();
-	Common::WriteStream *createConfigWriteStream();
+	virtual Common::SeekableReadStream *createConfigReadStream();
+	virtual Common::WriteStream *createConfigWriteStream();
 
 	virtual uint32 getMillis(bool skipRecord = false);
 
-	void delayMillis(uint msecs);
+	virtual void delayMillis(uint msecs);
 
-	void getTimeAndDate(TimeDate &td) const;
+	virtual void getTimeAndDate(TimeDate &td) const;
 
-	bool hasFeature(OSystem::Feature f);
-	void setFeatureState(OSystem::Feature f, bool enable);
-	bool getFeatureState(OSystem::Feature f);
+	virtual bool hasFeature(OSystem::Feature f);
+	virtual void setFeatureState(OSystem::Feature f, bool enable);
+	virtual bool getFeatureState(OSystem::Feature f);
 
-	const OSystem::GraphicsMode *getSupportedGraphicsModes() const;
-	int getDefaultGraphicsMode() const;
-	bool setGraphicsMode(int mode);
-	void resetGraphicsScale();
-	int getGraphicsMode() const;
+	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const;
+	virtual int getDefaultGraphicsMode() const;
+	virtual bool setGraphicsMode(int mode);
+	virtual void resetGraphicsScale();
+	virtual int getGraphicsMode() const;
 
-	void initSize(uint width, uint height, const Graphics::PixelFormat *format = NULL);
+	virtual void initSize(uint width, uint height, const Graphics::PixelFormat *format = NULL);
 
-	int getScreenChangeID() const { return _screenChangeCount; }
+	virtual int getScreenChangeID() const { return _screenChangeCount; }
 
-	void beginGFXTransaction();
-	OSystem::TransactionError endGFXTransaction();
+	virtual void beginGFXTransaction();
+	virtual OSystem::TransactionError endGFXTransaction();
 
-	inline int16 getHeight() { return _videoMode.screenHeight; }
-	inline int16 getWidth() { return _videoMode.screenWidth; }
+	virtual inline int16 getHeight() { return _videoMode.screenHeight; }
+	virtual inline int16 getWidth() { return _videoMode.screenWidth; }
 
-	inline PaletteManager *getPaletteManager() { return this; }
+	virtual inline PaletteManager *getPaletteManager() { return this; }
 
-	void setPalette(const byte *colors, uint start, uint num);
-	void grabPalette(byte *colors, uint start, uint num);
+	virtual void setPalette(const byte *colors, uint start, uint num);
+	virtual void grabPalette(byte *colors, uint start, uint num) const;
 
-	void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h);
-	inline Graphics::Surface *lockScreen() { return &_screen; }
-	void unlockScreen() { _screenDirty = true; }
-	void fillScreen(uint32 col);
-	void updateScreen();
-	void setShakePos(int shakeOffset);
+	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h);
+	virtual inline Graphics::Surface *lockScreen() { return &_screen; }
+	virtual void unlockScreen() { _screenDirty = true; }
+	virtual void fillScreen(uint32 col);
+	virtual void updateScreen();
+	virtual void setShakePos(int shakeOffset);
 
-	void setFocusRectangle(const Common::Rect &rect) {}
-	void clearFocusRectangle() {}
+	virtual void setFocusRectangle(const Common::Rect &rect) {}
+	virtual void clearFocusRectangle() {}
 
-	void showOverlay();
-	void hideOverlay();
-	inline Graphics::PixelFormat getOverlayFormat() const { return _overlayFormat; }
-	void clearOverlay();
-	void grabOverlay(void *buf, int pitch);
-	void copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h);
-	inline int16 getOverlayHeight() { return _videoMode.overlayHeight; }
-	inline int16 getOverlayWidth() { return _videoMode.overlayWidth; }
+	virtual void showOverlay();
+	virtual void hideOverlay();
+	virtual inline Graphics::PixelFormat getOverlayFormat() const { return _overlayFormat; }
+	virtual void clearOverlay();
+	virtual void grabOverlay(void *buf, int pitch);
+	virtual void copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h);
+	virtual inline int16 getOverlayHeight() { return _videoMode.overlayHeight; }
+	virtual inline int16 getOverlayWidth() { return _videoMode.overlayWidth; }
 
-	bool showMouse(bool visible);
-	void warpMouse(int x, int y);
+	virtual bool showMouse(bool visible);
+	virtual void warpMouse(int x, int y);
 
-	void setMouseCursor(const void *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor,
-						bool dontScale = false, const Graphics::PixelFormat *format = NULL);
+	virtual void setMouseCursor(const void *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor,
+								bool dontScale = false, const Graphics::PixelFormat *format = NULL);
 
-	void setCursorPalette(const byte *colors, uint start, uint num) {}
+	virtual void setCursorPalette(const byte *colors, uint start, uint num) {}
 	void disableCursorPalette(bool disable) {}
-	void setMouseCursorPosition(uint x, uint y);
+	void setMouseCursorPosition(uint16 x, uint16 y);
 
 	// inline struct Window* getHardwareWindow() { return _hardwareWindow; }
 	struct Window *getHardwareWindow();
 
-	inline Audio::Mixer *getMixer() { return _mixerManager->getMixer(); }
+	virtual inline Audio::Mixer *getMixer() { return _mixerManager->getMixer(); }
 
-	void displayMessageOnOSD(const char *msg) {}
+	virtual void displayMessageOnOSD(const char *msg) {}
 
-	MutexRef createMutex();
-	inline void lockMutex(OSystem::MutexRef mutex) { ObtainSemaphore((SignalSemaphore *)mutex); }
-	inline void unlockMutex(OSystem::MutexRef mutex) { ReleaseSemaphore((SignalSemaphore *)mutex); }
-	inline void deleteMutex(OSystem::MutexRef mutex) { FreeVec(mutex); }
+	virtual MutexRef createMutex();
+	virtual inline void lockMutex(OSystem::MutexRef mutex) { ObtainSemaphore((SignalSemaphore *)mutex); }
+	virtual inline void unlockMutex(OSystem::MutexRef mutex) { ReleaseSemaphore((SignalSemaphore *)mutex); }
+	virtual inline void deleteMutex(OSystem::MutexRef mutex) { FreeVec(mutex); }
 
 protected:
+	typedef uint16 OverlayColor;
+
 	bool _inited;
 
 	AmigaOS3MixerManager *_mixerManager;
@@ -194,22 +196,18 @@ protected:
 	TransactionDetails _transactionDetails;
 
 	struct VideoState {
-		bool setup;
+		uint16 screenWidth, screenHeight;
+		uint16 overlayScreenHeight;
 
-		// bool aspectRatioCorrectionRequested;
-		// bool aspectRatioCorrectionInUse;
+		uint16 overlayWidth;
+		uint16 overlayHeight;
+
+		uint16 bytesPerRow;
+		uint16 overlayBytesPerRow;
 
 		int mode;
 
-		uint screenWidth, screenHeight;
-		uint overlayScreenHeight;
-		// uint scaledHeight;
-
-		uint overlayWidth;
-		uint overlayHeight;
-
-		uint bytesPerRow;
-		uint overlayBytesPerRow;
+		bool setup;
 	};
 	VideoState _videoMode, _oldVideoMode;
 
@@ -227,16 +225,12 @@ protected:
 	// Mouse data.
 	struct MouseCursor {
 		MouseCursor() : visible(false), keyColor(0), w(0), h(0), x(0), y(0), hotX(0), hotY(0) {}
-		bool visible;
-
 		uint32 keyColor;
-
-		uint w, h;
-
+		uint16 w, h;
 		// The mouse position.
-		uint x, y;
-
-		int hotX, hotY;
+		uint16 x, y;
+		int16 hotX, hotY;
+		bool visible;
 
 		Graphics::Surface surface;
 	};
@@ -261,7 +255,7 @@ protected:
 	byte *_overlayPalette;
 
 	ULONG *_agaPalette;
-	uint _paletteDirtyStart, _paletteDirtyEnd;
+	uint16 _paletteDirtyStart, _paletteDirtyEnd;
 
 	// Shake mode
 	int _currentShakePos;
@@ -277,8 +271,8 @@ protected:
 	ULONG loadModeId();
 	void saveModeId(ULONG modeId);
 
-	struct Screen *createHardwareScreen(uint width, uint height);
-	struct Window *createHardwareWindow(uint width, uint height, struct Screen *screen);
+	struct Screen *createHardwareScreen(uint16 width, uint16 height);
+	struct Window *createHardwareWindow(uint16 width, uint16 height, struct Screen *screen);
 	void unloadGFXMode();
 	void updatePalette();
 

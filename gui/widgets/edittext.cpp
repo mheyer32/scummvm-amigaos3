@@ -36,6 +36,8 @@ EditTextWidget::EditTextWidget(GuiObject *boss, int x, int y, int w, int h, cons
 
 	setEditString(text);
 	setFontStyle(ThemeEngine::kFontStyleNormal);
+
+	_leftPadding = _rightPadding = 0;
 }
 
 EditTextWidget::EditTextWidget(GuiObject *boss, const String &name, const String &text, const char *tooltip, uint32 cmd, uint32 finishCmd)
@@ -46,6 +48,8 @@ EditTextWidget::EditTextWidget(GuiObject *boss, const String &name, const String
 
 	setEditString(text);
 	setFontStyle(ThemeEngine::kFontStyleNormal);
+
+	_leftPadding = _rightPadding = 0;
 }
 
 void EditTextWidget::setEditString(const String &str) {
@@ -59,7 +63,6 @@ void EditTextWidget::reflowLayout() {
 
 	EditableWidget::reflowLayout();
 }
-
 
 void EditTextWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 	if (!isEnabled())
@@ -83,17 +86,12 @@ void EditTextWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 		last = cur;
 	}
 	if (setCaretPos(i))
-		draw();
-
-#ifdef TIZEN
-	// Display the virtual keypad to allow text entry. Samsung app-store testers expected
-	// the keypad to be displayed when clicking the filter edit control in the laucher gui.
-	g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, true);
-#endif
+		markAsDirty();
 }
 
 void EditTextWidget::drawWidget() {
-	g_gui.theme()->drawWidgetBackground(Common::Rect(_x, _y, _x+_w, _y+_h), 0, ThemeEngine::kWidgetBackgroundEditText);
+	g_gui.theme()->drawWidgetBackground(Common::Rect(_x, _y, _x + _w, _y + _h), 0,
+	                                    ThemeEngine::kWidgetBackgroundEditText);
 
 	// Draw the text
 	adjustOffset();
@@ -101,7 +99,10 @@ void EditTextWidget::drawWidget() {
 	const Common::Rect &r = Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 8, _y + _h);
 	setTextDrawableArea(r);
 
-	g_gui.theme()->drawText(Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 2, _y + _h), _editString, _state, Graphics::kTextAlignLeft, ThemeEngine::kTextInversionNone, -_editScrollOffset, false, _font, ThemeEngine::kFontColorNormal, true, _textDrawableArea);
+	g_gui.theme()->drawText(
+			Common::Rect(_x + 2 + _leftPadding, _y + 2, _x + _leftPadding + getEditRect().width() + 2, _y + _h),
+			_editString, _state, Graphics::kTextAlignLeft, ThemeEngine::kTextInversionNone,
+			-_editScrollOffset, false, _font, ThemeEngine::kFontColorNormal, true, _textDrawableArea);
 }
 
 Common::Rect EditTextWidget::getEditRect() const {
@@ -111,12 +112,15 @@ Common::Rect EditTextWidget::getEditRect() const {
 }
 
 void EditTextWidget::receivedFocusWidget() {
+	g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, true);
 }
 
 void EditTextWidget::lostFocusWidget() {
 	// If we loose focus, 'commit' the user changes
 	_backupString = _editString;
 	drawCaret(true);
+
+	g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, false);
 }
 
 void EditTextWidget::startEditMode() {
@@ -131,6 +135,7 @@ void EditTextWidget::endEditMode() {
 void EditTextWidget::abortEditMode() {
 	setEditString(_backupString);
 	sendCommand(_cmd, 0);
+
 	releaseFocus();
 }
 

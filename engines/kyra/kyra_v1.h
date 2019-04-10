@@ -38,6 +38,7 @@
 #include "kyra/item.h"
 
 namespace Common {
+class OutSaveFile;
 class SeekableReadStream;
 class WriteStream;
 } // End of namespace Common
@@ -121,6 +122,7 @@ struct GameFlags {
 	bool isOldFloppy          : 1;
 	bool useHiRes             : 1;
 	bool use16ColorMode       : 1;
+	bool useHiColorMode       : 1;
 	bool useDigSound          : 1;
 	bool useInstallerPackage  : 1;
 
@@ -415,7 +417,7 @@ protected:
 		kRSHEIoError = 3
 	};
 
-	static ReadSaveHeaderError readSaveHeader(Common::SeekableReadStream *file, bool loadThumbnail, SaveHeader &header);
+	WARN_UNUSED_RESULT static ReadSaveHeaderError readSaveHeader(Common::SeekableReadStream *file, SaveHeader &header, bool skipThumbnail = true);
 
 	void loadGameStateCheck(int slot);
 	virtual Common::Error loadGameState(int slot) = 0;
@@ -423,7 +425,7 @@ protected:
 	virtual Common::Error saveGameStateIntern(int slot, const char *saveName, const Graphics::Surface *thumbnail) = 0;
 
 	Common::SeekableReadStream *openSaveForReading(const char *filename, SaveHeader &header, bool checkID = true);
-	Common::WriteStream *openSaveForWriting(const char *filename, const char *saveName, const Graphics::Surface *thumbnail) const;
+	Common::OutSaveFile *openSaveForWriting(const char *filename, const char *saveName, const Graphics::Surface *thumbnail) const;
 
 	// TODO: Consider moving this to Screen
 	virtual Graphics::Surface *generateSaveThumbnail() const { return 0; }

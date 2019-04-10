@@ -20,20 +20,15 @@
  *
  */
 
-#ifndef DREAMWEB_H
-#define DREAMWEB_H
+#ifndef DREAMWEB_DREAMWEB_H
+#define DREAMWEB_DREAMWEB_H
 
 #include "common/error.h"
-#include "common/file.h"
 #include "common/keyboard.h"
 #include "common/random.h"
 #include "common/rect.h"
-#include "common/savefile.h"
 #include "common/scummsys.h"
 #include "common/system.h"
-
-#include "audio/audiostream.h"
-#include "audio/mixer.h"
 
 #include "engines/engine.h"
 
@@ -44,6 +39,10 @@
 #define SCUMMVM_HEADER MKTAG('S', 'C', 'V', 'M')
 #define SCUMMVM_BLOCK_MAGIC_SIZE 0x1234
 #define SAVEGAME_VERSION 1
+
+namespace Common {
+class File;
+}
 
 namespace DreamWeb {
 
@@ -317,7 +316,6 @@ public:
 	// misc variables
 	uint8 _speechCount;
 	uint16 _charShift;
-	uint8 _kerning;
 	bool _brightPalette;
 	bool _copyProtection;
 	uint8 _roomLoaded;
@@ -648,10 +646,10 @@ public:
 
 	// from print.cpp
 	uint8 getNextWord(const GraphicsFile &charSet, const uint8 *string, uint8 *totalWidth, uint8 *charCount);
-	void printChar(const GraphicsFile &charSet, uint16 *x, uint16 y, uint8 c, uint8 nextChar, uint8 *width, uint8 *height);
+	void printChar(const GraphicsFile &charSet, uint16 *x, uint16 y, uint8 c, uint8 nextChar, uint8 *width, uint8 *height, bool kerning = false);
 	void printChar(const GraphicsFile &charSet, uint16 x, uint16 y, uint8 c, uint8 nextChar, uint8 *width, uint8 *height);
 	void printBoth(const GraphicsFile &charSet, uint16 *x, uint16 y, uint8 c, uint8 nextChar);
-	uint8 printDirect(const uint8** string, uint16 x, uint16 *y, uint8 maxWidth, bool centered);
+	uint8 printDirect(const uint8** string, uint16 x, uint16 *y, uint8 maxWidth, bool centered, bool kerning = false);
 	uint8 printDirect(const uint8* string, uint16 x, uint16 y, uint8 maxWidth, bool centered);
 	uint8 getNumber(const GraphicsFile &charSet, const uint8 *string, uint16 maxWidth, bool centered, uint16 *offset);
 	uint8 kernChars(uint8 firstChar, uint8 secondChar, uint8 width);
@@ -725,6 +723,7 @@ public:
 	void intro3Text(uint16 nextReelPointer);
 
 	void monks2text();
+	void monks2ShowText(uint8 textIndex, uint8 x, uint8 y);
 	void textForEnd();
 	void textForMonkHelper(uint8 textIndex, uint8 voiceIndex, uint8 x, uint8 y, uint16 countToTimed, uint16 timeCount);
 	void textForMonk();
@@ -894,7 +893,7 @@ public:
 	void cantDrop();
 	void entryAnims();
 	bool finishedWalking();
-	void emergencyPurge();
+	void emergencyPurge(uint8 from);
 	void purgeAnItem();
 	uint8 nextSymbol(uint8 symbol);
 	void enterSymbol();

@@ -37,12 +37,16 @@ public:
 	SdlAudioCDManager();
 	virtual ~SdlAudioCDManager();
 
+	bool open() override;
+	void close() override;
+	bool play(int track, int numLoops, int startFrame, int duration, bool onlyEmulate,
+			Audio::Mixer::SoundType soundType) override;
+	void stop() override;
+	bool isPlaying() const override;
+	void update() override;
+
 protected:
-	virtual bool openCD(int drive);
-	virtual void updateCD();
-	virtual bool pollCD() const;
-	virtual void playCD(int track, int num_loops, int start_frame, int duration);
-	virtual void stopCD();
+	bool openCD(int drive) override;
 
 	SDL_CD *_cdrom;
 	int _cdTrack, _cdNumLoops, _cdStartFrame, _cdDuration;

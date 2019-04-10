@@ -32,6 +32,7 @@
 #include "common/keyboard.h"
 #include "common/textconsole.h"
 
+#include "audio/audiostream.h"
 #include "audio/mixer.h"
 
 #include "engines/util.h"
@@ -198,7 +199,7 @@ ToucheEngine::~ToucheEngine() {
 }
 
 Common::Error ToucheEngine::run() {
-	initGraphics(kScreenWidth, kScreenHeight, true);
+	initGraphics(kScreenWidth, kScreenHeight);
 
 	Graphics::setupFont(_language);
 
@@ -1369,7 +1370,8 @@ int ToucheEngine::getStringWidth(int num) const {
 		debug("stringwidth: %s", str);
 		debugN("raw:");
 		const char *p = str;
-		while (*p) debugN(" %02X", (unsigned char)*p++);
+		while (*p)
+			debugN(" %02X", (unsigned char)*p++);
 		debugN("\n");
 	}
 	return Graphics::getStringWidth16(str);

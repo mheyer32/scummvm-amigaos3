@@ -69,17 +69,17 @@ public:
 	virtual const char *getOriginalCopyright() const = 0;
 
 	/** Returns a list of games supported by this engine. */
-	virtual GameList getSupportedGames() const = 0;
+	virtual PlainGameList getSupportedGames() const = 0;
 
-	/** Query the engine for a GameDescriptor for the specified gameid, if any. */
-	virtual GameDescriptor findGame(const char *gameid) const = 0;
+	/** Query the engine for a PlainGameDescriptor for the specified gameid, if any. */
+	virtual PlainGameDescriptor findGame(const char *gameId) const = 0;
 
 	/**
 	 * Runs the engine's game detector on the given list of files, and returns a
 	 * (possibly empty) list of games supported by the engine which it was able
 	 * to detect amongst the given files.
 	 */
-	virtual GameList detectGames(const Common::FSList &fslist) const = 0;
+	virtual DetectedGames detectGames(const Common::FSList &fslist) const = 0;
 
 	/**
 	 * Tries to instantiate an engine instance based on the settings of
@@ -95,6 +95,9 @@ public:
 
 	/**
 	 * Return a list of all save states associated with the given target.
+	 *
+	 * The returned list is guaranteed to be sorted by slot numbers. That
+	 * means smaller slot numbers are always stored before bigger slot numbers.
 	 *
 	 * The caller has to ensure that this (Meta)Engine is responsible
 	 * for the specified target (by using findGame on it respectively
@@ -233,7 +236,19 @@ public:
 		 * the game till the save.
 		 * This flag may only be set when 'kSavesSupportMetaInfo' is set.
 		 */
-		kSavesSupportPlayTime
+		kSavesSupportPlayTime,
+
+		/**
+		* Feature is available if engine's saves could be detected
+		* with "<target>.###" pattern and "###" corresponds to slot
+		* number.
+		*
+		* If that's not true or engine is using some unusual way
+		* of detecting saves and slot numbers, this should be
+		* unavailable. In that case Save/Load dialog for engine's
+		* games is locked during cloud saves sync.
+		*/
+		kSimpleSavesNames
 	};
 
 	/**
@@ -247,20 +262,22 @@ public:
 	//@}
 };
 
-
-// Engine plugins
-
-typedef PluginSubclass<MetaEngine> EnginePlugin;
-
 /**
  * Singleton class which manages all Engine plugins.
  */
 class EngineManager : public Common::Singleton<EngineManager> {
 public:
-	GameDescriptor findGameInLoadedPlugins(const Common::String &gameName, const EnginePlugin **plugin = NULL) const;
-	GameDescriptor findGame(const Common::String &gameName, const EnginePlugin **plugin = NULL) const;
-	GameList detectGames(const Common::FSList &fslist) const;
-	const EnginePlugin::List &getPlugins() const;
+	PlainGameDescriptor findGameInLoadedPlugins(const Common::String &gameName, const Plugin **plugin = NULL) const;
+	PlainGameDescriptor findGame(const Common::String &gameName, const Plugin **plugin = NULL) const;
+	DetectionResults detectGames(const Common::FSList &fslist) const;
+	const PluginList &getPlugins() const;
+
+	/**
+	 * Create a target from the supplied game descriptor
+	 *
+	 * Returns the created target name.
+	 */
+	Common::String createTargetForGame(const DetectedGame &game);
 };
 
 /** Convenience shortcut for accessing the engine manager. */

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{38DCF5D4-6835-4E73-84CE-66713BD926D8}</ProjectGuid>
+		<ProjectGuid>{5285704E-9FCF-4AAC-A6C9-7CDBED5C08BF}</ProjectGuid>
 		<RootNamespace>teenagent</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

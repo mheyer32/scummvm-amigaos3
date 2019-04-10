@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -90,6 +90,10 @@ enum ZVisionGameId {
 	GID_NONE = 0,
 	GID_NEMESIS = 1,
 	GID_GRANDINQUISITOR = 2
+};
+
+enum ZVisionFeatures {
+	GF_DVD = (1 << 0) // ZGI DVD version
 };
 
 class ZVision : public Engine {
@@ -260,6 +264,8 @@ private:
 	void pushKeyToCheatBuf(uint8 key);
 	bool checkCode(const char *code);
 	uint8 getBufferedKey(uint8 pos);
+
+	double getVobAmplification(Common::String fileName) const;
 };
 
 } // End of namespace ZVision

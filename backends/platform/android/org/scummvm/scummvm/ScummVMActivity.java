@@ -2,12 +2,17 @@ package org.scummvm.scummvm;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -22,6 +27,8 @@ public class ScummVMActivity extends Activity {
 
 	/* Establish whether the hover events are available */
 	private static boolean _hoverAvailable;
+
+	private ClipboardManager _clipboard;
 
 	static {
 		try {
@@ -72,6 +79,57 @@ public class ScummVMActivity extends Activity {
 		protected void displayMessageOnOSD(String msg) {
 			Log.i(LOG_TAG, "OSD: " + msg);
 			Toast.makeText(ScummVMActivity.this, msg, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		protected void openUrl(String url) {
+			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+		}
+
+		@Override
+		protected boolean hasTextInClipboard() {
+			return _clipboard.hasText();
+		}
+
+		@Override
+		protected byte[] getTextFromClipboard() {
+			CharSequence text = _clipboard.getText();
+			if (text != null) {
+				String encoding = getCurrentCharset();
+				byte[] out;
+				Log.d(LOG_TAG, String.format("Converting from UTF-8 to %s", encoding));
+				try {
+					out = text.toString().getBytes(encoding);
+				} catch (java.io.UnsupportedEncodingException e) {
+					out = text.toString().getBytes();
+				}
+				return out;
+			}
+			return null;
+		}
+
+		@Override
+		protected boolean setTextInClipboard(byte[] text) {
+			String encoding = getCurrentCharset();
+			String out;
+			Log.d(LOG_TAG, String.format("Converting from %s to UTF-8", encoding));
+			try {
+				out = new String(text, encoding);
+			} catch (java.io.UnsupportedEncodingException e) {
+				out = new String(text);
+			}
+			_clipboard.setText(out);
+			return true;
+		}
+
+		@Override
+		protected boolean isConnectionLimited() {
+			WifiManager wifiMgr = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+			if (wifiMgr != null && wifiMgr.isWifiEnabled()) {
+				WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+				return (wifiInfo == null || wifiInfo.getNetworkId() == -1); //WiFi is on, but it's not connected to any network
+			}
+			return true;
 		}
 
 		@Override
@@ -147,6 +205,8 @@ public class ScummVMActivity extends Activity {
 			// If it doesn't work, resort to the internal app path.
 			savePath = getDir("saves", MODE_WORLD_READABLE).getPath();
 		}
+
+		_clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 
 		// Start ScummVM
 		_scummvm = new MyScummVM(main_surface.getHolder());

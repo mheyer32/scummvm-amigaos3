@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{7C552843-29FE-4689-99A9-82D2DB2204EF}</ProjectGuid>
+		<ProjectGuid>{24FED036-359C-4D45-B87E-963742542C4C}</ProjectGuid>
 		<RootNamespace>hopkins</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

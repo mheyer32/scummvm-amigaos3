@@ -70,8 +70,9 @@ struct AnimateEntry {
 	bool showBitsFlag;
 	reg_t castHandle;
 };
-typedef Common::List<AnimateEntry> AnimateList;
+
 typedef Common::Array<AnimateEntry> AnimateArray;
+typedef AnimateArray::iterator  AnimateArrayIterator;
 
 class Console;
 class GfxCache;
@@ -87,13 +88,17 @@ class GfxView;
  */
 class GfxAnimate {
 public:
-	GfxAnimate(EngineState *state, GfxCache *cache, GfxPorts *ports, GfxPaint16 *paint16, GfxScreen *screen, GfxPalette *palette, GfxCursor *cursor, GfxTransitions *transitions);
+	GfxAnimate(EngineState *state, ScriptPatcher *scriptPatcher, GfxCache *cache, GfxPorts *ports, GfxPaint16 *paint16, GfxScreen *screen, GfxPalette *palette, GfxCursor *cursor, GfxTransitions *transitions);
 	virtual ~GfxAnimate();
+
+	bool isFastCastEnabled() {
+		return _fastCastEnabled;
+	}
 
 	void disposeLastCast();
 	bool invoke(List *list, int argc, reg_t *argv);
 	void makeSortedList(List *list);
-	void applyGlobalScaling(AnimateList::iterator entry, GfxView *view);
+	void applyGlobalScaling(AnimateArrayIterator entry, GfxView *view);
 	void fill(byte &oldPicNotValid);
 	void update();
 	void drawCels();
@@ -109,16 +114,20 @@ public:
 	virtual void kernelAddToPicView(GuiResourceId viewId, int16 loopNo, int16 celNo, int16 leftPos, int16 topPos, int16 priority, int16 control);
 
 private:
+
+
 	void init();
+	bool detectFastCast();
 
 	void addToPicSetPicNotValid();
 	void animateShowPic();
 	void throttleSpeed();
-	void adjustInvalidCels(GfxView *view, AnimateList::iterator it);
-	void processViewScaling(GfxView *view, AnimateList::iterator it);
-	void setNsRect(GfxView *view, AnimateList::iterator it);
+	void adjustInvalidCels(GfxView *view, AnimateArrayIterator it);
+	void processViewScaling(GfxView *view, AnimateArrayIterator it);
+	void setNsRect(GfxView *view, AnimateArrayIterator it);
 
 	EngineState *_s;
+	ScriptPatcher *_scriptPatcher;
 	GfxCache *_cache;
 	GfxPorts *_ports;
 	GfxPaint16 *_paint16;
@@ -127,10 +136,10 @@ private:
 	GfxCursor *_cursor;
 	GfxTransitions *_transitions;
 
-	AnimateList _list;
+	AnimateArray _list;
 	AnimateArray _lastCastData;
 
-	bool _ignoreFastCast;
+	bool _fastCastEnabled;
 };
 
 } // End of namespace Sci

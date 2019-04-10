@@ -20,16 +20,15 @@
  *
  */
 
-#include "common/config-manager.h"
+#include "audio/mixer.h"
+#include "audio/softsynth/pcspk.h"
+
 #include "common/debug-channels.h"
 #include "common/events.h"
 #include "common/random.h"
-#include "common/textconsole.h"
 
 #include "agi/preagi.h"
 #include "agi/graphics.h"
-#include "agi/keyboard.h"
-#include "agi/text.h"
 
 namespace Agi {
 
@@ -52,13 +51,15 @@ PreAgiEngine::PreAgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : 
 	memset(&_game, 0, sizeof(struct AgiGame));
 	memset(&_debug, 0, sizeof(struct AgiDebug));
 	memset(&_mouse, 0, sizeof(struct Mouse));
+
+	_speakerHandle = new Audio::SoundHandle();
 }
 
 void PreAgiEngine::initialize() {
 	initRenderMode();
 
 	_font = new GfxFont(this);
-	_gfx = new GfxMgr(this);
+	_gfx = new GfxMgr(this, _font);
 	_picture = new PictureMgr(this, _gfx);
 
 	_font->init();
@@ -76,7 +77,7 @@ void PreAgiEngine::initialize() {
 	_gfx->initVideo();
 
 	_speakerStream = new Audio::PCSpeaker(_mixer->getOutputRate());
-	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_speakerHandle,
+	_mixer->playStream(Audio::Mixer::kSFXSoundType, _speakerHandle,
 	                   _speakerStream, -1, Audio::Mixer::kMaxChannelVolume, 0, DisposeAfterUse::NO, true);
 
 	debugC(2, kDebugLevelMain, "Detect game");
@@ -91,8 +92,9 @@ void PreAgiEngine::initialize() {
 }
 
 PreAgiEngine::~PreAgiEngine() {
-	_mixer->stopHandle(_speakerHandle);
+	_mixer->stopHandle(*_speakerHandle);
 	delete _speakerStream;
+	delete _speakerHandle;
 
 	delete _picture;
 	delete _gfx;
@@ -112,7 +114,7 @@ void PreAgiEngine::clearScreen(int attr, bool overrideDefault) {
 }
 
 void PreAgiEngine::clearGfxScreen(int attr) {
-	_gfx->drawDisplayRect(0, 0, DISPLAY_WIDTH - 1, IDI_MAX_ROW_PIC * 8 - 1, (attr & 0xF0) / 0x10);
+	_gfx->drawDisplayRect(0, 0, DISPLAY_DEFAULT_WIDTH - 1, IDI_MAX_ROW_PIC * 8 - 1, (attr & 0xF0) / 0x10);
 }
 
 // String functions
@@ -202,6 +204,7 @@ int PreAgiEngine::getSelection(SelectionTypes type) {
 			case Common::EVENT_LBUTTONUP:
 				if (type == kSelYesNo || type == kSelAnyKey)
 					return 1;
+				break;
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_d && (event.kbd.flags & Common::KBD_CTRL) && console) {
 					console->attach();
@@ -215,12 +218,15 @@ int PreAgiEngine::getSelection(SelectionTypes type) {
 				case Common::KEYCODE_y:
 					if (type == kSelYesNo)
 						return 1;
+					break;
 				case Common::KEYCODE_n:
 					if (type == kSelYesNo)
 						return 0;
+					break;
 				case Common::KEYCODE_ESCAPE:
 					if (type == kSelNumber || type == kSelAnyKey)
 						return 0;
+					break;
 				case Common::KEYCODE_1:
 				case Common::KEYCODE_2:
 				case Common::KEYCODE_3:
@@ -232,12 +238,15 @@ int PreAgiEngine::getSelection(SelectionTypes type) {
 				case Common::KEYCODE_9:
 					if (type == kSelNumber)
 						return event.kbd.keycode - Common::KEYCODE_1 + 1;
+					break;
 				case Common::KEYCODE_SPACE:
 					if (type == kSelSpace)
 						return 1;
+					break;
 				case Common::KEYCODE_BACKSPACE:
 					if (type == kSelBackspace)
 						return 0;
+					break;
 				default:
 					if (event.kbd.flags & Common::KBD_CTRL)
 						break;

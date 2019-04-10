@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{13CDCBDE-0270-49F2-A40C-BAFAC2EC3641}</ProjectGuid>
+		<ProjectGuid>{E7F8D54D-4AD5-4031-9898-A4B64229B901}</ProjectGuid>
 		<RootNamespace>agi</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -158,7 +158,6 @@
 		<ClCompile Include="..\..\engines\agi\font.cpp" />
 		<ClCompile Include="..\..\engines\agi\global.cpp" />
 		<ClCompile Include="..\..\engines\agi\graphics.cpp" />
-		<ClCompile Include="..\..\engines\agi\id.cpp" />
 		<ClCompile Include="..\..\engines\agi\inv.cpp" />
 		<ClCompile Include="..\..\engines\agi\keyboard.cpp" />
 		<ClCompile Include="..\..\engines\agi\loader_v1.cpp" />

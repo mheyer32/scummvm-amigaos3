@@ -65,7 +65,7 @@ void TattooJournal::show() {
 	delete stream;
 
 	// Set screen to black, and set background
-	screen._backBuffer1.blitFrom((*_journalImages)[0], Common::Point(0, 0));
+	screen._backBuffer1.SHblitFrom((*_journalImages)[0], Common::Point(0, 0));
 	screen.clear();
 	screen.setPalette(palette);
 
@@ -251,16 +251,22 @@ void TattooJournal::handleButtons() {
 
 	// If they're dragging the scrollbar thumb, keep it selected whilst the button is being held
 	if ((events._pressed || events._released) && _selector == JH_THUMBNAIL) {
-		// FIgure out the left of the scrollbar scroll area and paging data
-		const int scrollingWidth = JOURNAL_BAR_WIDTH - BUTTON_SIZE * 2 - 6;
-		const int scrollingLeft = (SHERLOCK_SCREEN_WIDTH - JOURNAL_BAR_WIDTH) / 2 + BUTTON_SIZE + 3;
+		// Scrolling area including left/right buttons at the edges
+		Common::Rect r(JOURNAL_BAR_WIDTH, BUTTON_SIZE + screen.fontHeight() + 13);
+		r.moveTo((SHERLOCK_SCREEN_WIDTH - r.width()) / 2, SHERLOCK_SCREEN_HEIGHT - r.height());
+		// Thumbnail sliding area of the scrolling area
+		Common::Rect scrollRect(r.left + (BUTTON_SIZE + 3), r.top,
+			r.right - (BUTTON_SIZE + 3), r.bottom);
+
 		const int numPages = (_maxPage + LINES_PER_PAGE - 1) / LINES_PER_PAGE;
+		const int barWidth = CLIP(scrollRect.width() / numPages,
+			BUTTON_SIZE, (int)scrollRect.width());
 		if (numPages == 1)
 			return;
 
-		const int barWidth = CLIP(scrollingWidth / numPages, BUTTON_SIZE, JOURNAL_BAR_WIDTH - BUTTON_SIZE * 2 - 6);
-		const int scrollOffset = mousePos.x - scrollingLeft;
-		const int page = scrollOffset * FIXED_INT_MULTIPLIER / ((scrollingWidth - barWidth) * (FIXED_INT_MULTIPLIER / (numPages - 1))) + 1;
+		const int scrollOffset = (mousePos.x + (barWidth / 2)) - scrollRect.left;
+		const int page = CLIP(scrollOffset * (numPages - 1) / (scrollRect.width() - barWidth) + 1,
+			1, numPages);
 
 		if (page != _page) {
 			if (page < _page)
@@ -461,7 +467,7 @@ void TattooJournal::loadLocations() {
 void TattooJournal::drawFrame() {
 	Screen &screen = *_vm->_screen;
 
-	screen._backBuffer1.blitFrom((*_journalImages)[0], Common::Point(0, 0));
+	screen._backBuffer1.SHblitFrom((*_journalImages)[0], Common::Point(0, 0));
 	drawControls(0);
 
 }
@@ -486,10 +492,10 @@ void TattooJournal::drawControls(int mode) {
 		screen._backBuffer1.fillRect(inner, MENU_BACKGROUND);
 
 	// Draw the four corners of the info box
-	screen._backBuffer1.transBlitFrom(images[0], Common::Point(r.left, r.top));
-	screen._backBuffer1.transBlitFrom(images[1], Common::Point(r.right - images[1]._width, r.top));
-	screen._backBuffer1.transBlitFrom(images[1], Common::Point(r.left, r.bottom - images[1]._height));
-	screen._backBuffer1.transBlitFrom(images[1], Common::Point(r.right - images[1]._width, r.bottom - images[1]._height));
+	screen._backBuffer1.SHtransBlitFrom(images[0], Common::Point(r.left, r.top));
+	screen._backBuffer1.SHtransBlitFrom(images[1], Common::Point(r.right - images[1]._width, r.top));
+	screen._backBuffer1.SHtransBlitFrom(images[1], Common::Point(r.left, r.bottom - images[1]._height));
+	screen._backBuffer1.SHtransBlitFrom(images[1], Common::Point(r.right - images[1]._width, r.bottom - images[1]._height));
 
 	// Draw the top of the info box
 	screen._backBuffer1.hLine(r.left + images[0]._width, r.top, r.right - images[0]._height, INFO_TOP);
@@ -513,8 +519,8 @@ void TattooJournal::drawControls(int mode) {
 
 	// Draw the sides of the separator bar above the scroll bar
 	int yp = r.top + screen.fontHeight() + 7;
-	screen._backBuffer1.transBlitFrom(images[4], Common::Point(r.left, yp - 1));
-	screen._backBuffer1.transBlitFrom(images[5], Common::Point(r.right - images[5]._width, yp - 1));
+	screen._backBuffer1.SHtransBlitFrom(images[4], Common::Point(r.left, yp - 1));
+	screen._backBuffer1.SHtransBlitFrom(images[5], Common::Point(r.right - images[5]._width, yp - 1));
 
 	// Draw the bar above the scroll bar
 	screen._backBuffer1.hLine(r.left + images[4]._width, yp, r.right - images[5]._width, INFO_TOP);
@@ -525,8 +531,8 @@ void TattooJournal::drawControls(int mode) {
 		// Draw the Bars separating the Journal Commands
 		int xp = r.left + r.width() / 3;
 		for (int idx = 0; idx < 2; ++idx) {
-			screen._backBuffer1.transBlitFrom(images[6], Common::Point(xp - 2, r.top + 1));
-			screen._backBuffer1.transBlitFrom(images[7], Common::Point(xp - 2, yp - 1));
+			screen._backBuffer1.SHtransBlitFrom(images[6], Common::Point(xp - 2, r.top + 1));
+			screen._backBuffer1.SHtransBlitFrom(images[7], Common::Point(xp - 2, yp - 1));
 
 			screen._backBuffer1.vLine(xp - 1, r.top + 4, yp - 2, INFO_TOP);
 			screen._backBuffer1.vLine(xp, r.top + 4, yp - 2, INFO_MIDDLE);
@@ -556,20 +562,25 @@ void TattooJournal::highlightJournalControls(bool slamIt) {
 	Events &events = *_vm->_events;
 	Screen &screen = *_vm->_screen;
 	Common::Point mousePos = events.mousePos();
+
+	// Scrolling area including left/right buttons at the edges
 	Common::Rect r(JOURNAL_BAR_WIDTH, BUTTON_SIZE + screen.fontHeight() + 13);
 	r.moveTo((SHERLOCK_SCREEN_WIDTH - r.width()) / 2, SHERLOCK_SCREEN_HEIGHT - r.height());
+	// Thumbnail sliding area of the scrolling area
+	Common::Rect scrollRect(r.left + (BUTTON_SIZE + 3), r.top,
+		r.right - (BUTTON_SIZE + 3), r.bottom);
 	
 	if ((events._pressed || events._released) && _selector == JH_THUMBNAIL) {
 		if (events._released)
 			_selector = JH_NONE;
 	} else {
 		// Calculate the Scroll Position Bar
-		int numPages = (_maxPage + LINES_PER_PAGE - 1) / LINES_PER_PAGE;
-		int barWidth = (r.width() - BUTTON_SIZE * 2 - 6) / numPages;
-		barWidth = CLIP(barWidth, BUTTON_SIZE, r.width() - BUTTON_SIZE * 2 - 6);
+		const int numPages = (_maxPage + LINES_PER_PAGE - 1) / LINES_PER_PAGE;
+		const int barWidth = CLIP(scrollRect.width() / numPages,
+			BUTTON_SIZE, (int)scrollRect.width());
 
-		int barX = (numPages <= 1) ? r.left + 3 + BUTTON_SIZE : (r.width() - BUTTON_SIZE * 2 - 6 - barWidth)
-			* FIXED_INT_MULTIPLIER / (numPages - 1) * (_page - 1) / FIXED_INT_MULTIPLIER + r.left + 3 + BUTTON_SIZE;
+		int barX = (numPages <= 1) ? scrollRect.left : (scrollRect.width() - barWidth)
+			* FIXED_INT_MULTIPLIER / (numPages - 1) * (_page - 1) / FIXED_INT_MULTIPLIER + scrollRect.left;
 
 		// See if the mouse is over any of the Journal Controls
 		Common::Rect bounds(r.left, r.top, r.right - 3, r.top + screen.fontHeight() + 7);
@@ -627,7 +638,7 @@ void TattooJournal::highlightJournalControls(bool slamIt) {
 		if (!_journal.empty())
 			color = (_selector == JH_SAVE) ? COMMAND_HIGHLIGHTED : INFO_TOP;
 		else
-			color = INFO_BOTTOM;
+		color = INFO_BOTTOM;
 		screen.gPrint(Common::Point(xp - screen.stringWidth(FIXED(SaveJournal)) / 2, r.top + 5), 
 			color, "%s", FIXED(SaveJournal));
 
@@ -779,7 +790,7 @@ int TattooJournal::getFindName(bool printError) {
 	
 	// Backup the area under the text entry
 	Surface bgSurface(r.width() - 6, screen.fontHeight());
-	bgSurface.blitFrom(screen._backBuffer1, Common::Point(0, 0), Common::Rect(r.left + 3, cursorY, 
+	bgSurface.SHblitFrom(screen._backBuffer1, Common::Point(0, 0), Common::Rect(r.left + 3, cursorY,
 		r.right - 3, cursorY + screen.fontHeight()));
 
 	if (printError) {
@@ -810,7 +821,7 @@ int TattooJournal::getFindName(bool printError) {
 		events.clearEvents();
 
 		// Restore the text background
-		screen._backBuffer1.blitFrom(bgSurface, Common::Point(r.left, cursorY));
+		screen._backBuffer1.SHblitFrom(bgSurface, Common::Point(r.left, cursorY));
 
 		// If there was a name already entered, copy it to name and display it
 		if (!_find.empty()) {
@@ -846,7 +857,7 @@ int TattooJournal::getFindName(bool printError) {
 				}
 				else {
 					// Erase cursor by restoring background and writing current text
-					screen._backBuffer1.blitFrom(bgSurface, Common::Point(r.left + 3, cursorY));
+					screen._backBuffer1.SHblitFrom(bgSurface, Common::Point(r.left + 3, cursorY));
 					screen.gPrint(Common::Point(r.left + screen.widestChar() + 3, cursorY), COMMAND_HIGHLIGHTED, "%s", name.c_str());
 					screen.slamArea(r.left + 3, cursorY, r.width() - 3, screen.fontHeight());
 				}
@@ -912,7 +923,7 @@ int TattooJournal::getFindName(bool printError) {
 			}
 
 			// Redraw the text
-			screen._backBuffer1.blitFrom(bgSurface, Common::Point(r.left + 3, cursorY));
+			screen._backBuffer1.SHblitFrom(bgSurface, Common::Point(r.left + 3, cursorY));
 			screen.gPrint(Common::Point(r.left + screen.widestChar() + 3, cursorY), COMMAND_HIGHLIGHTED,
 				"%s", name.c_str());
 			screen.slamArea(r.left + 3, cursorY, r.right - 3, screen.fontHeight());

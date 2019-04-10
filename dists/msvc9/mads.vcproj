@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="mads"
-	ProjectGUID="{E964EA64-0985-4EE0-BBC2-78F671753299}"
+	ProjectGUID="{A8D11571-2DB8-4780-9712-49F5B8CDF689}"
 	RootNamespace="mads"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

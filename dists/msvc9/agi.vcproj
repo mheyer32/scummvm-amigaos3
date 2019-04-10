@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="agi"
-	ProjectGUID="{13CDCBDE-0270-49F2-A40C-BAFAC2EC3641}"
+	ProjectGUID="{E7F8D54D-4AD5-4031-9898-A4B64229B901}"
 	RootNamespace="agi"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -53,7 +53,6 @@
 		<File RelativePath="..\..\engines\agi\global.cpp" />
 		<File RelativePath="..\..\engines\agi\graphics.cpp" />
 		<File RelativePath="..\..\engines\agi\graphics.h" />
-		<File RelativePath="..\..\engines\agi\id.cpp" />
 		<File RelativePath="..\..\engines\agi\inv.cpp" />
 		<File RelativePath="..\..\engines\agi\inv.h" />
 		<File RelativePath="..\..\engines\agi\keyboard.cpp" />

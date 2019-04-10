@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef GROOVIE_H
-#define GROOVIE_H
+#ifndef GROOVIE_GROOVIE_H
+#define GROOVIE_GROOVIE_H
 
 #include "groovie/debug.h"
 #include "groovie/font.h"
@@ -84,6 +84,8 @@ enum GameSpeed {
 	kGroovieSpeedFast
 };
 
+#define MAX_SAVES 25
+
 struct GroovieGameDescription;
 
 class GroovieEngine : public Engine {
@@ -101,7 +103,9 @@ protected:
 	virtual bool hasFeature(EngineFeature f) const;
 
 	virtual bool canLoadGameStateCurrently();
+	virtual bool canSaveGameStateCurrently();
 	virtual Common::Error loadGameState(int slot);
+	virtual Common::Error saveGameState(int slot, const Common::String &desc);
 	virtual void syncSoundSettings();
 
 	virtual Debugger *getDebugger() { return _debugger; }
@@ -132,4 +136,4 @@ private:
 
 } // End of namespace Groovie
 
-#endif // GROOVIE_H
+#endif // GROOVIE_GROOVIE_H

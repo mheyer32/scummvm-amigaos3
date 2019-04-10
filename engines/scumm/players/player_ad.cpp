@@ -24,7 +24,6 @@
 #include "scumm/imuse/imuse.h"
 #include "scumm/scumm.h"
 #include "scumm/resource.h"
-#include "scumm/saveload.h"
 
 #include "audio/fmopl.h"
 #include "audio/mixer.h"
@@ -50,7 +49,7 @@ Player_AD::Player_AD(ScummEngine *scumm)
 	writeReg(0x01, 0x20);
 
 	_engineMusicTimer = 0;
-	_soundPlaying = -1;
+	_musicResource = -1;
 
 	_curOffset = 0;
 
@@ -98,14 +97,15 @@ void Player_AD::startSound(int sound) {
 
 	// Query the sound resource
 	const byte *res = _vm->getResourceAddress(rtSound, sound);
+	assert(res);
 
 	if (res[2] == 0x80) {
 		// Stop the current sounds
 		stopMusic();
 
 		// Lock the new music resource
-		_soundPlaying = sound;
-		_vm->_res->lock(rtSound, _soundPlaying);
+		_musicResource = sound;
+		_vm->_res->lock(rtSound, _musicResource);
 
 		// Start the new music resource
 		_musicData = res;
@@ -150,7 +150,7 @@ void Player_AD::startSound(int sound) {
 void Player_AD::stopSound(int sound) {
 	Common::StackLock lock(_mutex);
 
-	if (sound == _soundPlaying) {
+	if (sound == _musicResource) {
 		stopMusic();
 	} else {
 		for (int i = 0; i < ARRAYSIZE(_sfx); ++i) {
@@ -178,7 +178,7 @@ int Player_AD::getMusicTimer() {
 }
 
 int Player_AD::getSoundStatus(int sound) const {
-	if (sound == _soundPlaying) {
+	if (sound == _musicResource) {
 		return true;
 	}
 
@@ -191,27 +191,27 @@ int Player_AD::getSoundStatus(int sound) const {
 	return false;
 }
 
-void Player_AD::saveLoadWithSerializer(Serializer *ser) {
+void Player_AD::saveLoadWithSerializer(Common::Serializer &s) {
 	Common::StackLock lock(_mutex);
 
-	if (ser->getVersion() < VER(95)) {
+	if (s.getVersion() < VER(95)) {
 		IMuse *dummyImuse = IMuse::create(_vm->_system, NULL, NULL);
-		dummyImuse->save_or_load(ser, _vm, false);
+		dummyImuse->saveLoadIMuse(s, _vm, false);
 		delete dummyImuse;
 		return;
 	}
 
-	if (ser->getVersion() >= VER(96)) {
+	if (s.getVersion() >= VER(96)) {
 		int32 res[4] = {
-			_soundPlaying, _sfx[0].resource, _sfx[1].resource, _sfx[2].resource
+			_musicResource, _sfx[0].resource, _sfx[1].resource, _sfx[2].resource
 		};
 
 		// The first thing we save is a list of sound resources being played
 		// at the moment.
-		ser->saveLoadArrayOf(res, 4, sizeof(res[0]), sleInt32);
+		s.syncArray(res, 4, Common::Serializer::Sint32LE);
 
 		// If we are loading start the music again at this point.
-		if (ser->isLoading()) {
+		if (s.isLoading()) {
 			if (res[0] != -1) {
 				startSound(res[0]);
 			}
@@ -219,26 +219,21 @@ void Player_AD::saveLoadWithSerializer(Serializer *ser) {
 
 		uint32 musicOffset = _curOffset;
 
-		static const SaveLoadEntry musicData[] = {
-			MKLINE(Player_AD, _engineMusicTimer, sleInt32, VER(96)),
-			MKLINE(Player_AD, _musicTimer, sleUint32, VER(96)),
-			MKLINE(Player_AD, _internalMusicTimer, sleUint32, VER(96)),
-			MKLINE(Player_AD, _curOffset, sleUint32, VER(96)),
-			MKLINE(Player_AD, _nextEventTimer, sleUint32, VER(96)),
-			MKEND()
-		};
-
-		ser->saveLoadEntries(this, musicData);
+		s.syncAsSint32LE(_engineMusicTimer, VER(96));
+		s.syncAsUint32LE(_musicTimer, VER(96));
+		s.syncAsUint32LE(_internalMusicTimer, VER(96));
+		s.syncAsUint32LE(_curOffset, VER(96));
+		s.syncAsUint32LE(_nextEventTimer, VER(96));
 
 		// We seek back to the old music position.
-		if (ser->isLoading()) {
+		if (s.isLoading()) {
 			SWAP(musicOffset, _curOffset);
 			musicSeekTo(musicOffset);
 		}
 
 		// Finally start up the SFX. This makes sure that they are not
 		// accidently stopped while seeking to the old music position.
-		if (ser->isLoading()) {
+		if (s.isLoading()) {
 			for (int i = 1; i < ARRAYSIZE(res); ++i) {
 				if (res[i] != -1) {
 					startSound(res[i]);
@@ -471,13 +466,13 @@ void Player_AD::startMusic() {
 }
 
 void Player_AD::stopMusic() {
-	if (_soundPlaying == -1) {
+	if (_musicResource == -1) {
 		return;
 	}
 
 	// Unlock the music resource if present
-	_vm->_res->unlock(rtSound, _soundPlaying);
-	_soundPlaying = -1;
+	_vm->_res->unlock(rtSound, _musicResource);
+	_musicResource = -1;
 
 	// Stop the music playback
 	_curOffset = 0;
@@ -520,7 +515,7 @@ void Player_AD::updateMusic() {
 			// important to note that we need to parse a command directly
 			// at the new position, i.e. there is no time value we need to
 			// parse.
-			if (_soundPlaying == -1) {
+			if (_musicResource == -1) {
 				return;
 			} else {
 				continue;

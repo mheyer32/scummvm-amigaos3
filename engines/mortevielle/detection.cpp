@@ -55,13 +55,13 @@ public:
 	MortevielleMetaEngine() : AdvancedMetaEngine(Mortevielle::MortevielleGameDescriptions, sizeof(Mortevielle::MortevielleGameDescription),
 		MortevielleGame) {
 		_md5Bytes = 512;
-		_singleid = "mortevielle";
+		_singleId = "mortevielle";
 		// Use kADFlagUseExtraAsHint to distinguish between original and improved versions
 		// (i.e. use or not of the game data file).
 		_flags = kADFlagUseExtraAsHint;
 	}
 	virtual const char *getName() const {
-		return "Mortevielle";
+		return "Mortville Manor";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -90,6 +90,7 @@ bool MortevielleMetaEngine::hasFeature(MetaEngineFeature f) const {
 	case kSavesSupportMetaInfo:
 	case kSavesSupportThumbnail:
 	case kSavesSupportCreationDate:
+	case kSimpleSavesNames:
 		return true;
 	default:
 		return false;

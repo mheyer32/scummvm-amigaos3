@@ -161,6 +161,7 @@ FPSfx::FPSfx(bool soundOn) {
 	_loopStream = 0;
 	_rewindableStream = 0;
 	_paused = false;
+	_loop = 0;
 
 	g_vm->_activeSfx.push_back(this);
 }
@@ -411,11 +412,7 @@ void FPSfx::setPause(bool pause) {
  *
  */
 void FPSfx::setVolume(int volume) {
-	if (volume > 63)
-		volume = 63;
-
-	if (volume < 0)
-		volume = 0;
+	volume = CLIP(volume, 0, 63);
 
 	_lastVolume = volume;
 

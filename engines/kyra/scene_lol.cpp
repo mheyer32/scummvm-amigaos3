@@ -303,12 +303,10 @@ void LoLEngine::loadLevelGraphics(const char *file, int specialColor, int weight
 		_lastSpecialColor = specialColor;
 		_lastSpecialColorWeight = weight;
 		strcpy(_lastBlockDataFile, file);
-		if (palFile) {
-			strcpy(_lastOverridePalFile, palFile);
-			_lastOverridePalFilePtr = _lastOverridePalFile;
-		} else {
-			_lastOverridePalFilePtr = 0;
-		}
+		if (palFile)
+			_lastOverridePalFile = palFile;
+		else
+			_lastOverridePalFile.clear();
 	}
 
 	if (_flags.use16ColorMode) {
@@ -361,8 +359,8 @@ void LoLEngine::loadLevelGraphics(const char *file, int specialColor, int weight
 		memcpy(_vcnColTable, v, 128);
 		v += 128;
 
-		if (_lastOverridePalFilePtr) {
-			_res->loadFileToBuf(_lastOverridePalFilePtr, _screen->getPalette(0).getData(), 384);
+		if (!_lastOverridePalFile.empty()) {
+			_res->loadFileToBuf(_lastOverridePalFile.c_str(), _screen->getPalette(0).getData(), 384);
 		} else {
 			_screen->getPalette(0).copy(v, 0, 128);
 		}
@@ -1427,7 +1425,7 @@ void LoLEngine::drawSceneShapes(int) {
 		if (!(w & 8))
 			continue;
 
-		uint16 v = 20 * (s - (s < 23 ? _dscUnk2[s] : 0));
+		uint16 v = 20 * (s - (s < 23 ? _dscDoorScaleOffs[s] : 0));
 		if (v > 80)
 			v = 80;
 

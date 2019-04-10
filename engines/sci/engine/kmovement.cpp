@@ -300,9 +300,9 @@ reg_t kDoBresen(EngineState *s, int argc, reg_t *argv) {
 		// Store backups of all client selector variables. We will restore them
 		// in case of a collision.
 		Object* clientObject = segMan->getObject(client);
-		uint clientVarNum = clientObject->getVarCount();
+		uint16 clientVarNum = clientObject->getVarCount();
 		reg_t* clientBackup = new reg_t[clientVarNum];
-		for (uint i = 0; i < clientVarNum; ++i)
+		for (uint16 i = 0; i < clientVarNum; ++i)
 			clientBackup[i] = clientObject->getVariable(i);
 
 		if ((getSciVersion() <= SCI_VERSION_1_EGA_ONLY)) {

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{316BBA0A-9687-4B5F-8BA3-C49EE20C744A}</ProjectGuid>
+		<ProjectGuid>{9C999D1B-7D1A-433B-B8CF-F71955D56CDB}</ProjectGuid>
 		<RootNamespace>draci</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath10)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath10)</VCTargetsPath>

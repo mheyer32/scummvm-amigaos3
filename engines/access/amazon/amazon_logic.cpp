@@ -1333,7 +1333,7 @@ void Cast::doCast(int param1) {
 		for (int idx = 0; idx < 5 && !_vm->shouldQuit() &&
 				!_vm->_events->isKeyMousePressed(); ++idx)
 			_vm->_events->pollEventsAndWait();
-		
+
 		if (_vm->_events->isKeyMousePressed())
 			break;
 
@@ -1682,7 +1682,7 @@ void River::updateObstacles() {
 
 void River::riverSetPhysX() {
 	int xAmt = (_vm->_scrollCol * 16) + _vm->_scrollX;
-	
+
 	for (RiverStruct *cur = _topList; cur <= _botList; ++cur) {
 		cur->_xp = xAmt - (_screenVertX - cur->_riverX);
 	}
@@ -1743,7 +1743,7 @@ void River::plotRiver() {
 	}
 
 	// Draw the text for skipping the river
-	Font &font2 = _vm->_fonts._font2;
+	Font &font2 = *_vm->_fonts._font2;
 	font2.drawString(_vm->_screen, "SKIP", Common::Point(5, 5));
 }
 

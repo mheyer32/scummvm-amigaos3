@@ -10,12 +10,6 @@ ScummVM Team
                                     Administrator
      Eugene Sandulenko            - Project Leader
 
-  Core Team
-  ---------
-     Willem Jan Palenstijn
-     Eugene Sandulenko
-     Johannes Schickel
-
   Retired Project Leaders
   -----------------------
      James Brown
@@ -45,6 +39,13 @@ ScummVM Team
        Gregory Montoir              - (retired)
        Eugene Sandulenko
 
+    Access:
+       Arnaud Boutonne
+       Paul Gilbert
+
+    ADL:
+       Walter van Niftrik
+
     AGI:
        Stuart George
        Matthew Hoops                - (retired)
@@ -63,16 +64,16 @@ ScummVM Team
        Oliver Kiehl                 - (retired)
        Ludvig Strigeus              - (retired)
 
-    Access:
-       Arnaud Boutonne
-       Paul Gilbert
-
     Avalanche:
        Peter Bozso
        Arnaud Boutonne
 
     BBVS:
        Benjamin Haisch
+
+    Blade Runner:
+       Thomas Fach-Pedersen
+       Peter Kohaut
 
     CGE:
        Arnaud Boutonne
@@ -104,6 +105,11 @@ ScummVM Team
     Drascula:
        Filippos Karapetis
        Pawel Kolodziejski
+       Thierry Crozat
+
+    DM:
+       Arnaud Boutonne
+       Bendeguz Nagy
 
     DreamWeb:
        Torbjorn Andersson
@@ -111,6 +117,21 @@ ScummVM Team
        Filippos Karapetis
        Vladimir Menshakov           - (retired)
        Willem Jan Palenstijn
+
+    Fullpipe:
+       Eugene Sandulenko
+
+    ScummGlk:
+       Paul Gilbert
+       Tor Andersson                - GarGlk library
+       Stefan Jokisch               - Frotz interpreter
+       Andrew Plotkin               - Glulxe interpreter
+       Alan Cox                     - ScottFree interpreter
+       Michael J. Roberts           - TADS interpreter
+
+    Gnap:
+       Arnaud Boutonne
+       Benjamin Haisch
 
     Gob:
        Torbjorn Andersson
@@ -132,12 +153,22 @@ ScummVM Team
        Oystein Eftevaag
        Eugene Sandulenko
 
+    Illusions:
+       Benjamin Haisch
+       Eric Fry
+
     Kyra:
        Torbjorn Andersson           - VQA Player
        Oystein Eftevaag
        Florian Kagerer
        Gregory Montoir              - (retired)
-       Johannes Schickel
+       Johannes Schickel            - (retired)
+
+    Lab:
+       Arnaud Boutonne
+       Filippos Karapetis
+       Willem Jan Palenstijn
+       Eugene Sandulenko
 
     Lastexpress:
        Matthew Hoops                - (retired)
@@ -163,10 +194,15 @@ ScummVM Team
        Alyssa Milburn
        Eugene Sandulenko
        David Turner
+       David Fioramonti
 
     Mortevielle:
        Arnaud Boutonne
        Paul Gilbert
+
+    MutationOfJB:
+       Lubomir Remak
+       Miroslav Remak
 
     Neverhood:
        Benjamin Haisch
@@ -177,6 +213,11 @@ ScummVM Team
 
     Pegasus:
        Matthew Hoops                - (retired)
+
+    Prince:
+       Eugene Sandulenko
+       Lukasz Watka
+       Kamil Zbrog
 
     Queen:
        David Eriksson               - (retired)
@@ -201,6 +242,7 @@ ScummVM Team
        Willem Jan Palenstijn
        Jordi Vilalta Prat
        Lars Skovlund
+       Colin Snover
 
     Sherlock:
        Paul Gilbert
@@ -241,6 +283,11 @@ ScummVM Team
        Filippos Karapetis
        Joost Peters
 
+    Titanic:
+       David Fioramonti
+       Paul Gilbert
+       Colin Snover
+
     Toltecs:
        Benjamin Haisch
        Filippos Karapetis
@@ -270,6 +317,11 @@ ScummVM Team
     Wintermute:
        Einar Johan T. Somaaen
        Tobia Tesan
+
+    Xeen:
+       Paul Gilbert
+       David Goldsmith              - (analysis)
+       Matt Taylor                  - (analysis)
 
     Z-Vision:
        Adrian Astley
@@ -329,6 +381,10 @@ ScummVM Team
        Yotam Barnoy
        Joost Peters
 
+    PlayStation Vita:
+       Cpasjuste
+       rsn8887
+
     SDL (Win/Linux/OS X/etc.):
        Max Horn                     - (retired)
        Eugene Sandulenko            - Asm routines, GFX layers
@@ -357,12 +413,12 @@ ScummVM Team
                                       mixer, audiostreams, data structures,
                                       etc. (retired)
        Eugene Sandulenko
-       Johannes Schickel
+       Johannes Schickel            - (retired)
 
     GUI:
        Vicent Marti
        Eugene Sandulenko
-       Johannes Schickel
+       Johannes Schickel            - (retired)
 
     Miscellaneous:
        David Corrales-Lopez         - Filesystem access improvements (GSoC
@@ -395,6 +451,7 @@ ScummVM Team
      Eugene Sandulenko            - Forum, IRC channel, Screen Shots and
                                     Mailing list maintainer
      John Willis
+     Matan Bareket                - Site maintainer
 
   Website (content)
   -----------------
@@ -461,6 +518,9 @@ Other contributions
     OS/2:
        Paul Smedley
 
+    RISC OS:
+       Cameron Cawley
+
     SlackWare:
        Robert Kelsen
 
@@ -475,7 +535,7 @@ Other contributions
 
     Win64:
        Chris Gray                   - (retired)
-       Johannes Schickel
+       Johannes Schickel            - (retired)
 
   GUI Translations
   ----------------
@@ -676,7 +736,7 @@ Special thanks to
 *****************
    Daniel Balsom     - For the original Reinherit (SAGA) code
    Sander Buskens    - For his work on the initial reversing of Monkey2
-   Canadacow         - For the original MT-32 emulator
+   Dean Beeler       - For the original MT-32 emulator
    Kevin Carnes      - For Scumm16, the basis of ScummVM's older gfx codecs
    Curt Coder        - For the original TrollVM (preAGI) code
    Patrick Combet    - For the original Gobliiins ADL player
@@ -688,12 +748,12 @@ Special thanks to
    DOSBox Team       - For their awesome OPL2 and OPL3 emulator
    Yusuke Kamiyamane - For contributing some GUI icons
    Till Kresslein    - For design of modern ScummVM GUI
-   Jezar             - For his freeverb filter implementation
+   Jezar Wakefield   - For his freeverb filter implementation
    Jim Leiterman     - Various info on his FM-TOWNS/Marty SCUMM ports
-   lloyd             - For deep tech details about C64 Zak & MM
+   Lloyd Rosen       - For deep tech details about C64 Zak & MM
    Sarien Team       - Original AGI engine code
    Jimmi Thogersen   - For ScummRev, and much obscure code/documentation
-   Tristan           - For additional work on the original MT-32 emulator
+   Tristan Matthews  - For additional work on the original MT-32 emulator
    James Woodcock    - Soundtrack enhancements
    Anton Yartsev     - For the original re-implementation of the Z-Vision
                        engine
@@ -708,8 +768,8 @@ Special thanks to
    supportive.
 
    Joe Pearce from The Wyrmkeep Entertainment Co. for sharing the source of
-   their famous title Inherit the Earth and always prompt replies to our
-   questions.
+   their famous title Inherit the Earth, for sharing the source of The
+   Labyrinth of Time and for always replying promptly to our questions.
 
    Aric Wilmunder, Ron Gilbert, David Fox, Vince Lee, and all those at
    LucasFilm/LucasArts who made SCUMM the insane mess to reimplement that it

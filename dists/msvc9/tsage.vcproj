@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="tsage"
-	ProjectGUID="{D438170F-C1F4-4EBF-AB7C-63A7E3C76AF3}"
+	ProjectGUID="{30CC1EA2-9D8D-4C03-BE63-DCD0A5088A7E}"
 	RootNamespace="tsage"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -142,6 +142,8 @@
 		<File RelativePath="..\..\engines\tsage\saveload.h" />
 		<File RelativePath="..\..\engines\tsage\scenes.cpp" />
 		<File RelativePath="..\..\engines\tsage\scenes.h" />
+		<File RelativePath="..\..\engines\tsage\screen.cpp" />
+		<File RelativePath="..\..\engines\tsage\screen.h" />
 		<File RelativePath="..\..\engines\tsage\sound.cpp" />
 		<File RelativePath="..\..\engines\tsage\sound.h" />
 		<File RelativePath="..\..\engines\tsage\staticres.cpp" />

@@ -25,18 +25,19 @@
  * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
  */
 
-#ifndef CGE2_H
-#define CGE2_H
+#ifndef CGE2_CGE2_H
+#define CGE2_CGE2_H
 
 #include "common/random.h"
 #include "common/savefile.h"
 #include "common/serializer.h"
 #include "engines/engine.h"
-#include "engines/advancedDetector.h"
 #include "common/system.h"
 #include "cge2/fileio.h"
 #include "cge2/console.h"
 #include "audio/mixer.h"
+
+struct ADGameDescription;
 
 namespace CGE2 {
 
@@ -105,7 +106,7 @@ struct SavegameHeader;
 #define kQuitText         201
 #define kNoQuitText       202
 
-#define kSavegameVersion    1
+#define kSavegameVersion    2
 #define kSavegameStrSize   12
 #define kSavegameStr       "SCUMMVM_CGE2"
 
@@ -115,8 +116,9 @@ struct SavegameHeader {
 	uint8 version;
 	Common::String saveName;
 	Graphics::Surface *thumbnail;
-	int saveYear, saveMonth, saveDay;
-	int saveHour, saveMinutes;
+	int16 saveYear, saveMonth, saveDay;
+	int16 saveHour, saveMinutes;
+	uint32 playTime;
 };
 
 enum ColorBank { kCBRel, kCBStd, kCBSay, kCBInf, kCBMnu, kCBWar };
@@ -161,7 +163,7 @@ public:
 	virtual Common::Error loadGameState(int slot);
 	virtual Common::Error run();
 
-	static bool readSavegameHeader(Common::InSaveFile *in, SavegameHeader &header);
+	WARN_UNUSED_RESULT static bool readSavegameHeader(Common::InSaveFile *in, SavegameHeader &header, bool skipThumbnail = true);
 
 	GUI::Debugger *getDebugger() {
 		return _console;
@@ -335,4 +337,4 @@ public:
 
 } // End of namespace CGE2
 
-#endif // CGE2_H
+#endif // CGE2_CGE2_H

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="scummvm"
-	ProjectGUID="{929EDEBE-B753-4187-AE95-E6A45BC0389C}"
+	ProjectGUID="{7FAFF641-A357-49EF-A8E4-F993DC082D72}"
 	RootNamespace="scummvm"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -16,49 +16,49 @@
 		<Configuration Name="Debug|Win32" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Debug.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="Analysis|Win32" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Analysis.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="LLVM|Win32" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_LLVM.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="Release|Win32" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Release.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="Debug|x64" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Debug64.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="Analysis|x64" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Analysis64.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="LLVM|Win32" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_LLVM64.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 		<Configuration Name="Release|x64" ConfigurationType="1" InheritedPropertySheets=".\ScummVM_Release64.vsprops">
 			<Tool	Name="VCCLCompilerTool" DisableLanguageExtensions="false" DebugInformationFormat="3" />
 			<Tool	Name="VCLinkerTool" OutputFile="$(OutDir)/scummvm.exe"
-				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib opengl32.lib sdl.lib winmm.lib"
+				AdditionalDependencies=" zlib.lib libmad.lib libvorbisfile_static.lib libvorbis_static.lib libogg_static.lib libFLAC_static.lib win_utf8_io_static.lib libpng16.lib libtheora_static.lib freetype.lib jpeg-static.lib libfluidsynth.lib libcurl.lib SDL_net.lib iphlpapi.lib sdl2.lib winmm.lib"
 			/>
 		</Configuration>
 	</Configurations>
@@ -124,8 +124,12 @@
 				<File RelativePath="..\..\audio\mods\infogrames.h" />
 				<File RelativePath="..\..\audio\mods\maxtrax.cpp" />
 				<File RelativePath="..\..\audio\mods\maxtrax.h" />
+				<File RelativePath="..\..\audio\mods\mod_xm_s3m.cpp" />
+				<File RelativePath="..\..\audio\mods\mod_xm_s3m.h" />
 				<File RelativePath="..\..\audio\mods\module.cpp" />
 				<File RelativePath="..\..\audio\mods\module.h" />
+				<File RelativePath="..\..\audio\mods\module_mod_xm_s3m.cpp" />
+				<File RelativePath="..\..\audio\mods\module_mod_xm_s3m.h" />
 				<File RelativePath="..\..\audio\mods\paula.cpp" />
 				<File RelativePath="..\..\audio\mods\paula.h" />
 				<File RelativePath="..\..\audio\mods\protracker.cpp" />
@@ -152,10 +156,44 @@
 					<File RelativePath="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_plugins.cpp" />
 				</Filter>
 				<Filter	Name="mt32">
+					<Filter	Name="c_interface">
+						<File RelativePath="..\..\audio\softsynth\mt32\c_interface\c_interface.cpp" />
+						<File RelativePath="..\..\audio\softsynth\mt32\c_interface\c_interface.h" />
+						<File RelativePath="..\..\audio\softsynth\mt32\c_interface\c_types.h" />
+						<File RelativePath="..\..\audio\softsynth\mt32\c_interface\cpp_interface.h" />
+					</Filter>
+					<Filter	Name="sha1">
+						<File RelativePath="..\..\audio\softsynth\mt32\sha1\sha1.cpp" />
+						<File RelativePath="..\..\audio\softsynth\mt32\sha1\sha1.h" />
+					</Filter>
 					<File RelativePath="..\..\audio\softsynth\mt32\Analog.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Analog.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\BReverbModel.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\BReverbModel.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\Enumerations.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\File.cpp">
+						<FileConfiguration Name="Debug|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Analysis|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Release|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Debug|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Analysis|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Release|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\audio_softsynth_mt32_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\audio_softsynth_mt32_$(InputName).xdc" />
+						</FileConfiguration>
+					</File>
+					<File RelativePath="..\..\audio\softsynth\mt32\File.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\FileStream.cpp" />
+					<File RelativePath="..\..\audio\softsynth\mt32\FileStream.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\LA32FloatWaveGenerator.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\LA32Ramp.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\LA32Ramp.h" />
@@ -163,6 +201,8 @@
 					<File RelativePath="..\..\audio\softsynth\mt32\LA32WaveGenerator.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\MemoryRegion.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\MidiEventQueue.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\MidiStreamParser.cpp" />
+					<File RelativePath="..\..\audio\softsynth\mt32\MidiStreamParser.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Part.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Part.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Partial.cpp" />
@@ -173,6 +213,7 @@
 					<File RelativePath="..\..\audio\softsynth\mt32\Poly.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\ROMInfo.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\ROMInfo.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\SampleRateConverter.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Structures.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Synth.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Synth.h" />
@@ -185,6 +226,8 @@
 					<File RelativePath="..\..\audio\softsynth\mt32\Tables.cpp" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Tables.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\Types.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\config.h" />
+					<File RelativePath="..\..\audio\softsynth\mt32\globals.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\internals.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\mmath.h" />
 					<File RelativePath="..\..\audio\softsynth\mt32\module.mk" />
@@ -250,11 +293,92 @@
 					<File RelativePath="..\..\backends\audiocd\default\default-audiocd.cpp" />
 					<File RelativePath="..\..\backends\audiocd\default\default-audiocd.h" />
 				</Filter>
-				<Filter	Name="sdl">
-					<File RelativePath="..\..\backends\audiocd\sdl\sdl-audiocd.cpp" />
-					<File RelativePath="..\..\backends\audiocd\sdl\sdl-audiocd.h" />
+				<Filter	Name="win32">
+					<File RelativePath="..\..\backends\audiocd\win32\win32-audiocd.cpp" />
+					<File RelativePath="..\..\backends\audiocd\win32\win32-audiocd.h" />
 				</Filter>
+				<File RelativePath="..\..\backends\audiocd\audiocd-stream.cpp" />
+				<File RelativePath="..\..\backends\audiocd\audiocd-stream.h" />
 				<File RelativePath="..\..\backends\audiocd\audiocd.h" />
+			</Filter>
+			<Filter	Name="cloud">
+				<Filter	Name="box">
+					<File RelativePath="..\..\backends\cloud\box\boxlistdirectorybyidrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\box\boxlistdirectorybyidrequest.h" />
+					<File RelativePath="..\..\backends\cloud\box\boxstorage.cpp" />
+					<File RelativePath="..\..\backends\cloud\box\boxstorage.h" />
+					<File RelativePath="..\..\backends\cloud\box\boxtokenrefresher.cpp" />
+					<File RelativePath="..\..\backends\cloud\box\boxtokenrefresher.h" />
+					<File RelativePath="..\..\backends\cloud\box\boxuploadrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\box\boxuploadrequest.h" />
+				</Filter>
+				<Filter	Name="dropbox">
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxcreatedirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxcreatedirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxinforequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxinforequest.h" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxlistdirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxlistdirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxstorage.cpp" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxstorage.h" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxuploadrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\dropbox\dropboxuploadrequest.h" />
+				</Filter>
+				<Filter	Name="googledrive">
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivelistdirectorybyidrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivelistdirectorybyidrequest.h" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivestorage.cpp" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivestorage.h" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivetokenrefresher.cpp" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledrivetokenrefresher.h" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledriveuploadrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\googledrive\googledriveuploadrequest.h" />
+				</Filter>
+				<Filter	Name="id">
+					<File RelativePath="..\..\backends\cloud\id\idcreatedirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\idcreatedirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\id\iddownloadrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\iddownloadrequest.h" />
+					<File RelativePath="..\..\backends\cloud\id\idlistdirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\idlistdirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\id\idresolveidrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\idresolveidrequest.h" />
+					<File RelativePath="..\..\backends\cloud\id\idstorage.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\idstorage.h" />
+					<File RelativePath="..\..\backends\cloud\id\idstreamfilerequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\id\idstreamfilerequest.h" />
+				</Filter>
+				<Filter	Name="onedrive">
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivecreatedirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivecreatedirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivelistdirectoryrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivelistdirectoryrequest.h" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivestorage.cpp" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivestorage.h" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivetokenrefresher.cpp" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedrivetokenrefresher.h" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedriveuploadrequest.cpp" />
+					<File RelativePath="..\..\backends\cloud\onedrive\onedriveuploadrequest.h" />
+				</Filter>
+				<File RelativePath="..\..\backends\cloud\cloudicon.cpp" />
+				<File RelativePath="..\..\backends\cloud\cloudicon.h" />
+				<File RelativePath="..\..\backends\cloud\cloudicon_data.h" />
+				<File RelativePath="..\..\backends\cloud\cloudicon_disabled_data.h" />
+				<File RelativePath="..\..\backends\cloud\cloudmanager.cpp" />
+				<File RelativePath="..\..\backends\cloud\cloudmanager.h" />
+				<File RelativePath="..\..\backends\cloud\downloadrequest.cpp" />
+				<File RelativePath="..\..\backends\cloud\downloadrequest.h" />
+				<File RelativePath="..\..\backends\cloud\folderdownloadrequest.cpp" />
+				<File RelativePath="..\..\backends\cloud\folderdownloadrequest.h" />
+				<File RelativePath="..\..\backends\cloud\iso8601.cpp" />
+				<File RelativePath="..\..\backends\cloud\iso8601.h" />
+				<File RelativePath="..\..\backends\cloud\savessyncrequest.cpp" />
+				<File RelativePath="..\..\backends\cloud\savessyncrequest.h" />
+				<File RelativePath="..\..\backends\cloud\storage.cpp" />
+				<File RelativePath="..\..\backends\cloud\storage.h" />
+				<File RelativePath="..\..\backends\cloud\storagefile.cpp" />
+				<File RelativePath="..\..\backends\cloud\storagefile.h" />
+				<File RelativePath="..\..\backends\cloud\storageinfo.h" />
 			</Filter>
 			<Filter	Name="events">
 				<Filter	Name="default">
@@ -281,6 +405,36 @@
 			</Filter>
 			<Filter	Name="graphics">
 				<Filter	Name="opengl">
+					<Filter	Name="pipelines">
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\clut8.cpp" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\clut8.h" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\fixed.cpp" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\fixed.h" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\pipeline.cpp" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\pipeline.h" />
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\shader.cpp">
+							<FileConfiguration Name="Debug|Win32">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+							<FileConfiguration Name="Analysis|Win32">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+							<FileConfiguration Name="Release|Win32">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+							<FileConfiguration Name="Debug|x64">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+							<FileConfiguration Name="Analysis|x64">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+							<FileConfiguration Name="Release|x64">
+								<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_pipelines_$(InputName).xdc" />
+							</FileConfiguration>
+						</File>
+						<File RelativePath="..\..\backends\graphics\opengl\pipelines\shader.h" />
+					</Filter>
+					<File RelativePath="..\..\backends\graphics\opengl\context.cpp" />
 					<File RelativePath="..\..\backends\graphics\opengl\debug.cpp">
 						<FileConfiguration Name="Debug|Win32">
 							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
@@ -302,11 +456,34 @@
 						</FileConfiguration>
 					</File>
 					<File RelativePath="..\..\backends\graphics\opengl\debug.h" />
-					<File RelativePath="..\..\backends\graphics\opengl\extensions.cpp" />
-					<File RelativePath="..\..\backends\graphics\opengl\extensions.h" />
+					<File RelativePath="..\..\backends\graphics\opengl\framebuffer.cpp" />
+					<File RelativePath="..\..\backends\graphics\opengl\framebuffer.h" />
+					<File RelativePath="..\..\backends\graphics\opengl\opengl-defs.h" />
+					<File RelativePath="..\..\backends\graphics\opengl\opengl-func.h" />
 					<File RelativePath="..\..\backends\graphics\opengl\opengl-graphics.cpp" />
 					<File RelativePath="..\..\backends\graphics\opengl\opengl-graphics.h" />
 					<File RelativePath="..\..\backends\graphics\opengl\opengl-sys.h" />
+					<File RelativePath="..\..\backends\graphics\opengl\shader.cpp">
+						<FileConfiguration Name="Debug|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Analysis|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Release|Win32">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Debug|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Analysis|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+						<FileConfiguration Name="Release|x64">
+							<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\backends_graphics_opengl_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\backends_graphics_opengl_$(InputName).xdc" />
+						</FileConfiguration>
+					</File>
+					<File RelativePath="..\..\backends\graphics\opengl\shader.h" />
 					<File RelativePath="..\..\backends\graphics\opengl\texture.cpp" />
 					<File RelativePath="..\..\backends\graphics\opengl\texture.h" />
 				</Filter>
@@ -324,6 +501,7 @@
 				</Filter>
 				<File RelativePath="..\..\backends\graphics\default-palette.h" />
 				<File RelativePath="..\..\backends\graphics\graphics.h" />
+				<File RelativePath="..\..\backends\graphics\windowed.h" />
 			</Filter>
 			<Filter	Name="log">
 				<File RelativePath="..\..\backends\log\log.cpp" />
@@ -339,10 +517,6 @@
 				<File RelativePath="..\..\backends\midi\windows.cpp" />
 			</Filter>
 			<Filter	Name="mixer">
-				<Filter	Name="doublebuffersdl">
-					<File RelativePath="..\..\backends\mixer\doublebuffersdl\doublebuffersdl-mixer.cpp" />
-					<File RelativePath="..\..\backends\mixer\doublebuffersdl\doublebuffersdl-mixer.h" />
-				</Filter>
 				<Filter	Name="sdl">
 					<File RelativePath="..\..\backends\mixer\sdl\sdl-mixer.cpp" />
 					<File RelativePath="..\..\backends\mixer\sdl\sdl-mixer.h" />
@@ -354,6 +528,59 @@
 					<File RelativePath="..\..\backends\mutex\sdl\sdl-mutex.h" />
 				</Filter>
 				<File RelativePath="..\..\backends\mutex\mutex.h" />
+			</Filter>
+			<Filter	Name="networking">
+				<Filter	Name="connection">
+					<File RelativePath="..\..\backends\networking\connection\islimited-default.cpp" />
+					<File RelativePath="..\..\backends\networking\connection\islimited.h" />
+				</Filter>
+				<Filter	Name="curl">
+					<File RelativePath="..\..\backends\networking\curl\connectionmanager.cpp" />
+					<File RelativePath="..\..\backends\networking\curl\connectionmanager.h" />
+					<File RelativePath="..\..\backends\networking\curl\curljsonrequest.cpp" />
+					<File RelativePath="..\..\backends\networking\curl\curljsonrequest.h" />
+					<File RelativePath="..\..\backends\networking\curl\curlrequest.cpp" />
+					<File RelativePath="..\..\backends\networking\curl\curlrequest.h" />
+					<File RelativePath="..\..\backends\networking\curl\networkreadstream.cpp" />
+					<File RelativePath="..\..\backends\networking\curl\networkreadstream.h" />
+					<File RelativePath="..\..\backends\networking\curl\request.cpp" />
+					<File RelativePath="..\..\backends\networking\curl\request.h" />
+				</Filter>
+				<Filter	Name="sdl_net">
+					<Filter	Name="handlers">
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\basehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\createdirectoryhandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\createdirectoryhandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\downloadfilehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\downloadfilehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filesajaxpagehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filesajaxpagehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filesbasehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filesbasehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filespagehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\filespagehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\indexpagehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\indexpagehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\listajaxhandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\listajaxhandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\resourcehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\resourcehandler.h" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\uploadfilehandler.cpp" />
+						<File RelativePath="..\..\backends\networking\sdl_net\handlers\uploadfilehandler.h" />
+					</Filter>
+					<File RelativePath="..\..\backends\networking\sdl_net\client.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\client.h" />
+					<File RelativePath="..\..\backends\networking\sdl_net\getclienthandler.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\getclienthandler.h" />
+					<File RelativePath="..\..\backends\networking\sdl_net\handlerutils.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\handlerutils.h" />
+					<File RelativePath="..\..\backends\networking\sdl_net\localwebserver.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\localwebserver.h" />
+					<File RelativePath="..\..\backends\networking\sdl_net\reader.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\reader.h" />
+					<File RelativePath="..\..\backends\networking\sdl_net\uploadfileclienthandler.cpp" />
+					<File RelativePath="..\..\backends\networking\sdl_net\uploadfileclienthandler.h" />
+				</Filter>
 			</Filter>
 			<Filter	Name="platform">
 				<Filter	Name="sdl">
@@ -411,6 +638,12 @@
 					<File RelativePath="..\..\backends\timer\sdl\sdl-timer.h" />
 				</Filter>
 			</Filter>
+			<Filter	Name="updates">
+				<Filter	Name="win32">
+					<File RelativePath="..\..\backends\updates\win32\win32-updates.cpp" />
+					<File RelativePath="..\..\backends\updates\win32\win32-updates.h" />
+				</Filter>
+			</Filter>
 			<File RelativePath="..\..\backends\base-backend.cpp" />
 			<File RelativePath="..\..\backends\base-backend.h" />
 			<File RelativePath="..\..\backends\modular-backend.cpp" />
@@ -439,6 +672,7 @@
 			<File RelativePath="..\..\common\bitstream.h" />
 			<File RelativePath="..\..\common\bufferedstream.h" />
 			<File RelativePath="..\..\common\c++11-compat.h" />
+			<File RelativePath="..\..\common\callback.h" />
 			<File RelativePath="..\..\common\config-manager.cpp" />
 			<File RelativePath="..\..\common\config-manager.h" />
 			<File RelativePath="..\..\common\coroutines.cpp" />
@@ -496,7 +730,26 @@
 			<File RelativePath="..\..\common\events.h" />
 			<File RelativePath="..\..\common\fft.cpp" />
 			<File RelativePath="..\..\common\fft.h" />
-			<File RelativePath="..\..\common\file.cpp" />
+			<File RelativePath="..\..\common\file.cpp">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+				<FileConfiguration Name="Analysis|Win32">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+				<FileConfiguration Name="Analysis|x64">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\common_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\common_$(InputName).xdc" />
+				</FileConfiguration>
+			</File>
 			<File RelativePath="..\..\common\file.h" />
 			<File RelativePath="..\..\common\forbidden.h" />
 			<File RelativePath="..\..\common\frac.h" />
@@ -505,6 +758,7 @@
 			<File RelativePath="..\..\common\func.h" />
 			<File RelativePath="..\..\common\gui_options.cpp" />
 			<File RelativePath="..\..\common\gui_options.h" />
+			<File RelativePath="..\..\common\hash-ptr.h" />
 			<File RelativePath="..\..\common\hash-str.h" />
 			<File RelativePath="..\..\common\hashmap.cpp" />
 			<File RelativePath="..\..\common\hashmap.h" />
@@ -516,6 +770,8 @@
 			<File RelativePath="..\..\common\ini-file.h" />
 			<File RelativePath="..\..\common\installshield_cab.cpp" />
 			<File RelativePath="..\..\common\installshield_cab.h" />
+			<File RelativePath="..\..\common\json.cpp" />
+			<File RelativePath="..\..\common\json.h" />
 			<File RelativePath="..\..\common\keyboard.h" />
 			<File RelativePath="..\..\common\language.cpp" />
 			<File RelativePath="..\..\common\language.h" />
@@ -536,6 +792,8 @@
 			<File RelativePath="..\..\common\mutex.cpp" />
 			<File RelativePath="..\..\common\mutex.h" />
 			<File RelativePath="..\..\common\noncopyable.h" />
+			<File RelativePath="..\..\common\osd_message_queue.cpp" />
+			<File RelativePath="..\..\common\osd_message_queue.h" />
 			<File RelativePath="..\..\common\pack-end.h" />
 			<File RelativePath="..\..\common\pack-start.h" />
 			<File RelativePath="..\..\common\platform.cpp" />
@@ -572,12 +830,14 @@
 			<File RelativePath="..\..\common\rect.h" />
 			<File RelativePath="..\..\common\rendermode.cpp" />
 			<File RelativePath="..\..\common\rendermode.h" />
+			<File RelativePath="..\..\common\safe-bool.h" />
 			<File RelativePath="..\..\common\savefile.h" />
 			<File RelativePath="..\..\common\scummsys.h" />
 			<File RelativePath="..\..\common\serializer.h" />
 			<File RelativePath="..\..\common\sinetables.cpp" />
 			<File RelativePath="..\..\common\sinetables.h" />
 			<File RelativePath="..\..\common\singleton.h" />
+			<File RelativePath="..\..\common\span.h" />
 			<File RelativePath="..\..\common\stack.h" />
 			<File RelativePath="..\..\common\str-array.h" />
 			<File RelativePath="..\..\common\str.cpp" />
@@ -595,6 +855,7 @@
 			<File RelativePath="..\..\common\tokenizer.h" />
 			<File RelativePath="..\..\common\translation.cpp" />
 			<File RelativePath="..\..\common\translation.h" />
+			<File RelativePath="..\..\common\type-traits.h" />
 			<File RelativePath="..\..\common\types.h" />
 			<File RelativePath="..\..\common\unarj.cpp" />
 			<File RelativePath="..\..\common\unarj.h" />
@@ -642,12 +903,30 @@
 				<File RelativePath="..\..\graphics\fonts\bdf.cpp" />
 				<File RelativePath="..\..\graphics\fonts\bdf.h" />
 				<File RelativePath="..\..\graphics\fonts\consolefont.cpp" />
+				<File RelativePath="..\..\graphics\fonts\macfont.cpp" />
+				<File RelativePath="..\..\graphics\fonts\macfont.h" />
 				<File RelativePath="..\..\graphics\fonts\newfont.cpp" />
 				<File RelativePath="..\..\graphics\fonts\newfont_big.cpp" />
 				<File RelativePath="..\..\graphics\fonts\ttf.cpp" />
 				<File RelativePath="..\..\graphics\fonts\ttf.h" />
 				<File RelativePath="..\..\graphics\fonts\winfont.cpp" />
 				<File RelativePath="..\..\graphics\fonts\winfont.h" />
+			</Filter>
+			<Filter	Name="macgui">
+				<File RelativePath="..\..\graphics\macgui\macfontmanager.cpp" />
+				<File RelativePath="..\..\graphics\macgui\macfontmanager.h" />
+				<File RelativePath="..\..\graphics\macgui\macmenu.cpp" />
+				<File RelativePath="..\..\graphics\macgui\macmenu.h" />
+				<File RelativePath="..\..\graphics\macgui\mactext.cpp" />
+				<File RelativePath="..\..\graphics\macgui\mactext.h" />
+				<File RelativePath="..\..\graphics\macgui\mactextwindow.cpp" />
+				<File RelativePath="..\..\graphics\macgui\mactextwindow.h" />
+				<File RelativePath="..\..\graphics\macgui\macwindow.cpp" />
+				<File RelativePath="..\..\graphics\macgui\macwindow.h" />
+				<File RelativePath="..\..\graphics\macgui\macwindowborder.cpp" />
+				<File RelativePath="..\..\graphics\macgui\macwindowborder.h" />
+				<File RelativePath="..\..\graphics\macgui\macwindowmanager.cpp" />
+				<File RelativePath="..\..\graphics\macgui\macwindowmanager.h" />
 			</Filter>
 			<Filter	Name="scaler">
 				<File RelativePath="..\..\graphics\scaler\2xsai.cpp" />
@@ -704,7 +983,12 @@
 			<File RelativePath="..\..\graphics\fontman.h" />
 			<File RelativePath="..\..\graphics\maccursor.cpp" />
 			<File RelativePath="..\..\graphics\maccursor.h" />
+			<File RelativePath="..\..\graphics\managed_surface.cpp" />
+			<File RelativePath="..\..\graphics\managed_surface.h" />
+			<File RelativePath="..\..\graphics\mode.h" />
 			<File RelativePath="..\..\graphics\module.mk" />
+			<File RelativePath="..\..\graphics\nine_patch.cpp" />
+			<File RelativePath="..\..\graphics\nine_patch.h" />
 			<File RelativePath="..\..\graphics\palette.h" />
 			<File RelativePath="..\..\graphics\pixelformat.cpp" />
 			<File RelativePath="..\..\graphics\pixelformat.h" />
@@ -712,6 +996,8 @@
 			<File RelativePath="..\..\graphics\primitives.h" />
 			<File RelativePath="..\..\graphics\scaler.cpp" />
 			<File RelativePath="..\..\graphics\scaler.h" />
+			<File RelativePath="..\..\graphics\screen.cpp" />
+			<File RelativePath="..\..\graphics\screen.h" />
 			<File RelativePath="..\..\graphics\sjis.cpp" />
 			<File RelativePath="..\..\graphics\sjis.h" />
 			<File RelativePath="..\..\graphics\surface.cpp" />
@@ -730,6 +1016,22 @@
 			<File RelativePath="..\..\graphics\yuv_to_rgb.h" />
 		</Filter>
 		<Filter	Name="gui">
+			<Filter	Name="animation">
+				<File RelativePath="..\..\gui\animation\AccelerateInterpolator.h" />
+				<File RelativePath="..\..\gui\animation\AlphaAnimation.h" />
+				<File RelativePath="..\..\gui\animation\Animation.cpp" />
+				<File RelativePath="..\..\gui\animation\Animation.h" />
+				<File RelativePath="..\..\gui\animation\DeccelerateInterpolator.h" />
+				<File RelativePath="..\..\gui\animation\Drawable.h" />
+				<File RelativePath="..\..\gui\animation\Interpolator.h" />
+				<File RelativePath="..\..\gui\animation\ParallelAnimation.h" />
+				<File RelativePath="..\..\gui\animation\RepeatAnimationWrapper.cpp" />
+				<File RelativePath="..\..\gui\animation\RepeatAnimationWrapper.h" />
+				<File RelativePath="..\..\gui\animation\ScaleAnimation.h" />
+				<File RelativePath="..\..\gui\animation\SequenceAnimationComposite.cpp" />
+				<File RelativePath="..\..\gui\animation\SequenceAnimationComposite.h" />
+				<File RelativePath="..\..\gui\animation\WaitForConditionAnimation.h" />
+			</Filter>
 			<Filter	Name="widgets">
 				<File RelativePath="..\..\gui\widgets\editable.cpp" />
 				<File RelativePath="..\..\gui\widgets\editable.h" />
@@ -741,6 +1043,8 @@
 				<File RelativePath="..\..\gui\widgets\popup.h" />
 				<File RelativePath="..\..\gui\widgets\scrollbar.cpp" />
 				<File RelativePath="..\..\gui\widgets\scrollbar.h" />
+				<File RelativePath="..\..\gui\widgets\scrollcontainer.cpp" />
+				<File RelativePath="..\..\gui\widgets\scrollcontainer.h" />
 				<File RelativePath="..\..\gui\widgets\tab.cpp" />
 				<File RelativePath="..\..\gui\widgets\tab.h" />
 			</Filter>
@@ -772,6 +1076,10 @@
 			<File RelativePath="..\..\gui\debugger.h" />
 			<File RelativePath="..\..\gui\dialog.cpp" />
 			<File RelativePath="..\..\gui\dialog.h" />
+			<File RelativePath="..\..\gui\downloaddialog.cpp" />
+			<File RelativePath="..\..\gui\downloaddialog.h" />
+			<File RelativePath="..\..\gui\editgamedialog.cpp" />
+			<File RelativePath="..\..\gui\editgamedialog.h" />
 			<File RelativePath="..\..\gui\error.cpp">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\gui_$(InputName).obj" XMLDocumentationFileName="$(IntDir)\gui_$(InputName).xdc" />
@@ -812,10 +1120,14 @@
 			<File RelativePath="..\..\gui\options.h" />
 			<File RelativePath="..\..\gui\predictivedialog.cpp" />
 			<File RelativePath="..\..\gui\predictivedialog.h" />
+			<File RelativePath="..\..\gui\remotebrowser.cpp" />
+			<File RelativePath="..\..\gui\remotebrowser.h" />
 			<File RelativePath="..\..\gui\saveload-dialog.cpp" />
 			<File RelativePath="..\..\gui\saveload-dialog.h" />
 			<File RelativePath="..\..\gui\saveload.cpp" />
 			<File RelativePath="..\..\gui\saveload.h" />
+			<File RelativePath="..\..\gui\storagewizarddialog.cpp" />
+			<File RelativePath="..\..\gui\storagewizarddialog.h" />
 			<File RelativePath="..\..\gui\themebrowser.cpp" />
 			<File RelativePath="..\..\gui\themebrowser.h" />
 			<File RelativePath="..\..\gui\widget.cpp" />
@@ -826,6 +1138,17 @@
 		</Filter>
 		<Filter	Name="image">
 			<Filter	Name="codecs">
+				<Filter	Name="indeo">
+					<File RelativePath="..\..\image\codecs\indeo\get_bits.h" />
+					<File RelativePath="..\..\image\codecs\indeo\indeo.cpp" />
+					<File RelativePath="..\..\image\codecs\indeo\indeo.h" />
+					<File RelativePath="..\..\image\codecs\indeo\indeo_dsp.cpp" />
+					<File RelativePath="..\..\image\codecs\indeo\indeo_dsp.h" />
+					<File RelativePath="..\..\image\codecs\indeo\mem.cpp" />
+					<File RelativePath="..\..\image\codecs\indeo\mem.h" />
+					<File RelativePath="..\..\image\codecs\indeo\vlc.cpp" />
+					<File RelativePath="..\..\image\codecs\indeo\vlc.h" />
+				</Filter>
 				<File RelativePath="..\..\image\codecs\bmp_raw.cpp" />
 				<File RelativePath="..\..\image\codecs\bmp_raw.h" />
 				<File RelativePath="..\..\image\codecs\cdtoons.cpp" />
@@ -837,10 +1160,16 @@
 				<File RelativePath="..\..\image\codecs\codec.h" />
 				<File RelativePath="..\..\image\codecs\indeo3.cpp" />
 				<File RelativePath="..\..\image\codecs\indeo3.h" />
+				<File RelativePath="..\..\image\codecs\indeo4.cpp" />
+				<File RelativePath="..\..\image\codecs\indeo4.h" />
+				<File RelativePath="..\..\image\codecs\indeo5.cpp" />
+				<File RelativePath="..\..\image\codecs\indeo5.h" />
 				<File RelativePath="..\..\image\codecs\mjpeg.cpp" />
 				<File RelativePath="..\..\image\codecs\mjpeg.h" />
 				<File RelativePath="..\..\image\codecs\msrle.cpp" />
 				<File RelativePath="..\..\image\codecs\msrle.h" />
+				<File RelativePath="..\..\image\codecs\msrle4.cpp" />
+				<File RelativePath="..\..\image\codecs\msrle4.h" />
 				<File RelativePath="..\..\image\codecs\msvideo1.cpp" />
 				<File RelativePath="..\..\image\codecs\msvideo1.h" />
 				<File RelativePath="..\..\image\codecs\qtrle.cpp" />

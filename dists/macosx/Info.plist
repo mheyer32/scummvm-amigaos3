@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>scummvm</string>
 	<key>CFBundleGetInfoString</key>
-	<string>1.8.1, Copyright 2001-2016 The ScummVM Team</string>
+	<string>2.1.0git, Copyright 2001-2018 The ScummVM Team</string>
 	<key>CFBundleIconFile</key>
 	<string>scummvm.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -45,15 +45,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.8.1</string>
+	<string>2.1.0git</string>
 	<key>CFBundleVersion</key>
-	<string>1.8.1</string>
+	<string>2.1.0git</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2001-2016 The ScummVM Team</string>
+	<string>Copyright 2001-2018 The ScummVM Team</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>SUFeedURL</key>
-	<string>https://www.scummvm.org/scummvm_appcast.xml</string>
+	<string>https://www.scummvm.org/appcasts/macosx/release.xml</string>
 	<key>NSDockTilePlugIn</key>
 	<string>scummvm.docktileplugin</string>
 	<key>SUPublicDSAKeyFile</key>

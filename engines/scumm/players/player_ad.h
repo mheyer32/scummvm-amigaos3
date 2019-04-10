@@ -25,9 +25,8 @@
 
 #include "scumm/music.h"
 
-#include "audio/audiostream.h"
-
 #include "common/mutex.h"
+#include "common/serializer.h"
 
 namespace OPL {
 class OPL;
@@ -53,7 +52,7 @@ public:
 	virtual int  getMusicTimer();
 	virtual int  getSoundStatus(int sound) const;
 
-	virtual void saveLoadWithSerializer(Serializer *ser);
+	virtual void saveLoadWithSerializer(Common::Serializer &ser);
 
 	// Timer callback
 	void onTimer();
@@ -68,7 +67,7 @@ private:
 
 	OPL::OPL *_opl2;
 
-	int _soundPlaying;
+	int _musicResource;
 	int32 _engineMusicTimer;
 
 	struct SfxSlot;

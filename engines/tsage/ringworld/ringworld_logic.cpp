@@ -198,15 +198,14 @@ Scene *RingworldGame::createScene(int sceneNumber) {
 bool RingworldGame::canLoadGameStateCurrently() {
 	// Don't allow a game to be loaded if a dialog is active
 	return !g_globals->getFlag(50) && (g_globals->_gfxManagers.size() == 1);
-
 }
 
 /**
  * Returns true if it is currently okay to save the game
  */
 bool RingworldGame::canSaveGameStateCurrently() {
-	// Don't allow a game to be saved if a dialog is active
-	return !g_globals->getFlag(50) && (g_globals->_gfxManagers.size() == 1);
+	// Don't allow a game to be saved if a dialog is active, or the copy protection dialog
+	return !g_globals->getFlag(50) && (g_globals->_gfxManagers.size() == 1) && g_globals->_sceneManager._sceneNumber != 2310;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -320,7 +319,7 @@ void SceneArea::wait() {
 	// Wait until a mouse or keypress
 	Event event;
 	while (!g_vm->shouldQuit() && !g_globals->_events.getEvent(event)) {
-		GLOBALS._screenSurface.updateScreen();
+		GLOBALS._screen.update();
 		g_system->delayMillis(10);
 	}
 

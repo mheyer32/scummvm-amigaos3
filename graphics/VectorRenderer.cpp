@@ -55,7 +55,34 @@ void VectorRenderer::drawStep(const Common::Rect &area, const DrawStep &step, ui
 
 	_dynamicData = extra;
 
-	(this->*(step.drawingCall))(area, step);
+	Common::Rect noClip = Common::Rect(0, 0, 0, 0);
+	(this->*(step.drawingCall))(area, step, noClip);
+}
+
+void VectorRenderer::drawStepClip(const Common::Rect &area, const Common::Rect &clip, const DrawStep &step, uint32 extra) {
+
+	if (step.bgColor.set)
+		setBgColor(step.bgColor.r, step.bgColor.g, step.bgColor.b);
+
+	if (step.fgColor.set)
+		setFgColor(step.fgColor.r, step.fgColor.g, step.fgColor.b);
+
+	if (step.bevelColor.set)
+		setBevelColor(step.bevelColor.r, step.bevelColor.g, step.bevelColor.b);
+
+	if (step.gradColor1.set && step.gradColor2.set)
+		setGradientColors(step.gradColor1.r, step.gradColor1.g, step.gradColor1.b,
+			step.gradColor2.r, step.gradColor2.g, step.gradColor2.b);
+
+	setShadowOffset(_disableShadows ? 0 : step.shadow);
+	setBevel(step.bevel);
+	setGradientFactor(step.factor);
+	setStrokeWidth(step.stroke);
+	setFillMode((FillMode)step.fillMode);
+
+	_dynamicData = extra;
+
+	(this->*(step.drawingCall))(area, step, clip);
 }
 
 int VectorRenderer::stepGetRadius(const DrawStep &step, const Common::Rect &area) {
@@ -116,7 +143,7 @@ void VectorRenderer::stepGetPositions(const DrawStep &step, const Common::Rect &
 			break;
 
 		case Graphics::DrawStep::kVectorAlignCenter:
-			in_y = area.top + (area.height() / 2) - (in_h / 2) + ((step.padding.top + step.padding.bottom ) / 2) ;
+			in_y = area.top + (area.height() / 2) - (in_h / 2) + ((step.padding.top + step.padding.bottom ) / 2);
 			break;
 
 		case Graphics::DrawStep::kVectorAlignTop:

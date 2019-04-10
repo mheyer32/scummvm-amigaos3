@@ -25,6 +25,8 @@
 // Disable symbol overrides so that we can use "FILE"
 #define FORBIDDEN_SYMBOL_EXCEPTION_FILE
 #define FORBIDDEN_SYMBOL_EXCEPTION_printf
+#define FORBIDDEN_SYMBOL_EXCEPTION_abort
+#define FORBIDDEN_SYMBOL_EXCEPTION_exit
 
 #include "backends/fs/ps2/ps2-fs.h"
 
@@ -439,6 +441,11 @@ Common::SeekableReadStream *Ps2FilesystemNode::createReadStream() {
 
 Common::WriteStream *Ps2FilesystemNode::createWriteStream() {
 	return PS2FileStream::makeFromPath(getPath(), true);
+}
+
+bool Ps2FilesystemNode::create(bool isDirectoryFlag) {
+	error("Not supported");
+	return false;
 }
 
 #endif

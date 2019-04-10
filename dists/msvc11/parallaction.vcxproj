@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{145303DC-AB56-4346-A0F0-549732EE7510}</ProjectGuid>
+		<ProjectGuid>{643B033F-E0A4-4CE4-BC4D-972335ECF58D}</ProjectGuid>
 		<RootNamespace>parallaction</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>

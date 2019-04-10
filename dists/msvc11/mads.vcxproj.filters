@@ -2,13 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="dragonsphere">
-			<UniqueIdentifier>23E85491-6961-4A4C-8909-79CE66A3B442</UniqueIdentifier>
+			<UniqueIdentifier>D33A291D-5F3F-4A65-A30D-53440771D69F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="nebular">
-			<UniqueIdentifier>F3149AF5-9260-4DD3-9F6F-C19956DD9112</UniqueIdentifier>
+			<UniqueIdentifier>CAF95520-6FDC-40F6-81D7-ED4198B5D5E1</UniqueIdentifier>
 		</Filter>
 		<Filter Include="phantom">
-			<UniqueIdentifier>B05CFA12-803D-4B20-B567-411A13637825</UniqueIdentifier>
+			<UniqueIdentifier>14BCBE80-3BB0-47EC-87D5-8A9BF0F89EAA</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>

@@ -32,7 +32,10 @@
 #include "audio/midiparser.h"
 #include "audio/midiparser_qt.h"
 #include "audio/miles.h"
+#include "audio/decoders/flac.h"
+#include "audio/decoders/mp3.h"
 #include "audio/decoders/raw.h"
+#include "audio/decoders/vorbis.h"
 #include "common/config-manager.h"
 #include "common/file.h"
 #include "common/substream.h"
@@ -126,7 +129,6 @@ void MusicDriver::play(SagaEngine *vm, ByteArray *buffer, bool loop) {
 
 	// Handle music looping
 	_parser->property(MidiParser::mpAutoLoop, loop);
-//	_isLooping = loop;
 
 	_isPlaying = true;
 }
@@ -147,7 +149,6 @@ void MusicDriver::playQuickTime(const Common::String &musicName, bool loop) {
 
 	// Handle music looping
 	_parser->property(MidiParser::mpAutoLoop, loop);
-//	_isLooping = loop;
 
 	_isPlaying = true;
 }

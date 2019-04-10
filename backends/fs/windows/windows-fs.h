@@ -23,17 +23,13 @@
 #ifndef WINDOWS_FILESYSTEM_H
 #define WINDOWS_FILESYSTEM_H
 
-#include "backends/fs/abstract-fs.h"
-
-#if defined(ARRAYSIZE)
-#undef ARRAYSIZE
-#endif
 #include <windows.h>
-// winnt.h defines ARRAYSIZE, but we want our own one...
-#undef ARRAYSIZE
 #ifdef _WIN32_WCE
 #undef GetCurrentDirectory
 #endif
+
+#include "backends/fs/abstract-fs.h"
+
 #include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,6 +84,7 @@ public:
 
 	virtual Common::SeekableReadStream *createReadStream();
 	virtual Common::WriteStream *createWriteStream();
+	virtual bool create(bool isDirectoryFlag);
 
 private:
 	/**

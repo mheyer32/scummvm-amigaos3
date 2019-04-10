@@ -140,6 +140,21 @@ DialogueManager::DialogueManager(Parallaction *vm, ZonePtr z) : _vm(vm), _z(z) {
 
 	_cmdList = 0;
 	_answerId = 0;
+
+	_faceId = 0;
+
+	_q = NULL;
+	memset(_visAnswers, 0, sizeof(_visAnswers));
+	_numVisAnswers = 0;
+
+	_selection = _oldSelection = 0;
+
+	_isKeyDown = false;
+	_downKey = 0;
+
+	_mouseButtons = 0;
+
+	_state = DIALOGUE_START;
 }
 
 void DialogueManager::start() {
@@ -238,15 +253,14 @@ int16 DialogueManager::selectAnswerN() {
 
 	_selection = _balloonMan->hitTestDialogueBalloon(_mousePos.x, _mousePos.y);
 
-	VisibleAnswer *oldAnswer = (_oldSelection == NO_ANSWER_SELECTED) ? NULL : &_visAnswers[_oldSelection];
-	VisibleAnswer *answer = &_visAnswers[_selection];
-
 	if (_selection != _oldSelection) {
 		if (_oldSelection != NO_ANSWER_SELECTED) {
+			VisibleAnswer *oldAnswer = &_visAnswers[_oldSelection];
 			_balloonMan->setBalloonText(oldAnswer->_balloon, oldAnswer->_a->_text, BalloonManager::kUnselectedColor);
 		}
 
 		if (_selection != NO_ANSWER_SELECTED) {
+			VisibleAnswer *answer = &_visAnswers[_selection];
 			_balloonMan->setBalloonText(answer->_balloon, answer->_a->_text, BalloonManager::kSelectedColor);
 			_gfx->setItemFrame(_faceId, answer->_a->speakerMood());
 		}
@@ -412,7 +426,8 @@ protected:
 	}
 
 public:
-	DialogueManager_ns(Parallaction_ns *vm, ZonePtr z) : DialogueManager(vm, z), _vm(vm) {
+	DialogueManager_ns(Parallaction_ns *vm, ZonePtr z) : DialogueManager(vm, z), _vm(vm),
+		_passwordChanged(false), _askPassword(false) {
 		_ballonPos._questionBalloon = Common::Point(140, 10);
 		_ballonPos._questionChar = Common::Point(190, 80);
 		_ballonPos._answerChar = Common::Point(10, 80);

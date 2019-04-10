@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{6C6672BF-1F90-462F-8411-C0B759235F33}</ProjectGuid>
+		<ProjectGuid>{1B2CA342-0D5F-49C1-A257-47EE6BA3EA19}</ProjectGuid>
 		<RootNamespace>gob</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

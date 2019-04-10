@@ -27,19 +27,27 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#undef ARRAYSIZE // winnt.h defines ARRAYSIZE, but we want our own one...
 #include <shellapi.h>
+#if defined(__GNUC__) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+// required for SHGFP_TYPE_CURRENT in shlobj.h
+#define _WIN32_IE 0x500
+#endif
+#include <shlobj.h>
 
 #include "common/scummsys.h"
 #include "common/config-manager.h"
 #include "common/error.h"
 #include "common/textconsole.h"
 
+#include "backends/audiocd/win32/win32-audiocd.h"
 #include "backends/platform/sdl/win32/win32.h"
 #include "backends/platform/sdl/win32/win32-window.h"
+#include "backends/platform/sdl/win32/win32_wrapper.h"
 #include "backends/saves/windows/windows-saves.h"
 #include "backends/fs/windows/windows-fs-factory.h"
 #include "backends/taskbar/win32/win32-taskbar.h"
+#include "backends/updates/win32/win32-updates.h"
+#include "backends/dialogs/win32/win32-dialogs.h"
 
 #include "common/memstream.h"
 
@@ -54,7 +62,12 @@ void OSystem_Win32::init() {
 
 #if defined(USE_TASKBAR)
 	// Initialize taskbar manager
-	_taskbarManager = new Win32TaskbarManager(_window);
+	_taskbarManager = new Win32TaskbarManager((SdlWindow_Win32*)_window);
+#endif
+
+#if defined(USE_SYSDIALOGS)
+	// Initialize dialog manager
+	_dialogManager = new Win32DialogManager((SdlWindow_Win32*)_window);
 #endif
 
 	// Invoke parent implementation of this method
@@ -81,14 +94,24 @@ void OSystem_Win32::initBackend() {
 	if (_savefileManager == 0)
 		_savefileManager = new WindowsSaveFileManager();
 
+#if defined(USE_SPARKLE)
+	// Initialize updates manager
+	_updateManager = new Win32UpdateManager();
+#endif
+
 	// Invoke parent implementation of this method
 	OSystem_SDL::initBackend();
 }
 
 
 bool OSystem_Win32::hasFeature(Feature f) {
-	if (f == kFeatureDisplayLogFile)
+	if (f == kFeatureDisplayLogFile || f == kFeatureOpenUrl)
 		return true;
+
+#ifdef USE_SYSDIALOGS
+	if (f == kFeatureSystemBrowserDialog)
+		return true;
+#endif
 
 	return OSystem_SDL::hasFeature(f);
 }
@@ -128,33 +151,78 @@ bool OSystem_Win32::displayLogFile() {
 	return false;
 }
 
+bool OSystem_Win32::openUrl(const Common::String &url) {
+	const uint64 result = (uint64)ShellExecute(0, 0, /*(wchar_t*)nativeFilePath.utf16()*/url.c_str(), 0, 0, SW_SHOWNORMAL);
+	// ShellExecute returns a value greater than 32 if successful
+	if (result <= 32) {
+		warning("ShellExecute failed: error = %u", result);
+		return false;
+	}
+	return true;
+}
+
+void OSystem_Win32::logMessage(LogMessageType::Type type, const char *message) {
+	OSystem_SDL::logMessage(type, message);
+
+#if defined( USE_WINDBG )
+	OutputDebugString(message);
+#endif
+}
+
+Common::String OSystem_Win32::getSystemLanguage() const {
+#if defined(USE_DETECTLANG) && defined(USE_TRANSLATION)
+	// We can not use "setlocale" (at least not for MSVC builds), since it
+	// will return locales like: "English_USA.1252", thus we need a special
+	// way to determine the locale string for Win32.
+	char langName[9];
+	char ctryName[9];
+
+	if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, langName, sizeof(langName)) != 0 &&
+		GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, ctryName, sizeof(ctryName)) != 0) {
+		Common::String localeName = langName;
+		localeName += "_";
+		localeName += ctryName;
+
+		return localeName;
+	}
+#endif // USE_DETECTLANG
+	// Falback to SDL implementation
+	return OSystem_SDL::getSystemLanguage();
+}
+
+Common::String OSystem_Win32::getScreenshotsPath() {
+	Common::String screenshotsPath = ConfMan.get("screenshotpath");
+	if (!screenshotsPath.empty()) {
+		if (!screenshotsPath.hasSuffix("\\") && !screenshotsPath.hasSuffix("/"))
+			screenshotsPath += "\\";
+		return screenshotsPath;
+	}
+
+	// Use the My Pictures folder.
+	char picturesPath[MAXPATHLEN];
+
+	if (SHGetFolderPathFunc(NULL, CSIDL_MYPICTURES, NULL, SHGFP_TYPE_CURRENT, picturesPath) != S_OK) {
+		warning("Unable to access My Pictures directory");
+		return Common::String();
+	}
+
+	screenshotsPath = Common::String(picturesPath) + "\\ScummVM Screenshots\\";
+
+	// If the directory already exists (as it should in most cases),
+	// we don't want to fail, but we need to stop on other errors (such as ERROR_PATH_NOT_FOUND)
+	if (!CreateDirectory(screenshotsPath.c_str(), NULL)) {
+		if (GetLastError() != ERROR_ALREADY_EXISTS)
+			error("Cannot create ScummVM Screenshots folder");
+	}
+
+	return screenshotsPath;
+}
+
 Common::String OSystem_Win32::getDefaultConfigFileName() {
 	char configFile[MAXPATHLEN];
 
-	OSVERSIONINFO win32OsVersion;
-	ZeroMemory(&win32OsVersion, sizeof(OSVERSIONINFO));
-	win32OsVersion.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&win32OsVersion);
-	// Check for non-9X version of Windows.
-	if (win32OsVersion.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) {
-		// Use the Application Data directory of the user profile.
-		if (win32OsVersion.dwMajorVersion >= 5) {
-			if (!GetEnvironmentVariable("APPDATA", configFile, sizeof(configFile)))
-				error("Unable to access application data directory");
-		} else {
-			if (!GetEnvironmentVariable("USERPROFILE", configFile, sizeof(configFile)))
-				error("Unable to access user profile directory");
-
-			strcat(configFile, "\\Application Data");
-
-			// If the directory already exists (as it should in most cases),
-			// we don't want to fail, but we need to stop on other errors (such as ERROR_PATH_NOT_FOUND)
-			if (!CreateDirectory(configFile, NULL)) {
-				if (GetLastError() != ERROR_ALREADY_EXISTS)
-					error("Cannot create Application data folder");
-			}
-		}
-
+	// Use the Application Data directory of the user profile.
+	if (SHGetFolderPathFunc(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, configFile) == S_OK) {
 		strcat(configFile, "\\ScummVM");
 		if (!CreateDirectory(configFile, NULL)) {
 			if (GetLastError() != ERROR_ALREADY_EXISTS)
@@ -181,6 +249,7 @@ Common::String OSystem_Win32::getDefaultConfigFileName() {
 			fclose(tmp);
 		}
 	} else {
+		warning("Unable to access application data directory");
 		// Check windows directory
 		uint ret = GetWindowsDirectory(configFile, MAXPATHLEN);
 		if (ret == 0 || ret > MAXPATHLEN)
@@ -199,24 +268,8 @@ Common::WriteStream *OSystem_Win32::createLogFile() {
 
 	char logFile[MAXPATHLEN];
 
-	OSVERSIONINFO win32OsVersion;
-	ZeroMemory(&win32OsVersion, sizeof(OSVERSIONINFO));
-	win32OsVersion.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&win32OsVersion);
-	// Check for non-9X version of Windows.
-	if (win32OsVersion.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) {
-		// Use the Application Data directory of the user profile.
-		if (win32OsVersion.dwMajorVersion >= 5) {
-			if (!GetEnvironmentVariable("APPDATA", logFile, sizeof(logFile)))
-				error("Unable to access application data directory");
-		} else {
-			if (!GetEnvironmentVariable("USERPROFILE", logFile, sizeof(logFile)))
-				error("Unable to access user profile directory");
-
-			strcat(logFile, "\\Application Data");
-			CreateDirectory(logFile, NULL);
-		}
-
+	// Use the Application Data directory of the user profile.
+	if (SHGetFolderPathFunc(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, logFile) == S_OK) {
 		strcat(logFile, "\\ScummVM");
 		CreateDirectory(logFile, NULL);
 		strcat(logFile, "\\Logs");
@@ -230,6 +283,7 @@ Common::WriteStream *OSystem_Win32::createLogFile() {
 
 		return stream;
 	} else {
+		warning("Unable to access application data directory");
 		return 0;
 	}
 }
@@ -316,6 +370,10 @@ void OSystem_Win32::addSysArchivesToSearchSet(Common::SearchSet &s, int priority
 	s.add("Win32Res", new Win32ResourceArchive(), priority);
 
 	OSystem_SDL::addSysArchivesToSearchSet(s, priority);
+}
+
+AudioCDManager *OSystem_Win32::createAudioCDManager() {
+	return createWin32AudioCDManager();
 }
 
 #endif

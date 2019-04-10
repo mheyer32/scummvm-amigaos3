@@ -70,6 +70,10 @@ public:
 
 	byte walkboxFindTarget(Actor *a, int destbox, Common::Point walkdest);
 
+	/* Delay calculation */
+	void DelayReset();
+	int DelayCalculateDelta();
+
 protected:
 	virtual void resetRoomObject(ObjectData *od, const byte *room, const byte *searchptr = NULL);
 
@@ -82,7 +86,7 @@ protected:
 
 	virtual void processInput();
 
-	virtual void saveOrLoad(Serializer *s);
+	virtual void saveLoadWithSerializer(Common::Serializer &s);
 
 	virtual bool objIsActor(int obj);
 	virtual int objToActor(int obj);

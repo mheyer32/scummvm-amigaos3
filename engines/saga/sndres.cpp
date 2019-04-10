@@ -327,12 +327,10 @@ bool SndRes::load(ResourceContext *context, uint32 resourceId, SoundBuffer &buff
 		result = true;
 		} break;
 	case kSoundAIFF: {
-		Audio::RewindableAudioStream *audStream = Audio::makeAIFFStream(READ_STREAM(soundResourceLength), DisposeAfterUse::YES);
-		Audio::SeekableAudioStream *seekStream = dynamic_cast<Audio::SeekableAudioStream *>(audStream);
+		Audio::SeekableAudioStream *seekStream = Audio::makeSeekableAIFFStream(READ_STREAM(soundResourceLength), DisposeAfterUse::YES);
 
 		if (!seekStream) {
 			warning("AIFF file is not seekable");
-			delete audStream;
 			result = false;
 			break;
 		}

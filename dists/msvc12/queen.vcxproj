@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{9CD56096-2325-4447-9738-B49574F98D2B}</ProjectGuid>
+		<ProjectGuid>{4766E976-236B-4611-9019-C0D0BAAB90DE}</ProjectGuid>
 		<RootNamespace>queen</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

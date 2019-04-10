@@ -72,11 +72,11 @@ public:
 	}
 
 	virtual const char *getName() const {
-		return "Tony Engine";
+		return "Tony Tough and the Night of Roasted Moths";
 	}
 
 	virtual const char *getOriginalCopyright() const {
-		return "Tony Engine (C) Protonic Interactive";
+		return "Tony Tough and the Night of Roasted Moths (C) Protonic Interactive";
 	}
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
@@ -118,7 +118,6 @@ SaveStateList TonyMetaEngine::listSaves(const char *target) const {
 	Common::String pattern = "tony.0##";
 
 	filenames = saveFileMan->listSavefiles(pattern);
-	sort(filenames.begin(), filenames.end());   // Sort (hopefully ensuring we are sorted numerically..)
 
 	SaveStateList saveList;
 	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); ++file) {
@@ -137,6 +136,8 @@ SaveStateList TonyMetaEngine::listSaves(const char *target) const {
 		}
 	}
 
+	// Sort saves based on slot number.
+	Common::sort(saveList.begin(), saveList.end(), SaveStateDescriptorSlotComparator());
 	return saveList;
 }
 

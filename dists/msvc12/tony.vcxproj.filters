@@ -2,7 +2,7 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="mpal">
-			<UniqueIdentifier>80A9BCE7-D88B-462A-947B-2854E89C4D24</UniqueIdentifier>
+			<UniqueIdentifier>80FCD5D4-513E-4B3A-B7FA-32FD0A491073</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -222,7 +222,7 @@ void Script::setObjId(int roomObjOffset, int slot, byte objectId) {
 }
 
 int Script::scanMobEvents(int mobMask, int dataEventOffset) {
-	debug("mobMask: %d", mobMask);
+	debug(3, "scanMobEvents: mobMask: %d", mobMask);
 	int i = 0;
 	int16 mob;
 	int32 code;
@@ -230,7 +230,7 @@ int Script::scanMobEvents(int mobMask, int dataEventOffset) {
 		mob = (int)READ_LE_UINT16(&_data[dataEventOffset + i * 6]);
 		if (mob == mobMask) {
 			code = (int)READ_LE_UINT32(&_data[dataEventOffset + i * 6 + 2]);
-			debug("code: %d", code);
+			debug(3, "scanMobEvents: code: %d", code);
 			return code;
 		}
 		i++;
@@ -239,7 +239,7 @@ int Script::scanMobEvents(int mobMask, int dataEventOffset) {
 }
 
 int Script::scanMobEventsWithItem(int mobMask, int dataEventOffset, int itemMask) {
-	debug("mobMask: %d", mobMask);
+	debug(3, "scanMobEventsWithItem: mobMask: %d", mobMask);
 	int i = 0;
 	int16 mob;
 	int16 item;
@@ -250,8 +250,8 @@ int Script::scanMobEventsWithItem(int mobMask, int dataEventOffset, int itemMask
 			item = (int)READ_LE_UINT16(&_data[dataEventOffset + i * 8 + 2]);
 			if (item == itemMask) {
 				code = (int)READ_LE_UINT32(&_data[dataEventOffset + i * 8 + 4]);
-				debug("itemMask: %d", item);
-				debug("code: %d", code);
+				debug(3, "scanMobEventsWithItem: itemMask: %d", item);
+				debug(3, "scanMobEventsWithItem: code: %d", code);
 				return code;
 			}
 		}
@@ -388,9 +388,11 @@ bool Script::loadAllMasks(Common::Array<Mask> &maskList, int offset) {
 			tempMask._width = 0;
 			tempMask._height = 0;
 			tempMask._data = nullptr;
-			debug("Can't load %s", msStreamName.c_str());
+			warning("loadAllMasks: Can't load %s", msStreamName.c_str());
 			delete msStream;
 		} else {
+			msStream = Resource::getDecompressedStream(msStream);
+
 			int32 dataSize = msStream->size();
 			if (dataSize != -1) {
 				tempMask._data = (byte *)malloc(dataSize);
@@ -400,9 +402,12 @@ bool Script::loadAllMasks(Common::Array<Mask> &maskList, int offset) {
 					return false;
 				}
 				delete msStream;
+
+				tempMask._width = tempMask.getWidth();
+				tempMask._height = tempMask.getHeight();
+			} else {
+				return false;
 			}
-			tempMask._width = tempMask.getWidth();
-			tempMask._height = tempMask.getHeight();
 		}
 
 		maskList.push_back(tempMask);
@@ -447,11 +452,9 @@ void Interpreter::debugInterpreter(const char *s, ...) {
 
 	Common::String str = Common::String::format("@0x%08X: ", _lastInstruction);
 	str += Common::String::format("op %04d: ", _lastOpcode);
-	//debugC(10, DebugChannel::kScript, "PrinceEngine::Script %s %s", str.c_str(), buf);
 	if (!strcmp(_mode, "fg")) {
 		debug(10, "PrinceEngine::Script %s %s", str.c_str(), buf);
 	}
-	//debug("Prince::Script mode %s %s %s", _mode, str.c_str(), buf);
 }
 
 void Interpreter::stepBg() {
@@ -913,8 +916,7 @@ void Interpreter::O_ADDFLAG() {
 	_flags->setFlagValue(flagId, _flags->getFlagValue(flagId) + value);
 	if (_flags->getFlagValue(flagId)) {
 		_result = 1;
-	}
-	else {
+	} else {
 		_result = 0;
 	}
 	debugInterpreter("O_ADDFLAG flagId %04x (%s), value %d", flagId, Flags::getFlagName(flagId), value);
@@ -933,8 +935,7 @@ void Interpreter::O_SUBFLAG() {
 	_flags->setFlagValue(flagId, _flags->getFlagValue(flagId) - value);
 	if (_flags->getFlagValue(flagId)) {
 		_result = 1;
-	}
-	else {
+	} else {
 		_result = 0;
 	}
 	debugInterpreter("O_SUBFLAG flagId %d, value %d", flagId, value);
@@ -946,8 +947,7 @@ void Interpreter::O_SETSTRING() {
 	if (offset >= 80000) {
 		_string = _vm->_variaTxt->getString(offset - 80000);
 		debugInterpreter("GetVaria %s", _string);
-	}
-	else if (offset < 2000) {
+	} else if (offset < 2000) {
 		_vm->_dialogData = &_vm->_dialogDat[offset * 4 - 4];
 		uint32 of = READ_LE_UINT32(_vm->_talkTxt + offset * 4);
 		const char *txt = (const char *)&_vm->_talkTxt[of];
@@ -1013,6 +1013,12 @@ void Interpreter::O_XORFLAG() {
 void Interpreter::O_GETMOBTEXT() {
 	int32 mob = readScriptFlagValue();
 	_currentString = _vm->_locationNr * 100 + mob + 60001;
+	// FIXME: UB?
+	// This casts away the constness of the pointer returned by c_str() which is
+	// stored and potentially modified later (for example in printAt()).
+	// Also, the pointer is only valid as long as _vm->_mobList[mob]
+	// is around and _vm->_mobList[mob]._examText hasn't been modified by any of its
+	// non-const member functions which also might or might not be a problem.
 	_string = (byte *)_vm->_mobList[mob]._examText.c_str();
 	debugInterpreter("O_GETMOBTEXT mob %d", mob);
 }
@@ -1829,6 +1835,12 @@ void Interpreter::O_DISABLENAK() {
 
 void Interpreter::O_GETMOBNAME() {
 	int32 modId = readScriptFlagValue();
+	// FIXME: UB?
+	// This casts away the constness of the pointer returned by c_str() which is
+	// stored and potentially modified later (for example in printAt()).
+	// Also, the pointer is only valid as long as _vm->_mobList[mobId]
+	// is around and _vm->_mobList[mobId]._name hasn't been modified by any of its
+	// non-const member functions which also might or might not be a problem.
 	_string = (byte *)_vm->_mobList[modId]._name.c_str();
 	debugInterpreter("O_GETMOBNAME modId %d", modId);
 }
