@@ -60,7 +60,7 @@ def buildStep(ext) {
 
 			freshUpRoot(ext)
 
-			sh "cd ${env.WORKSPACE}/ && ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --prefix=/opt/toolchains/${ext}/ --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
+			sh "cd ${env.WORKSPACE}/ && ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --disable-mad --prefix=/opt/toolchains/${ext}/ --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
 			if (!env.CHANGE_ID) {
 				sh "mkdir -p ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
       }
