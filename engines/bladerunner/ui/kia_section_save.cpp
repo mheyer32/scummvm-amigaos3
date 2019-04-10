@@ -48,17 +48,23 @@ KIASectionSave::KIASectionSave(BladeRunnerEngine *vm) : KIASectionBase(vm) {
 	_scrollBox = new UIScrollBox(_vm, scrollBoxCallback, this, 1024, 0, true, Common::Rect(155, 158, 461, 346), Common::Rect(506, 160, 506, 350));
 	_uiContainer->add(_scrollBox);
 
-	_inputBox = new UIInputBox(_vm, inputBoxCallback, this, Common::Rect(155, 367, 461, 376), 41, "");
+	_inputBox = new UIInputBox(_vm, inputBoxCallback, this, Common::Rect(155, 367, 461, 376), SaveFileManager::kNameLength, ""); // original game had limit 41 characters
 	_uiContainer->add(_inputBox);
 	_inputBox->hide();
 
 	_buttons = new UIImagePicker(_vm, 3);
 
+	_timeLast = 0;
+	_timeLeft = 0;
+
+	_state = kStateNormal;
+
 	_mouseX = 0;
 	_mouseY = 0;
 
-	_selectedLineId = -1;
 	_hoveredLineId = -1;
+	_displayingLineId = -1;
+	_selectedLineId = -1;
 	_newSaveLineId = -1;
 }
 
@@ -177,23 +183,25 @@ void KIASectionSave::draw(Graphics::Surface &surface){
 	int selectedLineId = _scrollBox->getSelectedLineData();
 
 	if (selectedLineId != _hoveredLineId) {
-		if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size()) {
+		if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size() && _displayingLineId != selectedLineId) {
 			if (_timeLeft == 0) {
 				SaveStateDescriptor desc = SaveFileManager::queryMetaInfos(_vm->getTargetName(), selectedLineId);
 				const Graphics::Surface *thumbnail = desc.getThumbnail();
 				if (thumbnail != nullptr) {
 					_vm->_kia->playImage(*thumbnail);
+					_displayingLineId = selectedLineId;
 				}
 			}
 		} else {
 			_vm->_kia->playerReset();
 			_timeLeft = 800;
+			_displayingLineId = -1;
 		}
 		_hoveredLineId = selectedLineId;
 	}
 
 	uint32 now = _vm->_time->currentSystem();
-	if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size()) {
+	if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size() && _displayingLineId != selectedLineId) {
 		if (_timeLeft) {
 			uint32 timeDiff = now - _timeLast;
 			if (timeDiff >= _timeLeft) {
@@ -201,6 +209,7 @@ void KIASectionSave::draw(Graphics::Surface &surface){
 				const Graphics::Surface *thumbnail = desc.getThumbnail();
 				if (thumbnail != nullptr) {
 					_vm->_kia->playImage(*thumbnail);
+					_displayingLineId = selectedLineId;
 				}
 			} else {
 				_timeLeft -= timeDiff;
@@ -268,6 +277,13 @@ void KIASectionSave::handleMouseUp(bool mainButton) {
 		}
 	}
 }
+
+void KIASectionSave::handleMouseScroll(int direction) {
+	if (_state == kStateNormal) {
+		_uiContainer->handleMouseScroll(direction);
+	}
+}
+
 
 void KIASectionSave::scrollBoxCallback(void *callbackData, void *source, int lineData, int mouseButton) {
 	KIASectionSave *self = (KIASectionSave *)callbackData;
@@ -384,6 +400,8 @@ void KIASectionSave::save() {
 	Common::OutSaveFile *saveFile = BladeRunner::SaveFileManager::openForSaving(_vm->getTargetName(), slot);
 	if (saveFile == nullptr || saveFile->err()) {
 		delete saveFile;
+		warning("KIASectionSave::save(): Can not open savegame file for writing");
+		return;
 	}
 
 	BladeRunner::SaveFileHeader header;

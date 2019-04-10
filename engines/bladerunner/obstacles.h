@@ -57,7 +57,7 @@ class Obstacles {
 		Vector2    vertices[kPolygonVertexCount];
 		VertexType vertexType[kPolygonVertexCount];
 
-		Polygon() : isPresent(false), verticeCount(0)
+		Polygon() : isPresent(false), verticeCount(0), vertexType()
 		{}
 	};
 
@@ -71,7 +71,7 @@ class Obstacles {
 	bool     _backup;
 
 	static bool lineLineIntersection(LineSegment a, LineSegment b, Vector2 *intersectionPoint);
-	static bool linePolygonIntersection(LineSegment lineA, VertexType lineAType, Polygon *polyB, Vector2 *intersectionPoint, int *intersectionIndex);
+	static bool linePolygonIntersection(LineSegment lineA, VertexType lineAType, Polygon *polyB, Vector2 *intersectionPoint, int *intersectionIndex, int pathLengthSinceLastIntersection);
 
 	bool mergePolygons(Polygon &polyA, Polygon &PolyB);
 
@@ -93,14 +93,14 @@ public:
 
 	float pathTotalDistance(const Vector2 *path, int pathSize, Vector2 from, Vector2 to) const;
 	bool findPolygonVerticeByXZ(int *polygonIndex, int *verticeIndex, int *verticeCount, float x, float z) const;
-	bool findPolygonVerticeByXZWithinTolerance(float x, float z, int *polygonIndex, int *verticeIndex) const;
+	bool findPolygonVerticeByXZWithinTolerance(float x, float z, int *polygonIndex, int *verticeIndex, int startSearchFromPolygonIdx) const;
 
 	void clearPath();
 	int  buildNegativePath(int polyIndex, int vertStartIndex, Vector2 startPos, int vertEndIndex, Vector2 endPos, Vector2 *path, int pathCapacity, bool *pathBlocked);
 	int  buildPositivePath(int polyIndex, int vertStartIndex, Vector2 startPos, int vertEndIndex, Vector2 endPos, Vector2 *path, int pathCapacity, bool *pathBlocked);
 
 	bool verticesCanIntersect(int lineType0, int lineType1, float x0, float y0, float x1, float y1) const;
-	bool findFarthestAvailablePathVertex(Vector2 *path, int pathSize, Vector3 from, Vector3 *next) const;
+	bool findFarthestAvailablePathVertex(Vector2 *path, int pathSize, Vector3 start, Vector3 *next) const;
 
 	void backup();
 	void restore();

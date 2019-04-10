@@ -113,7 +113,17 @@ bool DialogueMenu::addToList(int answer, bool done, int priorityPolite, int prio
 		return false;
 	}
 
+#if BLADERUNNER_ORIGINAL_BUGS
+// Original uses incorrect spelling for entry id 1020: DRAGONFLY JEWERLY
 	const Common::String &text = _textResource->getText(answer);
+#else
+// fix spelling or entry id 1020 to DRAGONFLY JEWELRY in English version
+	const char *answerTextCP = _textResource->getText(answer);
+	if (_vm->_language == Common::EN_ANY && answer == 1020 && strcmp(answerTextCP, "DRAGONFLY JEWERLY") == 0) {
+		answerTextCP = "DRAGONFLY JEWELRY";
+	}
+	const Common::String &text = answerTextCP;
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	if (text.empty() || text.size() >= 50) {
 		return false;
 	}
@@ -142,7 +152,7 @@ bool DialogueMenu::addToListNeverRepeatOnceSelected(int answer, int priorityPoli
 		}
 	}
 
-	if (foundIndex > 0 && _neverRepeatWasSelected[foundIndex]) {
+	if (foundIndex >= 0 && _neverRepeatWasSelected[foundIndex]) {
 		return true;
 	}
 
@@ -159,7 +169,7 @@ bool DialogueMenu::addToListNeverRepeatOnceSelected(int answer, int priorityPoli
 
 bool DialogueMenu::removeFromList(int answer) {
 	int index = getAnswerIndex(answer);
-	if (index != -1) {
+	if (index < 0) {
 		return false;
 	}
 	if (index < _listSize - 1) {
@@ -181,14 +191,14 @@ int DialogueMenu::queryInput() {
 	int answer = -1;
 	if (_listSize == 1) {
 		_selectedItemIndex = 0;
-		answer = _items[0].answerValue;
+		answer = _items[_selectedItemIndex].answerValue;
 	} else if (_listSize == 2) {
 		if (_items[0].isDone) {
 			_selectedItemIndex = 1;
-			answer = _items[0].answerValue;
+			answer = _items[_selectedItemIndex].answerValue;
 		} else if (_items[1].isDone) {
 			_selectedItemIndex = 0;
-			answer = _items[1].answerValue;
+			answer = _items[_selectedItemIndex].answerValue;
 		}
 	}
 
@@ -197,10 +207,6 @@ int DialogueMenu::queryInput() {
 		if (agenda == kPlayerAgendaUserChoice) {
 			_waitingForInput = true;
 			do {
-				// TODO: game resuming
-				// if (!_vm->_gameRunning)
-				// 	break;
-
 				while (!_vm->playerHasControl()) {
 					_vm->playerGainsControl();
 				}

@@ -96,12 +96,11 @@ private:
 #define END_SCRIPT };
 
 DECLARE_SCRIPT(McCoy)
-	int dword_45A0D8;
-	int dword_45A0DC;
-	int _animationFrameDelta;
-	int dword_45A0E4;
-	float off_45A0EC;
-	int dword_45A0E8;
+	int _animationLoopCounter;
+	int _animationLoopLength;
+	int _animationLoopDirection;
+	int _animationLoopFrameMin;
+	int _animationLoopFrameMax;
 	int _animationStateNextSpecial;
 	int _animationNextSpecial;
 	int _nextSoundId;
@@ -112,11 +111,9 @@ DECLARE_SCRIPT(McCoy)
 
 	void fallDown();
 	void UG15fall();
-	void sub_405660();
-	void sub_405800();
 	void dodge();
-	void sub_405940(float a1);
-	void sub_4059D0(float a1);
+	void walkStairsLeft(float stepHeight);
+	void walkStairsRight(float stepHeight);
 END_SCRIPT
 
 DECLARE_SCRIPT(Steele)
@@ -251,11 +248,11 @@ DECLARE_SCRIPT(EarlyQ)
 END_SCRIPT
 
 DECLARE_SCRIPT(Zuben)
-	int _var_45D258;
-	int _var_45D25C;
-	int _animationFrameTarget2;
-	int _animationFrameDelta;
-	int _animationFrameTarget1;
+	int _animationLoopCounter;
+	int _animationLoopLength;
+	int _animationLoopFrameMin;
+	int _animationLoopDirection;
+	int _animationLoopFrameMax;
 
 	void dialogue();
 END_SCRIPT
@@ -462,7 +459,7 @@ DECLARE_SCRIPT(FreeSlotA)
 	float _fallHeightCurrent;
 	float _fallHeightTarget;
 
-	void calcHit();
+	void checkIfOnBridge();
 	void goToRandomUGxx();
 END_SCRIPT
 

@@ -22,6 +22,7 @@
 
 #include "glk/frotz/processor.h"
 #include "glk/frotz/frotz.h"
+#include "glk/conf.h"
 
 namespace Glk {
 namespace Frotz {
@@ -264,6 +265,7 @@ void Processor::interpret() {
 		} else if (opcode < 0xc0) {
 			// 0OP opcodes
 			(*this.*op0_opcodes[opcode - 0xb0])();
+
 
 		} else {
 			// VAR opcodes

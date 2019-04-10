@@ -25,7 +25,6 @@
 #if defined(SDL_BACKEND)
 #include "backends/graphics/surfacesdl/surfacesdl-graphics.h"
 #include "backends/events/sdl/sdl-events.h"
-#include "backends/platform/sdl/sdl.h"
 #include "common/config-manager.h"
 #include "common/mutex.h"
 #include "common/textconsole.h"
@@ -493,6 +492,14 @@ static void maskToBitCount(Uint32 mask, uint8 &numBits, uint8 &shift) {
 }
 #endif
 
+Graphics::PixelFormat SurfaceSdlGraphicsManager::convertSDLPixelFormat(SDL_PixelFormat *in) const {
+	return Graphics::PixelFormat(in->BytesPerPixel,
+		8 - in->Rloss, 8 - in->Gloss,
+		8 - in->Bloss, 8 - in->Aloss,
+		in->Rshift, in->Gshift,
+		in->Bshift, in->Ashift);
+}
+
 void SurfaceSdlGraphicsManager::detectSupportedFormats() {
 	_supportedFormats.clear();
 
@@ -570,11 +577,7 @@ void SurfaceSdlGraphicsManager::detectSupportedFormats() {
 
 	if (_hwScreen) {
 		// Get our currently set hardware format
-		Graphics::PixelFormat hwFormat(_hwScreen->format->BytesPerPixel,
-			8 - _hwScreen->format->Rloss, 8 - _hwScreen->format->Gloss,
-			8 - _hwScreen->format->Bloss, 8 - _hwScreen->format->Aloss,
-			_hwScreen->format->Rshift, _hwScreen->format->Gshift,
-			_hwScreen->format->Bshift, _hwScreen->format->Ashift);
+		Graphics::PixelFormat hwFormat = convertSDLPixelFormat(_hwScreen->format);
 
 		// Workaround to SDL not providing an accurate Aloss value on Mac OS X.
 		if (_hwScreen->format->Amask == 0)
@@ -1041,17 +1044,7 @@ bool SurfaceSdlGraphicsManager::loadGFXMode() {
 	if (_overlayscreen == NULL)
 		error("allocating _overlayscreen failed");
 
-	_overlayFormat.bytesPerPixel = _overlayscreen->format->BytesPerPixel;
-
-	_overlayFormat.rLoss = _overlayscreen->format->Rloss;
-	_overlayFormat.gLoss = _overlayscreen->format->Gloss;
-	_overlayFormat.bLoss = _overlayscreen->format->Bloss;
-	_overlayFormat.aLoss = _overlayscreen->format->Aloss;
-
-	_overlayFormat.rShift = _overlayscreen->format->Rshift;
-	_overlayFormat.gShift = _overlayscreen->format->Gshift;
-	_overlayFormat.bShift = _overlayscreen->format->Bshift;
-	_overlayFormat.aShift = _overlayscreen->format->Ashift;
+	_overlayFormat = convertSDLPixelFormat(_overlayscreen->format);
 
 	_tmpscreen2 = SDL_CreateRGBSurface(SDL_SWSURFACE, _videoMode.overlayWidth + 3, _videoMode.overlayHeight + 3,
 						16,
@@ -1425,7 +1418,7 @@ void SurfaceSdlGraphicsManager::internUpdateScreen() {
 	_cursorNeedsRedraw = false;
 }
 
-bool SurfaceSdlGraphicsManager::saveScreenshot(const char *filename) {
+bool SurfaceSdlGraphicsManager::saveScreenshot(const Common::String &filename) const {
 	assert(_hwScreen != NULL);
 
 	Common::StackLock lock(_graphicsMutex);
@@ -1476,7 +1469,11 @@ bool SurfaceSdlGraphicsManager::saveScreenshot(const char *filename) {
 		return false;
 	}
 
+#ifdef SCUMM_LITTLE_ENDIAN
+	const Graphics::PixelFormat format(3, 8, 8, 8, 0, 0, 8, 16, 0);
+#else
 	const Graphics::PixelFormat format(3, 8, 8, 8, 0, 16, 8, 0, 0);
+#endif
 	Graphics::Surface data;
 	data.init(rgbScreen->w, rgbScreen->h, rgbScreen->pitch, rgbScreen->pixels, format);
 	const bool success = Image::writePNG(out, data);
@@ -1486,7 +1483,7 @@ bool SurfaceSdlGraphicsManager::saveScreenshot(const char *filename) {
 
 	return success;
 #else
-	return SDL_SaveBMP(_hwScreen, filename) == 0;
+	return SDL_SaveBMP(_hwScreen, filename.c_str()) == 0;
 #endif
 }
 
@@ -2358,11 +2355,7 @@ void SurfaceSdlGraphicsManager::displayMessageOnOSD(const char *msg) {
 
 	Graphics::Surface dst;
 	dst.init(_osdMessageSurface->w, _osdMessageSurface->h, _osdMessageSurface->pitch, _osdMessageSurface->pixels,
-		Graphics::PixelFormat(_osdMessageSurface->format->BytesPerPixel,
-			8 - _osdMessageSurface->format->Rloss, 8 - _osdMessageSurface->format->Gloss,
-			8 - _osdMessageSurface->format->Bloss, 8 - _osdMessageSurface->format->Aloss,
-			_osdMessageSurface->format->Rshift, _osdMessageSurface->format->Gshift,
-			_osdMessageSurface->format->Bshift, _osdMessageSurface->format->Ashift));
+		convertSDLPixelFormat(_osdMessageSurface->format));
 
 	// Render the message, centered, and in white
 	for (i = 0; i < lines.size(); i++) {
@@ -2678,69 +2671,9 @@ bool SurfaceSdlGraphicsManager::isScalerHotkey(const Common::Event &event) {
 	return false;
 }
 
-void SurfaceSdlGraphicsManager::toggleFullScreen() {
-	beginGFXTransaction();
-		setFullscreenMode(!_videoMode.fullscreen);
-	endGFXTransaction();
-#ifdef USE_OSD
-	if (_videoMode.fullscreen)
-		displayMessageOnOSD(_("Fullscreen mode"));
-	else
-		displayMessageOnOSD(_("Windowed mode"));
-#endif
-}
-
 bool SurfaceSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 	switch ((int)event.type) {
 	case Common::EVENT_KEYDOWN:
-		// Alt-Return and Alt-Enter toggle full screen mode
-		if (event.kbd.hasFlags(Common::KBD_ALT) &&
-			(event.kbd.keycode == Common::KEYCODE_RETURN ||
-			event.kbd.keycode == (Common::KeyCode)SDLK_KP_ENTER)) {
-			toggleFullScreen();
-			return true;
-		}
-
-		// Alt-S: Create a screenshot
-		if (event.kbd.hasFlags(Common::KBD_ALT) && event.kbd.keycode == 's') {
-			Common::String filename;
-
-			Common::String screenshotsPath;
-			OSystem_SDL *sdl_g_system = dynamic_cast<OSystem_SDL*>(g_system);
-			if (sdl_g_system)
-				screenshotsPath = sdl_g_system->getScreenshotsPath();
-
-			for (int n = 0;; n++) {
-				SDL_RWops *file;
-
-#ifdef USE_PNG
-				filename = Common::String::format("scummvm%05d.png", n);
-#else
-				filename = Common::String::format("scummvm%05d.bmp", n);
-#endif
-
-				file = SDL_RWFromFile((screenshotsPath + filename).c_str(), "r");
-
-				if (!file)
-					break;
-				SDL_RWclose(file);
-			}
-
-			if (saveScreenshot((screenshotsPath + filename).c_str())) {
-				if (screenshotsPath.empty())
-					debug("Saved screenshot '%s' in current directory", filename.c_str());
-				else
-					debug("Saved screenshot '%s' in directory '%s'", filename.c_str(), screenshotsPath.c_str());
-			} else {
-				if (screenshotsPath.empty())
-					warning("Could not save screenshot in current directory");
-				else
-					warning("Could not save screenshot in directory '%s'", screenshotsPath.c_str());
-			}
-
-			return true;
-		}
-
 		// Ctrl-Alt-<key> will change the GFX mode
 		if (event.kbd.hasFlags(Common::KBD_CTRL|Common::KBD_ALT)) {
 			if (handleScalerHotkeys(event.kbd.keycode))
@@ -2750,13 +2683,16 @@ bool SurfaceSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 		break;
 
 	case Common::EVENT_KEYUP:
-		return isScalerHotkey(event);
+		if (isScalerHotkey(event))
+			return true;
+
+		break;
 
 	default:
 		break;
 	}
 
-	return false;
+	return SdlGraphicsManager::notifyEvent(event);
 }
 
 void SurfaceSdlGraphicsManager::notifyVideoExpose() {

@@ -60,6 +60,7 @@
 #include "bladerunner/ui/vk.h"
 #include "bladerunner/vector.h"
 #include "bladerunner/waypoints.h"
+#include "bladerunner/subtitles.h"
 
 #include "common/debug-channels.h"
 
@@ -96,8 +97,6 @@ bool ScriptBase::Region_Check(int left, int top, int right, int down) {
 		&& _vm->_sceneScript->_mouseY >= top
 		&& _vm->_sceneScript->_mouseX <= right
 		&& _vm->_sceneScript->_mouseY <= down;
-
-	return false;
 }
 
 bool ScriptBase::Object_Query_Click(const char *objectName1, const char *objectName2) {
@@ -770,6 +769,15 @@ void ScriptBase::Item_Remove_From_World(int itemId) {
 	_vm->_items->remove(itemId);
 }
 
+// Show text as subtitles mainly for debugging purposes
+// eg. display debug data on screen as subtitles
+void ScriptBase::Set_Subtitle_Text_On_Screen(Common::String displayText) {
+	debugC(kDebugScript, "Set_Subtitle_Text_On_Screen(%s)", displayText.c_str());
+	_vm->_subtitles->setGameSubsText(displayText, true);
+	_vm->_subtitles->show();
+}
+
+
 void ScriptBase::Item_Spin_In_World(int itemId) {
 	debugC(kDebugScript, "Item_Spin_In_World(%d)", itemId);
 	_vm->_items->spinInWorld(itemId);
@@ -793,6 +801,11 @@ void ScriptBase::Item_Flag_As_Non_Target(int itemId) {
 void ScriptBase::Item_Pickup_Spin_Effect(int animationId, int x, int y) {
 	debugC(kDebugScript, "Item_Pickup_Spin_Effect(%d, %d, %d)", animationId, x, y);
 	_vm->_itemPickup->setup(animationId, x, y);
+}
+
+bool ScriptBase::Item_Query_Visible(int itemId) {
+	debugC(kDebugScript, "Item_Query_Visible(%d)", itemId);
+	return _vm->_items->isVisible(itemId);
 }
 
 int ScriptBase::Animation_Open() {
@@ -965,7 +978,7 @@ void ScriptBase::Sound_Left_Footstep_Walk(int actorId) {
 
 	_vm->_walkSoundId = _vm->_scene->_set->getWalkboxSoundWalkLeft(walkboxId);
 	_vm->_walkSoundVolume = _vm->_actors[actorId]->soundVolume();
-	_vm->_walkSoundBalance = _vm->_actors[actorId]->soundBalance();
+	_vm->_walkSoundPan = _vm->_actors[actorId]->soundPan();
 }
 
 void ScriptBase::Sound_Right_Footstep_Walk(int actorId) {
@@ -977,7 +990,7 @@ void ScriptBase::Sound_Right_Footstep_Walk(int actorId) {
 
 	_vm->_walkSoundId = _vm->_scene->_set->getWalkboxSoundWalkRight(walkboxId);
 	_vm->_walkSoundVolume = _vm->_actors[actorId]->soundVolume();
-	_vm->_walkSoundBalance = _vm->_actors[actorId]->soundBalance();
+	_vm->_walkSoundPan = _vm->_actors[actorId]->soundPan();
 }
 
 void ScriptBase::Sound_Left_Footstep_Run(int actorId) {
@@ -989,7 +1002,7 @@ void ScriptBase::Sound_Left_Footstep_Run(int actorId) {
 
 	_vm->_walkSoundId = _vm->_scene->_set->getWalkboxSoundRunLeft(walkboxId);
 	_vm->_walkSoundVolume = _vm->_actors[actorId]->soundVolume();
-	_vm->_walkSoundBalance = _vm->_actors[actorId]->soundBalance();
+	_vm->_walkSoundPan = _vm->_actors[actorId]->soundPan();
 }
 
 void ScriptBase::Sound_Right_Footstep_Run(int actorId) {
@@ -1001,7 +1014,7 @@ void ScriptBase::Sound_Right_Footstep_Run(int actorId) {
 
 	_vm->_walkSoundId = _vm->_scene->_set->getWalkboxSoundRunRight(walkboxId);
 	_vm->_walkSoundVolume = _vm->_actors[actorId]->soundVolume();
-	_vm->_walkSoundBalance = _vm->_actors[actorId]->soundBalance();
+	_vm->_walkSoundPan = _vm->_actors[actorId]->soundPan();
 }
 
 // ScriptBase::Sound_Walk_Shuffle_Stop

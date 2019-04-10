@@ -39,10 +39,6 @@
 #define USE_SDL_DEBUG_FOCUSRECT
 #endif
 
-#if !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
-#define USE_OSD	1
-#endif
-
 enum {
 	GFX_NORMAL = 0,
 	GFX_DOUBLESIZE = 1,
@@ -74,7 +70,7 @@ public:
 /**
  * SDL graphics manager
  */
-class SurfaceSdlGraphicsManager : public SdlGraphicsManager, public Common::EventObserver {
+class SurfaceSdlGraphicsManager : public SdlGraphicsManager {
 public:
 	SurfaceSdlGraphicsManager(SdlEventSource *sdlEventSource, SdlWindow *window);
 	virtual ~SurfaceSdlGraphicsManager();
@@ -118,6 +114,12 @@ protected:
 	virtual void setPalette(const byte *colors, uint start, uint num) override;
 	virtual void grabPalette(byte *colors, uint start, uint num) const override;
 
+	/**
+	 * Convert from the SDL pixel format to Graphics::PixelFormat
+	 * @param in    The SDL pixel format to convert
+	 * @param out   A pixel format to be written to
+	 */
+	Graphics::PixelFormat convertSDLPixelFormat(SDL_PixelFormat *in) const;
 public:
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
 	virtual Graphics::Surface *lockScreen() override;
@@ -383,14 +385,13 @@ protected:
 	virtual void setAspectRatioCorrection(bool enable);
 	void setFilteringMode(bool enable);
 
-	virtual bool saveScreenshot(const char *filename);
+	virtual bool saveScreenshot(const Common::String &filename) const;
 	virtual void setGraphicsModeIntern();
 
 private:
 	void setFullscreenMode(bool enable);
 	bool handleScalerHotkeys(Common::KeyCode key);
 	bool isScalerHotkey(const Common::Event &event);
-	void toggleFullScreen();
 
 	/**
 	 * Converts the given point from the overlay's coordinate space to the

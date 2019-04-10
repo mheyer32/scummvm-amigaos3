@@ -148,8 +148,8 @@ struct UserOptions {
 	int _undo_slots;
 	int _script_cols;
 	int _err_report_mode;
-	int _defaultForeground;
-	int _defaultBackground;
+	uint _defaultForeground;
+	uint _defaultBackground;
 	bool _color_enabled;
 
 	/**
@@ -160,7 +160,7 @@ struct UserOptions {
 	/**
 	 * Initializes the options
 	 */
-	void initialize(uint hVersion);
+	void initialize(uint hVersion, uint storyId);
 
 	/**
 	 * Returns true if the game being played is one of the original Infocom releases

@@ -315,7 +315,7 @@ void KIA::tick() {
 			_shapes->get(39)->draw(_vm->_surfaceFront, 583, 342);
 		}
 	}
-	//TODO: implement frame loading after seek, then advanceFrame can be removed
+
 	_playerVqaPlayer->seekToFrame(_playerVqaFrame);
 	_playerVqaPlayer->update(true, true);
 
@@ -370,7 +370,7 @@ void KIA::tick() {
 			_shapes->get(47)->draw(_vm->_surfaceFront, 182, 446);
 		}
 	}
-	_vm->_mainFont->drawColor("1.00", _vm->_surfaceFront, 438, 471, 0x1CE7); // TODO: 1.01 for DVD version
+	_vm->_mainFont->drawColor("1.00", _vm->_surfaceFront, 438, 471, 0x1CE7); // 1.01 is DVD version, but only cd handling routines were changed, no game logic
 	if (!_transitionId) {
 		_buttons->drawTooltip(_vm->_surfaceFront, mouse.x, mouse.y);
 	}
@@ -431,6 +431,15 @@ void KIA::handleMouseUp(int mouseX, int mouseY, bool mainButton) {
 		} else {
 			open(kKIASectionNone);
 		}
+	}
+}
+
+void KIA::handleMouseScroll(int mouseX, int mouseY, int direction) {
+	if (!isOpen()) {
+		return;
+	}
+	if (_currentSection) {
+		_currentSection->handleMouseScroll(direction);
 	}
 }
 
@@ -524,13 +533,12 @@ void KIA::handleKeyDown(const Common::KeyState &kbd) {
 
 void KIA::playerReset() {
 	if (_playerActorDialogueQueueSize != _playerActorDialogueQueuePosition) {
-		if (_playerActorDialogueQueueSize != _playerActorDialogueQueuePosition) {
-			int actorId = _playerActorDialogueQueue[_playerActorDialogueQueuePosition].actorId;
-			if (_vm->_actors[actorId]->isSpeeching()) {
-				_vm->_actors[actorId]->speechStop();
-			}
+		int actorId = _playerActorDialogueQueue[_playerActorDialogueQueuePosition].actorId;
+		if (_vm->_actors[actorId]->isSpeeching()) {
+			_vm->_actors[actorId]->speechStop();
 		}
 	}
+
 	_playerActorDialogueQueueSize = _playerActorDialogueQueuePosition;
 	_playerSliceModelId = -1;
 	if (_playerPhotographId != -1) {
