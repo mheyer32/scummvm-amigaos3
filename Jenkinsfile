@@ -60,12 +60,13 @@ def buildStep(ext) {
 
 			freshUpRoot(ext)
 
-			sh "cd ${env.WORKSPACE}/ && ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
+			sh "cd ${env.WORKSPACE}/ && ${env.WORKSPACE}/configure --host=${ext} --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --prefix=/opt/toolchains/${ext}/ --with-amiga-prefix=${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
 			if (!env.CHANGE_ID) {
 				sh "mkdir -p ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
       }
+			sh "cd ${env.WORKSPACE}/ && make -j8 clean"
+			
 			sh "cd ${env.WORKSPACE}/ && make -j8 "
-
 
 			sh "cd ${env.WORKSPACE}/ && make amigaos3dist -j8"
 
@@ -110,7 +111,7 @@ def freshUpRoot(ext) {
 	def commondir = env.WORKSPACE + '/../' + env.JOB_NAME.replace('%2F','/') + '/'
 	sh "rm -rfv ${env.WORKSPACE}/build-${ext}"
 	
-	sh "mkdir -p ${env.WORKSPACE}/build-${ext}"
+	//sh "mkdir -p ${env.WORKSPACE}/build-${ext}"
 
 }
 
