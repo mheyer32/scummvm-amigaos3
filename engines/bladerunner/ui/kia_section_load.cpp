@@ -42,6 +42,15 @@ KIASectionLoad::KIASectionLoad(BladeRunnerEngine *vm) : KIASectionBase(vm) {
 	_uiContainer = new UIContainer(_vm);
 	_scrollBox   = new UIScrollBox(_vm, scrollBoxCallback, this, 1025, 0, true, Common::Rect(155, 158, 461, 346), Common::Rect(506, 160, 506, 350));
 	_uiContainer->add(_scrollBox);
+
+	_timeLast = 0;
+	_timeLeft = 0;
+
+	_hoveredLineId = -1;
+	_displayingLineId = -1;
+	_newGameEasyLineId = -1;
+	_newGameMediumLineId = -1;
+	_newGameHardLineId = -1;
 }
 
 KIASectionLoad::~KIASectionLoad() {
@@ -94,23 +103,25 @@ void KIASectionLoad::draw(Graphics::Surface &surface){
 	int selectedLineId = _scrollBox->getSelectedLineData();
 
 	if (_hoveredLineId != selectedLineId) {
-		if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size()) {
+		if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size() && _displayingLineId != selectedLineId) {
 			if (_timeLeft == 0) {
 				SaveStateDescriptor desc = SaveFileManager::queryMetaInfos(_vm->getTargetName(), selectedLineId);
 				const Graphics::Surface *thumbnail = desc.getThumbnail();
 				if (thumbnail != nullptr) {
 					_vm->_kia->playImage(*thumbnail);
+					_displayingLineId = selectedLineId;
 				}
 			}
 		} else {
 			_vm->_kia->playerReset();
 			_timeLeft = 800;
+			_displayingLineId = -1;
 		}
 		_hoveredLineId = selectedLineId;
 	}
 
 	uint32 now = _vm->_time->currentSystem();
-	if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size()) {
+	if (selectedLineId >= 0 && selectedLineId < (int)_saveList.size() && _displayingLineId != selectedLineId) {
 		if (_timeLeft) {
 			uint32 timeDiff = now - _timeLast;
 			if (timeDiff >= _timeLeft) {
@@ -118,6 +129,7 @@ void KIASectionLoad::draw(Graphics::Surface &surface){
 				const Graphics::Surface *thumbnail = desc.getThumbnail();
 				if (thumbnail != nullptr) {
 					_vm->_kia->playImage(*thumbnail);
+					_displayingLineId = selectedLineId;
 				}
 			} else {
 				_timeLeft -= timeDiff;
@@ -138,6 +150,10 @@ void KIASectionLoad::handleMouseDown(bool mainButton) {
 
 void KIASectionLoad::handleMouseUp(bool mainButton) {
 	_uiContainer->handleMouseUp(!mainButton);
+}
+
+void KIASectionLoad::handleMouseScroll(int direction) {
+	_uiContainer->handleMouseScroll(direction);
 }
 
 void KIASectionLoad::scrollBoxCallback(void *callbackData, void *source, int lineData, int mouseButton) {

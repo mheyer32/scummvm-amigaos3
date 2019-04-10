@@ -26,6 +26,7 @@
 #include "bladerunner/game_constants.h"
 #include "bladerunner/lights.h"
 #include "bladerunner/savefile.h"
+#include "bladerunner/scene.h"
 #include "bladerunner/scene_objects.h"
 #include "bladerunner/set_effects.h"
 #include "bladerunner/slice_renderer.h"
@@ -94,8 +95,6 @@ bool Set::open(const Common::String &name) {
 	assert(_walkboxCount <= 95);
 
 	for (int i = 0; i < _walkboxCount; ++i) {
-		float x, z;
-
 		s->read(buf, sizeof(buf));
 		_walkboxes[i].name = buf;
 
@@ -105,8 +104,8 @@ bool Set::open(const Common::String &name) {
 		assert(_walkboxes[i].vertexCount <= 8);
 
 		for (int j = 0; j < _walkboxes[i].vertexCount; ++j) {
-			x = s->readFloatLE();
-			z = s->readFloatLE();
+			float x = s->readFloatLE();
+			float z = s->readFloatLE();
 
 			_walkboxes[i].vertices[j] = Vector3(x, _walkboxes[i].altitude, z);
 		}
@@ -131,6 +130,7 @@ bool Set::open(const Common::String &name) {
 
 void Set::addObjectsToScene(SceneObjects *sceneObjects) const {
 	for (int i = 0; i < _objectCount; i++) {
+		overrideSceneObjectInfo(i); // For bugfixes with respect to clickable/targetable box positioning/bounding box
 		sceneObjects->addObject(i + kSceneObjectOffsetObjects, _objects[i].bbox, _objects[i].isClickable, _objects[i].isObstacle, _objects[i].unknown1, _objects[i].isTarget);
 	}
 }
@@ -396,6 +396,19 @@ void Set::load(SaveFileReadStream &f) {
 	}
 
 	_footstepSoundOverride = f.readInt();
+}
+
+/**
+* Used for bugfixes mainly with respect to bad box positioning / bounding box fixes
+* TODO If we have many such cases, perhaps we could use a lookup table
+*		using sceneId, objectId (or name) as keys
+*/
+void Set::overrideSceneObjectInfo(int objectId) const { // For bugfixes with respect to clickable/targetable box positioning/bounding box
+	if (_vm->_scene->getSceneId() == kSceneBB06) { /// Sebastian's room with doll
+		if (_objects[objectId].name == "BOX31") { // dollhouse box in BB06
+			_objects[objectId].bbox.setXYZ(-161.47f, 30.0f, 53.75f, -110.53f, 69.81f, 90.90f);
+		}
+	}
 }
 
 } // End of namespace BladeRunner

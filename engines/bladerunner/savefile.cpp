@@ -22,6 +22,7 @@
 
 #include "bladerunner/savefile.h"
 
+#include "bladerunner/bladerunner.h"
 #include "bladerunner/boundingbox.h"
 #include "bladerunner/vector.h"
 
@@ -130,8 +131,7 @@ bool SaveFileManager::readHeader(Common::SeekableReadStream &in, SaveFileHeader 
 		void *thumbnailData = malloc(kThumbnailSize); // freed by ScummVM's smartptr
 		s.read(thumbnailData, kThumbnailSize);
 
-		// TODO: cleanup - remove magic constants
-		header._thumbnail->init(80, 60, 160, thumbnailData, Graphics::PixelFormat(2, 5, 5, 5, 0, 10, 5, 0, 0));
+		header._thumbnail->init(80, 60, 160, thumbnailData, createRGB555());
 
 		s.seek(pos);
 	}
@@ -182,10 +182,12 @@ void SaveFileWriteStream::writeBool(bool v) {
 	writeUint32LE(v);
 }
 
-void SaveFileWriteStream::writeStringSz(const Common::String &s, int sz) {
-	assert(s.size() < (uint)sz);
-	write(s.begin(), s.size());
-	padBytes((uint)sz - s.size());
+void SaveFileWriteStream::writeStringSz(const Common::String &s, uint sz) {
+	uint32 sizeToWrite = MIN(sz, s.size());
+	write(s.begin(), sizeToWrite);
+	if (sizeToWrite < sz) {
+		padBytes(sz - sizeToWrite);
+	}
 }
 
 void SaveFileWriteStream::writeVector2(const Vector2 &v) {
@@ -238,10 +240,11 @@ bool SaveFileReadStream::readBool() {
 	return readUint32LE();
 }
 
-Common::String SaveFileReadStream::readStringSz(int sz) {
-	char *buf = new char[sz];
+Common::String SaveFileReadStream::readStringSz(uint sz) {
+	char *buf = new char[sz + 1];
 	read(buf, sz);
-	Common::String result = buf;
+	buf[sz] = 0;
+	Common::String result(buf);
 	delete[] buf;
 	return result;
 }

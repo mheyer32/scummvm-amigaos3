@@ -83,6 +83,7 @@
 #include "common/savefile.h"
 #include "common/system.h"
 #include "common/debug-channels.h"
+#include "gui/message.h"
 
 #include "engines/util.h"
 #include "engines/advancedDetector.h"
@@ -126,10 +127,11 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 
 	_walkSoundId      = -1;
 	_walkSoundVolume  = 0;
-	_walkSoundBalance = 0;
+	_walkSoundPan     = 0;
 
 	_crimesDatabase = nullptr;
 
+	_language = desc->language;
 	switch (desc->language) {
 	case Common::EN_ANY:
 		_languageCode = "E";
@@ -144,7 +146,7 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 		_languageCode = "I";
 		break;
 	case Common::RU_RUS:
-		_languageCode = "R";
+		_languageCode = "E"; // Russian version is built on top of English one
 		break;
 	case Common::ES_ESP:
 		_languageCode = "S";
@@ -165,6 +167,8 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 	_gameInfo                = nullptr;
 	_waypoints               = nullptr;
 	_gameVars                = nullptr;
+	_cosTable1024            = nullptr;
+	_sinTable1024            = nullptr;
 	_view                    = nullptr;
 	_sceneObjects            = nullptr;
 	_gameFlags               = nullptr;
@@ -210,7 +214,8 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 	_debugger                = nullptr;
 	walkingReset();
 
-	_actorUpdateCounter = 0;
+	_actorUpdateCounter  = 0;
+	_actorUpdateTimeLast = 0;
 }
 
 BladeRunnerEngine::~BladeRunnerEngine() {
@@ -309,7 +314,10 @@ Common::Error BladeRunnerEngine::run() {
 	}
 
 	if (warnUserAboutUnsupportedGame()) {
-		if (hasSavegames) {
+
+		if (ConfMan.hasKey("save_slot")) {
+			loadGameState(ConfMan.getInt("save_slot"));
+		} else if (hasSavegames) {
 			_kia->_forceOpen = true;
 			_kia->open(kKIASectionLoad);
 		}
@@ -366,13 +374,17 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 	// Try to load the SUBTITLES.MIX first, before Startup.MIX
 	// allows overriding any identically named resources (such as the original font files and as a bonus also the TRE files for the UI and dialogue menu)
 	_subtitles = new Subtitles(this);
-	bool r = openArchive("SUBTITLES.MIX");
-	if (!r) {
-		_subtitles->setSubtitlesSystemInactive(true); // no subtitles support
-	}
-	_subtitles->init();
+	if (MIXArchive::exists("SUBTITLES.MIX")) {
+		bool r = openArchive("SUBTITLES.MIX");
+		if (!r)
+			return false;
 
-	r = openArchive("STARTUP.MIX");
+		_subtitles->init();
+	} else {
+		debug("Download SUBTITLES.MIX from ScummVM's website to enable subtitles");
+	}
+
+	bool r = openArchive("STARTUP.MIX");
 	if (!r)
 		return false;
 
@@ -611,7 +623,6 @@ void BladeRunnerEngine::shutdown() {
 	delete _esper;
 	_esper = nullptr;
 
-	/// todo
 	for (uint i = 0; i != _shapes.size(); ++i) {
 		delete _shapes[i];
 	}
@@ -837,7 +848,12 @@ void BladeRunnerEngine::gameTick() {
 	}
 
 	if (!_kia->isOpen() && !_sceneScript->isInsideScript() && !_aiScripts->isInsideScript()) {
-		_settings->openNewScene();
+		if (!_settings->openNewScene()) {
+			Common::Error runtimeError = Common::Error(Common::kUnknownError, "A required game resource was not found");
+			GUI::MessageDialog dialog(runtimeError.getDesc());
+			dialog.runModal();
+			return;
+		}
 	}
 
 	if (_gameAutoSave >= 0) {
@@ -951,7 +967,7 @@ void BladeRunnerEngine::gameTick() {
 	_mouse->draw(_surfaceFront, p.x, p.y);
 
 	if (_walkSoundId >= 0) {
-		_audioPlayer->playAud(_gameInfo->getSfxTrack(_walkSoundId), _walkSoundVolume, _walkSoundBalance, _walkSoundBalance, 50, 0);
+		_audioPlayer->playAud(_gameInfo->getSfxTrack(_walkSoundId), _walkSoundVolume, _walkSoundPan, _walkSoundPan, 50, 0);
 		_walkSoundId = -1;
 	}
 
@@ -970,6 +986,16 @@ void BladeRunnerEngine::gameTick() {
 }
 
 void BladeRunnerEngine::actorsUpdate() {
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	int timeNow = _time->current();
+	// Don't update actors more than 60 times per second
+	if (timeNow - _actorUpdateTimeLast < 1000 / 60) {
+		return;
+	}
+	_actorUpdateTimeLast = timeNow;
+#endif // BLADERUNNER_ORIGINAL_BUGS
+
 	int actorCount = (int)_gameInfo->getActorCount();
 	int setId = _scene->getSetId();
 
@@ -1027,23 +1053,39 @@ void BladeRunnerEngine::handleEvents() {
 		case Common::EVENT_KEYUP:
 			handleKeyUp(event);
 			break;
+
 		case Common::EVENT_KEYDOWN:
 			handleKeyDown(event);
 			break;
+
 		case Common::EVENT_LBUTTONUP:
 			handleMouseAction(event.mouse.x, event.mouse.y, true, false);
 			break;
+
 		case Common::EVENT_RBUTTONUP:
 		case Common::EVENT_MBUTTONUP:
 			handleMouseAction(event.mouse.x, event.mouse.y, false, false);
 			break;
+
 		case Common::EVENT_LBUTTONDOWN:
 			handleMouseAction(event.mouse.x, event.mouse.y, true, true);
 			break;
+
 		case Common::EVENT_RBUTTONDOWN:
 		case Common::EVENT_MBUTTONDOWN:
 			handleMouseAction(event.mouse.x, event.mouse.y, false, true);
 			break;
+
+		// Added by ScummVM team
+		case Common::EVENT_WHEELUP:
+			handleMouseAction(event.mouse.x, event.mouse.y, false, false, -1);
+			break;
+
+		// Added by ScummVM team
+		case Common::EVENT_WHEELDOWN:
+			handleMouseAction(event.mouse.x, event.mouse.y, false, false, 1);
+			break;
+
 		default:
 			; // nothing to do
 		}
@@ -1177,7 +1219,7 @@ void BladeRunnerEngine::handleKeyDown(Common::Event &event) {
 	}
 }
 
-void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool buttonDown) {
+void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool buttonDown, int scrollDirection /* = 0 */) {
 	x = CLIP(x, 0, 639);
 	y = CLIP(y, 0, 479);
 
@@ -1193,7 +1235,9 @@ void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool bu
 	}
 
 	if (_kia->isOpen()) {
-		if (buttonDown) {
+		if (scrollDirection != 0) {
+			_kia->handleMouseScroll(x, y, scrollDirection);
+		} else if (buttonDown) {
 			_kia->handleMouseDown(x, y, mainButton);
 		} else {
 			_kia->handleMouseUp(x, y, mainButton);
@@ -1906,8 +1950,6 @@ void BladeRunnerEngine::newGame(int difficulty) {
 	}
 
 	_gameFlags->clear();
-
-	_gameInfo->getGlobalVarCount();
 
 	for (uint i = 0; i < _gameInfo->getGlobalVarCount(); ++i) {
 		_gameVars[i] = 0;

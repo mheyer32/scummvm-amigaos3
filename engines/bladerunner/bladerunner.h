@@ -38,6 +38,9 @@
 //TODO: change this to debugflag
 #define BLADERUNNER_DEBUG_CONSOLE 0
 #define BLADERUNNER_ORIGINAL_SETTINGS 0
+#define BLADERUNNER_ORIGINAL_BUGS 0
+#define BLADERUNNER_RESTORED_CUT_CONTENT 1
+
 
 namespace Common {
 struct Event;
@@ -106,14 +109,15 @@ class ZBuffer;
 
 class BladeRunnerEngine : public Engine {
 public:
-	static const int kArchiveCount = 11; // +1 to original value (10) to accommodate for SUBTITLES.MIX resource
+	static const int kArchiveCount = 12; // +2 to original value (10) to accommodate for SUBTITLES.MIX and one extra resource file, to allow for capability of loading all VQAx.MIX and the MODE.MIX file (debug purposes)
 	static const int kActorCount = 100;
 	static const int kActorVoiceOver = kActorCount - 1;
 
 	bool           _gameIsRunning;
 	bool           _windowIsActive;
 	int            _playerLosesControlCounter;
-	Common::String _languageCode;
+	Common::String   _languageCode;
+	Common::Language _language;
 
 	ActorDialogueQueue *_actorDialogueQueue;
 	ScreenEffects      *_screenEffects;
@@ -201,7 +205,7 @@ public:
 
 	int _walkSoundId;
 	int _walkSoundVolume;
-	int _walkSoundBalance;
+	int _walkSoundPan;
 	int _runningActorId;
 
 	int _mouseClickTimeLast;
@@ -223,6 +227,7 @@ public:
 	bool _isInsideScriptActor;
 
 	int _actorUpdateCounter;
+	int _actorUpdateTimeLast;
 
 private:
 	MIXArchive _archives[kArchiveCount];
@@ -259,7 +264,7 @@ public:
 	void handleEvents();
 	void handleKeyUp(Common::Event &event);
 	void handleKeyDown(Common::Event &event);
-	void handleMouseAction(int x, int y, bool mainButton, bool buttonDown);
+	void handleMouseAction(int x, int y, bool mainButton, bool buttonDown, int scrollDirection = 0);
 	void handleMouseClickExit(int exitId, int x, int y, bool buttonDown);
 	void handleMouseClickRegion(int regionId, int x, int y, bool buttonDown);
 	void handleMouseClickItem(int itemId, bool buttonDown);

@@ -63,17 +63,34 @@ void SceneScriptBB06::InitializeScene() {
 		Game_Flag_Reset(kFlagBB51toBB06b);
 	} else {
 		Scene_Loop_Set_Default(1);
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
+#else
+		// bugfix: case of not transitioning from BB51: chess/ egg boiler sub-space
+		if (Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
+			Overlay_Play("BB06OVER", 1, false, false, 0);
+		}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	}
 
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
 	if (Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
-		Overlay_Play("BB06OVER", 1, true, false, 0); // TODO: check, it's is playing while the background is still panning so it looks pretty weird
+		Overlay_Play("BB06OVER", 1, true, false, 0); // Original bug: it is playing while the background is still panning so it looks pretty weird
 	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 }
 
 void SceneScriptBB06::SceneLoaded() {
 	Obstacle_Object("V2CHESSTBL01", true);
 	Clickable_Object("BOX31");
-	Item_Add_To_World(kItemBB06ControlBox, 931, kSetBB02_BB04_BB06_BB51, -127.0f, 68.42f, 57.0f, 0, 8, 8, true, true, false, true);
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
+	// This Item_Add_To_World call is only ok for the transition from BB51 to BB06,
+	// otherwise the doll item is not placed in the current set
+	Item_Add_To_World(kItemBB06ControlBox, 931, kSetBB06_BB07, -127.0f, 68.42f, 57.0f, 0, 8, 8, true, true, false, true);
+#else
+	if (!Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
+		Combat_Target_Object("BOX31"); //
+	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 }
 
 bool SceneScriptBB06::MouseClick(int x, int y) {
@@ -82,6 +99,7 @@ bool SceneScriptBB06::MouseClick(int x, int y) {
 
 bool SceneScriptBB06::ClickedOn3DObject(const char *objectName, bool a2) {
 	if (Object_Query_Click("BOX31", objectName)) {
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
 		if (!Loop_Actor_Walk_To_Scene_Object(kActorMcCoy, "BOX31", 24, true, false)) {
 			Actor_Face_Object(kActorMcCoy, "BOX31", true);
 			if (Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
@@ -91,6 +109,24 @@ bool SceneScriptBB06::ClickedOn3DObject(const char *objectName, bool a2) {
 				Actor_Voice_Over(50, kActorVoiceOver);
 			}
 		}
+#else
+		if (Player_Query_Combat_Mode()) {
+			Overlay_Play("BB06OVER", 0, false, true, 0); // explosion - don't loop
+			Game_Flag_Set(kFlagBB06AndroidDestroyed);
+			Un_Combat_Target_Object("BOX31");
+			return true;
+		} else {
+			if (!Loop_Actor_Walk_To_Scene_Object(kActorMcCoy, "BOX31", 24, true, false)) {
+				Actor_Face_Object(kActorMcCoy, "BOX31", true);
+				if (Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
+					Actor_Voice_Over(60, kActorVoiceOver);
+					Actor_Voice_Over(70, kActorVoiceOver);
+				} else {
+					Actor_Voice_Over(50, kActorVoiceOver);
+				}
+			}
+		}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	}
 	return false;
 }
@@ -100,6 +136,7 @@ bool SceneScriptBB06::ClickedOnActor(int actorId) {
 }
 
 bool SceneScriptBB06::ClickedOnItem(int itemId, bool a2) {
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
 	if (itemId == kItemBB06ControlBox) {
 		if (Player_Query_Combat_Mode()) {
 			Overlay_Play("BB06OVER", 1, true, true, 0);
@@ -108,6 +145,7 @@ bool SceneScriptBB06::ClickedOnItem(int itemId, bool a2) {
 			return true;
 		}
 	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	return false;
 }
 
@@ -152,6 +190,15 @@ void SceneScriptBB06::SceneFrameAdvanced(int frame) {
 	if (frame == 34) {
 		Ambient_Sounds_Play_Sound(447, 40, -50, -50, 10);
 	}
+#if BLADERUNNER_ORIGINAL_BUGS // Sebastian's Doll Fix
+#else
+	// last frame of transition is 15, try 13 for better transition - minimize weird effect
+	if (frame == 13) { // executed once during transition FROM bb51 (chess sub space)
+		if (Game_Flag_Query(kFlagBB06AndroidDestroyed)) {
+			Overlay_Play("BB06OVER", 1, false, false, 0);
+		}
+	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	if (frame == 16) {
 		Ambient_Sounds_Play_Sound(448, 20, -50, -50, 10);
 	}
