@@ -2506,13 +2506,14 @@ case $_host_os in
 		_nuked_opl=no
 		;;
 	morphos*)
+		append_var DEFINES "-DSTDCALL="
 		append_var LDFLAGS "-Wl,--export-dynamic"
 		append_var LDFLAGS "-L/usr/local/lib"
 		# We have to use 'long' for our 4 byte typedef because AmigaOS already typedefs (u)int32
 		# as (unsigned) long, and consequently we'd get a compiler error otherwise.
 		type_4_byte='long'
 		# Supress format warnings as the long 4 byte causes noisy warnings.
-		append_var CXXFLAGS "-Wno-format"
+		append_var CXXFLAGS "-Wno-format -std=c++11"
 		add_line_to_config_mk 'MORPHOS = 1'
 		_port_mk="backends/platform/sdl/morphos/morphos.mk"
 		_nuked_opl=no
@@ -3403,6 +3404,8 @@ if test -n "$_host"; then
 		ppc-morphos)
 			# PPC Linker requires this to fix relocation errors
 			append_var CXXFLAGS "-mlongcall"
+			#append_var DEFINES "-DREGPARM=__regargs"
+			append_var DEFINES "-DREGPARM="
 
 			# Only static builds link successfully on buildbot
 			LDFLAGS=`echo $LDFLAGS | sed 's/-use-dynld//'`
