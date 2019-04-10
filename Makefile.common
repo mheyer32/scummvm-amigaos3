@@ -185,7 +185,7 @@ VER_EXTRA = $(shell echo $(VERSION) | cut -d. -f 3 | cut -c2-)
 
 ifdef AMIGAOS
 # Amiga needs date in specific format for the version cookie
-AMIGA_DATE = $(shell gdate '+%d.%m.%Y')
+AMIGA_DATE = $(shell date '+%d.%m.%Y')
 base/version.o: CXXFLAGS:=$(CXXFLAGS) -DAMIGA_DATE=\"$(AMIGA_DATE)\"
 endif
 
