@@ -75,7 +75,11 @@ def buildStep(ext) {
 
 				sh "echo '${env.BUILD_NUMBER}|${env.BUILD_URL}' > ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/BUILD"
 
-				sh "cd ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/ && tar -Jcvvf ${ext}.tar.xz *"
+				sh "cd ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/ && lha c ../scummvm-${ext}.lha *"
+				
+				sh "rm -rfv ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/*"
+				
+				sh "mv -fv ${env.WORKSPACE}/publishing/deploy/scummvm/scummvm-${ext}.lha ${env.WORKSPACE}/publishing/deploy/scummvm/${ext}/"
 				
 			}
 
