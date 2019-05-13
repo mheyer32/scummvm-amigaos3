@@ -24,6 +24,11 @@
 
 namespace BladeRunner {
 
+enum kRC03Loops {
+	kRC03LoopInshot   = 0,
+	kRC03LoopMainLoop = 1
+};
+
 void SceneScriptRC03::InitializeScene() {
 	if (Game_Flag_Query(kFlagRC01toRC03)) {
 		Setup_Scene_Information(298.0f, -4.0f, 405.0f, 800);
@@ -51,40 +56,43 @@ void SceneScriptRC03::InitializeScene() {
 	Scene_Exit_Add_2D_Exit(3,  85, 255, 112, 315, 0);
 	Scene_Exit_Add_2D_Exit(4, 428, 260, 453, 324, 0);
 
-	Ambient_Sounds_Add_Looping_Sound(54, 50, 0, 1);
-	Ambient_Sounds_Add_Sound(82, 5, 30, 40, 70, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(83, 5, 30, 40, 75, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(84, 5, 30, 40, 70, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Speech_Sound(60,  0, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
-	Ambient_Sounds_Add_Speech_Sound(60, 20, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
-	Ambient_Sounds_Add_Speech_Sound(60, 40, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
-	Ambient_Sounds_Add_Speech_Sound(60, 50, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
-	Ambient_Sounds_Add_Sound(68,  60, 180, 16,  25,    0,   0, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(69,  60, 180, 16,  25,    0,   0, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(375, 60, 180, 50, 100,    0,   0, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(376, 50, 180, 50, 100,    0,   0, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(377, 50, 180, 50, 100,    0,   0, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(181,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(182,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(183,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(184,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(185,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(186,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(188,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(189,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(190,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(191,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(192,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(193,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(194,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(195,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxCTRAIN1, 50, 0, 1);
+	Ambient_Sounds_Add_Sound(kSfxRCCARBY1,  5,  30, 40,  70, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxRCCARBY2,  5,  30, 40,  75, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxRCCARBY3,  5,  30, 40,  70, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Speech_Sound(kActorBlimpGuy,  0, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
+	Ambient_Sounds_Add_Speech_Sound(kActorBlimpGuy, 20, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
+	Ambient_Sounds_Add_Speech_Sound(kActorBlimpGuy, 40, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
+	Ambient_Sounds_Add_Speech_Sound(kActorBlimpGuy, 50, 10, 260, 17, 24, -100, 100, -101, -101, 1, 1);
+	Ambient_Sounds_Add_Sound(kSfxSPIN2B,   60, 180, 16,  25,    0,   0, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSPIN3A,   60, 180, 16,  25,    0,   0, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxTHNDER2,  60, 180, 50, 100,    0,   0, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxTHNDER3,  50, 180, 50, 100,    0,   0, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxTHNDER4,  50, 180, 50, 100,    0,   0, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0470R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0480R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0500R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0540R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0560R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0870R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0900R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0940R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0960R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1070R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1080R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1100R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1140R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1160R,  5,  70, 12,  12, -100, 100, -101, -101, 0, 0);
 
 	if (Game_Flag_Query(kFlagHC04toRC03)
 	 && Actor_Query_Goal_Number(kActorIzo) != kGoalIzoWaitingAtRC03
 	) {
-		Scene_Loop_Start_Special(kSceneLoopModeLoseControl, 0, false);
+		if (Random_Query(1, 3) == 1) {
+			// enhancement: don't always play this scene when exiting Hawker's Circle
+			Scene_Loop_Start_Special(kSceneLoopModeLoseControl, kRC03LoopInshot, false);
+		}
 	}
-	Scene_Loop_Set_Default(1);
+	Scene_Loop_Set_Default(kRC03LoopMainLoop);
 }
 
 void SceneScriptRC03::SceneLoaded() {
@@ -140,19 +148,27 @@ bool SceneScriptRC03::ClickedOnItem(int itemId, bool a2) {
 }
 
 bool SceneScriptRC03::ClickedOnExit(int exitId) {
-	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 298.0f, -4.0f, 405.0f, 0, true, false, 0)) {
+	if (exitId == 0) { // To Runciter's shop
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 298.0f, -4.0f, 405.0f, 0, true, false, false)) {
 			if (Game_Flag_Query(kFlagRC04McCoyShotBob)) {
 				Game_Flag_Set(kFlagBulletBobDead);
 			}
 			Game_Flag_Set(kFlagRC03toRC01);
 			Set_Enter(kSetRC01, kSceneRC01);
+#if BLADERUNNER_ORIGINAL_BUGS
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+#else
+			// Restrict Dektora's "walking around" goal only in Chapter 2
+			// this is a bug fix for the case where Dektora's goal gets reset from kGoalDektoraGone in Chapter 4/5
+			if (Global_Variable_Query(kVariableChapter) == 2 ) {
+				Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+			}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		}
 		return true;
 	}
-	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -469.0f, -4.0f, 279.0f, 0, true, false, 0)) {
+	if (exitId == 1) { // to Animoid Row (Scorpion/Insect Lady)
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -469.0f, -4.0f, 279.0f, 0, true, false, false)) {
 			if (Game_Flag_Query(kFlagRC04McCoyShotBob)) {
 				Game_Flag_Set(kFlagBulletBobDead);
 			}
@@ -163,8 +179,8 @@ bool SceneScriptRC03::ClickedOnExit(int exitId) {
 		}
 		return true;
 	}
-	if (exitId == 2) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 147.51f, -4.0f, 166.48f, 0, true, false, 0)) {
+	if (exitId == 2) { // to sewers
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 147.51f, -4.0f, 166.48f, 0, true, false, false)) {
 			Game_Flag_Set(kFlagRC03toUG01);
 			Game_Flag_Reset(kFlagMcCoyInRunciters);
 			Game_Flag_Set(kFlagMcCoyInUnderground);
@@ -172,12 +188,20 @@ bool SceneScriptRC03::ClickedOnExit(int exitId) {
 				Game_Flag_Set(kFlagBulletBobDead);
 			}
 			Set_Enter(kSetUG01, kSceneUG01);
+#if BLADERUNNER_ORIGINAL_BUGS
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+#else
+			// Restrict Dektora's "walking around" goal only in Chapter 2
+			// this is a bug fix for the case where Dektora's goal gets reset from kGoalDektoraGone in Chapter 4/5
+			if (Global_Variable_Query(kVariableChapter) == 2 ) {
+				Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+			}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		}
 		return true;
 	}
-	if (exitId == 3) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -487.0f, 1.0f, 116.0f, 0, true, false, 0)) {
+	if (exitId == 3) { // to Hawker's Circle (Mama Izabella's Kingston Kitchen)
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -487.0f, 1.0f, 116.0f, 0, true, false, false)) {
 			Game_Flag_Set(kFlagRC03toHC04);
 			Game_Flag_Reset(kFlagMcCoyInRunciters);
 			Game_Flag_Set(kFlagMcCoyInHawkersCircle);
@@ -185,12 +209,20 @@ bool SceneScriptRC03::ClickedOnExit(int exitId) {
 				Game_Flag_Set(kFlagBulletBobDead);
 			}
 			Set_Enter(kSetHC01_HC02_HC03_HC04, kSceneHC04);
+#if BLADERUNNER_ORIGINAL_BUGS
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+#else
+			// Restrict Dektora's "walking around" goal only in Chapter 2
+			// this is a bug fix for the case where Dektora's goal gets reset from kGoalDektoraGone in Chapter 4/5
+			if (Global_Variable_Query(kVariableChapter) == 2 ) {
+				Actor_Set_Goal_Number(kActorDektora, kGoalDektoraStartWalkingAround);
+			}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		}
 		return true;
 	}
-	if (exitId == 4) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -22.0f, 1.0f, -63.0f, 0, true, false, 0)) {
+	if (exitId == 4) { // To Bullet Bob's
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -22.0f, 1.0f, -63.0f, 0, true, false, false)) {
 			if (Global_Variable_Query(kVariableChapter) == 3
 			 || Global_Variable_Query(kVariableChapter) == 5
 			 || Game_Flag_Query(kFlagBulletBobDead)
@@ -212,10 +244,10 @@ bool SceneScriptRC03::ClickedOn2DRegion(int region) {
 
 void SceneScriptRC03::SceneFrameAdvanced(int frame) {
 	if (frame == 1) {
-		Sound_Play(286, Random_Query(33, 33), 100, -100, 50);
+		Sound_Play(kSfxTRUCKBY1, Random_Query(33, 33), 100, -100, 50);
 	}
 	if (frame == 15) {
-		Sound_Play(287, Random_Query(50, 50), -100, 100, 50);
+		Sound_Play(kSfxCHEVBY1,  Random_Query(50, 50), -100, 100, 50);
 	}
 }
 
@@ -259,7 +291,7 @@ void SceneScriptRC03::PlayerWalkedIn() {
 				Actor_Set_Goal_Number(kActorSteele, kGoalSteeleApprehendIzo);
 			}
 			Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeDodge);
-			Loop_Actor_Walk_To_XYZ(kActorIzo, 180.0f, -4.0f, 184.0f, 0, false, false, 0);
+			Loop_Actor_Walk_To_XYZ(kActorIzo, 180.0f, -4.0f, 184.0f, 0, false, false, false);
 			Actor_Change_Animation_Mode(kActorIzo, 6);
 			if (!Game_Flag_Query(kFlagIzoIsReplicant)) {
 				Actor_Set_Goal_Number(kActorSteele, kGoalSteeleApprehendIzo);
@@ -285,7 +317,7 @@ void SceneScriptRC03::PlayerWalkedIn() {
 			Actor_Set_At_Waypoint(kActorSteele, 203, 0);
 		}
 		talkWithSteele();
-		Async_Actor_Walk_To_Waypoint(kActorSteele, 174, 0, 0);
+		Async_Actor_Walk_To_Waypoint(kActorSteele, 174, 0, false);
 		Actor_Set_Goal_Number(kActorIzo, 200);
 		Player_Gains_Control();
 	}

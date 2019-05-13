@@ -66,8 +66,8 @@ bool AIScriptGenericWalkerA::Update() {
 }
 
 void AIScriptGenericWalkerA::TimerExpired(int timer) {
-	if (timer == 2) {
-		AI_Countdown_Timer_Reset(kActorGenwalkerA, 2);
+	if (timer == kActorTimerAIScriptCustomTask2) {
+		AI_Countdown_Timer_Reset(kActorGenwalkerA, kActorTimerAIScriptCustomTask2);
 		Game_Flag_Reset(kFlagGenericWalkerWaiting);
 		return;// true;
 	}
@@ -79,8 +79,8 @@ void AIScriptGenericWalkerA::CompletedMovementTrack() {
 		Actor_Set_Goal_Number(kActorGenwalkerA, 0);
 		if (!Game_Flag_Query(kFlagGenericWalkerWaiting)) {
 			Game_Flag_Set(kFlagGenericWalkerWaiting);
-			AI_Countdown_Timer_Reset(kActorGenwalkerA, 2);
-			AI_Countdown_Timer_Start(kActorGenwalkerA, 2, Random_Query(6, 10));
+			AI_Countdown_Timer_Reset(kActorGenwalkerA, kActorTimerAIScriptCustomTask2);
+			AI_Countdown_Timer_Start(kActorGenwalkerA, kActorTimerAIScriptCustomTask2, Random_Query(6, 10));
 		}
 		// return true;
 	}
@@ -94,7 +94,7 @@ void AIScriptGenericWalkerA::ReceivedClue(int clueId, int fromActorId) {
 void AIScriptGenericWalkerA::ClickedByPlayer() {
 	Actor_Face_Actor(kActorMcCoy, kActorGenwalkerA, true);
 	if (Actor_Query_Goal_Number(kActorGenwalkerA) == 200) {
-		Actor_Says(kActorMcCoy, 5290, 18);
+		Actor_Says(kActorMcCoy, 5290, 18);   // kActorGenwalkerA here is actually the tracking gun in Bullet Bob's
 	} else {
 		switch (Random_Query(1, 10)) {
 		case 1:
@@ -160,7 +160,7 @@ bool AIScriptGenericWalkerA::ShotAtAndHit() {
 		AI_Movement_Track_Flush(kActorGenwalkerA);
 		_animationState = kGenericWalkerAStatesDie;
 		_animationFrame = 0;
-		Sound_Play(203, 100, 0, 0, 50);
+		Sound_Play(kSfxPOTSPL5, 100, 0, 0, 50);
 		movingStart();
 		return true;
 	}
@@ -256,9 +256,9 @@ bool AIScriptGenericWalkerA::UpdateAnimation(int *animation, int *frame) {
 		}
 		break;
 	case kGenericWalkerAStatesGun:
-		*animation = 440;
+		*animation = kModelAnimationBulletBobsTrackingGun;
 		++_animationFrame;
-		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(440)) {
+		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(kModelAnimationBulletBobsTrackingGun)) {
 			_animationFrame = 0;
 		}
 		break;
@@ -358,8 +358,8 @@ bool AIScriptGenericWalkerA::prepareWalker() {
 
 	Global_Variable_Set(kVariableGenericWalkerAModel, model);
 	Game_Flag_Set(kFlagGenericWalkerWaiting);
-	AI_Countdown_Timer_Reset(kActorGenwalkerA, 2);
-	AI_Countdown_Timer_Start(kActorGenwalkerA, 2, Random_Query(4, 12));
+	AI_Countdown_Timer_Reset(kActorGenwalkerA, kActorTimerAIScriptCustomTask2);
+	AI_Countdown_Timer_Start(kActorGenwalkerA, kActorTimerAIScriptCustomTask2, Random_Query(4, 12));
 	Actor_Set_Goal_Number(kActorGenwalkerA, 1);
 	return true;
 }

@@ -30,32 +30,32 @@ void SceneScriptUG18::InitializeScene() {
 
 	Scene_Exit_Add_2D_Exit(0, 0, 158, 100, 340, 3);
 
-	Ambient_Sounds_Add_Looping_Sound(105, 71, 0, 1);
-	Ambient_Sounds_Add_Looping_Sound( 95, 45, 0, 1);
-	Ambient_Sounds_Add_Looping_Sound(332, 76, 0, 1);
-	Ambient_Sounds_Add_Sound(291, 2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(292, 2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(293, 2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(294, 2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(402, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(368, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(369, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(397, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(398, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(295, 2,  20, 25, 25, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(303, 5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(304, 5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(305, 5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(  1, 5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound( 57, 5,  50, 17, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound( 58, 5,  50, 17, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(306, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(307, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(308, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(196, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(197, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(198, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(199, 5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxCTRUNOFF, 71, 0, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxBOILPOT2, 45, 0, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxUGBED1,   76, 0, 1);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP1,  2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP2,  2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP3,  2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP4,  2,  20, 25, 33, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxYELL1M3,  2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxYELL1M1,  2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT1M1, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT2M2, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT2M3, 2, 120, 11, 12, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP5,  2,  20, 25, 25, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN1,   5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN2,   5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN3,   5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSTEAM1,   5,  50, 47, 57, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSTEAM3,   5,  50, 17, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSTEAM6A,  5,  50, 17, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE1,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE2,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE3,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxZUBWLK1,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxZUBWLK2,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxZUBWLK3,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxZUBWLK4,  5,  50, 27, 37, -100, 100, -101, -101, 0, 0);
 
 	Scene_Loop_Set_Default(4);
 
@@ -90,7 +90,7 @@ void SceneScriptUG18::SceneLoaded() {
 	 && !Game_Flag_Query(kFlagUG18GuzzaScene)
 	 &&  Global_Variable_Query(kVariableChapter) == 4
 	) {
-		Item_Add_To_World(kItemBriefcase, 987, kSetUG18, -55.21f, 0.0f, -302.17f, 0, 12, 12, false, true, false, true);
+		Item_Add_To_World(kItemBriefcase, kModelAnimationBriefcase, kSetUG18, -55.21f, 0.0f, -302.17f, 0, 12, 12, false, true, false, true);
 	}
 }
 
@@ -111,7 +111,7 @@ bool SceneScriptUG18::ClickedOnItem(int itemId, bool combatMode) {
 		if (combatMode) {
 			Item_Remove_From_World(kItemBriefcase);
 		} else if (!Loop_Actor_Walk_To_Item(kActorMcCoy, kItemBriefcase, 12, true, false)) {
-			Item_Pickup_Spin_Effect(987, 368, 243);
+			Item_Pickup_Spin_Effect(kModelAnimationBriefcase, 368, 243);
 			Item_Remove_From_World(itemId);
 			Game_Flag_Set(kFlagUG18BriefcaseTaken);
 			Actor_Clue_Acquire(kActorMcCoy, kClueBriefcase, true, kActorGuzza);
@@ -122,7 +122,7 @@ bool SceneScriptUG18::ClickedOnItem(int itemId, bool combatMode) {
 
 bool SceneScriptUG18::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -684.71f, 0.0f, 171.59f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -684.71f, 0.0f, 171.59f, 0, true, false, false)) {
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(kFlagUG18toUG13);
@@ -199,7 +199,7 @@ void SceneScriptUG18::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 
 		case 305:
 			Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatAttack);
-			Sound_Play(12, 100, 0, 0, 50);
+			Sound_Play(kSfxLGCAL1, 100, 0, 0, 50);
 			Actor_Force_Stop_Walking(kActorMcCoy);
 			Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeDie);
 			Player_Loses_Control();
@@ -210,7 +210,7 @@ void SceneScriptUG18::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptUG18::PlayerWalkedIn() {
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -488.71f, 0.0f, 123.59f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -488.71f, 0.0f, 123.59f, 0, false, false, false);
 
 	if ( Game_Flag_Query(kFlagCallWithGuzza)
 	 && !Game_Flag_Query(kFlagUG18GuzzaScene)
@@ -231,7 +231,7 @@ void SceneScriptUG18::DialogueQueueFlushed(int a1) {
 	case kGoalGuzzaUG18Target:
 		Actor_Set_Goal_Number(kActorGuzza, kGoalGuzzaUG18WillGetShotBySadik);
 		Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatAttack);
-		Sound_Play(14, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL3, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatHit);
 		ADQ_Add(kActorClovis, 630, 13);
 		Actor_Set_Goal_Number(kActorClovis, kGoalClovisUG18SadikWillShootGuzza);
@@ -240,19 +240,19 @@ void SceneScriptUG18::DialogueQueueFlushed(int a1) {
 	case kGoalGuzzaUG18ShotByMcCoy:
 		// Bug in the game, shot animation is not reset so McCoy looks still while he is shooting
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeCombatAttack);
-		Sound_Play(13, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL2, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatHit);
 		Delay(900);
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeCombatAttack);
-		Sound_Play(14, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL3, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatHit);
 		Delay(1100);
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeCombatAttack);
-		Sound_Play(12, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL1, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatHit);
 		Delay(900);
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeCombatAttack);
-		Sound_Play(14, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL3, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, 61);
 		Overlay_Play("UG18over", 1, false, true, 0);
 		Actor_Set_Goal_Number(kActorGuzza, kGoalGuzzaUG18FallDown);
@@ -268,7 +268,7 @@ void SceneScriptUG18::DialogueQueueFlushed(int a1) {
 
 	case kGoalGuzzaUG18ShootMcCoy:
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatAttack);
-		Sound_Play(13, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL2, 100, 0, 0, 50);
 		Actor_Force_Stop_Walking(kActorMcCoy);
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeDie);
 		Player_Loses_Control();
@@ -280,7 +280,7 @@ void SceneScriptUG18::DialogueQueueFlushed(int a1) {
 	switch (Actor_Query_Goal_Number(kActorClovis)) {
 	case kGoalClovisUG18SadikWillShootGuzza:
 		Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatAttack);
-		Sound_Play(14, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL3, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, kAnimationModeCombatHit);
 		ADQ_Add(kActorClovis, 640, 13);
 		ADQ_Add(kActorGuzza, 1210, 13);
@@ -289,7 +289,7 @@ void SceneScriptUG18::DialogueQueueFlushed(int a1) {
 
 	case kGoalClovisUG18SadikIsShootingGuzza:
 		Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatAttack);
-		Sound_Play(14, 100, 0, 0, 50);
+		Sound_Play(kSfxLGCAL3, 100, 0, 0, 50);
 		Actor_Change_Animation_Mode(kActorGuzza, 61);
 		ADQ_Add_Pause(2000);
 		ADQ_Add(kActorClovis, 650, 14);
@@ -322,12 +322,12 @@ void SceneScriptUG18::talkWithGuzza() {
 	Actor_Says(kActorGuzza, 790, 3);
 	Actor_Says(kActorMcCoy, 5865, 12);
 	Actor_Says(kActorGuzza, 800, 3);
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -357.13f, 0.0f, -44.47f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -357.13f, 0.0f, -44.47f, 0, false, false, false);
 	Actor_Face_Actor(kActorMcCoy, kActorGuzza, true);
 	Actor_Says(kActorMcCoy, 5870, 14);
 	Actor_Face_Actor(kActorGuzza, kActorMcCoy, true);
 	Actor_Start_Speech_Sample(kActorGuzza, 810);
-	Loop_Actor_Walk_To_XYZ(kActorGuzza, -57.21f, 0.0f, -334.17f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorGuzza, -57.21f, 0.0f, -334.17f, 0, false, false, false);
 	Actor_Says(kActorMcCoy, 5875, 13);
 	Actor_Says(kActorGuzza, 830, 3);
 	Actor_Says(kActorGuzza, 840, 12);
@@ -337,7 +337,7 @@ void SceneScriptUG18::talkWithGuzza() {
 	Actor_Says(kActorMcCoy, 5885, 9);
 	Actor_Says(kActorMcCoy, 5890, 13);
 	Actor_Says(kActorGuzza, 870, 15);
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -205.13f, 0.0f, -184.47f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorMcCoy, -205.13f, 0.0f, -184.47f, 0, false, false, false);
 	Actor_Face_Actor(kActorMcCoy, kActorGuzza, true);
 	Actor_Says(kActorMcCoy, 5900, 15);
 	Actor_Says(kActorGuzza, 880, 13);
@@ -346,7 +346,7 @@ void SceneScriptUG18::talkWithGuzza() {
 	Actor_Says(kActorMcCoy, 5915, 13);
 	Actor_Says(kActorGuzza, 890, 16);
 	Actor_Says(kActorMcCoy, 5920, 14);
-	Loop_Actor_Walk_To_XYZ(kActorGuzza, -57.21f, 0.0f, -334.17f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorGuzza, -57.21f, 0.0f, -334.17f, 0, false, false, false);
 	Actor_Face_Actor(kActorGuzza, kActorMcCoy, true);
 	Actor_Says(kActorGuzza, 900, 15);
 	Actor_Says(kActorGuzza, 910, 12);
@@ -360,7 +360,7 @@ void SceneScriptUG18::talkWithGuzza() {
 	if (Game_Flag_Query(kFlagMcCoyRetiredHuman)) {
 		Actor_Modify_Friendliness_To_Other(kActorClovis, kActorMcCoy, 3);
 		Actor_Modify_Friendliness_To_Other(kActorSadik, kActorMcCoy, 5);
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, false);
 		Actor_Face_Actor(kActorMcCoy, kActorGuzza, true);
 		Actor_Says(kActorMcCoy, 5960, 9);
 		Actor_Says(kActorMcCoy, 5965, 14);
@@ -381,7 +381,7 @@ void SceneScriptUG18::talkWithGuzza() {
 	) {
 		Actor_Modify_Friendliness_To_Other(kActorClovis, kActorMcCoy, 20);
 		Actor_Modify_Friendliness_To_Other(kActorSadik, kActorMcCoy, 10);
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, false);
 		Actor_Face_Actor(kActorMcCoy, kActorGuzza, true);
 		Actor_Says(kActorMcCoy, 5950, 16);
 		Actor_Says(kActorMcCoy, 5955, 14);
@@ -391,7 +391,7 @@ void SceneScriptUG18::talkWithGuzza() {
 		Actor_Says(kActorGuzza, 1130, 15);
 		Actor_Says(kActorGuzza, 1140, 16);
 	} else {
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -117.13f, 0.0f, -284.47f, 0, false, false, false);
 		Actor_Face_Actor(kActorMcCoy, kActorGuzza, true);
 		Actor_Says(kActorMcCoy, 5945, 12);
 		Actor_Says(kActorGuzza, 1040, 15);
@@ -410,7 +410,7 @@ void SceneScriptUG18::talkWithClovis() {
 	ADQ_Flush();
 	Actor_Start_Speech_Sample(kActorClovis, 590);
 	Delay(500);
-	Loop_Actor_Walk_To_XYZ(kActorGuzza, 126.79f, 0.0f, -362.17f, 0, false, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorGuzza, 126.79f, 0.0f, -362.17f, 0, false, false, false);
 	Actor_Face_Heading(kActorGuzza, 729, false);
 	Actor_Set_Goal_Number(kActorGuzza, kGoalGuzzaUG18Target);
 	ADQ_Add(kActorSadik, 350, 13);

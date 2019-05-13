@@ -29,6 +29,7 @@
 #include "bladerunner/savefile.h"
 #include "bladerunner/text_resource.h"
 #include "bladerunner/time.h"
+#include "bladerunner/game_constants.h"
 #include "bladerunner/ui/kia.h"
 #include "bladerunner/ui/kia_shapes.h"
 #include "bladerunner/ui/ui_container.h"
@@ -149,35 +150,35 @@ void KIASectionSave::draw(Graphics::Surface &surface){
 	if (_state == kStateNormal) {
 		const char *textChooseSlot = _vm->_textOptions->getText(24); // Choose a slot ...
 		int textChooseSlotWidth = _vm->_mainFont->getTextWidth(textChooseSlot);
-		_vm->_mainFont->drawColor(textChooseSlot, surface, 308 - textChooseSlotWidth / 2, 143, 0x7BB8);
+		_vm->_mainFont->drawColor(textChooseSlot, surface, 308 - textChooseSlotWidth / 2, 143, surface.format.RGBToColor(240, 232, 192));
 
 		// Original game shows warnings/error here, but we don't have any
 
 		const char *textTypeName = _vm->_textOptions->getText(24); // Type a name ...
 		int textTypeNameWidth = _vm->_mainFont->getTextWidth(textTypeName);
-		_vm->_mainFont->drawColor(textTypeName, surface, 308 - textTypeNameWidth / 2, 352, 0x7BB8);
+		_vm->_mainFont->drawColor(textTypeName, surface, 308 - textTypeNameWidth / 2, 352, surface.format.RGBToColor(240, 232, 192));
 
 		_uiContainer->draw(surface);
 	} else if (_state == kStateOverwrite) {
-		surface.fillRect(Common::Rect(155, 230, 462, 239), 0x28E4);
+		surface.fillRect(Common::Rect(155, 230, 462, 239), surface.format.RGBToColor(80, 56, 32));
 
 		const Common::String &saveName = _saveList[_selectedLineId].getDescription();
 		int saveNameWidth = _vm->_mainFont->getTextWidth(saveName);
-		_vm->_mainFont->drawColor(saveName, surface, 308 - saveNameWidth / 2, 230, 0x7751);
+		_vm->_mainFont->drawColor(saveName, surface, 308 - saveNameWidth / 2, 230, surface.format.RGBToColor(232, 208, 136));
 
 		const char *textOverwrite = _vm->_textOptions->getText(35); // Overwrite previously saved game?
 		int textOverwriteWidth = _vm->_mainFont->getTextWidth(textOverwrite);
-		_vm->_mainFont->drawColor(textOverwrite, surface, 308 - textOverwriteWidth / 2, 240, 0x7BB8);
+		_vm->_mainFont->drawColor(textOverwrite, surface, 308 - textOverwriteWidth / 2, 240, surface.format.RGBToColor(240, 232, 192));
 	} else if (_state == kStateDelete) {
-		surface.fillRect(Common::Rect(155, 230, 462, 239), 0x28E4);
+		surface.fillRect(Common::Rect(155, 230, 462, 239), surface.format.RGBToColor(80, 56, 32));
 
 		const Common::String &saveName = _saveList[_selectedLineId].getDescription();
 		int saveNameWidth = _vm->_mainFont->getTextWidth(saveName); // Delete this game?
-		_vm->_mainFont->drawColor(saveName, surface, 308 - saveNameWidth / 2, 230, 0x7751);
+		_vm->_mainFont->drawColor(saveName, surface, 308 - saveNameWidth / 2, 230, surface.format.RGBToColor(232, 208, 136));
 
 		const char *textDelete = _vm->_textOptions->getText(40);
 		int textDeleteWidth = _vm->_mainFont->getTextWidth(textDelete);
-		_vm->_mainFont->drawColor(textDelete, surface, 308 - textDeleteWidth / 2, 240, 0x7BB8);
+		_vm->_mainFont->drawColor(textDelete, surface, 308 - textDeleteWidth / 2, 240, surface.format.RGBToColor(240, 232, 192));
 	}
 
 	int selectedLineId = _scrollBox->getSelectedLineData();
@@ -299,7 +300,7 @@ void KIASectionSave::scrollBoxCallback(void *callbackData, void *source, int lin
 			self->_inputBox->setText(self->_saveList[self->_selectedLineId].getDescription());
 		}
 
-		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(131), 40, 0, 0, 50, 0);
+		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(kSfxSPNBEEP3), 40, 0, 0, 50, 0);
 		self->_vm->_kia->resume();
 	}
 }
@@ -329,7 +330,7 @@ void KIASectionSave::onButtonPressed(int buttonId, void *callbackData) {
 		}
 	} else if (buttonId == 1) {
 		self->changeState(kStateNormal);
-		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(134), 90, -50, -50, 50, 0);
+		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(kSfxSPNBEEP6), 90, -50, -50, 50, 0);
 	} else if (buttonId == 2) {
 		if (self->_state == kStateOverwrite)
 		{
@@ -372,7 +373,7 @@ void KIASectionSave::changeState(State state) {
 			_vm->_kia->_shapes->get(131),
 			_vm->_textOptions->getText(39) // Yes
 		);
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(135), 90, 0, 0, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxSPNBEEP7), 90, 0, 0, 50, 0);
 	}
 }
 
@@ -415,7 +416,7 @@ void KIASectionSave::save() {
 
 	delete saveFile;
 
-	_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, 0, 0, 50, 0);
+	_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, 0, 0, 50, 0);
 
 	_scheduledSwitch = true;
 }

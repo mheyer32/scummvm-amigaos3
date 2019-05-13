@@ -51,7 +51,7 @@ static const int *getPoliceMazePS10TrackData1() {   // Enemy linked series (kIte
 #endif // BLADERUNNER_ORIGINAL_BUGS
 		kPMTIWaitRandom,      3000, 5000,
 		kPMTIObstacleSet,     kItemPS10Target1,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTIMove,            14,
 		kPMTIWait,            1000,
 		kPMTIRotate,          740, 80,
@@ -63,7 +63,7 @@ static const int *getPoliceMazePS10TrackData1() {   // Enemy linked series (kIte
 		kPMTIWait,            0,
 		kPMTIRotate,          488, 80,
 		kPMTIWait,            1000,
-		kPMTIShoot,           27, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
 		kPMTIWait,            0,
 		kPMTIRotate,          740, 80,
 		kPMTIPausedReset,     kItemPS10Target2,     // kItemPS10Target2 continues the route of this item
@@ -113,7 +113,7 @@ static const int *getPoliceMazePS10TrackData3() {   // Enemy (kItemPS10Target3) 
 		kPMTIPosition,        0,
 		kPMTIWaitRandom,      3000, 5000,
 		kPMTIObstacleSet,     kItemPS10Target3,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTITargetSet,       kItemPS10Target3, 1,
 		kPMTIEnemyReset,      kItemPS10Target3,
 		kPMTIMove,            5,
@@ -123,12 +123,12 @@ static const int *getPoliceMazePS10TrackData3() {   // Enemy (kItemPS10Target3) 
 		kPMTIWait,            0,
 		kPMTIRotate,          491, 80,
 		kPMTIWait,            500,
-		kPMTIShoot,           27, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
 		kPMTIWait,            500,
 		kPMTIRotate,          233, 80,
 		kPMTIWait,            0,
 		kPMTIRotate,          993, 80,
-		kPMTIPlaySound,       34, 33,
+		kPMTIPlaySound,       kSfxTARGUP6, 33,
 		kPMTIMove,            0,
 		kPMTIObstacleReset,   kItemPS10Target3,
 #if BLADERUNNER_ORIGINAL_BUGS
@@ -154,7 +154,7 @@ static const int *getPoliceMazePS10TrackData4() {   // Innocent (kItemPS10Target
 		kPMTIPosition,        0,
 		kPMTIWaitRandom,      3000, 6000,
 		kPMTIObstacleSet,     kItemPS10Target4,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTITargetSet,       kItemPS10Target4, 1,
 		kPMTIEnemyReset,      kItemPS10Target4,
 		kPMTIMove,            34,
@@ -187,7 +187,7 @@ static const int *getPoliceMazePS10TrackData5() {   // Innocent (kItemPS10Target
 		kPMTIPosition,        0,
 		kPMTIWaitRandom,      4000, 6000,
 		kPMTIObstacleSet,     kItemPS10Target5,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTITargetSet,       kItemPS10Target5, 1,
 		kPMTIEnemyReset,      kItemPS10Target5,
 		kPMTIMove,            5,
@@ -195,7 +195,7 @@ static const int *getPoliceMazePS10TrackData5() {   // Innocent (kItemPS10Target
 		kPMTIRotate,          512, 100,
 		kPMTIWait,            2000,
 		kPMTIRotate,          0, -100,
-		kPMTIPlaySound,       34, 33,
+		kPMTIPlaySound,       kSfxTARGUP6, 33,
 		kPMTIMove,            0,
 		kPMTILeave,
 		kPMTIObstacleReset,   kItemPS10Target5,
@@ -224,7 +224,7 @@ static const int *getPoliceMazePS10TrackData6() {   // Enemy (kItemPS10Target6) 
 		kPMTIPosition,        0,
 		kPMTIWaitRandom,      4000, 6000,
 		kPMTIObstacleSet,     kItemPS10Target6,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTITargetSet,       kItemPS10Target6, 1,
 		kPMTIEnemyReset,      kItemPS10Target6,
 		kPMTIMove,            7,
@@ -234,12 +234,12 @@ static const int *getPoliceMazePS10TrackData6() {   // Enemy (kItemPS10Target6) 
 		kPMTIWait,            0,
 		kPMTIRotate,          500, 80,
 		kPMTIWait,            1000,
-		kPMTIShoot,           27, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
 		kPMTIWait,            0,
 		kPMTIRotate,          750, 80,
 		kPMTIWait,            0,
 		kPMTIRotate,          999, 80,
-		kPMTIPlaySound,       34, 33,
+		kPMTIPlaySound,       kSfxTARGUP6, 33,
 		kPMTIMove,            0,
 		kPMTIObstacleReset,   kItemPS10Target6,
 #if BLADERUNNER_ORIGINAL_BUGS
@@ -298,7 +298,7 @@ static const int *getPoliceMazePS10TrackData8() {   // Enemy (kItemPS10Target8) 
 		kPMTIPosition,        0,
 		kPMTIWaitRandom,      4000, 6000,
 		kPMTIObstacleSet,     kItemPS10Target8,
-		kPMTIPlaySound,       159, 100,
+		kPMTIPlaySound,       kSfxUPTARG3, 100,
 		kPMTITargetSet,       kItemPS10Target8, 1,
 		kPMTIEnemyReset,      kItemPS10Target8,
 		kPMTIMove,            34,
@@ -307,7 +307,7 @@ static const int *getPoliceMazePS10TrackData8() {   // Enemy (kItemPS10Target8) 
 		kPMTIRotate,          491, 80,
 		kPMTIMove,            20,
 		kPMTIWait,            0,                    // this results in shooting too fast - TODO maybe introduce a small wait here (50 or 150)
-		kPMTIShoot,           27, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
 		kPMTIMove,            0,
 		kPMTIObstacleReset,   kItemPS10Target8,
 #if BLADERUNNER_ORIGINAL_BUGS
@@ -336,44 +336,44 @@ static const int *getPoliceMazePS10TrackData9() {   // Special (kItemPS10Target9
 		kPMTITargetSet,       kItemPS10Target9, 1,
 		kPMTIEnemySet,        kItemPS10Target9,
 		kPMTIObstacleSet,     kItemPS10Target9,
-		kPMTIPlaySound,       0, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIMove,            23,
-		kPMTIPlaySound,       0, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIWait,            200,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIRotate,          498, 100,
-		kPMTIPlaySound,       0, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIWait,            100,
-		kPMTIShoot,           27, 33,
-		kPMTIPlaySound,       32, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIMove,            35,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIWait,            100,
-		kPMTIShoot,           27, 33,
-		kPMTIPlaySound,       0, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIMove,            23,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIWait,            100,
-		kPMTIShoot,           27, 33,
-		kPMTIPlaySound,       32, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIRotate,          758, 100,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIMove,            89,
-		kPMTIPlaySound,       0, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIWaitRandom,      4000, 6000,
 		kPMTITargetSet,       kItemPS10Target9, 1,  // intended: special: "second" enemy (re-using the target of the track)
 		kPMTIEnemySet,        kItemPS10Target9,     // intended: special: "second" enemy (re-using the target of the track)
 		kPMTIFacing,          216,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIMove,            69,
 		kPMTIWait,            100,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIRotate,          498, 100,
 		kPMTIWait,            100,
-		kPMTIShoot,           27, 33,
-		kPMTIPlaySound,       0, 33,
+		kPMTIShoot,           kSfxSMCAL3, 33,
+		kPMTIPlaySound,       kSfxCROSLOCK, 33,
 		kPMTIRotate,          216, 100,
-		kPMTIPlaySound,       32, 33,
+		kPMTIPlaySound,       kSfxTARGUP4, 33,
 		kPMTIMove,            0,
 		kPMTIObstacleReset,   kItemPS10Target9,
 #if BLADERUNNER_ORIGINAL_BUGS
@@ -400,22 +400,27 @@ void SceneScriptPS10::InitializeScene() {
 
 	Scene_Exit_Add_2D_Exit(1, 0, 0, 20, 479, 3);
 
-	Ambient_Sounds_Remove_All_Non_Looping_Sounds(0);
-	Ambient_Sounds_Add_Looping_Sound(387, 50, 1, 1);
-	Ambient_Sounds_Add_Looping_Sound( 54, 50, 1, 1);
-	Ambient_Sounds_Add_Sound(  1, 10,  50, 16, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(389,  5,  50, 16, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(390,  6,  50, 16, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(443,  2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(444,  2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(445,  2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(446,  2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(303,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(304,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(305,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(306,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(307,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(308,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Remove_All_Non_Looping_Sounds(false);
+	Ambient_Sounds_Add_Looping_Sound(kSfxESPLOOP2, 50, 1, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxCTRAIN1,  50, 1, 1);
+	Ambient_Sounds_Add_Sound(kSfxSTEAM1,  10,  50, 16, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSTEAMY1,  5,  50, 16, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSTEAMY2,  6,  50, 16, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSCARY4,   2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSCARY5,   2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSCARY6,   2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSCARY7,   2, 100, 14, 16, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN1,   5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN2,   5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN3,   5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE1,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE2,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE3,  5, 100, 17, 27, -100, 100, -101, -101, 0, 0);
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	// Moved here from PS15
+	Sound_Play(kSfxLABBUZZ1, 90, 0, 0, 50);
+#endif // BLADERUNNER_ORIGINAL_BUGS
 }
 
 void SceneScriptPS10::SceneLoaded() {
@@ -447,15 +452,15 @@ void SceneScriptPS10::SceneLoaded() {
 // every maze target begins as NON-targetable
 		targetStateMZ = false;
 #endif // BLADERUNNER_ORIGINAL_BUGS
-		Item_Add_To_World(kItemPS10Target1, 443, kSetPS10_PS11_PS12_PS13,  -240.0f, -80.74f, 145.0f, 989, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target2, 443, kSetPS10_PS11_PS12_PS13,  -240.0f,  -8.74f, 145.0f, 740, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target3, 445, kSetPS10_PS11_PS12_PS13,  -165.0f, 111.53f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target4, 447, kSetPS10_PS11_PS12_PS13,  -125.0f,  160.0f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target5, 441, kSetPS10_PS11_PS12_PS13, -246.71f, 205.51f, -20.0f,   0, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target6, 445, kSetPS10_PS11_PS12_PS13,  -27.69f, -86.92f, 434.0f, 999, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target7, 441, kSetPS10_PS11_PS12_PS13, -347.15f,   7.68f, -20.0f, 264, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target8, 449, kSetPS10_PS11_PS12_PS13,   -51.0f,  160.0f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
-		Item_Add_To_World(kItemPS10Target9, 445, kSetPS10_PS11_PS12_PS13,    39.0f,   9.16f, -20.0f, 738, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target1, kModelAnimationMaleTargetWithGunActive,     kSetPS10_PS11_PS12_PS13,  -240.0f, -80.74f, 145.0f, 989, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target2, kModelAnimationMaleTargetWithGunActive,     kSetPS10_PS11_PS12_PS13,  -240.0f,  -8.74f, 145.0f, 740, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target3, kModelAnimationMaleTargetWithShotgunActive, kSetPS10_PS11_PS12_PS13,  -165.0f, 111.53f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target4, kModelAnimationFemaleTargetWithBabyActive,  kSetPS10_PS11_PS12_PS13,  -125.0f,  160.0f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target5, kModelAnimationMaleTargetEmptyHandsActive,  kSetPS10_PS11_PS12_PS13, -246.71f, 205.51f, -20.0f,   0, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target6, kModelAnimationMaleTargetWithShotgunActive, kSetPS10_PS11_PS12_PS13,  -27.69f, -86.92f, 434.0f, 999, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target7, kModelAnimationMaleTargetEmptyHandsActive,  kSetPS10_PS11_PS12_PS13, -347.15f,   7.68f, -20.0f, 264, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target8, kModelAnimationFemaleTargetWithGunActive,   kSetPS10_PS11_PS12_PS13,   -51.0f,  160.0f, -10.0f, 993, 72, 36, targetStateMZ, false, false, true);
+		Item_Add_To_World(kItemPS10Target9, kModelAnimationMaleTargetWithShotgunActive, kSetPS10_PS11_PS12_PS13,    39.0f,   9.16f, -20.0f, 738, 72, 36, targetStateMZ, false, false, true);
 
 	}
 
@@ -468,16 +473,16 @@ void SceneScriptPS10::SceneLoaded() {
 	Police_Maze_Target_Track_Add(kItemPS10Target7, -347.15f,   7.68f, -20.0f,    39.0f,   9.16f, -20.0f, 90, getPoliceMazePS10TrackData7(), false);
 	Police_Maze_Target_Track_Add(kItemPS10Target8,   -51.0f,  160.0f, -10.0f,  -125.0f,  160.0f, -10.0f, 35, getPoliceMazePS10TrackData8(),  true);
 	Police_Maze_Target_Track_Add(kItemPS10Target9,    39.0f,   9.16f, -20.0f, -347.15f,   7.68f, -20.0f, 90, getPoliceMazePS10TrackData9(), false);
-	Preload(441);
-	Preload(442);
-	Preload(443);
-	Preload(444);
-	Preload(445);
-	Preload(446);
-	Preload(447);
-	Preload(448);
-	Preload(449);
-	Preload(450);
+	Preload(kModelAnimationMaleTargetEmptyHandsActive);
+	Preload(kModelAnimationMaleTargetEmptyHandsDead);
+	Preload(kModelAnimationMaleTargetWithGunActive);
+	Preload(kModelAnimationMaleTargetWithGunDead);
+	Preload(kModelAnimationMaleTargetWithShotgunActive);
+	Preload(kModelAnimationMaleTargetWithShotgunDead);
+	Preload(kModelAnimationFemaleTargetWithBabyActive);
+	Preload(kModelAnimationFemaleTargetWithBabyDead);
+	Preload(kModelAnimationFemaleTargetWithGunActive);
+	Preload(kModelAnimationFemaleTargetWithGunDead);
 }
 
 bool SceneScriptPS10::MouseClick(int x, int y) {
@@ -496,14 +501,14 @@ bool SceneScriptPS10::ClickedOnItem(int itemId, bool combatMode) {
 	if (Player_Query_Combat_Mode()) {
 		switch (itemId) {
 		case kItemPS10Target4:
-			Sound_Play(4, 50, 0, 0, 50);    // FEMHURT2
+			Sound_Play(kSfxFEMHURT2, 50, 0, 0, 50);
 			break;
-		case kItemPS10Target5:              // fall-through
+		case kItemPS10Target5:              // fall through
 		case kItemPS10Target7:
-			Sound_Play(555, 50, 0, 0, 50);  // MALEHURT
+			Sound_Play(kSfxMALEHURT, 50, 0, 0, 50);
 			break;
 		default:
-			Sound_Play(2, 12, 0, 0, 50);    // SPINNY1
+			Sound_Play(kSfxSPINNY1,  12, 0, 0, 50);
 			break;
 		}
 
@@ -573,7 +578,7 @@ void SceneScriptPS10::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 
 void SceneScriptPS10::PlayerWalkedIn() {
 	if (Game_Flag_Query(kFlagPS11toPS10)) {
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -352.09f, -9.23f, 267.95f, 0, false, true, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -352.09f, -9.23f, 267.95f, 0, false, true, false);
 		Police_Maze_Set_Pause_State(false);
 		Game_Flag_Reset(kFlagPS11toPS10);
 		//return true;

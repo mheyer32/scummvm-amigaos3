@@ -38,15 +38,25 @@ namespace BladeRunner {
 ActorWalk::ActorWalk(BladeRunnerEngine *vm) {
 	_vm = vm;
 
+	reset();
+}
+
+ActorWalk::~ActorWalk() {}
+
+// added method for bug fix (bad new game state for player actor) and better management of object
+void ActorWalk::reset() {
 	_walking = false;
 	_running = false;
 	_facing = -1;
 	_status = 0;
 
+	_destination = Vector3(0.0f, 0.0f, 0.0f);
+	_originalDestination = Vector3(0.0f, 0.0f, 0.0f);
+	_current = Vector3(0.0f, 0.0f, 0.0f);
+	_next = Vector3(0.0f, 0.0f, 0.0f);
+
 	_nearActors.clear();
 }
-
-ActorWalk::~ActorWalk() {}
 
 bool ActorWalk::setup(int actorId, bool runFlag, const Vector3 &from, const Vector3 &to, bool mustReach, bool *arrived) {
 	Vector3 next;
@@ -174,7 +184,7 @@ bool ActorWalk::tick(int actorId, float stepDistance, bool mustReachWalkDestinat
 		int r = nextOnPath(actorId, _current, _destination, next);
 		obstaclesRestore();
 		if (r == 0) {
-			stop(actorId, actorId == 0, kAnimationModeCombatIdle, kAnimationModeIdle);
+			stop(actorId, actorId == kActorMcCoy, kAnimationModeCombatIdle, kAnimationModeIdle);
 			return false;
 		}
 		if (r != -1) {

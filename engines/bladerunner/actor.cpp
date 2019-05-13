@@ -53,7 +53,7 @@ Actor::Actor(BladeRunnerEngine *vm, int actorId) {
 
 	_walkInfo      = new ActorWalk(vm);
 	_movementTrack = new MovementTrack();
-	_cluesLimit    = (actorId == 0 || actorId == 99) ? 4 : 2;
+	_cluesLimit    = (actorId == kActorMcCoy || actorId == kActorVoiceOver) ? 4 : 2;
 	_clues         = new ActorClues(vm, _cluesLimit);
 	_combatInfo    = new ActorCombat(vm);
 
@@ -102,11 +102,11 @@ void Actor::setup(int actorId) {
 	_movementTrackWalkingToWaypointId = -1;
 	_movementTrackDelayOnNextWaypoint = -1;
 
-	for (int i = 0; i != 7; ++i) {
+	for (int i = 0; i != kActorTimers; ++i) {
 		_timersLeft[i] = 0;
 		_timersLast[i] = _vm->_time->current();
 	}
-	_timersLeft[4] = _timer4RemainDefault; // This was in original code. We need to init this timer in oder to kick off periodic updates for acquireCluesByRelations
+	_timersLeft[kActorTimerClueExchange] = _timer4RemainDefault; // This was in original code. We need to init this timer in order to kick off periodic updates for acquireCluesByRelations
 
 	_honesty              = 50;
 	_intelligence         = 50;
@@ -136,6 +136,18 @@ void Actor::setup(int actorId) {
 	int actorCount = (int)_vm->_gameInfo->getActorCount();
 	for (int i = 0; i != actorCount; ++i)
 		_friendlinessToOther[i] = 50;
+
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	// if player actor was not idle and had an active _walkInfo then
+	// upon starting a new game, the player actpr wpi;d be put on the old _walkInfo
+	_walkInfo->reset();
+//	// delete _walkInfo and re-allocate it (a reset method would probably be better)
+//	if (_walkInfo != nullptr) {
+//		delete(_walkInfo);
+//	}
+//	_walkInfo = new ActorWalk(_vm);
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 	_combatInfo->setup();
 	_clues->removeAll();
@@ -209,18 +221,18 @@ void Actor::increaseFPS() {
 }
 
 void Actor::timerStart(int timerId, int interval) {
-	assert(timerId >= 0 && timerId < 7);
+	assert(timerId >= 0 && timerId < kActorTimers);
 	_timersLeft[timerId] = interval;
 	_timersLast[timerId] = _vm->_time->current();
 }
 
 void Actor::timerReset(int timerId) {
-	assert(timerId >= 0 && timerId < 7);
+	assert(timerId >= 0 && timerId < kActorTimers);
 	_timersLeft[timerId] = 0;
 }
 
 int Actor::timerLeft(int timerId) {
-	assert(timerId >= 0 && timerId < 7);
+	assert(timerId >= 0 && timerId < kActorTimers);
 	return _timersLeft[timerId];
 }
 
@@ -242,9 +254,9 @@ void Actor::timerUpdate(int timerId) {
 
 	if (_timersLeft[timerId] <= 0) {
 		switch (timerId) {
-		case 0:
-		case 1:
-		case 2:
+		case kActorTimerAIScriptCustomTask0:
+		case kActorTimerAIScriptCustomTask1:
+		case kActorTimerAIScriptCustomTask2:
 			if (!_vm->_aiScripts->isInsideScript() && !_vm->_sceneScript->isInsideScript()) {
 				_vm->_aiScripts->timerExpired(_id, timerId);
 				_timersLeft[timerId] = 0;
@@ -252,23 +264,23 @@ void Actor::timerUpdate(int timerId) {
 				_timersLeft[timerId] = 1;
 			}
 			break;
-		case 3:
-			_timersLeft[3] = 0;
+		case kActorTimerMovementTrack:
+			_timersLeft[kActorTimerMovementTrack] = 0;
 			if (_movementTrack->isPaused()) {
-				_timersLeft[3] = 1;
+				_timersLeft[kActorTimerMovementTrack] = 1;
 			} else {
 				movementTrackNext(false);
 			}
 			break;
-		case 4:
+		case kActorTimerClueExchange:
 			// Exchange clues between actors
 			acquireCluesByRelations();
-			_timersLeft[4] = _timer4RemainDefault;
+			_timersLeft[kActorTimerClueExchange] = _timer4RemainDefault;
 			break;
-		case 5:
+		case kActorTimerAnimationFrame:
 			// Actor animation frame timer
 			break;
-		case 6:
+		case kActorTimerRunningStaminaFPS:
 			if (isRunning()) {
 				if (_fps > 15) {
 					int newFps = _fps - 2;
@@ -278,7 +290,7 @@ void Actor::timerUpdate(int timerId) {
 					setFPS(newFps);
 				}
 			}
-			_timersLeft[6] = 200;
+			_timersLeft[kActorTimerRunningStaminaFPS] = 200;
 			break;
 		}
 	}
@@ -323,7 +335,7 @@ void Actor::movementTrackNext(bool omitAiScript) {
 			if (delay > 1) {
 				changeAnimationMode(kAnimationModeIdle, false);
 			}
-			timerStart(3, delay);
+			timerStart(kActorTimerMovementTrack, delay);
 		}
 		//return true;
 	} else {
@@ -368,7 +380,7 @@ void Actor::movementTrackWaypointReached() {
 					changeAnimationMode(kAnimationModeIdle, false);
 					delay = _movementTrackDelayOnNextWaypoint; // todo: analyze if movement is changed in some aiscript->ChangeAnimationMode?
 				}
-				timerStart(3, delay);
+				timerStart(kActorTimerMovementTrack, delay);
 			}
 		}
 		_movementTrackWalkingToWaypointId = -1;
@@ -584,8 +596,8 @@ bool Actor::tick(bool forceDraw, Common::Rect *screenRect) {
 	int timeLeft = 0;
 	bool needsUpdate = false;
 	if (_fps > 0) {
-		timerUpdate(5);
-		timeLeft = timerLeft(5);
+		timerUpdate(kActorTimerAnimationFrame);
+		timeLeft = timerLeft(kActorTimerAnimationFrame);
 		needsUpdate = timeLeft <= 0;
 	} else if (_fps == 0) {
 		needsUpdate = false;
@@ -703,7 +715,7 @@ bool Actor::tick(bool forceDraw, Common::Rect *screenRect) {
 		if (nextFrameTime <= 0) {
 			nextFrameTime = 1;
 		}
-		timerStart(5, nextFrameTime);
+		timerStart(kActorTimerAnimationFrame, nextFrameTime);
 	}
 	if (_targetFacing >= 0) {
 		if (_targetFacing == _facing) {
@@ -723,6 +735,14 @@ void Actor::tickCombat() {
 
 bool Actor::draw(Common::Rect *screenRect) {
 	Vector3 drawPosition(_position.x, -_position.z, _position.y + 2.0);
+
+#if !BLADERUNNER_ORIGINAL_BUGS
+	// In the original game, Moraji appears to be floating above the ground a bit
+	if (_id == kActorMoraji && _setId == kSetDR01_DR02_DR04) {
+		drawPosition.z -= 6.0f;
+	}
+#endif
+
 	float drawAngle = M_PI - _facing * (M_PI / 512.0f);
 	float drawScale = _scale;
 
@@ -1122,6 +1142,10 @@ int Actor::getAnimationMode() const {
 	return _animationMode;
 }
 
+int Actor::getAnimationId() const {
+	return _animationId;
+}
+
 void Actor::setGoal(int goalNumber) {
 	int oldGoalNumber = _goalNumber;
 	_goalNumber = goalNumber;
@@ -1185,7 +1209,8 @@ bool Actor::hasClue(int clueId) const {
 	return _clues->isAcquired(clueId);
 }
 
-void Actor::copyClues(int actorId) {
+bool Actor::copyClues(int actorId) {
+	bool newCluesAcquired = false;
 	Actor *otherActor = _vm->_actors[actorId];
 	for (int i = 0; i < (int)_vm->_gameInfo->getClueCount(); i++) {
 		if (hasClue(i) && !_clues->isPrivate(i) && otherActor->canAcquireClue(i) && !otherActor->hasClue(i)) {
@@ -1194,8 +1219,10 @@ void Actor::copyClues(int actorId) {
 				fromActorId = _clues->getFromActorId(i);
 			}
 			otherActor->acquireClue(i, false, fromActorId);
+			newCluesAcquired = true;
 		}
 	}
+	return newCluesAcquired;
 }
 
 void Actor::acquireCluesByRelations() {
@@ -1364,12 +1391,12 @@ void Actor::save(SaveFileWriteStream &f) {
 	f.writeInt(0);
 	f.writeFloat(_scale);
 
-	for (int i = 0; i < 7; ++i) {
+	for (int i = 0; i < kActorTimers; ++i) {
 		f.writeInt(_timersLeft[i]);
 	}
 
 	uint32 now = _vm->_time->getPauseStart();
-	for (int i = 0; i < 7; ++i) {
+	for (int i = 0; i < kActorTimers; ++i) {
 		f.writeInt(now - _timersLast[i]);
 	}
 
@@ -1443,17 +1470,17 @@ void Actor::load(SaveFileReadStream &f) {
 	f.skip(4);
 	_scale = f.readFloat();
 
-	for (int i = 0; i < 7; ++i) {
+	for (int i = 0; i < kActorTimers; ++i) {
 		_timersLeft[i] = f.readInt();
 	}
-	// Bugfix: Special initialization case for timer 4 when it's value is restored as 0
+	// Bugfix: Special initialization case for timer 4 (kActorTimerClueExchange) when its value is restored as 0
 	// This should be harmless, but will remedy any broken save-games where the timer 4 was saved as 0.
-	if (_timersLeft[4] == 0) {
-		_timersLeft[4] = _timer4RemainDefault;
+	if (_timersLeft[kActorTimerClueExchange] == 0) {
+		_timersLeft[kActorTimerClueExchange] = _timer4RemainDefault;
 	}
 
 	uint32 now = _vm->_time->getPauseStart();
-	for (int i = 0; i < 7; ++i) {
+	for (int i = 0; i < kActorTimers; ++i) {
 		_timersLast[i] = now - f.readInt();
 	}
 

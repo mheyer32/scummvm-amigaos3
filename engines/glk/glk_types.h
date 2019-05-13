@@ -221,7 +221,29 @@ enum ImageAlign {
 union gidispatch_rock_t {
 	uint num;
 	void *ptr;
+
+	gidispatch_rock_t() : ptr(nullptr) {}
 };
+
+union gluniversal_union {
+	uint _uint;          ///< Iu
+	int32 _sint;         ///< Is
+	void *_opaqueref;    ///< Qa, Qb, Qc...
+	byte _uch;           ///< Cu
+	int8 _sch;           ///< Cs
+	char _ch;            ///< Cn
+	char *_charstr;		 ///< S
+	uint32 *_unicharstr; ///< U
+	void *_array;        ///< all # arguments
+	uint _ptrflag;       ///< [ ... ] or *?
+};
+typedef gluniversal_union gluniversal_t;
+
+struct gidispatch_intconst_struct {
+	const char *name;
+	uint32 val;
+};
+typedef gidispatch_intconst_struct gidispatch_intconst_t;
 
 } // End of namespace Glk
 

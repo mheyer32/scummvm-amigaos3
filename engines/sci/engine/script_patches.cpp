@@ -106,6 +106,8 @@ static const char *const selectorNameTable[] = {
 	"handsOn",      // system selector
 	"localize",     // Freddy Pharkas
 	"put",          // Police Quest 1 VGA
+	"changeState",  // Quest For Glory 1 VGA, QFG4
+	"hide",         // Quest For Glory 1 VGA, QFG4
 	"say",          // Quest For Glory 1 VGA, QFG4
 	"script",       // Quest For Glory 1 VGA
 	"solvePuzzle",  // Quest For Glory 3
@@ -121,12 +123,13 @@ static const char *const selectorNameTable[] = {
 	"stop",         // Space Quest 4
 	"canControl",   // Space Quest 4
 	"looper",       // Space Quest 4
+	"nMsgType",     // Space Quest 4
 	"loop",         // Laura Bow 1 Colonel's Bequest, QFG4
 	"setLoop",      // Laura Bow 1 Colonel's Bequest, QFG4
 	"ignoreActors", // Laura Bow 1 Colonel's Bequest
 	"setVol",       // Laura Bow 2 CD
 	"at",           // Longbow, QFG4
-	"owner",        // Longbow
+	"owner",        // Longbow, QFG4
 	"delete",       // EcoQuest 1
 	"size",         // EcoQuest 1
 	"signal",       // EcoQuest 1, GK1
@@ -167,14 +170,20 @@ static const char *const selectorNameTable[] = {
 	"plane",        // RAMA
 	"state",        // RAMA
 	"getSubscriberObj", // RAMA
+	"advanceCurIcon", // QFG4
+	"amount",       // QFG4
 	"approachVerbs", // QFG4
-	"changeState",  // QFG4
 	"cue",          // QFG4
+	"curIcon",      // QFG4
+	"curInvIcon",   // QFG4
+	"getCursor",    // QFG4
 	"heading",      // QFG4
 	"moveSpeed",    // QFG4
 	"sayMessage",   // QFG4
+	"setCursor",    // QFG4
 	"setLooper",    // QFG4
 	"setSpeed",     // QFG4
+	"useStamina",   // QFG4
 	"value",        // QFG4
 #endif
 	NULL
@@ -205,6 +214,8 @@ enum ScriptPatcherSelectors {
 	SELECTOR_handsOn,
 	SELECTOR_localize,
 	SELECTOR_put,
+	SELECTOR_changeState,
+	SELECTOR_hide,
 	SELECTOR_say,
 	SELECTOR_script,
 	SELECTOR_solvePuzzle,
@@ -220,6 +231,7 @@ enum ScriptPatcherSelectors {
 	SELECTOR_stop,
 	SELECTOR_canControl,
 	SELECTOR_looper,
+	SELECTOR_nMsgType,
 	SELECTOR_loop,
 	SELECTOR_setLoop,
 	SELECTOR_ignoreActors,
@@ -267,14 +279,20 @@ enum ScriptPatcherSelectors {
 	SELECTOR_plane,
 	SELECTOR_state,
 	SELECTOR_getSubscriberObj,
+	SELECTOR_advanceCurIcon,
+	SELECTOR_amount,
 	SELECTOR_approachVerbs,
-	SELECTOR_changeState,
 	SELECTOR_cue,
+	SELECTOR_curIcon,
+	SELECTOR_curInvIcon,
+	SELECTOR_getCursor,
 	SELECTOR_heading,
 	SELECTOR_moveSpeed,
 	SELECTOR_sayMessage,
+	SELECTOR_setCursor,
 	SELECTOR_setLooper,
 	SELECTOR_setSpeed,
+	SELECTOR_useStamina,
 	SELECTOR_value
 #endif
 };
@@ -1256,11 +1274,37 @@ static const uint16 freddypharkasPatchMacEasterEgg[] = {
 	PATCH_END
 };
 
+// FPFP Mac is missing view 844 of Hop Singh leaving town, breaking the scene.
+//  This occurs when going to the desert (room 200) after the restaurant closes
+//  but before act 3 ends. This would also crash the original so we just disable
+//  this minor optional scene.
+//
+// Applies to: Mac Floppy
+// Responsible method: rm200:init
+// Fixes bug #10954
+static const uint16 freddypharkasSignatureMacHopSingh[] = {
+	0x89, 0x77,                     // lsg 77
+	0x35, 0x13,                     // ldi 13
+	0x1a,                           // eq? [ did restaurant just close? ]
+	0x31, 0x46,                     // bnt 46 [ skip hop singh scene ]
+	SIG_ADDTOOFFSET(+0x41),
+	SIG_MAGICDWORD,
+	0x72, 0x01, 0xd0,               // lofsa hopSingh [ hard-coded big endian for mac ]
+	0x4a, 0x20,                     // send 20 [ hopSingh init: ... setScript: sLeaveTown ]
+	SIG_END
+};
+
+static const uint16 freddypharkasPatchMacHopSingh[] = {
+	0x33, 0x4b,                     // jmp 4b [ always skip hop singh scene ]
+	PATCH_END
+};
+
 //          script, description,                                      signature                            patch
 static const SciScriptPatcherEntry freddypharkasSignatures[] = {
 	{  true,     0, "CD: score early disposal",                    1, freddypharkasSignatureScoreDisposal, freddypharkasPatchScoreDisposal },
 	{  true,    15, "Mac: broken inventory",                       1, freddypharkasSignatureMacInventory,  freddypharkasPatchMacInventory },
 	{  true,   110, "intro scaling workaround",                    2, freddypharkasSignatureIntroScaling,  freddypharkasPatchIntroScaling },
+	{  false,  200, "Mac: skip broken hop singh scene",            1, freddypharkasSignatureMacHopSingh,   freddypharkasPatchMacHopSingh },
 	{  true,   235, "CD: canister pickup hang",                    3, freddypharkasSignatureCanisterHang,  freddypharkasPatchCanisterHang },
 	{  true,   270, "Mac: easter egg hang",                        1, freddypharkasSignatureMacEasterEgg,  freddypharkasPatchMacEasterEgg },
 	{  true,   320, "ladder event issue",                          2, freddypharkasSignatureLadderEvent,   freddypharkasPatchLadderEvent },
@@ -4166,17 +4210,105 @@ static const uint16 longbowPatchArcherPathfinding[] = {
 	PATCH_END
 };
 
-//          script, description,                                      signature                          patch
+// Longbow 1.0 has two random but common game-breaking bugs: Green Man's riddle
+//  scene never ends and the Sheriff's men catch Robin too quickly when sweeping
+//  the forest. Both are due to reusing an uninitialized global variable.
+//
+// Global 137 is used by the abbey hedge maze to store ego's cel during room
+//  transitions. Exiting the maze leaves this as a random value between 0 and 5.
+//  The forest sweep also uses this global but as a counter it expects to start
+//  at 0. It increments as Robin changes rooms during a sweep until it reaches a
+//  a maximum and he is caught. This is usually 7 but in some rooms it's only 3.
+//  A high initial value can make this sequence impossible. rm180:doit also
+//  tests the sweep counter and doesn't allow scripts to respond to a hand code
+//  when greater than 2. This breaks the riddle scene after the first answer.
+//
+// We fix this by clearing global 137 at the start of days 1-7 and 11 so that
+//  stale hedge maze values from days 5/6 and 10 don't affect the day 7 riddles
+//  or the sweeps on days 9 and 12. Ideally we could just clear this at the
+//  start of each day but there's no day initialization script. Instead we add
+//  our day-specific code to Robin's cave (room 140), similar to Sierra's patch
+//  and later versions.
+//
+// Applies to: English PC Floppy 1.0
+// Responsible method: localproc_001a in script 140
+// Fixes bug #5036
+static const uint16 longbowSignatureGreenManForestSweepFix[] = {
+	0x89, SIG_MAGICDWORD, 0x82,     // lsg 82 [ day ]
+	0x35, 0x01,                     // ldi 01
+	0x1a,                           // eq?
+	0x30, SIG_UINT16(0x0019),       // bnt 0019 [ skip horn init ]
+	0x38, SIG_SELECTOR16(has),      // pushi has
+	0x78,                           // push1
+	0x78,                           // push1
+	0x81, 0x00,                     // lag 00
+	0x4a, 0x06,                     // send 06 [ ego has: 1 ]
+	0x18,                           // not
+	0x30, SIG_UINT16(0x000c),       // bnt 000c [ skip horn init ]
+	0x39, SIG_SELECTOR8(init),      // pushi init
+	0x76,                           // push0
+	0x38, SIG_ADDTOOFFSET(+2),      // pushi stopUpd
+	0x76,                           // push0
+	0x72, SIG_UINT16(0x19b2),       // lofsa horn
+	0x4a, 0x08,                     // send 08 [ horn init: stopUpd: ]
+	0x89, 0x7e,                     // lsg 7e
+	0x35, 0x00,                     // ldi 00
+	0x1a,                           // eq?
+	0x2e, SIG_UINT16(0005),         // bt 0005
+	SIG_ADDTOOFFSET(+19),
+	0x39, SIG_SELECTOR8(init),      // push init
+	0x76,                           // push0
+	0x38, SIG_ADDTOOFFSET(+2),      // pushi stopUpd
+	0x76,                           // push0
+	0x72, SIG_UINT16(0x1912),       // lofsa bow
+	SIG_END
+};
+
+static const uint16 longbowPatchGreenManForestSweepFix[] = {
+	0x39, 0x07,                     // pushi 07
+	0x81, 0x82,                     // lag 82 [ day ]
+	0x22,                           // lt?
+	0x31, 0x06,                     // bnt 06
+	0x60,                           // pprev  [ day ]
+	0x35, 0x0b,                     // ldi 0b
+	0x1c,                           // ne?
+	0x2f, 0x02,                     // bt 02
+	0xa1, 0x89,                     // sag 89 [ sweep-count = 0 if day <= 7 or day == 11 ]
+	0x81, 0x82,                     // lag 82 [ day ]
+	0x78,                           // push1
+	0x1a,                           // eq?
+	0x31, 0x10,                     // bnt 10 [ skip horn init ]
+	0x38, PATCH_SELECTOR16(has),    // pushi has
+	0x78,                           // push1
+	0x78,                           // push1
+	0x81, 0x00,                     // lag 00
+	0x4a, 0x06,                     // send 06 [ ego has: 1 ]
+	0x2f, 0x05,                     // bt 05 [ skip horn init ]
+	0x72, PATCH_UINT16(0x19b2),     // lofsa horn
+	0x33, 0x1a,                     // jmp 1c [ continue horn init ]
+	0x81, 0x7e,                     // lag 7e
+	0x31, 0x08,                     // bnt 08
+	PATCH_ADDTOOFFSET(+19),
+	0x72, PATCH_UINT16(0x1912),     // lofsa bow
+	0x39, PATCH_SELECTOR8(init),    // push init
+	0x76,                           // push0
+	0x38, PATCH_GETORIGINALUINT16(+25), // pushi stopUpd
+	0x76,                           // push0
+	PATCH_END
+};
+
+//          script, description,                                      signature                                patch
 static const SciScriptPatcherEntry longbowSignatures[] = {
-	{  true,   150, "day 5/6 camp sunset fix",                     2, longbowSignatureCampSunsetFix,     longbowPatchCampSunsetFix },
-	{  true,   150, "day 7 tuck net fix",                          1, longbowSignatureTuckNetFix,        longbowPatchTuckNetFix },
-	{  true,   210, "hand code crash",                             5, longbowSignatureShowHandCode,      longbowPatchShowHandCode },
-	{  true,   225, "arithmetic berry bush fix",                   1, longbowSignatureBerryBushFix,      longbowPatchBerryBushFix },
-	{  true,   250, "day 5/6 rescue flag fix",                     1, longbowSignatureRescueFlagFix,     longbowPatchRescueFlagFix },
-	{  true,   260, "day 5/6 town map sunset fix",                 1, longbowSignatureTownMapSunsetFix,  longbowPatchTownMapSunsetFix },
-	{  true,   320, "day 8 archer pathfinding workaround",         1, longbowSignatureArcherPathfinding, longbowPatchArcherPathfinding },
-	{  true,   350, "day 9 cobbler hut fix",                      10, longbowSignatureCobblerHut,        longbowPatchCobblerHut },
-	{  true,   530, "amiga pub fix",                               1, longbowSignatureAmigaPubFix,       longbowPatchAmigaPubFix },
+	{  true,   140, "green man riddles and forest sweep fix",      1, longbowSignatureGreenManForestSweepFix,  longbowPatchGreenManForestSweepFix },
+	{  true,   150, "day 5/6 camp sunset fix",                     2, longbowSignatureCampSunsetFix,           longbowPatchCampSunsetFix },
+	{  true,   150, "day 7 tuck net fix",                          1, longbowSignatureTuckNetFix,              longbowPatchTuckNetFix },
+	{  true,   210, "hand code crash",                             5, longbowSignatureShowHandCode,            longbowPatchShowHandCode },
+	{  true,   225, "arithmetic berry bush fix",                   1, longbowSignatureBerryBushFix,            longbowPatchBerryBushFix },
+	{  true,   250, "day 5/6 rescue flag fix",                     1, longbowSignatureRescueFlagFix,           longbowPatchRescueFlagFix },
+	{  true,   260, "day 5/6 town map sunset fix",                 1, longbowSignatureTownMapSunsetFix,        longbowPatchTownMapSunsetFix },
+	{  true,   320, "day 8 archer pathfinding workaround",         1, longbowSignatureArcherPathfinding,       longbowPatchArcherPathfinding },
+	{  true,   350, "day 9 cobbler hut fix",                      10, longbowSignatureCobblerHut,              longbowPatchCobblerHut },
+	{  true,   530, "amiga pub fix",                               1, longbowSignatureAmigaPubFix,             longbowPatchAmigaPubFix },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
@@ -7766,24 +7898,81 @@ static const uint16 qfg1vgaPatchBrutusScriptFreeze[] = {
 	PATCH_END
 };
 
-// Speed up the speed test by a factor 50, ensuring the detected speed
-// will end up at the highest level. This improves the detail in
-// Yorick's room (96), and slightly changes the timing in other rooms.
+// Patch the speed test so that it always ends up at the highest level. This
+//  improves the detail in Yorick's room (96), and slightly changes the timing
+//  in other rooms. This is compatible with PC and Mac versions which use
+//  significantly different tests and calculations.
 //
-// Method changed: speedTest::changeState
+// Applies to: PC Floppy, Mac Floppy
+// Responsible method: speedTest:changeState(2)
 static const uint16 qfg1vgaSignatureSpeedTest[] = {
 	0x76,                               // push0
 	0x43, 0x42, 0x00,                   // callk GetTime, 0
 	SIG_MAGICDWORD,
-	0xa3, 0x01,                         // sal local[1]
-	0x35, 0x32,                         // ldi 50
-	0x65, 0x1a,                         // aTop cycles
+	0x36,                               // push
+	0x83, 0x01,                         // lal 01
+	0x04,                               // sub
+	0xa3, 0x00,                         // sal 00
 	SIG_END
 };
 
 static const uint16 qfg1vgaPatchSpeedTest[] = {
-	PATCH_ADDTOOFFSET(+6),
-	0x35, 0x01,                         // ldi 1
+	0x35, 0x00,                         // ldi 00 [ local0 = 0, the best result ]
+	0x33, 0x04,                         // jmp 04
+	PATCH_END
+};
+
+// QFG1VGA has a bug where exceeding the weight limit during certain scenes
+//  breaks the character screen for the rest of the game. Picking mushrooms,
+//  searching cheetaurs, and fetching the seed are among the vulnerable actions.
+//
+// When adding inventory, ego:get displays a warning if the new items exceed the
+//  weight limit. If this happens while qfgMessager is displaying a message
+//  then both will display at the same time but only one will be disposed. This
+//  leaves an extra entry in the kernel's window list for the rest of the game.
+//  kDisplay then sends text to the wrong window, breaking the character screen
+//  and others, and prevents the player from ever viewing their stats.
+//
+// We fix this by adding a check to ego:get that skips displaying messages if a
+//  dialog already exists. This is what Sierra did in the Mac version after
+//  reverting the scene-specific patches they issued for the PC version.
+//
+// Applies to: PC Floppy
+// Responsible method: ego:get
+// Fixes bug: #10942
+static const uint16 qfg1vgaSignatureInventoryWeightWarn[] = {
+	0x8f, 0x00,                         // lsp 00
+	0x35, 0x01,                         // ldi 01
+	0x1a,                               // eq?
+	0x31, 0x04,                         // bnt 04
+	0x35, 0x01,                         // ldi 01
+	0x33, 0x02,                         // jmp 02
+	0x87, 0x02,                         // lap 02
+	0xa5, SIG_MAGICDWORD, 0x01,         // sat 01
+	0x38, SIG_UINT16(0x024d),           // pushi amount [ hard-coded for PC ]
+	0x76,                               // push0
+	0x85, 0x00,                         // lat 00
+	0x4a, 0x04,                         // send 04 [ temp0 amount? ]
+	0xa5, 0x02,                         // sat 02
+	SIG_ADDTOOFFSET(+0x0092),
+	0x8d, 0x01,                         // lst 01
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchInventoryWeightWarn[] = {
+	0x87, 0x00,                         // lap 00
+	0x78,                               // push1 [ save 1 byte ]
+	0x1a,                               // eq?
+	0x2f, 0x02,                         // bt 02 [ save 4 bytes ]
+	0x87, 0x02,                         // lap 02
+	0xa5, 0x01,                         // sat 01
+	0x38, PATCH_UINT16(0x024d),         // pushi amount [ hard-coded for PC ]
+	0x76,                               // push0
+	0x85, 0x00,                         // lat 00
+	0x4a, 0x04,                         // send 04 [ temp0 amount? ]
+	0xa5, 0x02,                         // sat 02
+	0x81, 0x19,                         // lag 19  [ dialog ]
+	0x2e, PATCH_UINT16(0x0092),         // bt 0092 [ skip messages if dialog ]
 	PATCH_END
 };
 
@@ -7925,21 +8114,240 @@ static const uint16 qfg1vgaPatchMacAntwerpControls[] = {
 	PATCH_END
 };
 
+// The Mac version's Sierra logo and introduction are often skipped when using a
+//  mouse. This is a bug in the original that accidentally relies on slower
+//  machines. In DOS these scenes could be skipped by pressing Enter. Sierra
+//  updated this to include the mouse, but they did this by accepting any event
+//  type, including mouse-up. These rooms load in response to mouse-down and if
+//  they finish loading before the button is released then they are skipped.
+//
+// We fix this by excluding mouse-up events from these room event handlers.
+//
+// Applies to: Mac Floppy
+// Responsible methods: LogoRoom:handleEvent, intro:handleEvent
+// Fixes bug: #10937
+static const uint16 qfg1vgaSignatureMacLogoIntroSkip[] = {
+	0x4a, 0x04,                             // send 04 [ event type? ]
+	0x31, SIG_ADDTOOFFSET(+1),              // bnt [ skip if event:type == none (0) ]
+	0x39, SIG_ADDTOOFFSET(+1),              // pushi claimed
+	SIG_MAGICDWORD,
+	0x78,                                   // push1
+	0x78,                                   // push1
+	0x87, 0x01,                             // lap 01
+	0x4a, 0x06,                             // send 06 [ event claimed: 1 ]
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchMacLogoIntroSkip[] = {
+	0x39, PATCH_GETORIGINALBYTE(+5),        // pushi claimed
+	0x78,                                   // push1
+	0x78,                                   // push1
+	0x4a, 0x0a,                             // send 0a [ event type? claimed: 1 ]
+	0x38, PATCH_UINT16(0x00fd),             // pushi 00fd
+	0x12,                                   // and
+	0x31, PATCH_GETORIGINALBYTEADJUST(+3, -8), // bnt [ skip if event:type == none (0) or mouse-up (2)]
+	PATCH_END
+};
+
+// The Thieves' Guild cashier in room 332 stops responding to verbs when he
+//  reappears at his window. This is due to heGoes:changeState(1) disposing and
+//  deleting borisThief once he's out of sight, indirectly deleting his actions
+//  object borisTeller which handles verbs. borisTeller is only initialized in
+//  rm332:init and this leaves the player unable to purchase or fence items.
+//
+// We fix this by toggling borisThief's visibility with the hide and show
+//  methods instead of disposing and re-initializing.
+//
+// Applies to: PC Floppy, Mac Floppy
+// Responsible methods: heComes:changeState, heGoes:changeState
+// Fixes bug #10939
+static const uint16 qfg1vgaSignatureThievesGuildCashier[] = {
+	0x30, SIG_UINT16(0x0024),               // bnt 0024 [ state 1 ]
+	SIG_ADDTOOFFSET(+31),
+	SIG_MAGICDWORD,
+	0x4a, 0x20,                             // send 20  [ borisThief ... init: ... ]
+	0x32, SIG_UINT16(0x002b),               // jmp 002b [ end of method ]
+	0x3c,                                   // dup
+	0x35, 0x01,                             // ldi 01
+	0x1a,                                   // eq?
+	0x30, SIG_UINT16(0x0019),               // bnt 0019 [ state 2 ]
+	SIG_ADDTOOFFSET(+82),
+	0x39, SIG_SELECTOR8(dispose),           // pushi dispose
+	0x76,                                   // push0
+	0x39, SIG_SELECTOR8(delete),            // pushi delete
+	SIG_ADDTOOFFSET(+4),
+	0x4a, 0x08,                             // send 08 [ borisThief dispose: delete: ]
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchThievesGuildCashier[] = {
+	0x30, PATCH_UINT16(0x0025),             // bnt 0025 [ state 1 ]
+	PATCH_ADDTOOFFSET(+31),
+	0x38, PATCH_SELECTOR16(show),           // pushi show
+	0x76,                                   // push0
+	0x4a, 0x24,                             // send 24 [ borisThief ... init: ... show: ]
+	0x3c,                                   // dup
+	0x35, 0x01,                             // ldi 01
+	0x1a,                                   // eq?
+	0x31, 0x19,                             // bnt 19 [ state 2 ]
+	PATCH_ADDTOOFFSET(+82),
+	0x39, PATCH_SELECTOR8(hide),            // pushi hide
+	0x32, PATCH_UINT16(0x0000),             // jmp 0000
+	PATCH_ADDTOOFFSET(+4),
+	0x4a, 0x04,                             // send 04 [ borisThief hide: ]
+	PATCH_END
+};
+
+// When entering the great hall (room 141), the Mac version stores ego's speed
+//  in a temp variable in egoEnters:changeState(0) and expects that value to be
+//  there in state 6 when restoring ego's speed. We patch the script to use its
+//  register instead so that it works and doesn't do an uninitialized read.
+//
+// Applies to: Mac Floppy
+// Responsible method: egoEnters:changeState
+// Fixes bug: #10945
+static const uint16 qfg1vgaSignatureMacEnterGreatHall[] = {
+	SIG_MAGICDWORD,
+	0x4a, 0x04,                             // send 04 [ ego cycleSpeed? ]
+	0xa5, 0x00,                             // sat 00
+	SIG_ADDTOOFFSET(+140),
+	0x8d, 0x00,                             // lst 00
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchMacEnterGreatHall[] = {
+	PATCH_ADDTOOFFSET(+2),
+	0x65, 0x24,                             // aTop register
+	PATCH_ADDTOOFFSET(+140),
+	0x67, 0x24,                             // pTos register
+	PATCH_END
+};
+
+// When fighting the giant in room 58, the Mac version stores the weapon in a
+//  temp variable in giantFights:changeState(2) and expects that value to be
+//  there in later states to determine whether or not to run sword animation.
+//  We patch the script to use the local variable that holds the weapon instead
+//  so that this works and doesn't do an uninitialized read.
+//
+// Applies to: Mac Floppy
+// Responsible method: giantFights:changeState
+// Fixes bug: #10948
+static const uint16 qfg1vgaSignatureMacGiantFight[] = {
+	SIG_MAGICDWORD,
+	0x8d, 0x00,                             // lst 00 [ temp0 set to 0 in state 2 if local5 == 1 ]
+	0x35, 0x00,                             // ldi 00
+	0x1a,                                   // eq?
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchMacGiantFight[] = {
+	0x8b, 0x05,                             // lsl 05
+	0x35, 0x01,                             // ldi 01
+	PATCH_END
+};
+
+// Dag-Nab-It, the dagger game in room 340, mistakenly leaves inventory enabled.
+//  Using a throwable item, such as a dagger, locks up the game.
+//
+// We fix this by disabling inventory controls on this screen. Sierra attempted
+//  to do this in the Mac version but introduced a new bug which we also fix.
+//
+// Applies to: PC Floppy
+// Responsible method: dagnabitScript:changeState
+// Fixes bug: #10958
+static const uint16 qfg1vgaSignatureDagnabitInventory[] = {
+	0x38, SIG_SELECTOR16(disable),          // pushi disable
+	0x39, 0x03,                             // pushi 03
+	0x78,                                   // push1
+	0x39, SIG_MAGICDWORD, 0x05,             // pushi 05
+	0x39, 0x09,                             // pushi 09
+	0x81, 0x45,                             // lag 45
+	0x4a, 0x0a,                             // send 0a [ mainIconBar disable: 1 5 9 ]
+	0x35, 0x01,                             // ldi 01
+	0xa3, 0x13,                             // sal 13
+	0x32, SIG_UINT16(0x0278),               // jmp 0278 [ end of method ]
+	SIG_ADDTOOFFSET(+625),
+	0x38, SIG_SELECTOR16(changeState),      // pushi changeState
+	0x78,                                   // push1
+	0x78,                                   // push1
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchDagnabitInventory[] = {
+	PATCH_ADDTOOFFSET(+3),
+	0x39, 0x05,                             // pushi 05
+	PATCH_ADDTOOFFSET(+5),
+	0x39, 0x07,                             // pushi 07 [ "use" inventory icon ]
+	0x39, 0x08,                             // pushi 08 [ inventory ]
+	0x81, 0x45,                             // lag 45
+	0x4a, 0x0e,                             // send 0e [ mainIconBar disable: 1 5 9 7 8 ]
+	0x78,                                   // push1
+	0xab, 0x13,                             // ssl 13
+	PATCH_ADDTOOFFSET(+629),
+	0x76,                                   // push0 [ state 0 re-disables inventory ]
+	PATCH_END
+};
+
+// The Mac version of Dag-Nab-It, the dagger game in room 340, introduced a bug
+//  that sends a message to a non-object when clicking during the start.
+//
+// The PC version left inventory enabled and Sierra fixed this in Mac. Sierra
+//  also attempted to clear the inventory cursor, but this was done in a way
+//  that leaves the icon bar in an illegal state. mainIconBar:curInvIcon is
+//  set to zero but mainIconBar:curIcon remains set to the "use" icon item.
+//  Clicking anywhere during the initial two seconds causes IconBar:handleEvent
+//  to query curInvIcon:message but since curInvIcon is zero this is an error.
+//
+// We fix this with a deceptively simple patch that prevents the "use" icon from
+//  ending up as mainIconBar:curIcon. rm340:init runs a complex sequence of icon
+//  disabling and enabling. Patching a redundant mainIconBar:disable to include
+//  "use" prevents the subsequent call to handsOff from cycling through enabled
+//  icons and landing on "use" as the new curIcon, preventing the illegal state.
+//
+// Applies to: Mac Floppy
+// Responsible method: rm340:init
+// Fixes bug: #10958
+static const uint16 qfg1vgaSignatureMacDagnabitIconBar[] = {
+	0x38, SIG_SELECTOR16(disable),          // pushi disable
+	0x39, 0x03,                             // pushi 03
+	0x78,                                   // push1
+	SIG_MAGICDWORD,
+	0x39, 0x05,                             // pushi 05
+	0x39, 0x08,                             // pushi 08
+	0x81, 0x45,                             // lag 45
+	0x4a, 0x0a,                             // send 0a [ mainIconBar disable: 1 5 8 ]
+	SIG_END
+};
+
+static const uint16 qfg1vgaPatchMacDagnabitIconBar[] = {
+	PATCH_ADDTOOFFSET(+6),
+	0x39, 0x07,                             // pushi 07 [ "use" inventory icon ]
+	PATCH_END
+};
+
 //          script, description,                                      signature                            patch
 static const SciScriptPatcherEntry qfg1vgaSignatures[] = {
+	{  true,     0, "inventory weight warning",                    1, qfg1vgaSignatureInventoryWeightWarn, qfg1vgaPatchInventoryWeightWarn },
 	{  true,    41, "moving to castle gate",                       1, qfg1vgaSignatureMoveToCastleGate,    qfg1vgaPatchMoveToCastleGate },
 	{  true,    55, "healer's hut, no delay for buy/steal",        1, qfg1vgaSignatureHealerHutNoDelay,    qfg1vgaPatchHealerHutNoDelay },
+	{  true,    58, "mac: giant fight",                            6, qfg1vgaSignatureMacGiantFight,       qfg1vgaPatchMacGiantFight },
 	{  true,    73, "brutus script freeze glitch",                 1, qfg1vgaSignatureBrutusScriptFreeze,  qfg1vgaPatchBrutusScriptFreeze },
 	{  true,    77, "white stag dagger throw animation glitch",    1, qfg1vgaSignatureWhiteStagDagger,     qfg1vgaPatchWhiteStagDagger },
 	{  true,    78, "mac: enable antwerp controls",                1, qfg1vgaSignatureMacAntwerpControls,  qfg1vgaPatchMacAntwerpControls },
 	{  true,    96, "funny room script bug fixed",                 1, qfg1vgaSignatureFunnyRoomFix,        qfg1vgaPatchFunnyRoomFix },
 	{  true,    96, "yorick door #2 lockup fixed",                 1, qfg1vgaSignatureYorickDoorTwoRect,   qfg1vgaPatchYorickDoorTwoRect },
+	{  true,   141, "mac: enter great hall",                       1, qfg1vgaSignatureMacEnterGreatHall,   qfg1vgaPatchMacEnterGreatHall },
+	{  true,   200, "mac: intro mouse-up fix",                     1, qfg1vgaSignatureMacLogoIntroSkip,    qfg1vgaPatchMacLogoIntroSkip },
 	{  true,   210, "cheetaur description fixed",                  1, qfg1vgaSignatureCheetaurDescription, qfg1vgaPatchCheetaurDescription },
 	{  true,   215, "fight event issue",                           1, qfg1vgaSignatureFightEvents,         qfg1vgaPatchFightEvents },
 	{  true,   216, "weapon master event issue",                   1, qfg1vgaSignatureFightEvents,         qfg1vgaPatchFightEvents },
 	{  true,   299, "speedtest",                                   1, qfg1vgaSignatureSpeedTest,           qfg1vgaPatchSpeedTest },
 	{  true,   331, "moving to crusher",                           1, qfg1vgaSignatureMoveToCrusher,       qfg1vgaPatchMoveToCrusher },
 	{  true,   331, "moving to crusher from card game",            1, qfg1vgaSignatureCrusherCardGame,     qfg1vgaPatchCrusherCardGame },
+	{  true,   332, "thieves' guild cashier fix",                  1, qfg1vgaSignatureThievesGuildCashier, qfg1vgaPatchThievesGuildCashier },
+	{  true,   340, "dagnabit inventory fix",                      1, qfg1vgaSignatureDagnabitInventory,   qfg1vgaPatchDagnabitInventory },
+	{  true,   340, "mac: dagnabit icon bar fix",                  1, qfg1vgaSignatureMacDagnabitIconBar,  qfg1vgaPatchMacDagnabitIconBar },
+	{  true,   603, "mac: logo mouse-up fix",                      1, qfg1vgaSignatureMacLogoIntroSkip,    qfg1vgaPatchMacLogoIntroSkip },
 	{  true,   814, "window text temp space",                      1, qfg1vgaSignatureTempSpace,           qfg1vgaPatchTempSpace },
 	{  true,   814, "dialog header offset",                        3, qfg1vgaSignatureDialogHeader,        qfg1vgaPatchDialogHeader },
 	{  true,   970, "antwerps wandering off-screen",               1, qfg1vgaSignatureAntwerpWander,       qfg1vgaPatchAntwerpWander },
@@ -10720,6 +11128,172 @@ static const uint16 qfg4GuildWalkFloppyPatch3[] = {
 	PATCH_END                           // (don't end the switch, keep testing cases)
 };
 
+// Rations are not properly decremented by daily scheduled meal consumption.
+// Rations are consumed periodically as time advances. If rations are the
+// active inventory item when the last of them is eaten, that icon will persist
+// in the verb bar.
+//
+// We make room by consolidating common gloryMessager::say() args in a
+// subroutine and cache values with temp variables. We add code to clean up
+// the verb bar when rations are exhausted (test if rations were the active
+// item, advance the cursor, hide the bar's invItem icon) - similar to the
+// localproc in script 16, called by combinable items to remove themselves.
+//
+// Applies to at least: English CD, English floppy, German floppy
+// Responsible method: hero::eatMeal() in script 28
+// Fixes bug: #10772
+static const uint16 qfg4LeftoversSignature[] = {
+	0x3f, 0x01,                         // link 1d
+	SIG_ADDTOOFFSET(+9),                // ...
+	SIG_MAGICDWORD,
+	0xe1, 0x88,                         // -ag global[136] (digest a preemptively eaten meal)
+	0x35, 0x01,                         // ldi 1d
+	SIG_ADDTOOFFSET(+238),              // ...
+	0x85, 0x00,                         // lat temp[0] (eaten, unset flags if true)
+	SIG_END
+};
+
+static const uint16 qfg4LeftoversPatch[] = {
+	0x3f, 0x03,                         // link 3d (3 temp vars)
+
+	PATCH_ADDTOOFFSET(+15),             // (cond 1, preemptively eaten meals)
+	0x32, PATCH_UINT16(0x00bb),         // jmp 187d [end the cond]
+
+                                        // (cond 2)
+	0x39, PATCH_SELECTOR8(at),          // pushi at
+	0x78,                               // push1
+	0x39, 0x04,                         // pushi 4d (itemId 4, theRations)
+	0x81, 0x09,                         // lag global[9] (gloryInv)
+	0x4a, PATCH_UINT16(0x0006),         // send 6d
+	0xa5, 0x01,                         // sat temp[1] (theRations)
+
+	0x38, PATCH_SELECTOR16(amount),     // pushi amount
+	0x76,                               // push0
+	0x4a, PATCH_UINT16(0x0004),         // send 4d (theRations amount:)
+	0xa5, 0x02,                         // sat temp[2] (amount)
+
+	0x31, 0x50,                         // bnt 80d [next condition]
+
+	0x38, PATCH_SELECTOR16(amount),     // pushi amount
+	0x78,                               // push1
+	0xed, 0x02,                         // -st temp[2] (amount)
+	0x85, 0x01,                         // lat temp[1] (theRations)
+	0x4a, PATCH_UINT16(0x0006),         // send 6d (decrement amount)
+
+	0x85, 0x02,                         // lat temp[2] (amount)
+	0x2f, 0x3b,                         // bt 59d [skip exhausted item removal]
+
+	0x38, PATCH_SELECTOR16(owner),      // pushi owner
+	0x78,                               // push1
+	0x76,                               // push0
+	0x85, 0x01,                         // lat temp[1] (theRations)
+	0x4a, PATCH_UINT16(0x0006),         // send 6d
+
+	0x38, PATCH_SELECTOR16(curInvIcon), // pushi curInvIcon
+	0x76,                               // push0
+	0x81, 0x45,                         // lag global[69] (mainIconBar)
+	0x4a, PATCH_UINT16(0x0004),         // send 4d
+	0x8d, 0x01,                         // lst temp[1] (theRations)
+	0x1a,                               // eq?
+	0x31, 0x23,                         // bnt 35d [skip icon bar disabling]
+
+	0x38, PATCH_SELECTOR16(curInvIcon), // pushi curInvIcon
+	0x78,                               // push1
+	0x76,                               // push0
+	0x38, PATCH_SELECTOR16(advanceCurIcon), // pushi advanceCurIcon
+	0x76,                               // push0
+	0x38, PATCH_SELECTOR16(disable),    // pushi disable
+	0x78,                               // push1
+	0x39, 0x06,                         // pushi 6d
+	0x81, 0x45,                         // lag global[69] (mainIconBar)
+	0x4a, PATCH_UINT16(0x0010),         // send 16d
+
+	0x38, PATCH_SELECTOR16(hide),       // pushi hide
+	0x76,                               // push0
+                                        //
+	0x7a,                               // push2 (2 call args)
+	0x39, 0x24,                         // pushi 36d
+	0x78,                               // push1
+	0x43, 0x02, PATCH_UINT16(0x0004),   // callk ScriptID, 4d (ScriptID 36 1, invItem)
+                                        //
+	0x4a, PATCH_UINT16(0x0004),         // send 4d (invItem hide:)
+                                        // (exhausted item removal end)
+
+	0x35, 0x01,                         // ldi 1d
+	0xa5, 0x00,                         // sat temp[0] (eaten)
+
+	0x33, 0x54,                         // jmp 84d [end the cond]
+
+                                        // (cond 3)
+	0x78,                               // push1 (1 call arg)
+	0x39, 0x03,                         // pushi 3d ("hungry" flag)
+	0x45, 0x04, PATCH_UINT16(0x0002),   // callb [export 4 of script 0], 2d (test flag 3)
+	0x31, 0x26,                         // bnt 38d [next condition]
+                                        //
+	0x38, PATCH_SELECTOR16(useStamina), // pushi useStamina
+	0x7a,                               // push2
+	0x39, 0x08,                         // pushi 8d
+	0x76,                               // push0
+	0x54, PATCH_UINT16(0x0008),         // self 8d (hero useStamina: 8 0)
+                                        //
+	0x31, 0x09,                         // bnt 9d [hero dies]
+	0x78,                               // push1 (1 call arg)
+	0x39, 0x05,                         // pushi 5d (say cond:5, "You're starving.")
+	0x41, 0x3a, PATCH_UINT16(0x0002),   // call [58], 2d (gloryMessager say: 1 6 5 1 0 28)
+	0x33, 0x36,                         // jmp 54d [end the cond]
+                                        //
+	0x39, 0x04,                         // pushi 4d (4 call args)
+	0x39, 0x08,                         // pushi 8d
+	0x39, 0x1c,                         // pushi 28d
+	0x38, PATCH_UINT16(0x03e3),         // pushi 995d
+	0x78,                               // push1
+	0x47, 0x1a, 0x00, PATCH_UINT16(0x0008), // calle [export 0 of script 26], 8d (hero dies)
+	0x33, 0x25,                         // jmp 37d [end the cond]
+
+                                        // (cond 4)
+	0x78,                               // push1 (1 call arg)
+	0x7a,                               // push2 ("missed meal" flag)
+	0x45, 0x04, PATCH_UINT16(0x0002),   // callb [export 4 of script 0], 2d (test flag 2)
+	0x31, 0x10,                         // bnt 16d [next condition]
+                                        //
+	0x78,                               // push1 (1 call arg)
+	0x39, 0x03,                         // pushi 3d ("hungry" flag)
+	0x45, 0x02, PATCH_UINT16(0x0002),   // callb [export 2 of script 0], 2d (set flag 3)
+                                        //
+	0x78,                               // push1 (1 call arg)
+	0x39, 0x06,                         // pushi 6d (say cond:6, "Really getting hungry.")
+	0x41, 0x11, PATCH_UINT16(0x0002),   // call [17], 2d (gloryMessager say: 1 6 6 1 0 28)
+	0x33, 0x0d,                         // jmp 13d [end the cond]
+
+                                        // (cond else)
+	0x78,                               // push1 (1 call arg)
+	0x7a,                               // push2 ("missed meal" flag)
+	0x45, 0x02, PATCH_UINT16(0x0002),   // callb [export 2 of script 0], 2d (set flag 2)
+                                        //
+	0x78,                               // push1 (1 call arg)
+	0x39, 0x04,                         // pushi 4d (say cond:4, "Get food soon.")
+	0x41, 0x02, PATCH_UINT16(0x0002),   // call [2], 2d (gloryMessager say: 1 6 4 1 0 28)
+
+                                        // (cond end)
+
+	0x33, 0x14,                         // jmp 20d [skip subroutine declaration]
+	0x38, PATCH_SELECTOR16(say),        // pushi say
+	0x39, 0x06,                         // pushi 6d
+	0x78,                               // push1 (noun)
+	0x39, 0x06,                         // pushi 6d (verb)
+	0x8f, 0x01,                         // lsp param[1] (cond varies)
+	0x78,                               // push1 (seq)
+	0x76,                               // push0 (caller)
+	0x39, 0x1c,                         // pushi 28d (message pool)
+	0x81, 0x5b,                         // lag global[91] (gloryMessager say: 1 6 ? 1 0 28)
+	0x4a, PATCH_UINT16(0x0010),         // send 16d
+	0x48,                               // ret
+
+	0x33, 0x16,                         // jmp 22d [skip waste bytes]
+	0x35, 0x00,                         // ldi 0 (erase 2 bytes to keep disasm aligned)
+	PATCH_END
+};
+
 //          script, description,                                     signature                      patch
 static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,     0, "prevent autosave from deleting save games",   1, qfg4AutosaveSignature,         qfg4AutosavePatch },
@@ -10732,6 +11306,7 @@ static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,    11, "fix trigger after summon staff (1/2)",        1, qfg4TriggerStaffSignature1,    qfg4TriggerStaffPatch1 },
 	{  true,    11, "fix trigger after summon staff (2/2)",        1, qfg4TriggerStaffSignature2,    qfg4TriggerStaffPatch2 },
 	{  true,    13, "fix spell effect disposal",                   1, qfg4EffectDisposalSignature,   qfg4EffectDisposalPatch },
+	{  true,    28, "fix lingering rations icon after eating",     1, qfg4LeftoversSignature,        qfg4LeftoversPatch },
 	{  true,    31, "fix setScaler calls",                         1, qfg4SetScalerSignature,        qfg4SetScalerPatch },
 	{  true,    41, "fix conditional void calls",                  3, qfg4ConditionalVoidSignature,  qfg4ConditionalVoidPatch },
 	{  true,    83, "fix incorrect array type",                    1, qfg4TrapArrayTypeSignature,    qfg4TrapArrayTypePatch },
@@ -11517,6 +12092,41 @@ static const uint16 sq4CdPatchBikerBarDoor[] = {
 	PATCH_END
 };
 
+// Clicking Do on the timepod in room 613 while a biker approaches always shows
+//  "Not now!" in a message box, even in speech mode. It seems that Sierra
+//  thought they didn't have audio for this message and created a text resource
+//  just for it, but it also appears in room 90 with audio, so we use that.
+//
+// Applies to: English PC CD
+// Responsible method: ship:doVerb(4)
+// Fixes bug #10922
+static const uint16 sq4CdSignatureBikerTimepodMessage[] = {
+	0x36,                               // push
+	0x35, 0x01,                         // ldi 01
+	0x1a,                               // eq?
+	0x31, 0x0d,                         // bnt 0d [ skip if ulence:egoBusy != 1 ]
+	0x7a,                               // push2
+	0x38, SIG_UINT16(0x0265),           // pushi 0265
+	0x76,                               // push0
+	SIG_MAGICDWORD,
+	0x46, SIG_UINT16(0x0330),           // calle proc816_1 04 [ message box ]
+	      SIG_UINT16(0x0001), 0x04,
+	SIG_END
+};
+
+static const uint16 sq4CdPatchBikerTimepodMessage[] = {
+	0x31, 0x11,                         // bnt 11 [ skip if ulence:egoBusy == 0 ]
+	0x38, PATCH_SELECTOR16(modNum),     // pushi modNum
+	0x78,                               // push1
+	0x39, 0x5a,                         // pushi 5a
+	0x38, PATCH_SELECTOR16(say),        // pushi say
+	0x78,                               // push1
+	0x7a,                               // push2
+	0x81, 0x59,                         // lag 59
+	0x4a, 0x0c,                         // send 0c [ Sq4GlobalNarrator modNum: 90 say: 2 ]
+	PATCH_END
+};
+
 // The door to Sock's is immediately disposed of in the CD version, breaking its
 //  Look message and preventing it from being drawn when restoring a saved game.
 //  We remove the incorrect dispose call along with a redundant addToPic.
@@ -11634,6 +12244,172 @@ static const uint16 sq4CdPatchTextOptions[] = {
 	PATCH_END
 };
 
+// Vohaul's scene on the PocketPal (room 545) is incompatible with our dual
+//  text+speech mode and reportedly has MIDI timing issues in text mode.
+//
+// This is an unusual scene in that it uses three empty MIDI songs to control
+//  its text delays, which is probably why Sierra didn't fully upgrade it to
+//  use a Narrator in the CD version. Instead the tVOHAUL Narrator is only used
+//  in speech mode without the formatting it would need to display text. In text
+//  mode the original floppy code handles that.
+//
+// We heavily patch this script to support text+speech mode and remove the MIDIs
+//  from the equation. The trick to using tVOHAUL in dual mode is to set its
+//  nMsgType to 2. This causes Sq4Narrator to change the game's message mode to
+//  speech while it says a message, preventing it from displaying text in a
+//  message box since it wasn't provided formatting. Our code needs to know the
+//  real message mode while tVOHAUL is speaking so we store that in the script's
+//  register for later use.
+//
+// The audio and text for Vohaul's messages aren't the same. The audio for the
+//  second message also contains the third, and the third has no audio resource
+//  at all. We work around this by setting a three second timer and displaying
+//  the third text while the audio is already playing.
+//
+// Applies to: English PC CD
+// Responsible method: vohaulScript:changeState
+// Fixes bug #10241
+static const uint16 sq4CdSignatureVohaulPocketPalTextSpeech[] = {
+	0x3c,                               // dup
+	0x35, 0x00,                         // ldi 00
+	0x1a,                               // eq?
+	0x31, 0x26,                         // bnt 26 [ state 1 ]
+	SIG_ADDTOOFFSET(+49),
+	0x1a,                               // eq? [ is speech mode? ]
+	0x31, 0x22,                         // bnt 22
+	SIG_ADDTOOFFSET(+13),
+	0x38, SIG_SELECTOR16(modNum),       // pushi modNum [ unnecessary when modNum is room number ]
+	0x78,                               // push1
+	0x38, SIG_UINT16(0x0221),           // pushi 0221
+	SIG_ADDTOOFFSET(11),
+	0x32, SIG_UINT16(0x00d1),           // jmp 00d1 [ end of method ]
+	0x38, SIG_SELECTOR16(setCycle),     // pushi setCycle
+	SIG_ADDTOOFFSET(+9),
+	0x38, SIG_SELECTOR16(setCycle),     // pushi setCycle
+	0x78,                               // push1
+	0x51, 0x59,                         // class RandCycle
+	0x36,                               // push
+	0x72, SIG_UINT16(0x0578),           // lofsa vohaulEyes
+	0x4a, 0x06,                         // send 06
+	0x39, 0x04,                         // pushi 04
+	SIG_MAGICDWORD,
+	0x76,                               // push0
+	0x72, SIG_UINT16(0x0740),           // lofsa "Take a good look, Roger:"
+	0x36,                               // push
+	0x38, SIG_UINT16(0x0353),           // pushi 0353
+	0x7c,                               // pushSelf
+	0x40, SIG_UINT16(0xf93e), 0x08,     // call localproc_0062 08 [ display text until midi 851 finishes ]
+	0x32, SIG_UINT16(0x00a7),           // jmp 00a7 [ end of method ]
+	SIG_ADDTOOFFSET(+10),
+	0x1a,                               // eq? [ is text mode? ]
+	SIG_ADDTOOFFSET(+52),
+	0x1a,                               // eq? [ is speech mode? ]
+	0x31, 0x0e,                         // bnt 0e
+	SIG_ADDTOOFFSET(+11),
+	0x32, SIG_UINT16(0x0057),           // jmp 0057 [ end of method ]
+	0x39, 0x04,                         // pushi 04
+	0x76,                               // push0
+	0x72, SIG_UINT16(0x0760),           // lofsa "Remember this poor wretched soul..."
+	0x36,                               // push
+	0x38, SIG_UINT16(0x0354),           // pushi 0354
+	0x7c,                               // pushSelf
+	0x40, SIG_UINT16(0xf8dc), 0x08,     // call localproc_0062 08 [ display text until midi 852 finishes ]
+	0x32, SIG_UINT16(0x0045),           // jmp 0045 [ end of method ]
+	SIG_ADDTOOFFSET(+6),
+	0x89, 0x5a,                         // lsg 5a
+	0x35, 0x01,                         // ldi 01
+	0x1a,                               // eq?    [ is text mode? ]
+	0x31, 0x17,                         // bnt 17 [ skip text, set cycles = 1 ]
+	0x78,                               // push1
+	0x8b, 0x00,                         // lsl 00
+	0x45, 0x0c, 0x02,                   // call proc0_12 02 [ unnecessary, localproc_0062 calls this ]
+	0x39, 0x04,                         // pushi 04
+	0x76,                               // push0
+	0x72, SIG_UINT16(0x0784),           // lofsa "...for he is your SON!"
+	0x36,                               // push
+	0x38, SIG_UINT16(0x0355),           // pushi 0355
+	0x7c,                               // pushSelf
+	0x40, SIG_UINT16(0xf8b7), 0x08,     // call localproc_0062 08 [ display text until midi 853 finishes ]
+	0x33, 0x21,                         // jmp 21 [ end of method ]
+	0x35, 0x01,                         // ldi 01
+	0x65, 0x1a,                         // aTop cycles [ cycles = 1, speech completed or dismissed by user ]
+	0x33, 0x1b,                         // jmp 1b [ end of method ]
+	SIG_END
+};
+
+static const uint16 sq4CdPatchVohaulPocketPalTextSpeech[] = {
+	0x2f, 0x2a,                         // bt 26 [ state 1 ]
+	0x81, 0x5a,                         // lag 5a
+	0x65, 0x24,                         // aTop register [ register = message mode ]
+	PATCH_ADDTOOFFSET(+49),
+	0x12,                               // and [ is speech or dual mode? ]
+	0x31, 0x21,                         // bnt 21
+	PATCH_ADDTOOFFSET(+13),
+	0x38, PATCH_SELECTOR16(nMsgType),   // pushi nMsgType
+	0x78,                               // push1
+	0x38, PATCH_UINT16(0x0002),         // pushi 0002 [ speech ]
+	PATCH_ADDTOOFFSET(+11),
+	0x33, 0x1a,                         // jmp 1a
+	0x38, PATCH_SELECTOR16(setCycle),   // pushi setCycle
+	0x3c,                               // dup [ save 2 bytes ]
+	PATCH_ADDTOOFFSET(+9),
+	0x78,                               // push1
+	0x51, 0x59,                         // class RandCycle
+	0x36,                               // push
+	0x72, PATCH_UINT16(0x0578),         // lofsa vohaulEyes
+	0x4a, 0x06,                         // send 06
+	0x35, 0x02,                         // ldi 02
+	0x65, 0x1c,                         // aTop seconds [ 2 second delay in text mode ]
+	0x63, 0x24,                         // pToa register
+	0x78,                               // push1
+	0x12,                               // and    [ is text or dual mode? ]
+	0x31, 0x0b,                         // bnt 0b [ don't display text ]
+	0x39, 0x03,                         // pushi 03
+	0x76,                               // push0
+	0x74, PATCH_UINT16(0x0740),         // lofss "Take a good look, Roger:"
+	0x76,                               // push0
+	0x40, PATCH_UINT16(0xf93b), 0x06,   // call localproc_0062 06 [ display text without midi ]
+	PATCH_ADDTOOFFSET(+10),
+	0x12,                               // and [ is text or dual mode? ]
+	PATCH_ADDTOOFFSET(+52),
+	0x12,                               // and [ is speech or dual mode? ]
+	0x31, 0x0b,                         // bnt 0b
+	PATCH_ADDTOOFFSET(+11),
+	0x63, 0x24,                         // pToa register
+	0x78,                               // push1
+	0x12,                               // and    [ is text or dual mode? ]
+	0x31, 0x0f,                         // bnt 0f [ don't display text ]
+	0x39, 0x03,                         // pushi 03
+	0x76,                               // push0
+	0x74, PATCH_UINT16(0x0760),         // lofss "Remember this poor wretched soul..."
+	0x76,                               // push0
+	0x40, PATCH_UINT16(0xf8dd), 0x06,   // call localproc_0062 06 [ display text without midi ]
+	0x35, 0x03,                         // ldi 03
+	0x65, 0x1c,                         // aTop seconds [ 3 second delay in text or dual mode ]
+	PATCH_ADDTOOFFSET(+6),
+	0x63, 0x1c,                         // pToa seconds
+	0x2f, 0x1d,                         // bnt 1d [ speech dismissed by user, set cycles = 1 ]
+	0x63, 0x24,                         // pToa register
+	0x78,                               // push1
+	0x1a,                               // eq?    [ is text mode? ]
+	0x31, 0x04,                         // bnt 04 [ don't set text delay ]
+	0x35, 0x03,                         // ldi 03
+	0x65, 0x1c,                         // aTop seconds [ 3 second delay in text mode ]
+	0x63, 0x24,                         // pToa register
+	0x78,                               // push1
+	0x12,                               // and    [ is text or dual mode? ]
+	0x31, 0x0d,                         // bnt 0d [ skip text, set cycles = 1 ]
+	0x39, 0x03,                         // pushi 03
+	0x76,                               // push0
+	0x74, PATCH_UINT16(0x0784),         // lofss "...for he is your SON!"
+	0x76,                               // push0
+	0x40, PATCH_UINT16(0xf8b4), 0x06,   // call localproc_0062 06 [ display text without midi ]
+	0x33, 0x03,                         // jmp 03
+	0x78,                               // push1
+	0x69, 0x1a,                         // sTop cycles [ cycles = 1, speech completed ]
+	PATCH_END
+};
+
 //          script, description,                                      signature                                      patch
 static const SciScriptPatcherEntry sq4Signatures[] = {
 	{  true,     1, "Floppy: EGA intro delay fix",                    2, sq4SignatureEgaIntroDelay,                     sq4PatchEgaIntroDelay },
@@ -11652,12 +12428,14 @@ static const SciScriptPatcherEntry sq4Signatures[] = {
 	{  true,   410, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
 	{  true,   411, "CD/Floppy: zero gravity blast fix",              1, sq4SignatureZeroGravityBlast,                  sq4PatchZeroGravityBlast },
 	{  true,   520, "CD: maze talk message fix",                      1, sq4CdSignatureMazeTalkMessage,                 sq4CdPatchMazeTalkMessage },
+	{  true,   545, "CD: vohaul pocketpal text+speech fix",           1, sq4CdSignatureVohaulPocketPalTextSpeech,       sq4CdPatchVohaulPocketPalTextSpeech },
 	{  true,   610, "CD: biker bar door fix",                         1, sq4CdSignatureBikerBarDoor,                    sq4CdPatchBikerBarDoor },
 	{  true,   610, "CD: biker hands-on fix",                         3, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
 	{  true,   611, "CD: biker hands-on fix",                         1, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
 	{  true,   612, "CD: biker hands-on fix",                         2, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
 	{  true,   613, "CD: biker hands-on fix",                         2, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
 	{  true,   614, "CD: biker hands-on fix",                         1, sq4CdSignatureBikerHandsOn,                    sq4CdPatchBikerHandsOn },
+	{  true,   613, "CD: biker timepod message fix",                  1, sq4CdSignatureBikerTimepodMessage,             sq4CdPatchBikerTimepodMessage },
 	{  true,   700, "CD: red shopper message fix",                    1, sq4CdSignatureRedShopperMessageFix,            sq4CdPatchRedShopperMessageFix },
 	{  true,   701, "CD: getting shot, while getting rope",           1, sq4CdSignatureGettingShotWhileGettingRope,     sq4CdPatchGettingShotWhileGettingRope },
 	{  true,   706, "CD: biker crouch verb fix",                      2, sq4CdSignatureBikerCrouchVerb,                 sq4CdPatchBikerCrouchVerb },
@@ -13063,6 +13841,11 @@ void ScriptPatcher::processScript(uint16 scriptNr, SciSpan<byte> scriptData) {
 
 			// Do additional game-specific initialization
 			switch (gameId) {
+			case GID_FREDDYPHARKAS:
+				if (_isMacSci11 && !g_sci->getResMan()->testResource(ResourceId(kResourceTypeView, 844))) {
+					enablePatch(signatureTable, "Mac: skip broken hop singh scene");
+				}
+				break;
 			case GID_KQ5:
 				if (g_sci->_features->useAltWinGMSound()) {
 					// See the explanation in the kq5SignatureWinGMSignals comment

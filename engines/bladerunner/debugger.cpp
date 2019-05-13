@@ -37,6 +37,7 @@
 #include "bladerunner/savefile.h"
 #include "bladerunner/scene.h"
 #include "bladerunner/scene_objects.h"
+#include "bladerunner/items.h"
 #include "bladerunner/screen_effects.h"
 #include "bladerunner/settings.h"
 #include "bladerunner/set.h"
@@ -49,6 +50,14 @@
 #include "bladerunner/vqa_player.h"
 #include "bladerunner/waypoints.h"
 #include "bladerunner/zbuffer.h"
+#include "bladerunner/chapters.h"
+#include "bladerunner/ui/kia.h"
+#include "bladerunner/ui/esper.h"
+#include "bladerunner/ui/spinner.h"
+#include "bladerunner/ui/elevator.h"
+#include "bladerunner/ui/vk.h"
+#include "bladerunner/ui/scores.h"
+#include "bladerunner/script/vk_script.h"
 #include "bladerunner/overlays.h"
 #include "bladerunner/subtitles.h"
 
@@ -76,9 +85,13 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	_viewWaypoints = false;
 	_viewWalkboxes = false;
 	_viewZBuffer = false;
+	_playFullVk = false;
+	_showStatsVk = false;
+	_showMazeScore = false;
 
 	registerCmd("anim", WRAP_METHOD(Debugger, cmdAnimation));
 	registerCmd("draw", WRAP_METHOD(Debugger, cmdDraw));
+	registerCmd("list", WRAP_METHOD(Debugger, cmdList));
 	registerCmd("flag", WRAP_METHOD(Debugger, cmdFlag));
 	registerCmd("goal", WRAP_METHOD(Debugger, cmdGoal));
 	registerCmd("loop", WRAP_METHOD(Debugger, cmdLoop));
@@ -93,6 +106,11 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("save", WRAP_METHOD(Debugger, cmdSave));
 	registerCmd("overlay", WRAP_METHOD(Debugger, cmdOverlay));
 	registerCmd("subtitle", WRAP_METHOD(Debugger, cmdSubtitle));
+	registerCmd("vk", WRAP_METHOD(Debugger, cmdVk));
+	registerCmd("mazescore", WRAP_METHOD(Debugger, cmdMazeScore));
+	registerCmd("object", WRAP_METHOD(Debugger, cmdObject));
+	registerCmd("item", WRAP_METHOD(Debugger, cmdItem));
+	registerCmd("region", WRAP_METHOD(Debugger, cmdRegion));
 }
 
 Debugger::~Debugger() {
@@ -725,102 +743,312 @@ bool Debugger::cmdSave(int argc, const char **argv) {
 	return false;
 }
 
+const struct OverlayAndScenesVQAsList {
+	int resourceId;
+	const char *name;
+	bool isOverlayVQA; // else it is a scene VQA
+} overlaysList[] = {
+	{ 1, "MA04OVR2", true }, { 1, "PS10", false },    { 1, "MA01", false },    { 1, "RC01", false },    { 1, "PS01", false },
+	{ 1, "CT01", false },    { 1, "PS11", false },    { 1, "RC51", false },    { 1, "MA02", false },    { 1, "RC02", false },
+	{ 1, "PS02", false },    { 1, "CT02", false },    { 1, "PS12", false },    { 1, "CT12", false },    { 1, "PS03", false },
+	{ 1, "CT03", false },    { 1, "PS13", false },    { 1, "MA04", false },    { 1, "PS04", false },    { 1, "CT04", false },
+	{ 1, "PS14", false },    { 1, "CT01SPNR", true }, { 1, "MA05", false },    { 1, "PS05", false },    { 1, "CT05", false },
+	{ 1, "PS15", false },    { 1, "MA06", false },    { 1, "PS06", false },    { 1, "CT06", false },    { 1, "MA02OVER", true },
+	{ 1, "CT02OVER", true }, { 1, "MA07", false },    { 1, "PS07", false },    { 1, "CT07", false },    { 1, "PS09", false },
+	{ 1, "MA04OVER", true }, { 1, "PS05OVER", true }, { 1, "CT05OVER", true },
+
+	{ 2, "BB10OVR1", true }, { 2, "BB10OVR2", true }, { 2, "BB10OVR3", true }, { 2, "BB10OVR4", true }, { 2, "BB10OVR5", true },
+	{ 2, "BB10_2", false },  { 2, "UG10_2", false },  { 2, "NR10_2", false },  { 2, "PS10_2", false },  { 2, "CT10_2", false },
+	{ 2, "MA01_2", false },  { 2, "BB01_2", false },  { 2, "HC01_2", false },  { 2, "RC01_2", false },  { 2, "HF01_2", false },
+	{ 2, "UG01_2", false },  { 2, "AR01_2", false },  { 2, "DR01_2", false },  { 2, "NR01_2", false },  { 2, "PS01_2", false },
+	{ 2, "CT01_2", false },  { 2, "BB11_2", false },  { 2, "NR11_2", false },  { 2, "PS11_2", false },  { 2, "CT11_2", false },
+	{ 2, "BB51_2", false },  { 2, "CT51_2", false },  { 2, "MA02_2", false },  { 2, "BB02_2", false },  { 2, "TB02_2", false },
+	{ 2, "HC02_2", false },  { 2, "HF02_2", false },  { 2, "UG02_2", false },  { 2, "AR02_2", false },  { 2, "DR02_2", false },
+	{ 2, "NR02_2", false },  { 2, "PS02_2", false },  { 2, "CT02_2", false },  { 2, "BB12_2", false },  { 2, "PS12_2", false },
+	{ 2, "CT12_2", false },  { 2, "MA04OVR2", true }, { 2, "BB03_2", false },  { 2, "HC03_2", false },  { 2, "RC03_2", false },
+	{ 2, "HF03_2", false },  { 2, "UG03_2", false },  { 2, "DR03_2", false },  { 2, "NR03_2", false },  { 2, "PS03_2", false },
+	{ 2, "CT03_2", false },  { 2, "PS13_2", false },  { 2, "MA04_2", false },  { 2, "BB04_2", false },  { 2, "HC04_2", false },
+	{ 2, "RC04_2", false },  { 2, "HF04_2", false },  { 2, "UG04_2", false },  { 2, "DR04_2", false },  { 2, "NR04_2", false },
+	{ 2, "PS04_2", false },  { 2, "CT04_2", false },  { 2, "PS14_2", false },  { 2, "DR06OVR2", true }, { 2, "MA05_2", false },
+	{ 2, "BB05_2", false },  { 2, "TB05_2", false },  { 2, "HF05_2", false },  { 2, "DR05_2", false },  { 2, "NR05_2", false },
+	{ 2, "PS05_2", false },  { 2, "CT05_2", false },  { 2, "PS15_2", false },  { 2, "MA06_2", false },  { 2, "BB06_2", false },
+	{ 2, "TB06_2", false },  { 2, "HF06_2", false },  { 2, "UG06_2", false },  { 2, "DR06_2", false },  { 2, "NR06_2", false },
+	{ 2, "PS06_2", false },  { 2, "CT06_2", false },  { 2, "MA07_2", false },  { 2, "BB07_2", false },  { 2, "TB07_2", false },
+	{ 2, "NR07_2", false },  { 2, "PS07_2", false },  { 2, "BB08_2", false },  { 2, "NR08_2", false },  { 2, "CT08_2", false },
+	{ 2, "BB09_2", false },  { 2, "NR09_2", false },  { 2, "PS09_2", false },  { 2, "CT09_2", false },  { 2, "NR11OVER", true },
+	{ 2, "CT01SPNR", true }, { 2, "MA02OVER", true }, { 2, "CT02OVER", true }, { 2, "BB12OVER", true }, { 2, "MA04OVER", true },
+	{ 2, "DR04OVER", true }, { 2, "NR04OVER", true }, { 2, "BB05OVER", true }, { 2, "DR05OVER", true }, { 2, "PS05OVER", true },
+	{ 2, "CT05OVER", true }, { 2, "BB06OVER", true }, { 2, "DR06OVER", true }, { 2, "BB07OVER", true }, { 2, "BB08OVER", true },
+
+	{ 3, "UG10_3", false },  { 3, "NR10_3", false },  { 3, "CT10_3", false },  { 3, "BB01_3", false },  { 3, "HC01_3", false },
+	{ 3, "RC01_3", false },  { 3, "HF01_3", false },  { 3, "UG01_3", false },  { 3, "KP01_3", false },  { 3, "AR01_3", false },
+	{ 3, "DR01_3", false },  { 3, "NR01_3", false },  { 3, "CT01_3", false },  { 3, "NR11_3", false },  { 3, "CT11_3", false },
+	{ 3, "BB51_3", false },  { 3, "RC51_3", false },  { 3, "CT51_3", false },  { 3, "MA02_3", false },  { 3, "BB02_3", false },
+	{ 3, "TB02_3", false },  { 3, "HC02_3", false },  { 3, "RC02_3", false },  { 3, "HF02_3", false },  { 3, "UG02_3", false },
+	{ 3, "KP02_3", false },  { 3, "AR02_3", false },  { 3, "DR02_3", false },  { 3, "NR02_3", false },  { 3, "CT02_3", false },
+	{ 3, "UG12_3", false },  { 3, "CT12_3", false },  { 3, "MA04OVR2", true }, { 3, "BB03_3", false },  { 3, "TB03_3", false },
+	{ 3, "HC03_3", false },  { 3, "RC03_3", false },  { 3, "HF03_3", false },  { 3, "UG03_3", false },  { 3, "KP03_3", false },
+	{ 3, "DR03_3", false },  { 3, "NR03_3", false },  { 3, "CT03_3", false },  { 3, "UG13_3", false },  { 3, "MA04_3", false },
+	{ 3, "BB04_3", false },  { 3, "HC04_3", false },  { 3, "RC04_3", false },  { 3, "HF04_3", false },  { 3, "UG04_3", false },
+	{ 3, "KP04_3", false },  { 3, "DR04_3", false },  { 3, "NR04_3", false },  { 3, "CT04_3", false },  { 3, "UG14_3", false },
+	{ 3, "PS14_3", false },  { 3, "DR06OVR2", true }, { 3, "MA05_3", false },  { 3, "HF05_3", false },  { 3, "UG05_3", false },
+	{ 3, "KP05_3", false },  { 3, "DR05_3", false },  { 3, "NR05_3", false },  { 3, "CT05_3", false },  { 3, "UG15_3", false },
+	{ 3, "MA06_3", false },  { 3, "HF06_3", false },  { 3, "UG06_3", false },  { 3, "KP06_3", false },  { 3, "DR06_3", false },
+	{ 3, "NR06_3", false },  { 3, "CT06_3", false },  { 3, "UG16_3", false },  { 3, "UG18OVR2", true }, { 3, "UG19OVR1", true },
+	{ 3, "MA07_3", false },  { 3, "TB07_3", false },  { 3, "HF07_3", false },  { 3, "UG07_3", false },  { 3, "KP07_3", false },
+	{ 3, "NR07_3", false },  { 3, "UG17_3", false },  { 3, "UG08_3", false },  { 3, "NR08_3", false },  { 3, "CT08_3", false },
+	{ 3, "UG18_3", false },  { 3, "UG09_3", false },  { 3, "NR09_3", false },  { 3, "PS09_3", false },  { 3, "CT09_3", false },
+	{ 3, "UG19_3", false },  { 3, "NR11OVER", true }, { 3, "CT01SPNR", true }, { 3, "MA02OVER", true }, { 3, "CT02OVER", true },
+	{ 3, "MA04OVER", true }, { 3, "DR04OVER", true }, { 3, "NR04OVER", true }, { 3, "UG14OVER", true }, { 3, "DR05OVER", true },
+	{ 3, "CT05OVER", true }, { 3, "UG15OVER", true }, { 3, "DR06OVER", true }, { 3, "UG17OVER", true }, { 3, "UG18OVER", true },
+
+	{ 6, "VKLUCY", true },   { 6, "VKRUNC", true },   { 6, "KIA_CLUE", false },{ 6, "KIA_INGM", false }, { 6, "KIA_CRIM", false },
+	{ 6, "KIA_SUSP", false },{ 6, "HC01ESP1", false },{ 6, "HC01ESP2", false },{ 6, "HC01ESP3", false }, { 6, "RC02ESP1", false },
+	{ 6, "HC02ESP2", false },{ 6, "RC02ESP2", false },{ 6, "HC02ESP3", false },{ 6, "RC02ESP3", false }, { 6, "HC02ESP4", false },
+	{ 6, "RC02ESP4", false },{ 6, "HC02ESP5", false },{ 6, "RC02ESP5", false },{ 6, "RC02ESP6", false }, { 6, "RC02ESP7", false },
+	{ 6, "TB06ESP1", false },{ 6, "KP06ESP1", false },{ 6, "NR06ESP1", false },{ 6, "TB06ESP2", false }, { 6, "KP06ESP2", false },
+	{ 6, "NR06ESP2", false },{ 6, "TB06ESP3", false },{ 6, "KP06ESP3", false },{ 6, "NR07ESP1", false }, { 6, "TB06ESP4", false },
+	{ 6, "KP06ESP4", false },{ 6, "NR07ESP2", false },{ 6, "SPINNER", false }, { 6, "KIAOVER", false },  { 6, "VK", false },
+	{ 6, "VKKASH", true },   { 6, "PS02ELEV", false },{ 6, "ESPER", false },   { 6, "VKDEKT", true },   { 6, "MA06ELEV", false },
+	{ 6, "VKBOB", true },    { 6, "SCORE", false },
+
+	{ 0, NULL, false }
+};
+
 /**
 * Will use overlay videos that the game has loaded for the scene
 * at the time of running the command
-* or otherwise will attempt to load the specified overlay to the scene.
+* or otherwise will attempt to load the specified overlay to the scene,
+* if it exists in the currently loaded (VQAx, MODE) MIX resources.
+* Use "overlay reset" to clear up all loaded overlays (and/or custom scene video)
+*
+* Note: Loading MODE.MIX here (and a VQA from it) may lead to buggy results,
+*       if the player then invokes and closes an actual game mode (KIA, ESPER, GPS etc).
+*       This is because the game itself will unload MODE.MIX when closing the game mode
+*       and that can lead to a assertion fault for a missing file handle.
+*       A viable solution would be to have MODE.MIX loaded all the time,
+*       but that is unnecessary since a developer could just uncomment a few lines below
+*       (look for "force-load MODE.MIX") and make use of it with caution, if needed.
 */
 bool Debugger::cmdOverlay(int argc, const char **argv) {
 	bool invalidSyntax = false;
+	bool modeMixOverlaysAvailableFlg = false;
+	int chapterIdOverlaysAvailableInt = -1;
 
-	if (argc != 1 && argc != 2 && argc != 3 && argc != 5) {
-		invalidSyntax = true;
-	}
-
-	// Make sure all MIX with VQAs are loaded (including MODE.MIX)
-	if (!_vm->openArchive("MODE.MIX")) {
-		debugPrintf("Error: Could not load resource MODE.MIX\n");
-	}
-	if (!_vm->openArchive("VQA1.MIX")) {
-		debugPrintf("Error: Could not load resource VQA1.MIX\n");
-	}
-	if (!_vm->openArchive("VQA2.MIX")) {
-		debugPrintf("Error: Could not load resource VQA2.MIX\n");
-	}
-	if (!_vm->openArchive("VQA3.MIX")) {
-		debugPrintf("Error: Could not load resource VQA3.MIX\n");
-	}
-
-	if (argc == 1) {
-		// print info for all overlays loaded for the scene
-		debugPrintf("name animationId startFrame endFrame\n");
-		for (int i = 0; i < _vm->_overlays->kOverlayVideos; ++i) {
-			if (_vm->_overlays->_videos[i].loaded) {
-				VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[i].vqaPlayer->_decoder._loopInfo;
-				for (int j = 0; j < loopInfo.loopCount; ++j) {
-					debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[i].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
-				}
-			}
-		}
+	if (_vm->_kia->isOpen()
+		|| _vm->_esper->isOpen()
+		|| _vm->_spinner->isOpen()
+		|| _vm->_elevator->isOpen()
+		|| _vm->_vk->isOpen()
+		|| _vm->_scores->isOpen()
+	) {
+		debugPrintf("Sorry, playing custom overlays in KIA, ESPER, Voigt-Kampff, Spinner GPS,\nScores or Elevator mode is not supported\n");
 		return true;
 	}
 
-	if (argc == 2) {
-		// Check if we need to reset (remove) the overlays loaded for the scene
-		Common::String argName = argv[1];
-		if (argName == "reset") {
-			_vm->_overlays->removeAll();
-		} else {
-			debugPrintf("Invalid command usage\n");
-			invalidSyntax = true;
+	if (argc != 1 && argc != 2 && argc != 3 && argc != 5) {
+		invalidSyntax = true;
+	} else {
+		if (_vm->_chapters->hasOpenResources()) {
+			chapterIdOverlaysAvailableInt = MIN(_vm->_chapters->currentResourceId(), 3);
 		}
-	}
-
-	if (argc == 3 || argc == 5) {
-		Common::String overlayName = argv[1];
-		int overlayAnimationId = atoi(argv[2]);
-		bool loopForever = false;
-		LoopSetModes startNowFlag = kLoopSetModeEnqueue;
-
-		if (argc == 5 && atoi(argv[3]) != 0) {
-			loopForever = true;
-		}
-
-		if (argc == 5 && atoi(argv[4]) != 0) {
-			startNowFlag = kLoopSetModeImmediate;
-		}
-
-		if (overlayAnimationId < 0) {
-			debugPrintf("Animation id value must be >= 0!\n");
+		if (chapterIdOverlaysAvailableInt == -1) {
+			debugPrintf("No available open resources to load VQAs from.\n Giving up.\n");
 			return true;
 		}
-		//
-		// Attempt to load the overlay even if not already loaded for the scene (in _vm->_overlays->_videos)
-		int overlayVideoIdx = _vm->_overlays->play(overlayName, overlayAnimationId, loopForever, startNowFlag, 0);
-		if( overlayVideoIdx == -1 ) {
-			debugPrintf("Could not load the overlay animation: %s in this scene. Try reseting overlays first to free up slots!\n", overlayName.c_str());
+
+		// Normally, don't force-load the MODE.MIX resource
+		if (!_vm->isArchiveOpen("MODE.MIX")) {
+	//		if (_vm->openArchive("MODE.MIX") { // Note: This will force-load MODE.MIX. Use with caution!
+	//			debugPrintf("Warning: MODE.MIX resources were force-loaded.\n Please, don't use game's menu modes (KIA, ESPER, Voigt-Kampff, Spinner GPS, Scores or Elevator) before executing an \"%s reset\" from the debugger!\n", argv[0]);
+	//			modeMixOverlaysAvailableFlg = true;
+	//		}
 		} else {
-			debugPrintf("Loading overlay animation: %s...\n", overlayName.c_str());
-			VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[overlayVideoIdx].vqaPlayer->_decoder._loopInfo;
-			int overlayAnimationLoopCount = loopInfo.loopCount;
-			if (overlayAnimationLoopCount == 0) {
-				debugPrintf("Error: No valid loops were found for overlay animation named: %s!\n", overlayName.c_str());
-				_vm->_overlays->remove(overlayName.c_str());
-			} else if (overlayAnimationId >= overlayAnimationLoopCount) {
-				debugPrintf("Invalid loop id: %d for overlay animation: %s. Try from 0 to %d.\n",  overlayAnimationId, overlayName.c_str(), overlayAnimationLoopCount-1);
+			modeMixOverlaysAvailableFlg = true;
+		}
+
+		if (argc == 1) {
+			// print info for all overlays loaded for the scene
+			uint8 countOfLoadedOverlaysInScene = 0;
+			debugPrintf("name animationId startFrame endFrame\n");
+
+			for (int i = 0; i < _vm->_overlays->kOverlayVideos; ++i) {
+				if (_vm->_overlays->_videos[i].loaded) {
+					countOfLoadedOverlaysInScene++;
+					VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[i].vqaPlayer->_decoder._loopInfo;
+					for (int j = 0; j < loopInfo.loopCount; ++j) {
+						debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[i].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+					}
+				}
+			}
+
+			if ( countOfLoadedOverlaysInScene > 0) {
+				debugPrintf("  ** %d overlays are loaded in scene **\n", countOfLoadedOverlaysInScene);
 			} else {
-				// print info about available loops too
-				debugPrintf("Animation: %s loaded. Running loop %d...\n", overlayName.c_str(), overlayAnimationId);
-				for (int j = 0; j < overlayAnimationLoopCount; ++j) {
-					debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[overlayVideoIdx].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+				debugPrintf("  ** No overlays loaded in scene **\n");
+			}
+
+			return true;
+		}
+
+		if (argc == 2) {
+			Common::String argName = argv[1];
+
+			if (argName == "reset") {
+			// Reset (remove) the overlays loaded for the scene
+				_vm->_overlays->removeAll();
+				// And return to original VQA for this scene
+				const Common::String origSceneName = _vm->_gameInfo->getSceneName(_vm->_scene->_sceneId);
+
+				Common::String origVqaName;
+				if (chapterIdOverlaysAvailableInt == 1) {
+					origVqaName = Common::String::format("%s.VQA", origSceneName.c_str());
+				} else {
+					origVqaName = Common::String::format("%s_%d.VQA", origSceneName.c_str(), chapterIdOverlaysAvailableInt);
+				}
+
+				if (_vm->_scene->_vqaPlayer != nullptr) {
+					delete _vm->_scene->_vqaPlayer;
+				}
+
+				_vm->_scene->_vqaPlayer = new VQAPlayer(_vm, &_vm->_surfaceBack, origVqaName);
+				if (!_vm->_scene->_vqaPlayer->open()) {
+					debugPrintf("Error: Could not open player while reseting\nto scene VQA named: %s!\n", (origVqaName + ".VQA").c_str());
+					return true;
+				}
+				_vm->_scene->startDefaultLoop();
+				_vm->_scene->advanceFrame();
+
+
+			} else if (argName == "avail") {
+			// List the available overlays in the loaded resources
+				const uint dispColCount = 5;
+				uint colCountIter = 0;
+				uint16 itemIter = 0;
+
+				debugPrintf("Available overlays in the loaded resources:\n");
+				for (itemIter = 0; overlaysList[itemIter].resourceId != 0; ++itemIter) {
+					if ( (overlaysList[itemIter].resourceId == chapterIdOverlaysAvailableInt)
+						|| ( modeMixOverlaysAvailableFlg && overlaysList[itemIter].resourceId == 6)
+					) {
+						debugPrintf("%s ", overlaysList[itemIter].name);
+						colCountIter = (colCountIter + 1) % dispColCount;
+						if ( colCountIter == 0) {
+							debugPrintf("\n");
+						}
+					}
+				}
+				// final new line if needed
+				if ( colCountIter % dispColCount != 0) {
+					debugPrintf("\n");
+				}
+				if (!modeMixOverlaysAvailableFlg) {
+					debugPrintf("Note: MODE.MIX resources are currently not loaded.\n");
+				}
+
+			} else if (argName.size() > 12) {
+				debugPrintf("The specified name is too long. It should be up to 12 characters.\n");
+				invalidSyntax = true;
+			} else {
+				debugPrintf("Invalid command usage\n");
+				invalidSyntax = true;
+			}
+		}
+
+		if (!invalidSyntax && (argc == 3 || argc == 5)) {
+			Common::String overlayName = argv[1];
+			overlayName.toUppercase();
+
+			int overlayAnimationId = atoi(argv[2]);
+			bool loopForever = false;
+			LoopSetModes startNowFlag = kLoopSetModeEnqueue;
+
+			if (argc == 5 && atoi(argv[3]) != 0) {
+				loopForever = true;
+			}
+
+			if (argc == 5 && atoi(argv[4]) != 0) {
+				startNowFlag = kLoopSetModeImmediate;
+			}
+
+			if (overlayAnimationId < 0) {
+				debugPrintf("Animation id value must be >= 0!\n");
+				return true;
+			}
+
+			// Check if specified overlay name exists AND is available
+			uint16 itemIter = 0;
+			for (itemIter = 0; overlaysList[itemIter].resourceId != 0; ++itemIter) {
+				if ( (overlaysList[itemIter].resourceId == chapterIdOverlaysAvailableInt)
+					|| ( modeMixOverlaysAvailableFlg && overlaysList[itemIter].resourceId == 6)
+				) {
+					if (strcmp(overlaysList[itemIter].name, overlayName.c_str()) == 0){
+						break;
+					}
+				}
+			}
+			if (overlaysList[itemIter].resourceId == 0 ) {
+				debugPrintf("No available resource was found by that name!\nPerhaps it exists in another chapter.\n");
+				return true;
+			}
+
+			if (overlaysList[itemIter].isOverlayVQA) {
+				//
+				// Attempt to load the overlay in an empty slot
+				// even if it's not already loaded for the scene (in _vm->_overlays->_videos)
+				int overlayVideoIdx = _vm->_overlays->play(overlayName, overlayAnimationId, loopForever, startNowFlag, 0);
+				if( overlayVideoIdx == -1 ) {
+					debugPrintf("Could not load the overlay animation: %s in this scene. Try reseting overlays first to free up slots!\n", overlayName.c_str());
+				} else {
+					debugPrintf("Loading overlay animation: %s...\n", overlayName.c_str());
+
+					VQADecoder::LoopInfo &loopInfo =_vm->_overlays->_videos[overlayVideoIdx].vqaPlayer->_decoder._loopInfo;
+					int overlayAnimationLoopCount = loopInfo.loopCount;
+					if (overlayAnimationLoopCount == 0) {
+						debugPrintf("Error: No valid loops were found for overlay animation named: %s!\n", overlayName.c_str());
+						_vm->_overlays->remove(overlayName.c_str());
+					} else if (overlayAnimationId >= overlayAnimationLoopCount) {
+						debugPrintf("Invalid loop id: %d for overlay animation: %s. Try from 0 to %d.\n",  overlayAnimationId, overlayName.c_str(), overlayAnimationLoopCount-1);
+					} else {
+						// print info about available loops too
+						debugPrintf("Animation: %s loaded. Running loop %d...\n", overlayName.c_str(), overlayAnimationId);
+						for (int j = 0; j < overlayAnimationLoopCount; ++j) {
+							debugPrintf("%s %2d %4d %4d\n", _vm->_overlays->_videos[overlayVideoIdx].name.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+						}
+					}
+				}
+			} else {
+				if (_vm->_scene->_vqaPlayer != nullptr) {
+					delete _vm->_scene->_vqaPlayer;
+				}
+				_vm->_scene->_vqaPlayer = new VQAPlayer(_vm, &_vm->_surfaceBack, overlayName + ".VQA");
+				if (!_vm->_scene->_vqaPlayer->open()) {
+					debugPrintf("Error: Could not open player for scene VQA named: %s!\n", (overlayName + ".VQA").c_str());
+					return true;
+				}
+
+				VQADecoder::LoopInfo &loopInfo =_vm->_scene->_vqaPlayer->_decoder._loopInfo;
+				int sceneAnimationLoopCount = loopInfo.loopCount;
+				if (sceneAnimationLoopCount == 0) {
+					debugPrintf("Error: No valid loops were found for scene animation named: %s!\n", (overlayName + ".VQA").c_str());
+				} else if (overlayAnimationId >= sceneAnimationLoopCount) {
+					debugPrintf("Invalid loop id: %d for scene animation: %s. Try from 0 to %d.\n",  overlayAnimationId, overlayName.c_str(), sceneAnimationLoopCount-1);
+				} else {
+					// ignore the specified loopForever and startNow flags
+					// just do a kSceneLoopModeOnce, without immediate start
+					_vm->_scene->loopStartSpecial(kSceneLoopModeOnce, overlayAnimationId, false);
+					debugPrintf("Scene animation: %s loaded. Running loop %d...\n", overlayName.c_str(), overlayAnimationId);
+					for (int j = 0; j < sceneAnimationLoopCount; ++j) {
+						debugPrintf("%s %2d %4d %4d\n", overlayName.c_str(), j, loopInfo.loops[j].begin, loopInfo.loops[j].end);
+					}
 				}
 			}
 		}
 	}
 
 	if (invalidSyntax) {
-		debugPrintf("Load, list or play loaded overlay animations. Values for loopForever and startNow are boolean.\n");
-		debugPrintf("Usage: %s [[<name> <animationId> [<loopForever> <startNow>]] | reset ]\n", argv[0]);
+		debugPrintf("Load, list, play or reset (clear) loaded overlay animations.\nValues for loopForever and startNow are boolean.\n");
+		debugPrintf("Usage: %s [[<name> <animationId> [<loopForever> <startNow>]] | avail | reset ]\n", argv[0]);
 	}
 	return true;
 }
@@ -852,6 +1080,729 @@ bool Debugger::cmdSubtitle(int argc, const char **argv) {
 	}
 	return true;
 
+}
+
+/**
+* Toggle showing Maze score on the fly as subtitle during the Police Maze Course
+*/
+bool Debugger::cmdMazeScore(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 2) {
+		invalidSyntax = true;
+	} else {
+		if (_vm->_scene->getSetId() != kSetPS10_PS11_PS12_PS13) {
+			debugPrintf("Error:Command %s is only valid during the Police Maze course\n",  argv[0]);
+			return true;
+		}
+		//
+		// set a debug variable to enable showing the maze score
+		//
+		Common::String argName = argv[1];
+		argName.toLowercase();
+		if (argc == 2 && argName == "toggle") {
+			_showMazeScore = !_showMazeScore;
+			debugPrintf("Showing maze score = %s\n", _showMazeScore ? "True":"False");
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Toggle showing the Maze Score as a subtitle during the Shooting Grounds Course\n");
+		debugPrintf("Usage: %s toggle\n", argv[0]);
+	}
+	return true;
+}
+
+
+/**
+* Add, remove or edit flags or bounding box for an object to debug some issues whereby existing obstacle layout does not prevent
+* characters from walking where they shouldn't
+*
+* Notes: with regard to Bound box / the clickable area for an object, item or region
+* 1. The code for what a mouse click will refer to is in BladeRunnerEngine::handleMouseAction() -- under if (mainButton) clause
+*    Clickable 3d areas for boxes are determined based on scene information that translates the 2d mouse position into
+*    a "3d" position in the view. (see: Mouse::getXYZ)
+*    This 3d position must be within the bounding box of the 3d object
+*
+* 2. For items, the mouse-over (Item::isUnderMouse) depends on the screenRectangle dimensions (Common::Rect) and specifies the
+*    targetable area for the item. The screenRectangle is calculated at every tick() of the item and depends on the item's animation,
+*    current frame and thus facing angle.
+*    The item's bounding box still determines the clickable area for the item. It is calculated at item's setup() or setXYZ()
+*    and depends on the item's position (vector), height and width.
+*/
+bool Debugger::cmdObject(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc < 3) {
+		invalidSyntax = true;
+	} else {
+		Common::String modeName = argv[1];
+		modeName.toLowercase();
+		if (modeName == "add" && argc == 9) {
+			// add object mode
+			// first add to set and then to scene
+			Common::String custObjName = "CUSTOMOBJ";
+			Common::String custObjNameSuffix = argv[2];
+			custObjName = custObjName + custObjNameSuffix;
+			//
+			// plain 3d objects (non-items) are added to the Set by reading the specific data for that Set
+			// Their count is also stored in the Set's data,
+			// if there's a need for a permanent extra obstacle in the Set, the code in set.cpp will have to be overridden (hard coded patch)
+			//
+			// For the debugger's purposes it should be harmless to add custom objects to test blocking pathways or other functions
+			// they will persist in Save/Load but should go away when exiting a Set
+			if (_vm->_scene->_set->_objectCount > 85) { //85 is the size of the _objects array in set.cpp
+				debugPrintf("Unable to add more objects in the set\n");
+			} else {
+				int objectId = _vm->_scene->_set->_objectCount;
+				_vm->_scene->_set->_objectCount++;
+				_vm->_scene->_set->_objects[objectId].name = custObjName.c_str();
+
+				float x0, y0, z0, x1, y1, z1;
+				x0 = atof(argv[3]);
+				y0 = atof(argv[4]);
+				z0 = atof(argv[5]);
+				x1 = atof(argv[6]);
+				y1 = atof(argv[7]);
+				z1 = atof(argv[8]);
+
+				_vm->_scene->_set->_objects[objectId].bbox = BoundingBox(x0, y0, z0, x1, y1, z1);
+				_vm->_scene->_set->_objects[objectId].isObstacle = 0; // init as false
+				_vm->_scene->_set->_objects[objectId].isClickable = 0;// init as false
+				_vm->_scene->_set->_objects[objectId].isHotMouse = 0;
+				_vm->_scene->_set->_objects[objectId].unknown1 = 0;
+				_vm->_scene->_set->_objects[objectId].isTarget = 0;   // init as false
+				//
+				if (_vm->_sceneObjects->addObject(objectId + kSceneObjectOffsetObjects,
+				                                  _vm->_scene->_set->_objects[objectId].bbox,
+				                                  false,
+				                                  false,
+				                                  _vm->_scene->_set->_objects[objectId].unknown1,
+				                                  false)
+				) {
+					debugPrintf("Object: %d: %s was added to set and scene\n", objectId, custObjName.c_str());
+				} else {
+					debugPrintf("Failed to add object: %d: %s to the scene\n", objectId, custObjName.c_str());
+				}
+				return true;
+			}
+		} else if ((modeName == "remove" && argc == 3)
+		            || (modeName == "flags" && argc == 6)
+					|| (modeName == "bounds" && argc == 9)
+		            || (modeName == "list" && argc == 3)
+		) {
+			// remove object mode, show properties or edit flags
+			int objectId = atoi(argv[2]);
+			if (objectId >= 0 && objectId < _vm->_scene->_set->_objectCount) {
+				Common::String objName = _vm->_scene->objectGetName(objectId);
+				if (modeName == "list") {
+					// list properties
+					const BoundingBox &bbox = _vm->_scene->_set->_objects[objectId].bbox;
+					Vector3 a, b;
+					bbox.getXYZ(&a.x, &a.y, &a.z, &b.x, &b.y, &b.z);
+					Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (a + b));
+					// Intentional? When loading a game, in the loaded Scene:
+					// an object can be an non-obstacle as a sceneObject but an obstacle as a Set object.
+					// and this seems to be considered as a non-obstacle by the game in that Scene.
+					// These are objects that the Unobstacle_Object() is called for when a scene is loaded (SceneLoaded())
+					// So the sceneObject property overrides the Set object property in these cases
+					// Eg. in PS01 BOX38 (object id: 19)
+					// This inconsistency is fixed if you exit and re-enter the scene.
+					debugPrintf("%d: %s (Clk: %s, Trg: %s, Obs: %s), Pos(%02.2f,%02.2f,%02.2f)\n     Bbox(%02.2f,%02.2f,%02.2f) ~ (%02.2f,%02.2f,%02.2f)\n",
+					            objectId, objName.c_str(),
+					            _vm->_scene->_set->_objects[objectId].isClickable? "T" : "F",
+					            _vm->_scene->_set->_objects[objectId].isTarget?    "T" : "F",
+					            _vm->_scene->_set->_objects[objectId].isObstacle?  "T" : "F",
+					            pos.x, pos.y, pos.z,
+					            a.x, a.y, a.z, b.x, b.y, b.z);
+				} else if (modeName == "remove") {
+					// scene's objectSetIsObstacle will update obstacle and walkpath
+					_vm->_scene->objectSetIsObstacle(objectId, false, !_vm->_sceneIsLoading, true);
+					// remove only from scene objects (keep in Set)
+					if (!_vm->_sceneIsLoading && _vm->_sceneObjects->remove(objectId + kSceneObjectOffsetObjects)) {
+						debugPrintf("Object: %d: %s was removed\n", objectId, objName.c_str());
+					} else {
+						debugPrintf("Failed to remove object: %d: %s\n", objectId, objName.c_str());
+					}
+				} else if (modeName == "bounds") {
+					Vector3 positionBottomRight(atof(argv[3]), atof(argv[4]), atof(argv[5]));
+					Vector3 positionTopLeft(atof(argv[6]), atof(argv[7]), atof(argv[8]));
+					_vm->_scene->_set->_objects[objectId].bbox.setXYZ(positionBottomRight.x, positionBottomRight.y, positionBottomRight.z, positionTopLeft.x, positionTopLeft.y, positionTopLeft.z);
+					if (!_vm->_sceneIsLoading && _vm->_sceneObjects->remove(objectId + kSceneObjectOffsetObjects)){
+						_vm->_sceneObjects->addObject(objectId + kSceneObjectOffsetObjects,
+						                               _vm->_scene->_set->_objects[objectId].bbox,
+						                               _vm->_scene->_set->_objects[objectId].isClickable,
+						                               _vm->_scene->_set->_objects[objectId].isObstacle,
+						                               _vm->_scene->_set->_objects[objectId].unknown1,
+						                               _vm->_scene->_set->_objects[objectId].isTarget);
+						// scene's objectSetIsObstacle will update obstacle and walkpath
+						_vm->_scene->objectSetIsObstacle(objectId, _vm->_scene->_set->_objects[objectId].isObstacle, !_vm->_sceneIsLoading, true);
+						debugPrintf("New bounds: (%02.2f,%02.2f,%02.2f) ~ (%02.2f,%02.2f,%02.2f)\n",
+						             positionBottomRight.x, positionBottomRight.y, positionBottomRight.z,
+						             positionTopLeft.x,   positionTopLeft.y,   positionTopLeft.z);
+					}
+				} else {
+					// edit flags
+					bool newClickable = atoi(argv[3])? true : false;
+					bool newTarget    = atoi(argv[4])? true : false;
+					bool newObstacle  = atoi(argv[5])? true : false;
+					// scene's objectSetIsObstacle will update obstacle and walkpath
+					_vm->_scene->objectSetIsObstacle(objectId, newObstacle, !_vm->_sceneIsLoading, true);
+					_vm->_scene->objectSetIsClickable(objectId, newClickable, !_vm->_sceneIsLoading);
+					_vm->_scene->objectSetIsTarget(objectId, newTarget, !_vm->_sceneIsLoading);
+
+					debugPrintf("Setting obj %d: %s as clickable: %s, target: %s, obstacle: %s\n", objectId, objName.c_str(), newClickable? "T":"F", newTarget? "T":"F", newObstacle? "T":"F");
+				}
+				return true;
+			} else {
+				debugPrintf("Invalid object id %d was specified\n", objectId);
+				return true;
+			}
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Add, edit flags, bounds or remove a 3d object obstacle in the current scene\n");
+		debugPrintf("Use debugger command List with \"obj\" argument to view available targets for this command\n");
+		debugPrintf("Floats:   brX, brY, brZ, tlX, tlY, tlZ, posX, posY, posZ\n");
+		debugPrintf("Integers: id, incId\n");
+		debugPrintf("Boolean (1: true, 0: false): isObstacle, isClickable, isTarget\n");
+		debugPrintf("Usage 1: %s add    <incId> <brX> <brY> <brZ>  <tlX> <tlY> <tlZ>\n", argv[0]);
+		debugPrintf("Usage 2: %s list   <id>\n", argv[0]);
+		debugPrintf("Usage 3: %s flags  <id> <isClickable> <isTarget> <isObstacle>\n", argv[0]);
+		debugPrintf("Usage 4: %s bounds <id> <brX> <brY> <brZ>  <tlX> <tlY> <tlZ>\n", argv[0]);
+		debugPrintf("Usage 5: %s remove <id>\n", argv[0]);
+	}
+	return true;
+}
+
+/**
+* Add a new, remove or edit flags and bounds for an existing item
+*/
+bool Debugger::cmdItem(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc < 3) {
+		invalidSyntax = true;
+	} else {
+		Common::String modeName = argv[1];
+		modeName.toLowercase();
+		int itemId = atoi(argv[2]);
+		if (itemId < 0) {
+			debugPrintf("Invalid item id: %d specified. Item id must be an integer >=0\n", itemId);
+			return true;
+		}
+
+		if (modeName == "add" && argc == 10) {
+			// add item mode
+			if (_vm->_sceneObjects->findById(itemId + kSceneObjectOffsetItems) == -1) {
+				Vector3 itemPosition(atof(argv[3]), atof(argv[4]), atof(argv[5]));
+				int itemFacing = atoi(argv[6]);
+				int itemHeight = atoi(argv[7]);
+				int itemWidth = atoi(argv[8]);
+				int itemAnimationId = atoi(argv[9]);
+				if (_vm->_items->addToWorld(itemId, itemAnimationId, _vm->_scene->_setId, itemPosition, itemFacing, itemHeight, itemWidth, false, true, false, true)) {
+					debugPrintf("Item: %d was added to set and scene\n", itemId);
+				} else {
+					debugPrintf("Failed to add item: %d to the scene\n", itemId);
+				}
+				return true;
+			} else {
+				debugPrintf("Item: %d is already in the scene\n", itemId);
+			}
+		} else if ((modeName == "remove" && argc == 3)
+		            || (modeName == "flags" && argc == 5)
+		            || (modeName == "bounds" && argc == 9)
+		            || (modeName == "list" && argc == 3)
+		) {
+			// remove item mode, show properties or edit flags
+			if (_vm->_sceneObjects->findById(itemId + kSceneObjectOffsetItems) != -1) {
+				if (modeName == "list") {
+					// list properties
+					float xpos_curr, ypos_curr, zpos_curr, x0_curr, y0_curr, z0_curr, x1_curr, y1_curr, z1_curr;
+					int currHeight, currWidth;
+					int itemAnimationId;
+					int facing_curr = _vm->_items->getFacing(itemId);
+					_vm->_items->getWidthHeight(itemId, &currWidth, &currHeight);
+					_vm->_items->getXYZ(itemId, &xpos_curr, &ypos_curr, &zpos_curr );
+					_vm->_items->getBoundingBox(itemId).getXYZ(&x0_curr, &y0_curr, &z0_curr, &x1_curr, &y1_curr, &z1_curr);
+					_vm->_items->getAnimationId(itemId, &itemAnimationId);
+					const Common::Rect &screenRect = _vm->_items->getScreenRectangle(itemId);
+					debugPrintf("Item %d (Trg: %s, Vis/Clk: %s) Pos(%02.2f,%02.2f,%02.2f), Face: %d, Height: %d, Width: %d AnimId: %d\n ScrRct(%d,%d,%d,%d) Bbox(%02.2f,%02.2f,%02.2f) ~ (%02.2f,%02.2f,%02.2f)\n",
+					            itemId,
+					            _vm->_items->isTarget(itemId)?  "T" : "F",
+					            _vm->_items->isVisible(itemId)? "T" : "F",
+					            xpos_curr, ypos_curr, zpos_curr,
+					            facing_curr, currWidth, currHeight, itemAnimationId,
+					            screenRect.top, screenRect.left, screenRect.bottom, screenRect.right,
+					            x0_curr, y0_curr, z0_curr, x1_curr, y1_curr, z1_curr);
+				} else if (modeName == "remove") {
+					if (_vm->_sceneObjects->remove(itemId + kSceneObjectOffsetItems)) {
+						debugPrintf("Item: %d was removed\n", itemId);
+					} else {
+						debugPrintf("Failed to remove item: %d\n", itemId);
+					}
+				} else if (modeName == "bounds") {
+					// change position and facing to affect the screen rectangle
+					Vector3 newPosition(atof(argv[3]), atof(argv[4]), atof(argv[5]));
+					int newFacing = atoi(argv[6]);
+					int newHeight = atoi(argv[7]);
+					int newWidth =  atoi(argv[8]);
+					//// setXYZ recalculates the item's bounding box
+					//_vm->_items->setXYZ(itemId, newPosition);
+					//// facing affects the angle and thus the screenRect in the next tick()
+					_vm->_items->setFacing(itemId, newFacing);
+					if (_vm->_sceneObjects->remove(itemId + kSceneObjectOffsetItems)) {
+						float x0_new, y0_new, z0_new, x1_new, y1_new, z1_new;
+						bool targetable = _vm->_items->isTarget(itemId);
+						bool obstacle = _vm->_items->isVisible(itemId);
+						bool polizeMazeEnemy = _vm->_items->isPoliceMazeEnemy(itemId);
+						int itemAnimationId = -1;
+						_vm->_items->getAnimationId(itemId, &itemAnimationId);
+						_vm->_items->addToWorld(itemId, itemAnimationId, _vm->_scene->_setId, newPosition, newFacing, newHeight, newWidth, targetable, obstacle, polizeMazeEnemy, true);
+						_vm->_items->getBoundingBox(itemId).getXYZ(&x0_new, &y0_new, &z0_new, &x1_new, &y1_new, &z1_new);
+						debugPrintf("New Pos(%02.2f,%02.2f,%02.2f), Face: %d, Height: %d, Width: %d\n Bbox(%02.2f,%02.2f,%02.2f) ~ (%02.2f,%02.2f,%02.2f)\n",
+						            newPosition.x, newPosition.y, newPosition.z,
+						            newFacing, newHeight, newWidth,
+						            x0_new, y0_new, z0_new, x1_new, y1_new, z1_new);
+					}
+				} else {
+					// edit flags
+					bool newObstacle  = (atoi(argv[3]) != 0);
+					bool newTarget    = (atoi(argv[4]) != 0);
+					_vm->_items->setIsObstacle(itemId, newObstacle);
+					_vm->_items->setIsTarget(itemId, newTarget);
+					debugPrintf("Setting item %d as visible/clickable: %s and target: %s\n", itemId, newObstacle? "T":"F", newTarget? "T":"F");
+				}
+				return true;
+			} else {
+				debugPrintf("No item was found with the specified id: %d in the scene\n", itemId);
+				return true;
+			}
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Add, edit flags, bounds or remove an item in the current scene\n");
+		debugPrintf("Use debugger command List with \"items\" argument to view available targets for this command\n");
+		debugPrintf("Floats:   posX, posY, posZ\n");
+		debugPrintf("Integers: id, facing, height, width, animationId\n");
+		debugPrintf("Boolean (1: true, 0: false): isVisible, isTarget\n");
+		debugPrintf("Usage 1: %s add    <id> <posX> <posY> <posZ> <facing> <height> <width> <animationId>\n", argv[0]);
+		debugPrintf("Usage 2: %s list   <id>\n", argv[0]);
+		debugPrintf("Usage 3: %s flags  <id> <isVisible> <isTarget>\n", argv[0]);
+		debugPrintf("Usage 4: %s bounds <id> <posX> <posY> <posZ>  <facing> <height> <width>\n", argv[0]);
+		debugPrintf("Usage 5: %s remove <id>\n", argv[0]);
+	}
+	return true;
+}
+
+/**
+* Add a new or remove an existing region (plain or exit) into/from a specified slot in the _regions or _exits arrays respectively
+*/
+bool Debugger::cmdRegion(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc < 4) {
+		invalidSyntax = true;
+	} else {
+		Common::String regionTypeName = argv[1];
+		regionTypeName.toLowercase();
+
+		Regions *regions = nullptr;
+		if (regionTypeName == "reg") {
+			regions = _vm->_scene->_regions;
+		} else if (regionTypeName == "exit") {
+			regions = _vm->_scene->_exits;
+		} else {
+			debugPrintf("Invalid region name type was specified: %s\n", regionTypeName.c_str());
+			return true;
+		}
+
+		Common::String modeName = argv[2];
+		modeName.toLowercase();
+		int regionID = atoi(argv[3]);
+		if (regionID < 0 || regionID >= 10) {
+			debugPrintf("A region id has to be an integer within [0, 9]\n");
+			return true;
+		}
+		if (modeName == "add" && ((regionTypeName == "reg" && argc == 8) || (regionTypeName == "exit" && argc == 9)) ){
+			// add region mode
+			if (!regions->_regions[regionID].present) {
+				int type = 0;
+				int topY    = atoi(argv[4]);
+				int leftX   = atoi(argv[5]);
+				int bottomY = atoi(argv[6]);
+				int rightX  = atoi(argv[7]);
+				if (regionTypeName == "exit") {
+					type = atoi(argv[8]);
+				}
+				Common::Rect newRect(leftX, topY, rightX, bottomY);
+				regions->add(regionID, newRect, type);
+				debugPrintf("Adding %s: %d (t:%d l:%d b:%d r:%d) of type %d\n", regionTypeName.c_str(), regionID, newRect.top, newRect.left, newRect.bottom, newRect.right, type);
+				return true;
+			} else {
+				debugPrintf("There already is an %s with the specified id: %d. Please select another slot id\n", regionTypeName.c_str(), regionID);
+				return true;
+			}
+		} else if ((modeName == "remove" && argc == 4)
+		           || (modeName == "list" && argc == 4)
+		           || (modeName == "bounds" && argc == 8)) {
+			if (regions->_regions[regionID].present) {
+				Common::Rect origRect = regions->_regions[regionID].rectangle;
+				int type = regions->_regions[regionID].type;
+				if (modeName == "remove") {
+					if (regions->remove(regionID)) {
+						debugPrintf("Removed %s: %d (t:%d l:%d b:%d r:%d) of type: %d\n", regionTypeName.c_str(), regionID, origRect.top, origRect.left, origRect.bottom, origRect.right, type);
+					} else {
+						debugPrintf("Unable to remove %s: %d for unexpected reasons\n", regionTypeName.c_str(), regionID);
+					}
+				} else if (modeName == "bounds") {
+					int topY, leftX, bottomY, rightX = 0;
+					topY    = atoi(argv[4]);
+					leftX   = atoi(argv[5]);
+					bottomY = atoi(argv[6]);
+					rightX  = atoi(argv[7]);
+
+					if (regions->remove(regionID)) {
+						Common::Rect newRect(leftX, topY, rightX, bottomY);
+						regions->add(regionID, newRect, type);
+						debugPrintf("Bounds %s: %d (t:%d l:%d b:%d r:%d)\n", regionTypeName.c_str(), regionID, newRect.top, newRect.left, newRect.bottom, newRect.right);
+					}
+				} else {
+					// list properties
+					debugPrintf("%s: %d (t:%d l:%d b:%d r:%d) of type: %d\n", regionTypeName.c_str(), regionID, origRect.top, origRect.left, origRect.bottom, origRect.right, type);
+				}
+				return true;
+			} else {
+				debugPrintf("The %s id %d specified does not exist in the scene\n", regionTypeName.c_str(), regionID);
+				return true;
+			}
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Add, edit bounds or remove a region (\"reg\": for plain region, \"exit\": for exit) in the current scene\n");
+		debugPrintf("Use debugger command List with \"reg\" argument to view available targets for this command\n");
+		debugPrintf("An exit type can be in [0, 3] and determines the type of arrow icon on mouse-over\n0: Upward , 1: Right, 2: Downward, 3: Left\n");
+		debugPrintf("Integers: id, topY, leftX, bottomY, rightX, type\n");
+		debugPrintf("Usage 1: %s reg  add    <id> <topY> <leftX> <bottomY> <rightX>\n", argv[0]);
+		debugPrintf("Usage 2: %s reg  remove <id>\n", argv[0]);
+		debugPrintf("Usage 3: %s reg  list   <id>\n", argv[0]);
+		debugPrintf("Usage 4: %s reg  bounds <id> <topY> <leftX> <bottomY> <rightX>\n", argv[0]);
+		debugPrintf("Usage 5: %s exit add    <id> <topY> <leftX> <bottomY> <rightX> <type>\n", argv[0]);
+		debugPrintf("Usage 6: %s exit remove <id>\n", argv[0]);
+		debugPrintf("Usage 7: %s exit list   <id>\n", argv[0]);
+		debugPrintf("Usage 8: %s exit bounds <id> <topY> <leftX> <bottomY> <rightX>\n", argv[0]);
+	}
+	return true;
+}
+
+/**
+* Toggle playing a full VK session (full) and showing current test statistics as subtitles
+* Only available in VK mode
+*/
+bool Debugger::cmdVk(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 2) {
+		invalidSyntax = true;
+	} else {
+		if (!_vm->_vk->isOpen()) {
+			debugPrintf("Error:Command %s is only valid within a Voigt-Kampff session\n",  argv[0]);
+			return true;
+		}
+		//
+		// set a debug variable to enable going through the (remaining) VK session
+		// enabling all the remaining VK questions
+		//
+		Common::String argName = argv[1];
+		argName.toLowercase();
+		if (argc == 2 && argName == "full") {
+			_playFullVk = !_playFullVk;
+			debugPrintf("Playing full V-K session = %s\n", _playFullVk ? "True":"False");
+		} else if (argc == 2 && argName == "stats") {
+			_showStatsVk = !_showStatsVk;
+			debugPrintf("Showing V-K session statistics= %s\n", _showStatsVk ? "True":"False");
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Toggle playing the full VK session instead of the at most 10 questions of the vanilla mode\n");
+		debugPrintf("Also, toggle showing statistics for the current session\n");
+		debugPrintf("Usage: %s (full|stats)\n", argv[0]);
+	}
+	return true;
+
+}
+/**
+*
+* Similar to draw but only list items instead of drawing
+* Maybe keep this separate from the draw command, even though some code gets repeated here
+*/
+bool Debugger::cmdList(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc < 2) {
+		invalidSyntax = true;
+	} else {
+		Common::String arg = argv[1];
+		if (arg == "act") {
+			if (argc == 2) {
+				debugPrintf("Listing scene actors: \n");
+				int count = 0;
+				for (int i = 0; i < _vm->_sceneObjects->_count; i++) {
+					SceneObjects::SceneObject *sceneObject = &_vm->_sceneObjects->_sceneObjects[_vm->_sceneObjects->_sceneObjectsSortedByDistance[i]];
+
+					if (sceneObject->type == kSceneObjectTypeActor) {
+						Actor *actor = _vm->_actors[sceneObject->id - kSceneObjectOffsetActors];
+						debugPrintf("%d: %s (Clk: %s, Trg: %s, Prs: %s, Obs: %s, Mvg: %s)\n    Goal: %d, Set: %d, Anim mode: %d id:%d\n    Pos(%02.2f,%02.2f,%02.2f)\n",
+									 sceneObject->id - kSceneObjectOffsetActors,
+									 _vm->_textActorNames->getText(sceneObject->id - kSceneObjectOffsetActors),
+									 sceneObject->isClickable? "T" : "F",
+									 sceneObject->isTarget?    "T" : "F",
+									 sceneObject->isPresent?   "T" : "F",
+									 sceneObject->isObstacle?  "T" : "F",
+									 sceneObject->isMoving?    "T" : "F",
+									 actor->getGoal(),
+									 actor->getSetId(),
+									 actor->getAnimationMode(),
+									 actor->getAnimationId(),
+									 actor->getPosition().x,
+									 actor->getPosition().y,
+									 _vm->_actors[sceneObject->id - kSceneObjectOffsetActors]->getPosition().z);
+						++count;
+					}
+				}
+				debugPrintf("%d actors were found in scene.\n", count);
+			} else if (argc == 3) {
+				// list properties for specific actor regardless of the set/ scene they are in
+				int actorId = atoi(argv[2]);
+				if (actorId >= 0 && actorId < _vm->kActorCount) {
+					debugPrintf("Showing properties for actor: %d:%s \n", actorId, _vm->_textActorNames->getText(actorId));
+					Actor *actor = _vm->_actors[actorId];
+
+					bool isReplicant = false;
+					switch (actorId) {
+					case kActorIzo:
+						isReplicant = _vm->_gameFlags->query(kFlagIzoIsReplicant);
+						break;
+					case kActorGordo:
+						isReplicant = _vm->_gameFlags->query(kFlagGordoIsReplicant);
+						break;
+					case kActorLucy:
+						isReplicant = _vm->_gameFlags->query(kFlagLucyIsReplicant);
+						break;
+					case kActorDektora:
+						isReplicant = _vm->_gameFlags->query(kFlagDektoraIsReplicant);
+						break;
+					case kActorSadik:
+						isReplicant = _vm->_gameFlags->query(kFlagSadikIsReplicant);
+						break;
+					case kActorLuther:
+						isReplicant = _vm->_gameFlags->query(kFlagLutherLanceIsReplicant);
+						break;
+					default:
+						isReplicant = false;
+						break;
+					}
+
+					debugPrintf("%d: %s (Mvg: %s, Walk:%s, Run:%s, Ret:%s, Trg: %s, Cmb: %s, Rep: %s)\n    Hp: %d, Fac: %d, Friend: %d\n    Goal: %d, Set: %d, Anim mode: %d id:%d\n    Pos(%02.2f,%02.2f,%02.2f), Walkbx:%d\n",
+						actorId,
+						_vm->_textActorNames->getText(actorId),
+						actor->isMoving()?  "T" : "F",
+						actor->isWalking()? "T" : "F",
+						actor->isRunning()? "T" : "F",
+						actor->isRetired()? "T" : "F",
+						actor->isTarget()?  "T" : "F",
+						actor->inCombat()?  "T" : "F",
+						isReplicant?        "T" : "F",
+						actor->getCurrentHP(),
+						actor->getFacing(),
+						actor->getFriendlinessToOther(kActorMcCoy),
+						actor->getGoal(),
+						actor->getSetId(),
+						actor->getAnimationMode(),
+						actor->getAnimationId(),
+						actor->getPosition().x,
+						actor->getPosition().y,
+						actor->getPosition().z,
+						actor->getWalkbox());
+				} else {
+					debugPrintf("Invalid actor id: %d was specified\n", actorId);
+					return true;
+				}
+			} else {
+				invalidSyntax = true;
+			}
+		} else if (arg == "obj") {
+			debugPrintf("Listing scene objects: \n");
+			int count = 0;
+			for (int i = 0; i < _vm->_sceneObjects->_count; i++) {
+				SceneObjects::SceneObject *sceneObject = &_vm->_sceneObjects->_sceneObjects[_vm->_sceneObjects->_sceneObjectsSortedByDistance[i]];
+				const BoundingBox &bbox = sceneObject->boundingBox;
+				Vector3 a, b;
+				bbox.getXYZ(&a.x, &a.y, &a.z, &b.x, &b.y, &b.z);
+				Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (a + b));
+
+				if (sceneObject->type == kSceneObjectTypeUnknown) {
+					debugPrintf("%02d. Unknown object type\n", count);
+					++count;
+				} else if (sceneObject->type == kSceneObjectTypeObject) {
+					debugPrintf("%d: %s (Clk: %s, Trg: %s, Prs: %s, Obs: %s, Mvg: %s), Pos(%02.2f,%02.2f,%02.2f)\n     Bbox(%02.2f,%02.2f,%02.2f) ~ (%02.2f,%02.2f,%02.2f)\n",
+								 sceneObject->id - kSceneObjectOffsetObjects,
+								 _vm->_scene->objectGetName(sceneObject->id - kSceneObjectOffsetObjects).c_str(),
+								 sceneObject->isClickable? "T" : "F",
+								 sceneObject->isTarget?    "T" : "F",
+								 sceneObject->isPresent?   "T" : "F",
+								 sceneObject->isObstacle?  "T" : "F",
+								 sceneObject->isMoving?    "T" : "F",
+								 pos.x, pos.y, pos.z,
+								 a.x, a.y, a.z, b.x, b.y, b.z);
+					++count;
+				}
+			}
+			debugPrintf("%d objects were found in scene.\n", count);
+		} else if (arg == "items") {
+			debugPrintf("Listing scene items: \n");
+			int count = 0;
+			for (int i = 0; i < _vm->_sceneObjects->_count; i++) {
+				SceneObjects::SceneObject *sceneObject = &_vm->_sceneObjects->_sceneObjects[_vm->_sceneObjects->_sceneObjectsSortedByDistance[i]];
+
+				if (sceneObject->type == kSceneObjectTypeItem) {
+					const BoundingBox &bbox = sceneObject->boundingBox;
+					Vector3 a, b;
+					bbox.getXYZ(&a.x, &a.y, &a.z, &b.x, &b.y, &b.z);
+					//Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (a + b));
+					Vector3 pos;
+					int currHeight, currWidth;
+					_vm->_items->getXYZ(sceneObject->id - kSceneObjectOffsetItems, &pos.x, &pos.y, &pos.z);
+					_vm->_items->getWidthHeight(sceneObject->id - kSceneObjectOffsetItems, &currWidth, &currHeight);
+					const Common::Rect &screenRect = _vm->_items->getScreenRectangle(sceneObject->id - kSceneObjectOffsetItems);
+					debugPrintf("Id %i, Pos(%02.2f,%02.2f,%02.2f), Face: %d, Height: %d, Width: %d, ScrRct(%d,%d,%d,%d)\n Clk: %s, Trg: %s, Prs: %s, Vis: %s, Mvg: %s Bbox(%02.2f,%02.2f,%02.2f)~(%02.2f,%02.2f,%02.2f)\n",
+								 sceneObject->id - kSceneObjectOffsetItems,
+								 pos.x, pos.y, pos.z,
+								 _vm->_items->getFacing(sceneObject->id - kSceneObjectOffsetItems), currHeight, currWidth,
+								 screenRect.top, screenRect.left, screenRect.bottom, screenRect.right,
+								 sceneObject->isClickable? "T" : "F",
+								 sceneObject->isTarget?    "T" : "F",
+								 sceneObject->isPresent?   "T" : "F",
+								 sceneObject->isObstacle?  "T" : "F",
+								 sceneObject->isMoving?    "T" : "F",
+								 a.x, a.y, a.z, b.x, b.y, b.z);
+					++count;
+				}
+			}
+			debugPrintf("%d items were found in scene.\n", count);
+		} else if (arg == "reg") {
+			debugPrintf("Listing plain regions: \n");
+			int count = 0;
+			//list regions
+			for (int i = 0; i < 10; i++) {
+				Regions::Region *region = &_vm->_scene->_regions->_regions[i];
+				if (!region->present) continue;
+				Common::Rect r = region->rectangle;
+				debugPrintf("Region slot: %d (t:%d l:%d b:%d r:%d)\n", i, r.top, r.left, r.bottom, r.right);
+				++count;
+			}
+
+			debugPrintf("Listing exits: \n");
+			//list exits
+			for (int i = 0; i < 10; i++) {
+				Regions::Region *region = &_vm->_scene->_exits->_regions[i];
+				if (!region->present) continue;
+				Common::Rect r = region->rectangle;
+				debugPrintf("Exit slot: %d (t:%d l:%d b:%d r:%d)\n", i, r.top, r.left, r.bottom, r.right);
+				++count;
+			}
+			debugPrintf("%d regions (plain and exits) were found in scene.\n", count);
+		} else if (arg == "way") {
+			debugPrintf("Listing waypoints: \n");
+			int count = 0;
+			for (int i = 0; i < _vm->_waypoints->_count; i++) {
+				Waypoints::Waypoint *waypoint = &_vm->_waypoints->_waypoints[i];
+				if(waypoint->setId != _vm->_scene->getSetId()) {
+					continue;
+				}
+				char waypointText[40];
+				Vector3 a = waypoint->position;
+				sprintf(waypointText, "Waypoint %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
+				debugPrintf("%02d. %s\n", count, waypointText);
+				++count;
+			}
+
+			// list combat cover waypoints
+			for (int i = 0; i < (int)_vm->_combat->_coverWaypoints.size(); i++) {
+				Combat::CoverWaypoint *cover = &_vm->_combat->_coverWaypoints[i];
+				if (cover->setId != _vm->_scene->getSetId()) {
+					continue;
+				}
+				char coverText[40];
+				Vector3 a = cover->position;
+				sprintf(coverText, "Cover %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
+				debugPrintf("%02d. %s\n", count, coverText);
+				++count;
+			}
+
+			// list combat flee waypoints
+			for (int i = 0; i < (int)_vm->_combat->_fleeWaypoints.size(); i++) {
+				Combat::FleeWaypoint *flee = &_vm->_combat->_fleeWaypoints[i];
+				if (flee->setId != _vm->_scene->getSetId()) {
+					continue;
+				}
+				char fleeText[40];
+				Vector3 a = flee->position;
+				sprintf(fleeText, "Flee %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
+				debugPrintf("%02d. %s\n", count, fleeText);
+				++count;
+			}
+			debugPrintf("%d waypoints were found in scene.\n", count);
+		} else if (arg == "walk") {
+			debugPrintf("Listing walkboxes: \n");
+			// list walkboxes
+			for (int i = 0; i < _vm->_scene->_set->_walkboxCount; i++) {
+				Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
+
+				debugPrintf("%02d. Walkbox %s, vertices: %d\n", i, walkbox->name.c_str(), walkbox->vertexCount);
+			}
+			debugPrintf("%d walkboxes were found in scene.\n", _vm->_scene->_set->_walkboxCount);
+		} else if (arg == "fog") {
+			debugPrintf("Listing fogs: \n");
+			int count = 0;
+			for (Fog *fog = _vm->_scene->_set->_effects->_fogs; fog != nullptr; fog = fog->_next) {
+				debugPrintf("%02d. Fog %s\n", count, fog->_name.c_str());
+				++count;
+			}
+			debugPrintf("%d fogs were found in scene.\n", count);
+		} else if (arg == "lit") {
+			debugPrintf("Listing lights: \n");
+			// list lights
+			for (int i = 0; i < (int)_vm->_lights->_lights.size(); i++) {
+				Light *light = _vm->_lights->_lights[i];
+				debugPrintf("%02d. Light %s\n", i, light->_name.c_str());
+			}
+			debugPrintf("%d lights were found in scene.\n", (int)_vm->_lights->_lights.size());
+		} else {
+			debugPrintf("Invalid item type was specified.\n");
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Enables debug listing of actors, scene objects, items, waypoints, regions, lights, fogs and walk-boxes.\n");
+		debugPrintf("Usage 1: %s (act | obj | items | way | reg | lit | fog | walk )\n", argv[0]);
+		debugPrintf("Usage 2: %s act <actorId>\n", argv[0]);
+	}
+	return true;
 }
 
 
@@ -912,13 +1863,13 @@ void Debugger::drawSceneObjects() {
 			case kSceneObjectTypeUnknown:
 				break;
 			case kSceneObjectTypeActor:
-				color = 0x7C00; // 11111 00000 00000;
+				color = _vm->_surfaceFront.format.RGBToColor(255, 0, 0);
 				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
 				_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
 				_vm->_mainFont->drawColor(_vm->_textActorNames->getText(sceneObject->id - kSceneObjectOffsetActors), _vm->_surfaceFront, pos.x, pos.y, color);
 				break;
 			case kSceneObjectTypeItem:
-				color = 0x03E0; // 00000 11111 00000
+				color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
 				char itemText[40];
 				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
 				sprintf(itemText, "item %i", sceneObject->id - kSceneObjectOffsetItems);
@@ -926,11 +1877,9 @@ void Debugger::drawSceneObjects() {
 				_vm->_mainFont->drawColor(itemText, _vm->_surfaceFront, pos.x, pos.y, color);
 				break;
 			case kSceneObjectTypeObject:
-				color = 0x3DEF; //01111 01111 01111;
-				//if (sceneObject->_isObstacle)
-				//	color += 0b100000000000000;
+				color = _vm->_surfaceFront.format.RGBToColor(127, 127, 127);
 				if (sceneObject->isClickable) {
-					color = 0x03E0; // 00000 11111 00000;
+					color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
 				}
 				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
 				_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
@@ -958,10 +1907,7 @@ void Debugger::drawLights() {
 		posTarget.z = -t;
 
 		Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
-		int colorR = (light->_color.r * 31.0f);
-		int colorG = (light->_color.g * 31.0f);
-		int colorB = (light->_color.b * 31.0f);
-		int color = (colorR << 10) + (colorG << 5) + colorB;
+		int color = _vm->_surfaceFront.format.RGBToColor(light->_color.r * 255.0f, light->_color.g * 255.0f, light->_color.b * 255.0f);
 
 		drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
 
@@ -992,10 +1938,7 @@ void Debugger::drawFogs() {
 		posTarget.z = -t;
 
 		Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
-		int colorR = (fog->_fogColor.r * 31.0f);
-		int colorG = (fog->_fogColor.g * 31.0f);
-		int colorB = (fog->_fogColor.b * 31.0f);
-		int color = (colorR << 10) + (colorG << 5) + colorB;
+		int color = _vm->_surfaceFront.format.RGBToColor(fog->_fogColor.r * 255.0f, fog->_fogColor.g * 255.0f, fog->_fogColor.b * 255.0f);
 
 		drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
 
@@ -1014,14 +1957,14 @@ void Debugger::drawRegions() {
 	for (int i = 0; i < 10; i++) {
 		Regions::Region *region = &_vm->_scene->_regions->_regions[i];
 		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, 0x001F); // 00000 00000 11111
+		_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(0, 0, 255));
 	}
 
 	//draw exits
 	for (int i = 0; i < 10; i++) {
 		Regions::Region *region = &_vm->_scene->_exits->_regions[i];
 		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, 0x7FFF); // 11111 11111 11111
+		_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(255, 255, 255));
 	}
 }
 
@@ -1034,7 +1977,7 @@ void Debugger::drawWaypoints() {
 		}
 		Vector3 pos = waypoint->position;
 		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = 0x7FFF; // 11111 11111 11111
+		int color = _vm->_surfaceFront.format.RGBToColor(255, 255, 255);
 		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
 		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
 		char waypointText[40];
@@ -1050,7 +1993,7 @@ void Debugger::drawWaypoints() {
 		}
 		Vector3 pos = cover->position;
 		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = 0x7C1F; // 11111 00000 11111
+		int color = _vm->_surfaceFront.format.RGBToColor(255, 0, 255);
 		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
 		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
 		char coverText[40];
@@ -1066,7 +2009,7 @@ void Debugger::drawWaypoints() {
 		}
 		Vector3 pos = flee->position;
 		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = 0x03FF; // 00000 11111 11111
+		int color = _vm->_surfaceFront.format.RGBToColor(0, 255, 255);
 		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
 		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
 		char fleeText[40];
@@ -1083,9 +2026,9 @@ void Debugger::drawWalkboxes() {
 		for (int j = 0; j < walkbox->vertexCount; j++) {
 			Vector3 start = _vm->_view->calculateScreenPosition(walkbox->vertices[j]);
 			Vector3 end = _vm->_view->calculateScreenPosition(walkbox->vertices[(j + 1) % walkbox->vertexCount]);
-			_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, 0x7FE0); // 11111 11111 00000
-			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (start + end));
-			_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, 0x7FE0); // 11111 11111 00000
+			_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
+			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (walkbox->vertices[j] + walkbox->vertices[(j + 1) % walkbox->vertexCount]));
+			_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
 		}
 	}
 }
@@ -1100,19 +2043,16 @@ void Debugger::drawScreenEffects() {
 				Common::Rect r((entry.x + x) * 2, (entry.y + y) * 2, (entry.x + x) * 2 + 2, (entry.y + y) * 2 + 2);
 
 				int ec = entry.data[j++];
-				Color256 color = entry.palette[ec];
-				int bladeToScummVmConstant = 256 / 16;
+				const int bladeToScummVmConstant = 256 / 16;
 
-				Graphics::PixelFormat _pixelFormat = createRGB555();
-				int color555 = _pixelFormat.RGBToColor(
-					CLIP(color.r * bladeToScummVmConstant, 0, 255),
-					CLIP(color.g * bladeToScummVmConstant, 0, 255),
-					CLIP(color.b * bladeToScummVmConstant, 0, 255));
-				_vm->_surfaceFront.fillRect(r, color555);
+				int color = _vm->_surfaceFront.format.RGBToColor(
+					CLIP(entry.palette[ec].r * bladeToScummVmConstant, 0, 255),
+					CLIP(entry.palette[ec].g * bladeToScummVmConstant, 0, 255),
+					CLIP(entry.palette[ec].b * bladeToScummVmConstant, 0, 255));
+				_vm->_surfaceFront.fillRect(r, color);
 			}
 		}
 	}
 }
-
 
 } // End of namespace BladeRunner

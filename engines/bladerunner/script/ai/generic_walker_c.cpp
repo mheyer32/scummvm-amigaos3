@@ -63,8 +63,8 @@ bool AIScriptGenericWalkerC::Update() {
 }
 
 void AIScriptGenericWalkerC::TimerExpired(int timer) {
-	if (timer == 2) {
-		AI_Countdown_Timer_Reset(kActorGenwalkerC, 2);
+	if (timer == kActorTimerAIScriptCustomTask2) {
+		AI_Countdown_Timer_Reset(kActorGenwalkerC, kActorTimerAIScriptCustomTask2);
 		Game_Flag_Reset(kFlagGenericWalkerWaiting);
 		return;// true;
 	}
@@ -76,8 +76,8 @@ void AIScriptGenericWalkerC::CompletedMovementTrack() {
 		Actor_Set_Goal_Number(kActorGenwalkerC, 0);
 		if (!Game_Flag_Query(kFlagGenericWalkerWaiting)) {
 			Game_Flag_Set(kFlagGenericWalkerWaiting);
-			AI_Countdown_Timer_Reset(kActorGenwalkerC, 2);
-			AI_Countdown_Timer_Start(kActorGenwalkerC, 2, Random_Query(6, 10));
+			AI_Countdown_Timer_Reset(kActorGenwalkerC, kActorTimerAIScriptCustomTask2);
+			AI_Countdown_Timer_Start(kActorGenwalkerC, kActorTimerAIScriptCustomTask2, Random_Query(6, 10));
 		}
 		// return true;
 	}
@@ -153,7 +153,7 @@ bool AIScriptGenericWalkerC::ShotAtAndHit() {
 		AI_Movement_Track_Flush(kActorGenwalkerC);
 		_animationState = kGenericWalkerCStatesDie;
 		_animationFrame = 0;
-		Sound_Play(203, 100, 0, 0, 50);
+		Sound_Play(kSfxPOTSPL5, 100, 0, 0, 50);
 		movingStart();
 		return true;
 	}
@@ -337,8 +337,8 @@ bool AIScriptGenericWalkerC::prepareWalker() {
 
 	Global_Variable_Set(kVariableGenericWalkerCModel, model);
 	Game_Flag_Set(kFlagGenericWalkerWaiting);
-	AI_Countdown_Timer_Reset(kActorGenwalkerC, 2);
-	AI_Countdown_Timer_Start(kActorGenwalkerC, 2, Random_Query(4, 12));
+	AI_Countdown_Timer_Reset(kActorGenwalkerC, kActorTimerAIScriptCustomTask2);
+	AI_Countdown_Timer_Start(kActorGenwalkerC, kActorTimerAIScriptCustomTask2, Random_Query(4, 12));
 	Actor_Set_Goal_Number(kActorGenwalkerC, 1);
 	return true;
 }

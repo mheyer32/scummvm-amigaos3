@@ -273,6 +273,7 @@ public:
 		}
 	}
 
+	bool hasParser() const;
 	bool hasMacIconBar() const;
 
 	inline ResourceManager *getResMan() const { return _resMan; }

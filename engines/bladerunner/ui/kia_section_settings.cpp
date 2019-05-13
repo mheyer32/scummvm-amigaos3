@@ -167,35 +167,35 @@ void KIASectionSettings::draw(Graphics::Surface &surface) {
 	_uiContainer->draw(surface);
 	_playerAgendaSelector->draw(surface);
 
-	_vm->_mainFont->drawColor(textConversationChoices, surface, posConversationChoices, 280, 0x7751);
+	_vm->_mainFont->drawColor(textConversationChoices, surface, posConversationChoices, 280, surface.format.RGBToColor(232, 208, 136));
 
-	_vm->_mainFont->drawColor(textMusic, surface, posMusic, 150, 0x7751);
-	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 161, 0x6EEE);
-	_vm->_mainFont->drawColor(textLoud, surface, 462, 161, 0x6EEE);
+	_vm->_mainFont->drawColor(textMusic, surface, posMusic, 150, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 161, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLoud, surface, 462, 161, surface.format.RGBToColor(216, 184, 112));
 
-	_vm->_mainFont->drawColor(textSoundEffects, surface, posSoundEffects, 175, 0x7751);
-	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 186, 0x6EEE);
-	_vm->_mainFont->drawColor(textLoud, surface, 462, 186, 0x6EEE);
+	_vm->_mainFont->drawColor(textSoundEffects, surface, posSoundEffects, 175, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 186, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLoud, surface, 462, 186, surface.format.RGBToColor(216, 184, 112));
 
 #if BLADERUNNER_ORIGINAL_SETTINGS
-	_vm->_mainFont->drawColor(textAmbientSound, surface, posAmbientSound, 200, 0x7751);
-	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 211, 0x6EEE);
-	_vm->_mainFont->drawColor(textLoud, surface, 462, 211, 0x6EEE);
+	_vm->_mainFont->drawColor(textAmbientSound, surface, posAmbientSound, 200, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 211, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLoud, surface, 462, 211, surface.format.RGBToColor(216, 184, 112));
 
-	_vm->_mainFont->drawColor(textSpeech, surface, posSpeech, 225, 0x7751);
-	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 236, 0x6EEE);
-	_vm->_mainFont->drawColor(textLoud, surface, 462, 236, 0x6EEE);
+	_vm->_mainFont->drawColor(textSpeech, surface, posSpeech, 225, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 236, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLoud, surface, 462, 236, surface.format.RGBToColor(216, 184, 112));
 
-	_vm->_mainFont->drawColor(textGammaCorrection, surface, posGammaCorrection, 250, 0x7751);
-	_vm->_mainFont->drawColor(textDark, surface, posDark, 261, 0x6EEE);
-	_vm->_mainFont->drawColor(textLight, surface, 462, 261, 0x6EEE);
+	_vm->_mainFont->drawColor(textGammaCorrection, surface, posGammaCorrection, 250, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textDark, surface, posDark, 261, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLight, surface, 462, 261, surface.format.RGBToColor(216, 184, 112));
 #else
-	_vm->_mainFont->drawColor(textSpeech, surface, posSpeech, 200, 0x7751);
-	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 211, 0x6EEE);
-	_vm->_mainFont->drawColor(textLoud, surface, 462, 211, 0x6EEE);
+	_vm->_mainFont->drawColor(textSpeech, surface, posSpeech, 200, surface.format.RGBToColor(232, 208, 136));
+	_vm->_mainFont->drawColor(textSoft, surface, posSoft, 211, surface.format.RGBToColor(216, 184, 112));
+	_vm->_mainFont->drawColor(textLoud, surface, 462, 211, surface.format.RGBToColor(216, 184, 112));
 #endif
 
-	_vm->_mainFont->drawColor(textDesignersCut, surface, 192, 365, 0x7751);
+	_vm->_mainFont->drawColor(textDesignersCut, surface, 192, 365, surface.format.RGBToColor(232, 208, 136));
 
 	if (_vm->_subtitles->isSystemActive()) {
 		// Allow this to be loading as an extra text item in the resource for text options
@@ -209,7 +209,10 @@ void KIASectionSettings::draw(Graphics::Surface &surface) {
 		} else if (_vm->_language == Common::IT_ITA) {
 			subtitlesTranslation = "Sottotitoli";      // IT_ITA
 		} else if (_vm->_language == Common::RU_RUS) {
-			subtitlesTranslation = "Subtitry";         // RU_RUS
+			// The supported Russian version is using its own KIA6PT.FON
+			// where it has replaced the mapping of Latin characters to Russian characters
+			// So the character string here does not make sense, but it will appear correctly
+			subtitlesTranslation = "CE,NBNHS";         // RU_RUS "Subtitry"
 		} else if (_vm->_language == Common::ES_ESP) {
 			subtitlesTranslation = "Subtitulos";       // ES_ESP
 		}
@@ -217,9 +220,9 @@ void KIASectionSettings::draw(Graphics::Surface &surface) {
 		const char *textSubtitles  = strcmp(_vm->_textOptions->getText(42), "") == 0? subtitlesTranslation : _vm->_textOptions->getText(42); // +1 to the max of original index of textOptions which is 41
 
 		if (_vm->_language == Common::RU_RUS) {
-			_vm->_mainFont->drawColor(textSubtitles, surface, 288, 376, 0x7751); // special case for Russian version, put the option in a new line to avoid overlap
+			_vm->_mainFont->drawColor(textSubtitles, surface, 288, 376, surface.format.RGBToColor(232, 208, 136)); // special case for Russian version, put the option in a new line to avoid overlap
 		} else {
-			_vm->_mainFont->drawColor(textSubtitles, surface, 323, 365, 0x7751); // moved further to the right to avoid overlap with 'Designer's Cut' in some language versions (ESP)
+			_vm->_mainFont->drawColor(textSubtitles, surface, 323, 365, surface.format.RGBToColor(232, 208, 136)); // moved further to the right to avoid overlap with 'Designer's Cut' in some language versions (ESP)
 		}
 	}
 
@@ -289,17 +292,17 @@ void KIASectionSettings::sliderCallback(void *callbackData, void *source) {
 	}
 #else
 	if (source == self->_musicVolume) {
-		self->_vm->_mixer->setVolumeForSoundType(self->_vm->_mixer->kMusicSoundType, self->_musicVolume->_value);
-		self->_vm->_music->playSample();
 		ConfMan.setInt("music_volume", self->_musicVolume->_value);
+		self->_vm->syncSoundSettings();
+		self->_vm->_music->playSample();
 	} else if (source == self->_soundEffectVolume) {
-		self->_vm->_mixer->setVolumeForSoundType(self->_vm->_mixer->kSFXSoundType, self->_soundEffectVolume->_value);
-		self->_vm->_audioPlayer->playSample();
 		ConfMan.setInt("sfx_volume", self->_soundEffectVolume->_value);
+		self->_vm->syncSoundSettings();
+		self->_vm->_audioPlayer->playSample();
 	} else if (source == self->_speechVolume) {
-		self->_vm->_mixer->setVolumeForSoundType(self->_vm->_mixer->kSpeechSoundType, self->_speechVolume->_value);
-		self->_vm->_audioSpeech->playSample();
 		ConfMan.setInt("speech_volume", self->_speechVolume->_value);
+		self->_vm->syncSoundSettings();
+		self->_vm->_audioSpeech->playSample();
 	}
 #endif
 }
@@ -320,7 +323,7 @@ void KIASectionSettings::checkBoxCallback(void *callbackData, void *source) {
 
 void KIASectionSettings::mouseInCallback(int buttonId, void *callbackData) {
 	KIASectionSettings *self = (KIASectionSettings *)callbackData;
-	self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(508), 100, 0, 0, 50, 0);
+	self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(kSfxTEXT3), 100, 0, 0, 50, 0);
 }
 
 void KIASectionSettings::mouseUpCallback(int buttonId, void *callbackData) {
@@ -331,27 +334,27 @@ void KIASectionSettings::mouseUpCallback(int buttonId, void *callbackData) {
 void KIASectionSettings::onButtonPressed(int buttonId) {
 	switch (buttonId) {
 	case 0:
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, -30, -30, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, -30, -30, 50, 0);
 		_vm->_settings->setPlayerAgenda(0);
 		initConversationChoices();
 		break;
 	case 1:
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, -15, -15, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, -15, -15, 50, 0);
 		_vm->_settings->setPlayerAgenda(1);
 		initConversationChoices();
 		break;
 	case 2:
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, 0, 0, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, 0, 0, 50, 0);
 		_vm->_settings->setPlayerAgenda(2);
 		initConversationChoices();
 		break;
 	case 3:
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, 15, 15, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, 15, 15, 50, 0);
 		_vm->_settings->setPlayerAgenda(3);
 		initConversationChoices();
 		break;
 	case 4:
-		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(513), 90, 30, 30, 50, 0);
+		_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, 30, 30, 50, 0);
 		_vm->_settings->setPlayerAgenda(4);
 		initConversationChoices();
 		break;

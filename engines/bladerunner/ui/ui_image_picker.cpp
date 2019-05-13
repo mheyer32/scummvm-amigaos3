@@ -197,27 +197,24 @@ void UIImagePicker::draw(Graphics::Surface &surface) {
 			continue;
 		}
 
-		if (i == _hoveredImageIndex && i == _pressedImageIndex && _isButtonDown) {
-			if (!_vm->_mouse->isDisabled()) {
-				if (img.shapeDown) {
-					img.shapeDown->draw(surface, img.rect.left, img.rect.top);
-				}
-			}
-		} else if (i == _hoveredImageIndex && !_isButtonDown) {
-			if (!_vm->_mouse->isDisabled()) {
-				if (img.shapeHovered) {
-					img.shapeHovered->draw(surface, img.rect.left, img.rect.top);
-				}
-			}
+		if (i == _hoveredImageIndex && i == _pressedImageIndex && _isButtonDown
+			&& !_vm->_mouse->isDisabled()
+			&& img.shapeDown) {
+			img.shapeDown->draw(surface, img.rect.left, img.rect.top);
+		} else if (i == _hoveredImageIndex && !_isButtonDown
+			&& !_vm->_mouse->isDisabled()
+			&& img.shapeHovered) {
+			img.shapeHovered->draw(surface, img.rect.left, img.rect.top);
 		} else {
+			// this shape should always be the fall back shape to prevent blinking
 			if (img.shapeUp) {
 				img.shapeUp->draw(surface, img.rect.left, img.rect.top);
 			}
 		}
 
 		if (_vm->_debugger->_viewUI) {
-			surface.frameRect(img.rect, 0x7fff);
-			_vm->_mainFont->drawColor(Common::String::format("%d", i), surface, (img.rect.left + img.rect.right) / 2, (img.rect.top + img.rect.bottom) / 2, 0x7fff);
+			surface.frameRect(img.rect, surface.format.RGBToColor(255, 255, 255));
+			_vm->_mainFont->drawColor(Common::String::format("%d", i), surface, (img.rect.left + img.rect.right) / 2, (img.rect.top + img.rect.bottom) / 2, surface.format.RGBToColor(255, 255, 255));
 		}
 	}
 }
@@ -268,9 +265,9 @@ void UIImagePicker::drawTooltip(Graphics::Surface &surface, int x, int y) {
 		rect.top = 478 - height;
 	}
 
-	surface.fillRect(rect, 0);
-	surface.frameRect(rect, 0x7FFF);
-	_vm->_mainFont->drawColor(tooltip, surface, rect.left + 2, rect.top, 0x7FFF);
+	surface.fillRect(rect, surface.format.RGBToColor(0, 0, 0));
+	surface.frameRect(rect, surface.format.RGBToColor(255, 255, 255));
+	_vm->_mainFont->drawColor(tooltip, surface, rect.left + 2, rect.top, surface.format.RGBToColor(255, 255, 255));
 }
 
 bool UIImagePicker::handleMouseAction(int x, int y, bool down, bool up, bool ignore) {

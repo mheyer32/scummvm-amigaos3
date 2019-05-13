@@ -23,8 +23,8 @@ win32dist: all
 	cp $(srcdir)/COPYING.BSD $(WIN32PATH)/COPYING.BSD.txt
 	cp $(srcdir)/COPYING.LGPL $(WIN32PATH)/COPYING.LGPL.txt
 	cp $(srcdir)/COPYING.FREEFONT $(WIN32PATH)/COPYING.FREEFONT.txt
+	cp $(srcdir)/COPYING.OFL $(WIN32PATH)/COPYING.OFL.txt
 	cp $(srcdir)/COPYRIGHT $(WIN32PATH)/COPYRIGHT.txt
-	cp $(srcdir)/NEWS $(WIN32PATH)/NEWS.txt
 	cp $(srcdir)/doc/cz/PrectiMe $(WIN32PATH)/doc/cz/PrectiMe.txt
 	cp $(srcdir)/doc/de/NEUES $(WIN32PATH)/doc/de/NEUES.txt
 	cp $(srcdir)/doc/QuickStart $(WIN32PATH)/doc/QuickStart.txt
@@ -35,7 +35,13 @@ win32dist: all
 	cp $(srcdir)/doc/da/HurtigStart $(WIN32PATH)/doc/da/HurtigStart.txt
 	cp $(srcdir)/doc/de/Schnellstart $(WIN32PATH)/doc/de/Schnellstart.txt
 	cp $(srcdir)/doc/se/Snabbstart $(WIN32PATH)/doc/se/Snabbstart.txt
-	cp $(srcdir)/README.md $(WIN32PATH)/README.md
+ifdef USE_PANDOC
+	cp NEWS $(WIN32PATH)/NEWS.txt
+	cp README $(WIN32PATH)/README.txt
+else
+	cp $(srcdir)/NEWS.md $(WIN32PATH)/NEWS.txt
+	cp $(srcdir)/README.md $(WIN32PATH)/README.txt
+endif
 	cp $(WIN32SDLDOCPATH)/README-SDL.txt $(WIN32PATH)/README-SDL.txt
 	cp $(srcdir)/doc/de/LIESMICH $(WIN32PATH)/doc/de/LIESMICH.txt
 	cp $(srcdir)/doc/se/LasMig $(WIN32PATH)/doc/se/LasMig.txt

@@ -28,18 +28,18 @@ void SceneScriptPS07::InitializeScene() {
 	Setup_Scene_Information(609.07f, 0.22f, -598.67f, 768);
 	Scene_Exit_Add_2D_Exit(0, 610, 0, 639, 479, 1);
 	Ambient_Sounds_Remove_All_Non_Looping_Sounds(false);
-	Ambient_Sounds_Add_Looping_Sound(141, 80, 0, 1);
-	Ambient_Sounds_Add_Sound(142, 5, 20, 5, 10, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(146, 5, 30, 5, 10, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(147, 2, 20, 5, 10, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(148, 2, 10, 10, 20, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(149, 2, 10, 10, 20, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(150, 2, 10, 10, 20, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(151, 2, 10, 10, 20, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(152, 2, 30, 10, 15, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(153, 2, 20, 10, 15, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(154, 5, 20, 10, 15, -70, 70, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(145, 5, 30, 5, 8, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxLABAMB3, 80, 0, 1);
+	Ambient_Sounds_Add_Sound(kSfxTUBES1,   5, 20,  5, 10,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC1, 5, 30,  5, 10,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC2, 2, 20,  5, 10,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC3, 2, 10, 10, 20,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC4, 2, 10, 10, 20,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC5, 2, 10, 10, 20,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC6, 2, 10, 10, 20,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC7, 2, 30, 10, 15,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC8, 2, 20, 10, 15,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxLABMISC9, 5, 20, 10, 15,  -70,  70, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxTUBES4,   5, 30,  5,  8, -100, 100, -101, -101, 0, 0);
 }
 
 void SceneScriptPS07::SceneLoaded() {
@@ -52,8 +52,8 @@ bool SceneScriptPS07::MouseClick(int x, int y) {
 }
 
 bool SceneScriptPS07::ClickedOn3DObject(const char *objectName, bool a2) {
-	if (Object_Query_Click("L.MOUSE", objectName)) {
-		Sound_Play(155, 70, 0, 0, 50);
+	if (Object_Query_Click("L.MOUSE", objectName)) { // a bug? Which object is this?
+		Sound_Play(kSfxLABBUZZ1, 70, 0, 0, 50);
 		if (Actor_Query_Goal_Number(kActorKlein) < 4 && Actor_Query_Goal_Number(kActorKlein) > 0) {
 			Actor_Face_Actor(kActorMcCoy, kActorKlein, true);
 			Actor_Set_Goal_Number(kActorKlein, 3);
@@ -169,7 +169,7 @@ bool SceneScriptPS07::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptPS07::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 609.07f, 0.22f, -598.67f, 0, 0, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 609.07f, 0.22f, -598.67f, 0, false, false, false)) {
 			Set_Enter(kSetPS02, kScenePS02);
 		}
 		return true;
@@ -188,7 +188,7 @@ void SceneScriptPS07::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 }
 
 void SceneScriptPS07::PlayerWalkedIn() {
-	Loop_Actor_Walk_To_XYZ(kActorMcCoy, 561.07f, 0.34f, -606.67f, 6, 0, false, 0);
+	Loop_Actor_Walk_To_XYZ(kActorMcCoy, 561.07f, 0.34f, -606.67f, 6, false, false, false);
 	Game_Flag_Reset(kFlagPS02toPS07);
 	//return false;
 }

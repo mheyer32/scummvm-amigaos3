@@ -108,18 +108,21 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 	_actorSpeakStopIsRequested = false;
 
 	_subtitlesEnabled = false;
+
 	_sitcomMode       = false;
 	_shortyMode       = false;
+	_cutContent       = true;
 
 	_playerLosesControlCounter = 0;
 
 	_playerActorIdle = false;
 	_playerDead      = false;
 
-	_gameOver        = false;
-	_gameAutoSave    = -1;
-	_gameIsLoading   = false;
-	_sceneIsLoading  = false;
+	_gameOver               = false;
+	_gameAutoSaveTextId     = -1;
+	_gameIsAutoSaving       = false;
+	_gameIsLoading          = false;
+	_sceneIsLoading         = false;
 
 	_runningActorId         = -1;
 	_isWalkingInterruptible = false;
@@ -282,7 +285,6 @@ Common::Error BladeRunnerEngine::saveGameState(int slot, const Common::String &d
 	header._name = desc;
 
 	BladeRunner::SaveFileManager::writeHeader(*saveFile, header);
-
 	_time->pause();
 	saveGame(*saveFile, thumbnail);
 	_time->resume();
@@ -301,7 +303,7 @@ void BladeRunnerEngine::pauseEngineIntern(bool pause) {
 }
 
 Common::Error BladeRunnerEngine::run() {
-	Graphics::PixelFormat format = createRGB555();
+	Graphics::PixelFormat format = screenPixelFormat();
 	initGraphics(640, 480, &format);
 
 	_system->showMouse(true);
@@ -323,7 +325,7 @@ Common::Error BladeRunnerEngine::run() {
 		}
 		// TODO: why is game starting new game here when everything is done in startup?
 		//  else {
-		// 	newGame(1);
+		// 	newGame(kGameDifficultyMedium);
 		// }
 
 		gameLoop();
@@ -331,7 +333,17 @@ Common::Error BladeRunnerEngine::run() {
 		_mouse->disable();
 
 		if (_gameOver) {
-			autoSaveGame(4, true);
+			// In the original game this created a single "END_GAME_STATE.END"
+			// which had the a valid format of a save game but was never accessed
+			// from the loading screen. (Due to the .END extension)
+			// It was also a single file that was overwritten each time the player
+			// finished the game.
+			// Maybe its purpose was debugging (?) by renaming it to .SAV and also
+			// for the game to "know" if the player has already finished the game at least once (?)
+			// although that latter one seems not to be used for anything, or maybe it was planned
+			// to be used for a sequel (?). We will never know.
+			// Disabling as in current state it will only fill-up save slots
+			// autoSaveGame(4, true);
 			_endCredits->show();
 		}
 	}
@@ -366,8 +378,8 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	// This is the original startup in the game
 
-	_surfaceFront.create(640, 480, createRGB555());
-	_surfaceBack.create(640, 480, createRGB555());
+	_surfaceFront.create(640, 480, screenPixelFormat());
+	_surfaceBack.create(640, 480, screenPixelFormat());
 
 	_time = new Time(this);
 
@@ -423,11 +435,18 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	// Assign default values to the ScummVM configuration manager, in case settings are missing
 	ConfMan.registerDefault("subtitles", "true");
+	ConfMan.registerDefault("sfx_volume", 192);
+	ConfMan.registerDefault("music_volume", 192);
+	ConfMan.registerDefault("speech_volume", 192);
+	ConfMan.registerDefault("mute", "false");
+	ConfMan.registerDefault("speech_mute", "false");
+
 	// get value from the ScummVM configuration manager
-	_subtitlesEnabled = ConfMan.getBool("subtitles");
+	syncSoundSettings();
 
 	_sitcomMode = ConfMan.getBool("sitcom");
 	_shortyMode = ConfMan.getBool("shorty");
+	_cutContent = ConfMan.getBool("cutcontent");
 
 	_items = new Items(this);
 
@@ -473,7 +492,7 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 	_playerActor = _actors[_gameInfo->getPlayerId()];
 
 	_playerActor->setFPS(15);
-	_playerActor->timerStart(6, 200);
+	_playerActor->timerStart(kActorTimerRunningStaminaFPS, 200);
 
 	_policeMaze = new PoliceMaze(this);
 
@@ -520,7 +539,7 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 	_scores = new Scores(this);
 
 	_mainFont = new Font(this);
-	_mainFont->open("KIA6PT.FON", 640, 480, -1, 0, 0x252D);
+	_mainFont->open("KIA6PT.FON", 640, 480, -1, 0, _surfaceFront.format.RGBToColor(72, 72, 104));
 	_mainFont->setSpacing(1, 0);
 
 	for (int i = 0; i != 43; ++i) {
@@ -695,6 +714,13 @@ void BladeRunnerEngine::shutdown() {
 		closeArchive("SPCHSFX.TLK");
 	}
 
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	if (isArchiveOpen("A.TLK")) {
+		closeArchive("A.TLK");
+	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
+
 	if (isArchiveOpen("SFX.MIX")) {
 		closeArchive("SFX.MIX");
 	}
@@ -856,9 +882,9 @@ void BladeRunnerEngine::gameTick() {
 		}
 	}
 
-	if (_gameAutoSave >= 0) {
-		autoSaveGame(_gameAutoSave, false);
-		_gameAutoSave = -1;
+	if (_gameAutoSaveTextId >= 0) {
+		autoSaveGame(_gameAutoSaveTextId, false);
+		_gameAutoSaveTextId = -1;
 	}
 
 	//probably not needed, this version of tick is just loading data from buffer
@@ -981,7 +1007,12 @@ void BladeRunnerEngine::gameTick() {
 
 	_subtitles->tick(_surfaceFront);
 
-	blitToScreen(_surfaceFront);
+	 // Without this condition the game may flash back to the game screen
+	 // between and ending outtake and the end credits.
+	if (!_gameOver) {
+		blitToScreen(_surfaceFront);
+	}
+
 	_system->delayMillis(10);
 }
 
@@ -1472,9 +1503,9 @@ void BladeRunnerEngine::handleMouseClickEmpty(int x, int y, Vector3 &scenePositi
 	int actorId = Actor::findTargetUnderMouse(this, x, y);
 	int itemId = _items->findTargetUnderMouse(x, y);
 
-	if (_combat->isActive() && buttonDown && (actorId > 0 || itemId > 0)) {
+	if (_combat->isActive() && buttonDown && (actorId >= 0 || itemId >= 0)) {
 		_playerActor->stopWalking(false);
-		if (actorId > 0) {
+		if (actorId >= 0) {
 			_playerActor->faceActor(actorId, false);
 		} else {
 			_playerActor->faceItem(itemId, false);
@@ -1680,6 +1711,22 @@ void BladeRunnerEngine::loopActorSpeaking() {
 	playerGainsControl();
 }
 
+/**
+* To be used only for when there is a chance an ongoing dialogue in a dialogue queue
+* might be interrupted AND that is unwanted behavior (sometimes, it's intended that the dialogue
+* can be interrupted without necessarily being finished).
+*/
+void BladeRunnerEngine::loopQueuedDialogueStillPlaying() {
+	if (_actorDialogueQueue->isEmpty()) {
+		return;
+	}
+
+	do {
+		gameTick();
+	} while (_gameIsRunning && !_actorDialogueQueue->isEmpty());
+
+}
+
 void BladeRunnerEngine::outtakePlay(int id, bool noLocalization, int container) {
 	Common::String name = _gameInfo->getOuttake(id);
 
@@ -1740,6 +1787,27 @@ void BladeRunnerEngine::syncSoundSettings() {
 	Engine::syncSoundSettings();
 
 	_subtitlesEnabled = ConfMan.getBool("subtitles");
+
+	_mixer->setVolumeForSoundType(_mixer->kMusicSoundType, ConfMan.getInt("music_volume"));
+	_mixer->setVolumeForSoundType(_mixer->kSFXSoundType, ConfMan.getInt("sfx_volume"));
+	_mixer->setVolumeForSoundType(_mixer->kSpeechSoundType, ConfMan.getInt("speech_volume"));
+
+	// debug("syncSoundSettings: Volumes synced as Music: %d, Sfx: %d, Speech: %d", ConfMan.getInt("music_volume"), ConfMan.getInt("sfx_volume"), ConfMan.getInt("speech_volume"));
+
+	if (ConfMan.hasKey("mute")) {
+		_mixer->muteSoundType(_mixer->kMusicSoundType, ConfMan.getBool("mute"));
+		_mixer->muteSoundType(_mixer->kSFXSoundType, ConfMan.getBool("mute"));
+		_mixer->muteSoundType(_mixer->kSpeechSoundType, ConfMan.getBool("mute"));
+	}
+
+	if (ConfMan.hasKey("speech_mute")) {
+		// if true it means show only subtitles
+		// "subtitles" key will already be set appropriately by Engine::syncSoundSettings();
+		// but we need to mute the speech
+		_mixer->muteSoundType(_mixer->kSpeechSoundType, ConfMan.getBool("speech_mute"));
+	}
+	// write-back to ini file for persistence
+	ConfMan.flushToDisk(); // TODO Or maybe call this only when game is shut down?
 }
 
 bool BladeRunnerEngine::isSubtitlesEnabled() {
@@ -1810,14 +1878,17 @@ void BladeRunnerEngine::playerDied() {
 	_kia->open(kKIASectionLoad);
 }
 
-bool BladeRunnerEngine::saveGame(Common::WriteStream &stream, const Graphics::Surface &thumbnail) {
-	if (!playerHasControl() || _sceneScript->isInsideScript() || _aiScripts->isInsideScript()) {
+bool BladeRunnerEngine::saveGame(Common::WriteStream &stream, Graphics::Surface &thumbnail) {
+	if ( !_gameIsAutoSaving
+	     && ( !playerHasControl() || _sceneScript->isInsideScript() || _aiScripts->isInsideScript())
+	){
 		return false;
 	}
 
 	Common::MemoryWriteStreamDynamic memoryStream(DisposeAfterUse::YES);
 	SaveFileWriteStream s(memoryStream);
 
+	thumbnail.convertToInPlace(gameDataPixelFormat());
 	s.write(thumbnail.getPixels(), SaveFileManager::kThumbnailSize);
 	s.writeFloat(1.0f);
 	_settings->save(s);
@@ -1977,6 +2048,7 @@ void BladeRunnerEngine::autoSaveGame(int textId, bool endgame) {
 	if (!textAutoSave.open("AUTOSAVE")) {
 		return;
 	}
+	_gameIsAutoSaving = true;
 
 	SaveStateList saveList = BladeRunner::SaveFileManager::list(getTargetName());
 
@@ -1999,7 +2071,7 @@ void BladeRunnerEngine::autoSaveGame(int textId, bool endgame) {
 	} else {
 		saveGameState(slot,  textAutoSave.getText(textId));
 	}
-
+	_gameIsAutoSaving = false;
 }
 
 void BladeRunnerEngine::ISez(const Common::String &str) {
@@ -2013,7 +2085,7 @@ void BladeRunnerEngine::blitToScreen(const Graphics::Surface &src) const {
 
 Graphics::Surface BladeRunnerEngine::generateThumbnail() const {
 	Graphics::Surface thumbnail;
-	thumbnail.create(640 / 8, 480 / 8, createRGB555());
+	thumbnail.create(640 / 8, 480 / 8, _surfaceFront.format);
 
 	for (int y = 0; y < thumbnail.h; ++y) {
 		for (int x = 0; x < thumbnail.w; ++x) {

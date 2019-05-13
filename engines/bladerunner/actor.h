@@ -44,6 +44,8 @@ class View;
 class Actor {
 	BladeRunnerEngine *_vm;
 
+	static const int kActorTimers = 7;
+
 public:
 	BoundingBox    _bbox;
 	Common::Rect   _screenRectangle;
@@ -108,8 +110,8 @@ private:
 	int _retiredWidth;
 	int _retiredHeight;
 
-	int _timersLeft[7];
-	int _timersLast[7];
+	int _timersLeft[kActorTimers];
+	int _timersLast[kActorTimers];
 
 	float _scale;
 
@@ -132,6 +134,7 @@ public:
 	Vector3 getXYZ() const;
 	int getFacing() const;
 	int getAnimationMode() const;
+	int getAnimationId() const;
 
 	Vector3 getPosition() const { return _position; }
 
@@ -251,7 +254,7 @@ public:
 	void acquireClue(int clueId, bool unknownFlag, int fromActorId);
 	void loseClue(int clueId);
 	bool hasClue(int clueId) const;
-	void copyClues(int actorId);
+	bool copyClues(int actorId);
 	void acquireCluesByRelations();
 
 	int soundVolume() const;

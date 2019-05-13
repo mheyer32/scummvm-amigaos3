@@ -8,6 +8,7 @@ MODULE_OBJS := \
 	fonts.o \
 	glk.o \
 	glk_api.o \
+	glk_dispa.o \
 	pc_speaker.o \
 	picture.o \
 	raw_decoder.o \
@@ -56,10 +57,38 @@ MODULE_OBJS := \
 	frotz/screen.o \
 	frotz/sound_folder.o \
 	frotz/windows.o \
+	glulxe/accel.o \
 	glulxe/detection.o \
+	glulxe/exec.o \
+	glulxe/float.o \
+	glulxe/funcs.o \
+	glulxe/gestalt.o \
+	glulxe/glkop.o \
 	glulxe/glulxe.o \
+	glulxe/heap.o \
+	glulxe/operand.o \
+	glulxe/search.o \
+	glulxe/serial.o \
+	glulxe/string.o \
+	glulxe/vm.o \
+	hugo/detection.o \
+	hugo/heexpr.o \
+	hugo/heglk.o \
+	hugo/hemedia.o \
+	hugo/hemisc.o \
+	hugo/heobject.o \
+	hugo/heparse.o \
+	hugo/heres.o \
+	hugo/herun.o \
+	hugo/heset.o \
+	hugo/htokens.o \
+	hugo/hugo.o \
+	hugo/stringfn.o \
 	magnetic/detection.o \
+	magnetic/emu.o \
+	magnetic/graphics.o \
 	magnetic/magnetic.o \
+	magnetic/sound.o \
 	scott/detection.o \
 	scott/scott.o \
 	tads/detection.o \

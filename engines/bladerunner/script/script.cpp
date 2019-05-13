@@ -333,7 +333,8 @@ void ScriptBase::Actor_Says_With_Pause(int actorId, int sentenceId, float pause,
 	if (_vm->_sitcomMode) {
 		int rnd = Random_Query(1, 100);
 		if (rnd <= actor->getSitcomRatio()) {
-			Sound_Play(Random_Query(319, 327), 40, 0, 0, 50);
+			// Choose one of the nine (9) tracks between kSfxAUDLAFF1 and kSfxAUDLAFF9
+			Sound_Play(Random_Query(kSfxAUDLAFF1, kSfxAUDLAFF9), 40, 0, 0, 50);
 		}
 	}
 
@@ -576,12 +577,12 @@ bool ScriptBase::Loop_Actor_Walk_To_Waypoint(int actorId, int waypointId, int pr
 	return result;
 }
 
-bool ScriptBase::Loop_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int proximity, bool interruptible, bool run, bool a7) {
-	debugC(kDebugScript, "Loop_Actor_Walk_To_XYZ(%d, %f, %f, %f, %d, %d, %d, %d)", actorId, x, y, z, proximity, interruptible, run, a7);
+bool ScriptBase::Loop_Actor_Walk_To_XYZ(int actorId, float x, float y, float z, int proximity, bool interruptible, bool run, bool force) {
+	debugC(kDebugScript, "Loop_Actor_Walk_To_XYZ(%d, %f, %f, %f, %d, %d, %d, %d)", actorId, x, y, z, proximity, interruptible, run, force);
 	_vm->gameWaitForActive();
 
 	if (_vm->_runningActorId == actorId) {
-		if (a7) {
+		if (force) {
 			_vm->_runningActorId = -1;
 		} else {
 			run = true;
@@ -739,14 +740,14 @@ bool ScriptBase::Actor_Clue_Query(int actorId, int clueId) {
 	return _vm->_actors[actorId]->hasClue(clueId);
 }
 
-void ScriptBase::Actor_Clues_Transfer_New_To_Mainframe(int actorId) {
+bool ScriptBase::Actor_Clues_Transfer_New_To_Mainframe(int actorId) {
 	debugC(kDebugScript, "Actor_Clues_Transfer_New_To_Mainframe(%d)", actorId);
-	_vm->_actors[actorId]->copyClues(kActorVoiceOver);
+	return _vm->_actors[actorId]->copyClues(kActorVoiceOver);
 }
 
-void ScriptBase::Actor_Clues_Transfer_New_From_Mainframe(int actorId) {
+bool ScriptBase::Actor_Clues_Transfer_New_From_Mainframe(int actorId) {
 	debugC(kDebugScript, "Actor_Clues_Transfer_New_From_Mainframe(%d)", actorId);
-	_vm->_actors[kActorVoiceOver]->copyClues(actorId);
+	return _vm->_actors[kActorVoiceOver]->copyClues(actorId);
 }
 
 void ScriptBase::Actor_Set_Invisible(int actorId, bool isInvisible) {
@@ -768,15 +769,6 @@ void ScriptBase::Item_Remove_From_World(int itemId) {
 	debugC(kDebugScript, "Item_Remove_From_World(%d)", itemId);
 	_vm->_items->remove(itemId);
 }
-
-// Show text as subtitles mainly for debugging purposes
-// eg. display debug data on screen as subtitles
-void ScriptBase::Set_Subtitle_Text_On_Screen(Common::String displayText) {
-	debugC(kDebugScript, "Set_Subtitle_Text_On_Screen(%s)", displayText.c_str());
-	_vm->_subtitles->setGameSubsText(displayText, true);
-	_vm->_subtitles->show();
-}
-
 
 void ScriptBase::Item_Spin_In_World(int itemId) {
 	debugC(kDebugScript, "Item_Spin_In_World(%d)", itemId);
@@ -806,6 +798,14 @@ void ScriptBase::Item_Pickup_Spin_Effect(int animationId, int x, int y) {
 bool ScriptBase::Item_Query_Visible(int itemId) {
 	debugC(kDebugScript, "Item_Query_Visible(%d)", itemId);
 	return _vm->_items->isVisible(itemId);
+}
+
+// Show text as subtitles mainly for debugging purposes
+// eg. display debug data on screen as subtitles
+void ScriptBase::Set_Subtitle_Text_On_Screen(Common::String displayText) {
+	debugC(kDebugScript, "Set_Subtitle_Text_On_Screen(%s)", displayText.c_str());
+	_vm->_subtitles->setGameSubsText(displayText, true);
+	_vm->_subtitles->show();
 }
 
 int ScriptBase::Animation_Open() {
@@ -956,6 +956,14 @@ int ScriptBase::Global_Variable_Decrement(int var, int dec) {
 
 int ScriptBase::Random_Query(int min, int max) {
 	debugC(9, kDebugScript, "Random_Query(%d, %d)", min, max);
+	if ( min == max )
+	{
+		return min;
+	}
+	if ( min > max ) // there is at least one such case
+	{
+		return _vm->_rnd.getRandomNumberRng(max, min); // swap the arguments
+	}
 	return _vm->_rnd.getRandomNumberRng(min, max);
 }
 
@@ -1172,7 +1180,7 @@ bool ScriptBase::Dialogue_Menu_Add_To_List(int answer) {
 
 bool ScriptBase::Dialogue_Menu_Add_DONE_To_List(int answer) {
 	debugC(kDebugScript, "Dialogue_Menu_Add_DONE_To_List(%d)", answer);
-	_vm->_dialogueMenu->addToList(answer, 1, 0, 0, 0);
+	_vm->_dialogueMenu->addToList(answer, true, 0, 0, 0);
 	return false;
 }
 
@@ -1551,6 +1559,11 @@ void ScriptBase::ADQ_Add_Pause(int delay) {
 	_vm->_actorDialogueQueue->addPause(delay);
 }
 
+void ScriptBase::ADQ_Wait_For_All_Queued_Dialogue() {
+	debugC(kDebugScript, "ADQ_Wait_For_All_Queued_Dialogue()");
+	_vm->loopQueuedDialogueStillPlaying();
+}
+
 bool ScriptBase::Game_Over() {
 	debugC(kDebugScript, "Game_Over()");
 	_vm->_gameIsRunning = false;
@@ -1560,7 +1573,7 @@ bool ScriptBase::Game_Over() {
 
 void ScriptBase::Autosave_Game(int textId) {
 	debugC(kDebugScript, "Autosave_Game(%d)", textId);
-	_vm->_gameAutoSave = textId;
+	_vm->_gameAutoSaveTextId = textId;
 }
 
 void ScriptBase::I_Sez(const char *str) {

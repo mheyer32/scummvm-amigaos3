@@ -47,30 +47,30 @@ void SceneScriptNR05::InitializeScene() {
 		Scene_Exit_Add_2D_Exit(1, 0, 0, 30, 479, 3);
 	}
 
-	Ambient_Sounds_Add_Looping_Sound(280, 50, 38, 0);
-	Ambient_Sounds_Add_Sound(252, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(254, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(255, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(256, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(257, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(258, 3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(259, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(260, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(261, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(262, 3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(570, 5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(571, 5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(572, 5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(573, 5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(182, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(184, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(185, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(186, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(188, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(189, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(191, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(192, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(195, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxBARAMB1, 50, 38, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX1,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX3,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX4,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX5,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX6,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBARSFX7,  3, 60, 20, 20,  -30,  30, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxCLINK1,   3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxCLINK2,   3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxCLINK3,   3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxCLINK4,   3, 60, 25, 25, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxFEMORG1,  5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxFEMORG2,  5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxFEMORG3,  5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxFEMORG4,  5, 70, 11, 11, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0480R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0540R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0560R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0870R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0900R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_0940R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1070R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1080R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfx67_1160R, 5, 70, 12, 12, -100, 100, -101, -101, 0, 0);
 
 	if (Game_Flag_Query(kFlagNR08toNR05)) {
 		Scene_Loop_Start_Special(kSceneLoopModeLoseControl, kNR05LoopPanFromNR08, false);
@@ -124,7 +124,7 @@ bool SceneScriptNR05::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptNR05::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -444.0f, 0.0f, -451.0f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -444.0f, 0.0f, -451.0f, 0, true, false, false)) {
 			Player_Loses_Control();
 			Music_Stop(2);
 			Player_Set_Combat_Mode(false);
@@ -138,7 +138,7 @@ bool SceneScriptNR05::ClickedOnExit(int exitId) {
 	}
 
 	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -777.56f, 0.0f, -166.86f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -777.56f, 0.0f, -166.86f, 0, true, false, false)) {
 			Game_Flag_Set(kFlagNR05toNR08);
 			Set_Enter(kSetNR05_NR08, kSceneNR08);
 		}
@@ -157,11 +157,11 @@ void SceneScriptNR05::SceneFrameAdvanced(int frame) {
 	}
 
 	if (frame == 78) {
-		Sound_Play(345, 83, 70, 70, 50);
+		Sound_Play(kSfxDORSLID1, 83, 70, 70, 50);
 	}
 
 	if (frame == 86) {
-		Sound_Play(353, 62, 70, 70, 50);
+		Sound_Play(kSfxMAGMOVE2, 62, 70, 70, 50);
 	}
 
 	rotateActorOnGround(kActorHysteriaPatron2);
@@ -194,7 +194,7 @@ void SceneScriptNR05::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 void SceneScriptNR05::PlayerWalkedIn() {
 	if (Game_Flag_Query(kFlagNR08toNR05)) {
 		Music_Stop(2);
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -697.56f, 0.0f, -174.86f, 0, true, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -697.56f, 0.0f, -174.86f, 0, true, false, false);
 		Game_Flag_Reset(kFlagNR08toNR05);
 	}
 	//	return false;
@@ -390,11 +390,11 @@ void SceneScriptNR05::playNextMusic() {
 	} else {
 		int track = Global_Variable_Query(kVariableEarlyQBackMusic);
 		if (track == 0) {
-			Music_Play(16, 61, -80, 2, -1, 0, 0);
+			Music_Play(kMusicDkoDnce1, 61, -80, 2, -1, 0, 0);
 		} else if (track == 1) {
-			Music_Play(15, 41, -80, 2, -1, 0, 0);
+			Music_Play(kMusicStrip1, 41, -80, 2, -1, 0, 0);
 		} else if (track == 2) {
-			Music_Play(7, 41, -80, 2, -1, 0, 0);
+			Music_Play(kMusicArkDnce1, 41, -80, 2, -1, 0, 0);
 		}
 		track++;
 		if (track > 2) {

@@ -64,6 +64,7 @@ bool AIScriptOfficerLeary::Update() {
 	 &&  Game_Flag_Query(kFlagRC51ChopstickWrapperTaken)
 	 &&  Game_Flag_Query(kFlagRC01ChromeDebrisTaken)
 	 &&  Player_Query_Current_Scene() != kSceneRC01
+	 &&  !Game_Flag_Query(kFlagRC01PoliceDone)          // otherwise this clause keeps repeating
 	 &&  Global_Variable_Query(kVariableChapter) < 3
 	) {
 		Game_Flag_Set(kFlagRC01PoliceDone);
@@ -197,18 +198,28 @@ bool AIScriptOfficerLeary::Update() {
 }
 
 void AIScriptOfficerLeary::TimerExpired(int timer) {
-	if (timer == 1) {
-		AI_Countdown_Timer_Reset(kActorOfficerLeary, 1);
+	if (timer == kActorTimerAIScriptCustomTask1) {
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask1);
 		if (Actor_Query_In_Set(kActorMcCoy, kSetHF05)) {
 			Actor_Set_Goal_Number(kActorOfficerLeary, 430);
 			Actor_Set_Goal_Number(kActorOfficerGrayford, 430);
 		} else {
 			Game_Flag_Set(kFlagHF05PoliceAttacked);
 		}
-	} else if (timer == 2) {
-		AI_Countdown_Timer_Reset(kActorOfficerLeary, 2);
+	} else if (timer == kActorTimerAIScriptCustomTask2) {
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask2);
 		Game_Flag_Reset(kFlagOfficerLearyTakingNotes);
 	}
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	else if (timer == kActorTimerAIScriptCustomTask0) {
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask0);
+		if (Actor_Query_Goal_Number(kActorOfficerLeary) == kGoalOfficerLearyRC01ResumeWalkToCrowd) {
+			Actor_Set_Goal_Number(kActorOfficerLeary, kGoalOfficerLearyRC01WalkToCrowd);
+		}
+	}
+#endif // BLADERUNNER_ORIGINAL_BUGS
+
 }
 
 void AIScriptOfficerLeary::CompletedMovementTrack() {
@@ -339,6 +350,13 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 		AI_Movement_Track_Append(kActorOfficerLeary, 35, 0);
 		AI_Movement_Track_Repeat(kActorOfficerLeary);
 		return true;
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	case kGoalOfficerLearyRC01ResumeWalkToCrowd:
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask0);    // usable for custom stuff are timers 0-2
+		AI_Countdown_Timer_Start(kActorOfficerLeary, kActorTimerAIScriptCustomTask0, 4); // wait a few seconds before starting taking notes again
+		return true;
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	case 99:
 		AI_Movement_Track_Flush(kActorOfficerLeary);
 		return false;
@@ -401,6 +419,10 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 			AI_Movement_Track_Append(kActorOfficerLeary, 387, 15);
 			AI_Movement_Track_Repeat(kActorOfficerLeary);
 			break;
+#if BLADERUNNER_ORIGINAL_BUGS
+		// Gaff is waiting at MA07 and he will trigger a non-interactive dialogue with McCoy.
+		// When the police officer is there as well he will kill McCoy because player cannot control him.
+
 		case 7:
 			AI_Movement_Track_Append(kActorOfficerLeary, 394, 15);
 			AI_Movement_Track_Append(kActorOfficerLeary, 395, 0);
@@ -412,6 +434,10 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 			AI_Movement_Track_Append(kActorOfficerLeary, 35, 30);
 			AI_Movement_Track_Repeat(kActorOfficerLeary);
 			break;
+#else
+		case 7:
+			// fall through
+#endif
 		case 8:
 			switch (Random_Query(1, 7)) {
 			case 1:
@@ -468,6 +494,7 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 			default:
 				return false;
 			}
+			// is falling through here - a bug in original game?
 			// fall through
 		case 9:
 			if (Random_Query(1, 2) - 1 == 1) {
@@ -485,6 +512,7 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 			AI_Movement_Track_Append(kActorOfficerLeary, 420, 10);
 			AI_Movement_Track_Append(kActorOfficerLeary, 35, 30);
 			AI_Movement_Track_Repeat(kActorOfficerLeary);
+			// is falling through here - a bug in original game?
 			// fall through
 		case 10:
 			AI_Movement_Track_Append(kActorOfficerLeary, 310, 0);
@@ -520,13 +548,13 @@ bool AIScriptOfficerLeary::GoalChanged(int currentGoalNumber, int newGoalNumber)
 		Actor_Set_Goal_Number(kActorOfficerLeary, 410);
 		return true;
 	case 420:
-		AI_Countdown_Timer_Reset(kActorOfficerLeary, 1);
-		AI_Countdown_Timer_Start(kActorOfficerLeary, 1, 120);
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask1);
+		AI_Countdown_Timer_Start(kActorOfficerLeary, kActorTimerAIScriptCustomTask1, 120);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 410);
 		return true;
 	case 425:
-		AI_Countdown_Timer_Reset(kActorOfficerLeary, 1);
-		AI_Countdown_Timer_Start(kActorOfficerLeary, 1, 60);
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask1);
+		AI_Countdown_Timer_Start(kActorOfficerLeary, kActorTimerAIScriptCustomTask1, 60);
 		Actor_Set_Goal_Number(kActorOfficerLeary, 410);
 		return true;
 	case 430:
@@ -1225,8 +1253,8 @@ void AIScriptOfficerLeary::SetAnimationState(int animationState, int animationFr
 bool AIScriptOfficerLeary::ReachedMovementTrackWaypoint(int waypointId) {
 	if (waypointId == 57 || waypointId == 58) {
 		Game_Flag_Set(kFlagOfficerLearyTakingNotes);
-		AI_Countdown_Timer_Reset(kActorOfficerLeary, 2);
-		AI_Countdown_Timer_Start(kActorOfficerLeary, 2, 6);
+		AI_Countdown_Timer_Reset(kActorOfficerLeary, kActorTimerAIScriptCustomTask2);
+		AI_Countdown_Timer_Start(kActorOfficerLeary, kActorTimerAIScriptCustomTask2, 6);
 	}
 	return true;
 }

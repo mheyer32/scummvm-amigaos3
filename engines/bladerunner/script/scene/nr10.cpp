@@ -36,19 +36,19 @@ void SceneScriptNR10::InitializeScene() {
 	Scene_Exit_Add_2D_Exit(0, 144, 163, 194, 318, 3);
 	Scene_Exit_Add_2D_Exit(1, 475,  95, 568, 230, 0);
 
-	Ambient_Sounds_Add_Looping_Sound(205, 22, 0, 1);
-	Ambient_Sounds_Add_Looping_Sound( 71, 33, 0, 1);
-	Ambient_Sounds_Add_Sound(303, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(304, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(305, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(306, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(307, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(308, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxCTDRONE1, 22, 0, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxBRBED5,   33, 0, 1);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN1,  2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN2,  2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN3,  2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE1, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE2, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBMOVE3, 2, 50, 7, 17, -100, 100, -101, -101, 0, 0);
 
 	if (Game_Flag_Query(kFlagNR10CameraDestroyed)) {
 		Scene_Loop_Set_Default(0);
 	} else {
-		Ambient_Sounds_Adjust_Looping_Sound(452, 31, 0, 1);
+		Ambient_Sounds_Adjust_Looping_Sound(kSfx35MM, 31, 0, 1);
 		Scene_Loop_Set_Default(2);
 	}
 }
@@ -74,8 +74,8 @@ bool SceneScriptNR10::ClickedOn3DObject(const char *objectName, bool combatMode)
 		Game_Flag_Reset(kFlagNR10McCoyBlinded);
 		Actor_Set_Invisible(kActorMcCoy, false);
 		Actor_Set_Invisible(kActorDektora, false);
-		Ambient_Sounds_Remove_Looping_Sound(452, true);
-		Sound_Play(453, 52, 0, 0, 50);
+		Ambient_Sounds_Remove_Looping_Sound(kSfx35MM, true);
+		Sound_Play(kSfx35MMBRK1, 52, 0, 0, 50);
 		Scene_Loop_Set_Default(0);
 		Scene_Loop_Start_Special(kSceneLoopModeOnce, 0, true);
 		Un_Combat_Target_Object("BOX18");
@@ -95,7 +95,7 @@ bool SceneScriptNR10::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptNR10::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -152.78f, 2.84f, -238.43f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -152.78f, 2.84f, -238.43f, 0, true, false, false)) {
 			Game_Flag_Set(kFlagNR10toNR09);
 			Set_Enter(kSetNR09, kSceneNR09);
 			return true;
@@ -103,7 +103,7 @@ bool SceneScriptNR10::ClickedOnExit(int exitId) {
 	}
 
 	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 11.5f, 2.84f, -304.46f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, 11.5f, 2.84f, -304.46f, 0, true, false, false)) {
 			Actor_Face_Heading(kActorMcCoy, 55, false);
 			Loop_Actor_Travel_Ladder(kActorMcCoy, 8, true, kAnimationModeIdle);
 			Game_Flag_Set(kFlagNR10toNR11);

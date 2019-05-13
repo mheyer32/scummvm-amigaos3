@@ -37,27 +37,27 @@ void SceneScriptUG01::InitializeScene() {
 	Scene_Exit_Add_2D_Exit(1, 144,   0, 210, 104, 0);
 	Scene_Exit_Add_2D_Exit(2,   0, 173, 139, 402, 3);
 
-	Ambient_Sounds_Add_Looping_Sound(331, 28, 0, 1);
-	Ambient_Sounds_Add_Looping_Sound(332, 40, 0, 1);
-	Ambient_Sounds_Add_Looping_Sound(333, 40, 0, 1);
-	Ambient_Sounds_Add_Sound(291, 2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(293, 2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(402, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(370, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(397, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(396, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(294, 2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(295, 2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(234, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(391, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(394, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(224, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(227, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(228, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(229, 2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
-	Ambient_Sounds_Add_Sound(303, 5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(304, 5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
-	Ambient_Sounds_Add_Sound(305, 5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Looping_Sound(kSfxSTMLOOP7, 28, 0, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxUGBED1,   40, 0, 1);
+	Ambient_Sounds_Add_Looping_Sound(kSfxUGBED2,   40, 0, 1);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP1,  2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP3,  2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxYELL1M3,  2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT2M1, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT2M2, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxGRUNT1M3, 2, 120, 10, 11,   20, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP4,  2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBDRIP5,  2,  20, 20, 25, -100, 100, -100,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxPIPER1,   2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSQUEAK2,  2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxSQUEAK5,  2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBANG1,    2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBANG4,    2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBANG5,    2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBANG6,    2, 190, 12, 16,    0, 100,    0,  100, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN1,   5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN2,   5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
+	Ambient_Sounds_Add_Sound(kSfxBBGRN3,   5,  50, 17, 37,    0, 100, -101, -101, 0, 0);
 
 	if (Game_Flag_Query(kFlagUG01SteamOff)) {
 		Scene_Loop_Set_Default(3);
@@ -79,7 +79,7 @@ bool SceneScriptUG01::MouseClick(int x, int y) {
 
 bool SceneScriptUG01::ClickedOn3DObject(const char *objectName, bool a2) {
 	if (Object_Query_Click("PIPES_FG_LFT", objectName)) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -9.0f, -50.13f, -148.0f, 0, true, false, 0)
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -9.0f, -50.13f, -148.0f, 0, true, false, false)
 		 && !Game_Flag_Query(kFlagUG01SteamOff)
 		) {
 			Actor_Says(kActorMcCoy, 8525, 13);
@@ -103,7 +103,7 @@ bool SceneScriptUG01::ClickedOnItem(int itemId, bool a2) {
 
 bool SceneScriptUG01::ClickedOnExit(int exitId) {
 	if (exitId == 0) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -32.0f, -50.13f, -1350.0f, 12, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -32.0f, -50.13f, -1350.0f, 12, true, false, false)) {
 			Game_Flag_Set(kFlagUG01toUG10);
 			Set_Enter(kSetUG10, kSceneUG10);
 		}
@@ -111,9 +111,9 @@ bool SceneScriptUG01::ClickedOnExit(int exitId) {
 	}
 
 	if (exitId == 1) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -70.0f, -50.13f, -500.0f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -70.0f, -50.13f, -500.0f, 0, true, false, false)) {
 			Actor_Face_Heading(kActorMcCoy, 768, false);
-			Loop_Actor_Travel_Ladder(kActorMcCoy, 12, true, 0);
+			Loop_Actor_Travel_Ladder(kActorMcCoy, 12, true, kAnimationModeIdle);
 			Game_Flag_Set(kFlagUG01toRC03);
 			Game_Flag_Reset(kFlagMcCoyInUnderground);
 			Game_Flag_Set(kFlagMcCoyInRunciters);
@@ -123,7 +123,7 @@ bool SceneScriptUG01::ClickedOnExit(int exitId) {
 	}
 
 	if (exitId == 2) {
-		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -126.0f, -50.13f, -286.0f, 0, true, false, 0)) {
+		if (!Loop_Actor_Walk_To_XYZ(kActorMcCoy, -126.0f, -50.13f, -286.0f, 0, true, false, false)) {
 			Game_Flag_Set(kFlagUG01toUG02);
 			Set_Enter(kSetUG02, kSceneUG02);
 		}
@@ -159,19 +159,19 @@ void SceneScriptUG01::ActorChangedGoal(int actorId, int newGoal, int oldGoal, bo
 
 void SceneScriptUG01::PlayerWalkedIn() {
 	if (Game_Flag_Query(kFlagUG02toUG01)) {
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -55.0f, -50.13f, -288.0f, 12, false, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -55.0f, -50.13f, -288.0f, 12, false, false, false);
 		Game_Flag_Reset(kFlagUG02toUG01);
 	}
 
 	if (Game_Flag_Query(kFlagRC03toUG01)) {
 		Actor_Set_At_XYZ(kActorMcCoy, -70.0f, 93.87f, -500.0f, 768);
-		Loop_Actor_Travel_Ladder(kActorMcCoy, 12, 0, 0);
-		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -58.0f, -50.13f, -488.0f, 0, false, false, 0);
+		Loop_Actor_Travel_Ladder(kActorMcCoy, 12, false, kAnimationModeIdle);
+		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -58.0f, -50.13f, -488.0f, 0, false, false, false);
 		Game_Flag_Reset(kFlagRC03toUG01);
 	}
 
 	if (Actor_Query_Goal_Number(kActorLucy) == kGoalLucyUG01Wait) {
-		Music_Play(21, 35, 0, 3, -1, 0, 0);
+		Music_Play(kMusicLoveSong, 35, 0, 3, -1, 0, 0);
 		Actor_Set_Goal_Number(kActorLucy, 311);
 	}
 	//return false;

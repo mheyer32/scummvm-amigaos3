@@ -34,12 +34,17 @@
 namespace Glk {
 
 Stream::Stream(Streams *streams, bool readable, bool writable, uint rock, bool unicode) :
-	_streams(streams), _readable(readable), _writable(writable), _rock(0), _unicode(unicode),
-	_readCount(0), _writeCount(0), _prev(nullptr), _next(nullptr) {
+		_streams(streams), _readable(readable), _writable(writable), _rock(0), _unicode(unicode),
+		_readCount(0), _writeCount(0), _prev(nullptr), _next(nullptr) {
+	if (g_vm->gli_register_obj)
+		_dispRock = (*g_vm->gli_register_obj)(this, gidisp_Class_Stream);
 }
 
 Stream::~Stream() {
 	_streams->removeStream(this);
+
+	if (g_vm->gli_unregister_obj)
+		(*g_vm->gli_unregister_obj)(this, gidisp_Class_Stream, _dispRock);
 }
 
 Stream *Stream::getNext(uint *rock) const {
@@ -313,6 +318,16 @@ MemoryStream::MemoryStream(Streams *streams, void *buf, size_t buflen, FileMode 
 	else
 		_bufEnd = (byte *)buf + buflen;
 	_bufEof = mode == filemode_Write ? _buf : _bufEnd;
+
+	if (g_vm->gli_register_arr)
+		_arrayRock = (*g_vm->gli_register_arr)(buf, buflen, unicode ?  "&+#!Iu" : "&+#!Cn");
+}
+
+MemoryStream::~MemoryStream() {
+	if (g_vm->gli_unregister_arr) {
+		const char *typedesc = _unicode ? "&+#!Iu" : "&+#!Cn";
+		(*g_vm->gli_unregister_arr)(_buf, _bufLen, typedesc, _arrayRock);
+	}
 }
 
 void MemoryStream::putChar(unsigned char ch) {
@@ -1572,6 +1587,23 @@ frefid_t Streams::iterate(frefid_t fref, uint *rock) {
 }
 
 /*--------------------------------------------------------------------------*/
+
+FileReference::FileReference() : _rock(0), _slotNumber(-1), _fileType(fileusage_Data), _textMode(false) {
+	if (g_vm->gli_register_obj)
+		_dispRock = (*g_vm->gli_register_obj)(this, gidisp_Class_Fileref);
+}
+
+FileReference::FileReference(int slot, const Common::String &desc, uint usage, uint rock) :
+		_rock(rock), _slotNumber(slot), _description(desc),
+		_fileType((FileUsage)(usage & fileusage_TypeMask)), _textMode(usage & fileusage_TextMode) {
+	if (g_vm->gli_register_obj)
+		_dispRock = (*g_vm->gli_register_obj)(this, gidisp_Class_Fileref);
+}
+
+FileReference::~FileReference() {
+	if (g_vm->gli_unregister_obj)
+		(*g_vm->gli_unregister_obj)(this, gidisp_Class_Fileref, _dispRock);
+}
 
 const Common::String FileReference::getSaveName() const {
 	assert(_slotNumber != -1);

@@ -99,7 +99,6 @@ void SaveFileManager::remove(const Common::String &target, int slot) {
 
 bool SaveFileManager::readHeader(Common::SeekableReadStream &in, SaveFileHeader &header, bool skipThumbnail) {
 	SaveFileReadStream s(in);
-
 	if (s.readUint32BE() != kTag) {
 		warning("No header found in save file");
 		return false;
@@ -121,18 +120,31 @@ bool SaveFileManager::readHeader(Common::SeekableReadStream &in, SaveFileHeader 
 
 	header._thumbnail = nullptr;
 
+	// Early check of possible corrupted save file (missing thumbnail and other data)
+	int32 pos = s.pos();
+	int32 sizeOfSaveFile = s.size();
+	if (sizeOfSaveFile > 0 && sizeOfSaveFile < (int32) (pos + 4 + kThumbnailSize)) {
+		warning("Unexpected end of save file %s (%02d:%02d %02d/%02d/%04d) reached. Size of file was: %d bytes",
+		         header._name.c_str(),
+		         header._hour,
+		         header._minute,
+		         header._day,
+		         header._month,
+		         header._year,
+		         sizeOfSaveFile);
+		return false;
+	}
+
 	if (!skipThumbnail) {
 		header._thumbnail = new Graphics::Surface(); // freed by ScummVM's smartptr
-
-		int32 pos = s.pos();
 
 		s.skip(4); //skip size;
 
 		void *thumbnailData = malloc(kThumbnailSize); // freed by ScummVM's smartptr
 		s.read(thumbnailData, kThumbnailSize);
 
-		header._thumbnail->init(80, 60, 160, thumbnailData, createRGB555());
-
+		header._thumbnail->init(80, 60, 160, thumbnailData, gameDataPixelFormat());
+		header._thumbnail->convertToInPlace(screenPixelFormat());
 		s.seek(pos);
 	}
 

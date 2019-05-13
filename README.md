@@ -155,7 +155,8 @@ page at: <https://www.scummvm.org/>
   - [9.0) Screenshots (SDL backend
     only)](#90-screenshots-sdl-backend-only)
   - [10.0) Compiling](#100-compiling)
-  - [11.0) Credits](#110-credits)
+  - [11.0) Changelog](#110-changelog)
+  - [12.0) Credits](#120-credits)
 
 ## 1.0) Introduction
 
@@ -1626,9 +1627,8 @@ games and other games.
     F5                     - Displays a save/load box
     Alt-F5                 - Displays the original save/load box, if the
                              game has one. You can save and load games using
-                             using this, however it is not intended for this
-                             purpose, and may even crash ScummVM in some
-                             games.
+                             this, however it is not intended for this purpose,
+                             and may even crash ScummVM in some games.
     i                      - Displays IQ points (Indiana Jones and the Last
                              Crusade, and Indiana Jones and the Fate of
                              Atlantis)
@@ -2977,11 +2977,13 @@ debug messages (see
       - Please refer to:
         <https://wiki.scummvm.org/index.php/Compiling_ScummVM/Symbian>
 
-## 11.0) Credits
+## 11.0) Changelog
 
-Please refer to our extensive Credits list at:
+Please refer to our extensive Changelog [here](NEWS.md).
 
-<https://www.scummvm.org/credits/>
+## 12.0) Credits
+
+Please refer to our extensive Credits list [here](AUTHORS).
 
 -----
 

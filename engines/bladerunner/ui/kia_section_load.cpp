@@ -28,6 +28,7 @@
 #include "bladerunner/savefile.h"
 #include "bladerunner/text_resource.h"
 #include "bladerunner/time.h"
+#include "bladerunner/game_constants.h"
 #include "bladerunner/ui/kia.h"
 #include "bladerunner/ui/kia_shapes.h"
 #include "bladerunner/ui/ui_container.h"
@@ -161,16 +162,16 @@ void KIASectionLoad::scrollBoxCallback(void *callbackData, void *source, int lin
 
 	if (mouseButton == 0 && source == self->_scrollBox && lineData >= 0) {
 		if (lineData == self->_newGameEasyLineId) {
-			self->_vm->newGame(0);
+			self->_vm->newGame(kGameDifficultyEasy);
 		} else if (lineData == self->_newGameMediumLineId) {
-			self->_vm->newGame(1);
+			self->_vm->newGame(kGameDifficultyMedium);
 		} else if (lineData == self->_newGameHardLineId) {
-			self->_vm->newGame(2);
+			self->_vm->newGame(kGameDifficultyHard);
 		} else {
 			self->_vm->loadGameState(self->_saveList[lineData].getSaveSlot());
 		}
 
-		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(513), 90, 0, 0, 50, 0);
+		self->_vm->_audioPlayer->playAud(self->_vm->_gameInfo->getSfxTrack(kSfxELECBP1), 90, 0, 0, 50, 0);
 		self->_vm->_kia->resume();
 		self->_scheduledSwitch = true;
 	}

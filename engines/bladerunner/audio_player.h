@@ -41,7 +41,11 @@ enum AudioPlayerFlags {
 };
 
 class AudioPlayer {
+#if BLADERUNNER_ORIGINAL_BUGS
 	static const int kTracks = 6;
+#else
+	static const int kTracks = 12;
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 	struct Track {
 		bool                isActive;

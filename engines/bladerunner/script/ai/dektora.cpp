@@ -56,10 +56,18 @@ bool AIScriptDektora::Update() {
 			 &&  Player_Query_Current_Scene() != kSceneAR01
 			 &&  Player_Query_Current_Scene() != kSceneAR02
 			) {
+#if BLADERUNNER_ORIGINAL_BUGS
 				if (Game_Flag_Query(kFlagAR02Entered)) {
-					Item_Remove_From_World(kItemScrorpions);
+					Item_Remove_From_World(kItemScorpions);
 				}
 				Game_Flag_Set(kFlagAR02DektoraBoughtScorpions);
+#else
+				if (Game_Flag_Query(kFlagScorpionsInAR02)) {
+					Item_Remove_From_World(kItemScorpions);
+					Game_Flag_Reset(kFlagScorpionsInAR02);
+				}
+				Game_Flag_Set(kFlagAR02DektoraBoughtScorpions);
+#endif
 			}
 		}
 		return true;
@@ -82,7 +90,7 @@ bool AIScriptDektora::Update() {
 
 				if (comp_distance(kActorMcCoy, _x, _y, _z) > 12.0f) {
 					Actor_Query_XYZ(kActorMcCoy, &_x, &_y, &_z);
-					Async_Actor_Walk_To_XYZ(kActorDektora, _x, _y, _z, 36, 0);
+					Async_Actor_Walk_To_XYZ(kActorDektora, _x, _y, _z, 36, false);
 				}
 				break;
 
@@ -110,20 +118,20 @@ bool AIScriptDektora::Update() {
 }
 
 void AIScriptDektora::TimerExpired(int timer) {
-	if (timer == 0) {
+	if (timer == kActorTimerAIScriptCustomTask0) {
 		if (Actor_Query_Goal_Number(kActorDektora) == kGoalDektoraNR08Dance) {
 			if (Player_Query_Current_Scene() == kSceneNR08) {
-				AI_Countdown_Timer_Reset(kActorDektora, 0);
-				AI_Countdown_Timer_Start(kActorDektora, 0, 10);
+				AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask0);
+				AI_Countdown_Timer_Start(kActorDektora, kActorTimerAIScriptCustomTask0, 10);
 			} else {
 				Actor_Set_Goal_Number(kActorDektora, kGoalDektoraNR08Leave);
-				AI_Countdown_Timer_Reset(kActorDektora, 0);
+				AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask0);
 			}
 			return; //true;
 		}
 
 		if (Actor_Query_Goal_Number(kActorDektora) == kGoalDektoraNR11Burning) {
-			AI_Countdown_Timer_Reset(kActorDektora, 0);
+			AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask0);
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraNR11BurningGoToMcCoy);
 			return; //true;
 		}
@@ -173,7 +181,7 @@ void AIScriptDektora::CompletedMovementTrack() {
 	case 272:
 		AI_Movement_Track_Flush(kActorDektora);
 		Actor_Face_Heading(kActorDektora, 0, 0);
-		Sound_Play(451, 71, 0, 0, 50);
+		Sound_Play(kSfxDEKGLAS1, 71, 0, 0, 50);
 
 		_animationState = 35;
 		_animationFrame = 0;
@@ -194,14 +202,14 @@ void AIScriptDektora::ReceivedClue(int clueId, int fromActorId) {
 void AIScriptDektora::ClickedByPlayer() {
 	if (Actor_Query_Goal_Number(kActorDektora) == kGoalDektoraGone) {
 		Actor_Face_Actor(0, kActorDektora, true);
-		Actor_Says(kActorMcCoy, 8630, 12);
+		Actor_Says(kActorMcCoy, 8630, 12);  // What a waste
 
 		return; //true;
 	}
 
 	if (Actor_Query_Goal_Number(kActorDektora) < kGoalDektoraStartChapter3) {
 		Actor_Face_Actor(kActorMcCoy, kActorDektora, true);
-		Actor_Says(kActorMcCoy, 8590, 13);
+		Actor_Says(kActorMcCoy, 8590, 13);  // Not the talkative type
 	}
 
 	if (Actor_Query_Goal_Number(kActorDektora) == kGoalDektoraNR08Dance) {
@@ -294,20 +302,19 @@ void AIScriptDektora::Retired(int byActorId) {
 	}
 
 	if (Actor_Query_In_Set(kActorDektora, kSetKP07)) {
-		Global_Variable_Decrement(kVariableReplicants, 1);
+		Global_Variable_Decrement(kVariableReplicantsSurvivorsAtMoonbus, 1);
 		Actor_Set_Goal_Number(kActorDektora, kGoalDektoraGone);
 
-		if (Global_Variable_Query(kVariableReplicants) == 0) {
+		if (Global_Variable_Query(kVariableReplicantsSurvivorsAtMoonbus) == 0) {
 			Player_Loses_Control();
 			Delay(2000);
 			Player_Set_Combat_Mode(false);
-			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -41.58f, 72.0f, 0, true, false, 0);
+			Loop_Actor_Walk_To_XYZ(kActorMcCoy, -12.0f, -41.58f, 72.0f, 0, true, false, false);
 			Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 			Ambient_Sounds_Remove_All_Looping_Sounds(1);
 			Game_Flag_Set(kFlagKP07toKP06);
 			Game_Flag_Reset(kFlagMcCoyIsHelpingReplicants);
 			Set_Enter(kSetKP05_KP06, kSceneKP06);
-
 			return; //true;
 		}
 	}
@@ -418,8 +425,8 @@ bool AIScriptDektora::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		AI_Movement_Track_Flush(kActorDektora);
 		Actor_Put_In_Set(kActorDektora, kSetNR05_NR08);
 		Actor_Set_At_XYZ(kActorDektora, -923.93f, 127.85f, 413.46f, 30);
-		AI_Countdown_Timer_Reset(kActorDektora, 0);
-		AI_Countdown_Timer_Start(kActorDektora, 0, 45);
+		AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask0);
+		AI_Countdown_Timer_Start(kActorDektora, kActorTimerAIScriptCustomTask0, 45);
 		break;
 
 	case kGoalDektoraNR08Leave:
@@ -459,9 +466,9 @@ bool AIScriptDektora::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 
 	case kGoalDektoraNR11Hiding:
 		AI_Movement_Track_Flush(kActorDektora);
-		AI_Countdown_Timer_Reset(kActorDektora, 0);
-		AI_Countdown_Timer_Reset(kActorDektora, 1);
-		AI_Countdown_Timer_Reset(kActorDektora, 2);
+		AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask0);
+		AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask1);
+		AI_Countdown_Timer_Reset(kActorDektora, kActorTimerAIScriptCustomTask2);
 		Actor_Put_In_Set(kActorDektora, kSetNR11);
 		Actor_Set_At_XYZ(kActorDektora, -184.0f, 0.33f, -268.0f, 256);
 		break;
@@ -482,13 +489,13 @@ bool AIScriptDektora::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	case kGoalDektoraNR11Burning:
 		Game_Flag_Set(kFlagNR11DektoraBurning);
 		Actor_Set_Targetable(kActorDektora, true);
-		Loop_Actor_Walk_To_XYZ(kActorDektora, -135.0f, 0.33f, -267.0f, 0, false, false, 0);
+		Loop_Actor_Walk_To_XYZ(kActorDektora, -135.0f, 0.33f, -267.0f, 0, false, false, false);
 		Actor_Face_Actor(kActorMcCoy, kActorDektora, true);
 		if (Actor_Query_Goal_Number(kActorSteele) == kGoalSteeleNR11StopShooting) {
 			Actor_Face_Actor(kActorSteele, kActorDektora, true);
 			Actor_Change_Animation_Mode(kActorSteele, kAnimationModeCombatAttack);
 			Delay(250);
-			Sound_Play(3, 100, 0, 0, 50);
+			Sound_Play(kSfxFEMHURT1, 100, 0, 0, 50);
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraNR11BurningGoToWindow);
 		} else {
 			Actor_Set_Goal_Number(kActorDektora, kGoalDektoraNR11BurningGoToMcCoy);
@@ -723,7 +730,7 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		}
 
 		if (_animationFrame == 5) {
-			Actor_Combat_AI_Hit_Attempt(3);
+			Actor_Combat_AI_Hit_Attempt(kActorDektora);
 		}
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(141)) {
@@ -751,11 +758,11 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 			} else {
 				speech = 9015;
 			}
-			Sound_Play_Speech_Line(3, speech, 75, 0, 99);
+			Sound_Play_Speech_Line(kActorDektora, speech, 75, 0, 99);
 		}
 
 		if (_animationFrame == 6) {
-			Actor_Combat_AI_Hit_Attempt(3);
+			Actor_Combat_AI_Hit_Attempt(kActorDektora);
 		}
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(142)) {
@@ -944,7 +951,7 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		}
 
 		if (_animationFrame == 11) {
-			Ambient_Sounds_Play_Sound(206, 80, -20, -20, 20);
+			Ambient_Sounds_Play_Sound(kSfxZUBLAND1, 80, -20, -20, 20);
 		}
 		break;
 
@@ -953,15 +960,15 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame == 1) {
 			switch (Random_Query(0, 2)) {
 			case 0:
-				Sound_Play(567, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE1, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 1:
-				Sound_Play(568, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE2, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 2:
-				Sound_Play(569, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE3, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 			}
 		}
@@ -980,15 +987,15 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame == 1) {
 			switch (Random_Query(0, 2)) {
 			case 0:
-				Sound_Play(567, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE1, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 1:
-				Sound_Play(568, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE2, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 2:
-				Sound_Play(569, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE3, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 			}
 		}
@@ -1006,15 +1013,15 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame == 1) {
 			switch (Random_Query(0, 2)) {
 			case 0:
-				Sound_Play(567, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE1, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 1:
-				Sound_Play(568, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE2, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 2:
-				Sound_Play(569, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE3, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 			}
 		}
@@ -1031,15 +1038,15 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame == 1) {
 			switch (Random_Query(0, 2)) {
 			case 0:
-				Sound_Play(567, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE1, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 1:
-				Sound_Play(568, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE2, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 
 			case 2:
-				Sound_Play(569, (100 / Random_Query(5, 9)), 0, 0, 50);
+				Sound_Play(kSfxWHISTLE3, (100 / Random_Query(5, 9)), 0, 0, 50);
 				break;
 			}
 		}
@@ -1058,7 +1065,7 @@ bool AIScriptDektora::UpdateAnimation(int *animation, int *frame) {
 		if (_animationFrame == 8
 		 && Actor_Query_In_Set(kActorDektora, kSetNR10)
 		) {
-			Scene_Loop_Start_Special(2, 4, 1);
+			Scene_Loop_Start_Special(kSceneLoopModeOnce, 4, true);
 		}
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(157)) {

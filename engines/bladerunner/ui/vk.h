@@ -37,6 +37,8 @@ class UIImagePicker;
 class VQAPlayer;
 
 class VK {
+	friend class Debugger;
+
 	struct Question {
 		bool isPresent;
 		bool wasAsked;
@@ -167,6 +169,7 @@ private:
 	void setAdjustment(int x);
 	void setAdjustmentFromMouse();
 
+	void findRelatedQuestionBySentenceId(int inSentenceId, int &outRelatedQuestionId, int &outRelatedIntensity);
 	void askQuestion(int intensity);
 };
 
