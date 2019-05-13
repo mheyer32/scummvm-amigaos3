@@ -219,14 +219,22 @@ bool DumpFile::flush() {
 
 int32 DumpFile::pos() const { return _handle->pos(); }
 
+// On AmigaOS3 we don't derive AmigaoS3File from SeekableWriteStream.
+// Maybe that whole DumpFile class is just a debug tool and could be removed?
 bool DumpFile::seek(int32 offset, int whence) {
+#ifndef __amigaos3__
 	SeekableWriteStream *ws = dynamic_cast<SeekableWriteStream *>(_handle);
 	return ws ? ws->seek(offset, whence) : false;
+#endif
+	return false;
 }
 
 int32 DumpFile::size() const {
+#ifndef __amigaos3__
 	SeekableWriteStream *ws = dynamic_cast<SeekableWriteStream *>(_handle);
 	return ws ? ws->size() : -1;
+#endif
+	return -1;
 }
 
 } // End of namespace Common

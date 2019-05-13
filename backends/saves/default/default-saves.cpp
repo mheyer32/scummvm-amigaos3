@@ -373,7 +373,7 @@ void DefaultSaveFileManager::saveTimestamps(Common::HashMap<Common::String, uint
 #endif // ifdef USE_LIBCURL
 
 Common::String DefaultSaveFileManager::concatWithSavesPath(Common::String name) {
-	DefaultSaveFileManager *manager = dynamic_cast<DefaultSaveFileManager *>(g_system->getSavefileManager());
+	DefaultSaveFileManager *manager = static_cast<DefaultSaveFileManager *>(g_system->getSavefileManager());
 	Common::String path = (manager ? manager->getSavePath() : ConfMan.get("savepath"));
 	if (path.size() > 0 && (path.lastChar() == '/' || path.lastChar() == '\\'))
 		return path + name;
