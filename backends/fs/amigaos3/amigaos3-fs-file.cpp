@@ -80,14 +80,13 @@ bool AmigaOS3File::seek(int32 offs, int whence) {
 }
 
 uint32 AmigaOS3File::read(void *ptr, uint32 len) {
-	LONG blocksRead = FRead(_handle, ptr, len, 1);
-	if (blocksRead == 0) {
+	LONG bytesRead = FRead(_handle, ptr, 1, len);
+	if (bytesRead == 0) {
 		_error = IoErr();
 		_eof = true;
 		return 0;
 	}
-	assert(blocksRead == 1);
-	return len;
+	return bytesRead;
 }
 
 uint32 AmigaOS3File::write(const void *ptr, uint32 len) {
