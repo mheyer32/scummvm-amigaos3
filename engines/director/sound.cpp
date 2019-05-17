@@ -84,7 +84,7 @@ void DirectorSound::playAIFF(Common::String filename, uint8 soundChannel) {
 }
 
 void DirectorSound::playMCI(Audio::AudioStream &stream, uint32 from, uint32 to) {
-	Audio::SeekableAudioStream *seekStream = dynamic_cast<Audio::SeekableAudioStream *>(&stream);
+	Audio::SeekableAudioStream *seekStream = static_cast<Audio::SeekableAudioStream *>(&stream);
 	Audio::SubSeekableAudioStream *subSeekStream = new Audio::SubSeekableAudioStream(seekStream, Audio::Timestamp(from, seekStream->getRate()), Audio::Timestamp(to, seekStream->getRate()));
 
 	_mixer->playStream(Audio::Mixer::kSFXSoundType, _scriptSound, subSeekStream);
