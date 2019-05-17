@@ -237,7 +237,7 @@ extern const reg_t SIGNAL_REG;
 extern const reg_t TRUE_REG;
 
 // Selector ID
-typedef uint16 Selector;
+typedef int16 Selector;
 
 static const Selector NULL_SELECTOR = -1;
 
