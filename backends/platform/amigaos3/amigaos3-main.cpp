@@ -50,6 +50,7 @@ struct RealTimeBase  *RealTimeBase = NULL;
 struct MsgPort* TimerMP = NULL;
 struct Device* TimerBase = NULL;
 struct timerequest *TimerIOReq = NULL;
+ULONG eclocks_per_ms; /* EClock frequency in 1000Hz */
 
 static void unload_libraries(void) {
 	if (CxBase != NULL) {

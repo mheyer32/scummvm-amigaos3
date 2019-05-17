@@ -33,60 +33,6 @@
 #include "graphics/scaler/aspect.h"
 
 #include <proto/commodities.h>
-#include <proto/timer.h>
-
-#define REG(xn, parm) parm __asm(#xn)
-#define REGARGS __regargs
-#define STDARGS __stdargs
-#define SAVEDS __saveds
-#define ALIGNED __attribute__ ((aligned(4))
-#define FAR __far
-#define CHIP __chip
-#define INTERRUPT  __interrupt //__interrupt
-#define INLINE __inline__
-#define NOINLINE __attribute__ ((noinline))
-
-#define REGD0(x) REG(d0, x)
-#define REGD1(x) REG(d1, x)
-#define REGD2(x) REG(d2, x)
-#define REGD3(x) REG(d3, x)
-#define REGD4(x) REG(d4, x)
-#define REGD5(x) REG(d5, x)
-#define REGD6(x) REG(d6, x)
-#define REGD7(x) REG(d7, x)
-
-#define REGA0(x) REG(a0, x)
-#define REGA1(x) REG(a1, x)
-#define REGA2(x) REG(a2, x)
-#define REGA3(x) REG(a3, x)
-#define REGA4(x) REG(a4, x)
-#define REGA5(x) REG(a5, x)
-#define REGA6(x) REG(a6, x)
-
-
-static inline void StartTimer(struct EClockVal *start_timer)
-{
-	ReadEClock(start_timer);
-}
-
-static inline ULONG EndTimer(const struct EClockVal * start_timer)
-{
-	struct EClockVal end_time;
-	ReadEClock(&end_time);
-	return end_time.ev_lo - start_timer->ev_lo;
-}
-
-ULONG eclocks_per_ms; /* EClock frequency in 1000Hz */
-
-static void PrintTime(ULONG time, const char* msg, ULONG total_frames)
-{
-	ULONG usec = (time * 1000) / eclocks_per_ms;
-	printf("Total %s = %lu us  (%lu us/frame)\n", msg, usec, usec / total_frames);
-}
-
-// short cuts: assumes a 'struct EClockVal start_time;' variable in current scope
-#define start_timer() StartTimer(&start_time)
-#define end_timer() EndTimer(&start_time)
 
 static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {{"1x", "Normal", GFX_NORMAL}, {0, 0, 0}};
 
@@ -534,18 +480,12 @@ void OSystem_AmigaOS3::updateScreen() {
 		drawMouse();
 	}
 
-	struct EClockVal start_time;
-
-	static ULONG c2pTime = 0;
 	if (_overlayVisible) {
 		src = (UBYTE *)_overlayscreen8.getPixels();
 		assert(_videoMode.overlayWidth <= _videoMode.screenWidth);
 		assert(_videoMode.overlayHeight <= _videoMode.overlayScreenHeight);
-		start_timer();
 		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.overlayWidth - 1,
 						  _videoMode.overlayHeight - 1, src, _videoMode.overlayWidth);
-		c2pTime+=end_timer();
-
 	} else {
 		if (_currentShakePos != _newShakePos) {
 			// Set the 'dirty area' to black.
@@ -565,10 +505,8 @@ void OSystem_AmigaOS3::updateScreen() {
 			src = (UBYTE *)_screen.getPixels();
 		}
 
-		start_timer();
 		WriteChunkyPixels(&_screenRastPorts[_currentScreenBuffer], 0, 0, _videoMode.screenWidth - 1,
 						  _videoMode.screenHeight - 1, src, _videoMode.screenWidth);
-		c2pTime+=end_timer();
 	}
 
 	// Check whether the palette was changed.
@@ -580,25 +518,10 @@ void OSystem_AmigaOS3::updateScreen() {
 		undrawMouse();
 	}
 
-	static ULONG flipTime = 0;
-	start_timer();
 	if (ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer])) {
 		// Flip.
 		_currentScreenBuffer = (_currentScreenBuffer + 1) % NUM_SCREENBUFFERS;
-		flipTime+=end_timer();
-	} else {
-		warning("ChangeScreenBuffer() could not flip buffers");
 	}
-
-	static byte frames = 0;
-	if (frames == 10) {
-		PrintTime(c2pTime, "c2p", frames);
-		PrintTime(flipTime, "flip", frames);
-		frames = 0;
-		flipTime = 0;
-		c2pTime = 0;
-	}
-	++frames;
 }
 
 void OSystem_AmigaOS3::setShakePos(int shakeOffset) {
