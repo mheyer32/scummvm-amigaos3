@@ -64,7 +64,7 @@ public:
 	~Score();
 
 	static Common::Rect readRect(Common::ReadStreamEndian &stream);
-	static int compareLabels(const void *a, const void *b);
+	static int REGPARM compareLabels(Label *const &a, Label *const &b);
 	void loadArchive();
 	void setStartToLabel(Common::String label);
 	void gotoLoop();

@@ -398,7 +398,7 @@ public:
 	typedef T *iterator;
 	typedef uint size_type;
 
-	typedef int REGPARM(*Comparator)(const void *, const void *);
+	typedef int REGPARM(*Comparator)(const T&, const T&);
 
 	SortedArray(Comparator comparator) {
 		_comparator = comparator;
@@ -418,7 +418,7 @@ public:
 			return;
 		}
 
-		T *where = bsearchMin(&element);
+		T *where = bsearchMin(element);
 
 		if (where > this->_storage + this->_size)
 			Array<T>::push_back(element);
@@ -427,7 +427,7 @@ public:
 	}
 
 	int find(const T &element) const {
-		T* found = bsearchMin(&element);
+		T* found = bsearchMin(element);
 		return found - this->_storage;
 	}
 
@@ -457,14 +457,14 @@ private:
 	// Based on code Copyright (C) 2008-2009 Ksplice, Inc.
 	// Author: Tim Abbott <tabbott@ksplice.com>
 	// Licensed under GPLv2+
-	T * REGPARM bsearchMin(const void * key) const {
+	T * REGPARM bsearchMin(const T &key) const {
 		uint start_ = 0, end_ = this->_size;
 		int result;
 
 		while (start_ < end_) {
 			uint mid = start_ + (end_ - start_) / 2;
 
-			result = this->_comparator(key, &this->_storage[mid]);
+			result = this->_comparator(key, this->_storage[mid]);
 			if (result < 0)
 				end_ = mid;
 			else if (result > 0)

@@ -418,8 +418,8 @@ struct ListElement {
 	ListElement(int v) : value(v) {}
 };
 
-static int compareInts(const void *a, const void *b) {
-	return ((const ListElement *)a)->value - ((const ListElement *)b)->value;
+static int REGPARM compareInts(ListElement* const &a, ListElement* const &b) {
+	return a->value - b->value;
 }
 
 class SortedArrayTestSuite : public CxxTest::TestSuite {

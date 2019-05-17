@@ -28,7 +28,7 @@
 
 namespace Scumm {
 
-static int compareTreeNodes(const void *a, const void *b) {
+static int REGPARM compareTreeNodes(const TreeNode * &a, const TreeNode *&b) {
 	if (((const TreeNode *)a)->value < ((const TreeNode *)b)->value)
 		return -1;
 	else if (((const TreeNode *)a)->value > ((const TreeNode *)b)->value)

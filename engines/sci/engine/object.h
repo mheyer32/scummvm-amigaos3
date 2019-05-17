@@ -345,8 +345,8 @@ private:
 
 	BaseVars _baseVars;
 
-	static int REGPARM compareSelectors(const void *key, const void *element) {
-		return (int)(((const BaseVar*)key)->selector) - (int)(((const BaseVar*)element)->selector);
+	static int REGPARM compareSelectors(const BaseVar &key, const BaseVar &element) {
+		return (int)key.selector - (int)element.selector;
 	}
 	/**
 	 * A lookup table from a method index to its corresponding selector number

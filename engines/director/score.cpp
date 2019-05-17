@@ -772,7 +772,7 @@ void Score::loadLabels(Common::SeekableSubReadStreamEndian &stream) {
 	}
 }
 
-int Score::compareLabels(const void *a, const void *b) {
+int REGPARM Score::compareLabels(Label *const &a, Label *const &b) {
 	return ((const Label *)a)->number - ((const Label *)b)->number;
 }
 
