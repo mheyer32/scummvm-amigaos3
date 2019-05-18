@@ -15,9 +15,9 @@ endif
 
 #
 TEST_FLAGS   := --runner=StdioPrinter --no-std --no-eh --include=$(srcdir)/test/cxxtest_mingw.h
-TEST_CFLAGS  := $(CFLAGS) -I$(srcdir)/test/cxxtest
-TEST_LDFLAGS := $(LDFLAGS) $(LIBS)
-TEST_CXXFLAGS := $(filter-out -Wglobal-constructors,$(CXXFLAGS))
+TEST_CFLAGS  := $(filter-out -flto%,$(CFLAGS)) -I$(srcdir)/test/cxxtest
+TEST_LDFLAGS := $(filter-out -flto%,$(LDFLAGS)) $(LIBS) -v
+TEST_CXXFLAGS := $(filter-out -Wglobal-constructors -flto%,$(CXXFLAGS))
 
 ifdef N64
 TEST_LDFLAGS := $(filter-out -mno-crt0,$(TEST_LDFLAGS))

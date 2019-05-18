@@ -31,6 +31,9 @@ amigaos3dist: $(EXECUTABLE)
 	mkdir -p $(AMIGAOSPATH)/themes
 	mkdir -p $(AMIGAOSPATH)/extras
 	$(STRIP) $(EXECUTABLE) -g --strip-unneeded -o $(AMIGAOSPATH)/$(EXECUTABLE)
+	if [ -f test/runner ]; then \
+		$(STRIP) test/runner -g --strip-unneeded -o $(AMIGAOSPATH)/TestRunner; \
+	fi
 	cp ${srcdir}/backends/platform/amigaos3/overlay* $(AMIGAOSPATH)/
 	cp ${srcdir}/icons/scummvm_drawer.info $(AMIGAOSPATH).info
 	cp ${srcdir}/icons/scummvm.info $(AMIGAOSPATH)/$(EXECUTABLE).info

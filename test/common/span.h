@@ -714,7 +714,9 @@ public:
 	void test_named_span() {
 		byte data[6] = { 0, 1, 2, 3, 4, 5 };
 		Common::NamedSpan<byte> span(data, sizeof(data), "foo.data");
+#ifndef NDEBUG
 		TS_ASSERT_EQUALS(span.name(), "foo.data");
+#endif
 
 		Common::String actual;
 		Common::String expected;
@@ -726,7 +728,11 @@ public:
 		{
 			Common::NamedSpan<byte> subspan = span.subspan(2);
 
+#ifdef __amigaos3__
+			expected = "Access violation reading : 23 + 45 > 4 (abs: 25 + 45 > 6)";
+#else
 			expected = "Access violation reading foo.data: 23 + 45 > 4 (abs: 25 + 45 > 6)";
+#endif
 			actual = subspan.getValidationMessage(23, 45, Common::kValidateRead);
 			TS_ASSERT_EQUALS(actual, expected);
 		}
@@ -762,8 +768,11 @@ public:
 
 		{
 			Common::NamedSpan<const byte> subspan = constSpan.subspan(2);
-
+#ifdef __amigaos3__
+			expected = "Access violation reading : 23 + 45 > 4 (abs: 25 + 45 > 6)";
+#else
 			expected = "Access violation reading foo.data: 23 + 45 > 4 (abs: 25 + 45 > 6)";
+#endif
 			actual = subspan.getValidationMessage(23, 45, Common::kValidateRead);
 			TS_ASSERT_EQUALS(actual, expected);
 			TS_ASSERT_EQUALS(subspan.sourceByteOffset(), 2U);
