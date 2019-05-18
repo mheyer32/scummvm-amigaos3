@@ -21,7 +21,7 @@ endif
 ######################################################################
 
 PLUGINS :=
-MODULES := test devtools base $(MODULES)
+MODULES := devtools base $(MODULES)
 
 -include engines/engines.mk
 
@@ -40,6 +40,8 @@ MODULES += \
 ifdef USE_MT32EMU
 MODULES += audio/softsynth/mt32
 endif
+
+MODULES += test
 
 ######################################################################
 # The build rules follow - normally you should have no need to

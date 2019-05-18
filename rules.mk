@@ -89,6 +89,12 @@ else
 endif
 
 # Convenience library target
+ifdef AMIGAOS3
+#filter out -flto for the .a targets
+$(MODULE_LIB-$(MODULE)): CXXFLAGS := $(filter-out -flto%,$(CXXFLAGS))
+$(MODULE_LIB-$(MODULE)): LDFLAGS := $(filter-out -flto%,$(LDFLAGS))
+endif
+
 $(MODULE_LIB-$(MODULE)): $(MODULE_OBJS-$(MODULE))
 	$(QUIET)-$(RM) $@
 	$(QUIET_AR)$(AR) $@ $+

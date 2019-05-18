@@ -3247,7 +3247,7 @@ if test -n "$_host"; then
 			append_var DEFINES "-DREGPARM=__attribute__\(\(regparm\(3\)\)\)"
 			#append_var DEFINES "-DREGPARM=__regargs"
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
-			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
+#			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
 			_machine_flags="-noixemul -m68030 -flto"
 			append_var CXXFLAGS "$_machine_flags"
