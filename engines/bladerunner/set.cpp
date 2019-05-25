@@ -90,7 +90,11 @@ bool Set::open(const Common::String &name) {
 		_objects[i].isTarget = 0;
 		s->skip(4);
 	}
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
 	patchInAdditionalObjectsInSet();
+	patchOutBadObjectsFromSet();
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 	_walkboxCount = s->readUint32LE();
 	assert(_walkboxCount <= 95);
@@ -131,7 +135,10 @@ bool Set::open(const Common::String &name) {
 
 void Set::addObjectsToScene(SceneObjects *sceneObjects) const {
 	for (int i = 0; i < _objectCount; i++) {
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
 		overrideSceneObjectInfo(i); // For bugfixes with respect to clickable/targetable box positioning/bounding box
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		sceneObjects->addObject(i + kSceneObjectOffsetObjects, _objects[i].bbox, _objects[i].isClickable, _objects[i].isObstacle, _objects[i].unknown1, _objects[i].isTarget);
 	}
 }
@@ -420,6 +427,8 @@ void Set::load(SaveFileReadStream &f) {
 	_footstepSoundOverride = f.readInt();
 }
 
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
 /**
 * Used for bugfixes mainly with respect to bad box positioning / bounding box fixes
 * TODO If we have many such cases, perhaps we could use a lookup table
@@ -455,12 +464,42 @@ void Set::overrideSceneObjectInfo(int objectId) const {
 			_objects[objectId].bbox.setXYZ(695.63f, 42.65f, -628.10f, 706.71f, 69.22f, -614.47f);
 		}
 		break;
+	case kSceneNR11:
+		// Right coat rack needs adjustment of bounding box
+		if (objectId == 1 && _objects[objectId].name == "COATRACK") {
+			_objects[objectId].bbox.setXYZ(14.91f, 0.0f, -368.79f, 114.67f, 87.04f, -171.28f);
+		}
+		break;
+
 	case kSceneUG09:
 		// block passage to buggy pipe
 		if (objectId == 7 && _objects[objectId].name == "BOXS FOR ARCHWAY 01") {
 			_objects[objectId].bbox.setXYZ(-168.99f, 151.38f, -139.10f, -105.95f, 239.59f, 362.70f);
 		}
 		break;
+
+	case kSceneUG13:
+		// fix obstacles map / stairs glitch
+		if (objectId == 31 && _objects[objectId].name == "BOX FOR ELEVATR WAL") {
+			_objects[objectId].bbox.setXYZ(-337.79f, 35.78f, -918.73f, -282.79f, 364.36f, -804.54f);
+		} else if (objectId == 32 && _objects[objectId].name == "BOX FOR ELEVATR WAL") {
+			_objects[objectId].bbox.setXYZ(-455.47f, 35.78f, -1071.24f, -335.98f, 364.36f, -824.54f);
+		}
+		break;
+
+	case kSceneUG18:
+		// fix obstacles map
+		if (objectId == 1 && _objects[objectId].name == "PIT_RAIL 03") {
+			_objects[objectId].bbox.setXYZ(-615.83f, 0.0f, -1237.04f, -602.30f, 37.66f, -13.48f);
+		} else  if (objectId == 4 && _objects[objectId].name == "WALL_LEFT") {
+			_objects[objectId].bbox.setXYZ(-1310.70f, 0.0f, -2105.59f, -910.95f, 840.0f, -111.55f);
+		} else  if (objectId == 5 && _objects[objectId].name == "OBSTACLE1") {
+			_objects[objectId].bbox.setXYZ(91.00f, -1.87f, 375.75f, 476.37f, 61.18f, 955.24f);
+		} else  if (objectId == 6 && _objects[objectId].name == "OBSTACLE02") {
+			_objects[objectId].bbox.setXYZ(-1191.22f, -1.87f, -2105.59f, -606.15f, 61.18f, -937.04f);
+		}
+		break;
+
 	default:
 		return;
 	}
@@ -505,5 +544,41 @@ void Set::patchInAdditionalObjectsInSet() {
 	_objects[objectId].unknown1    = 0;
 	_objects[objectId].isTarget    = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un_)Combat_Target_Object
 }
+
+/**
+* Used for "removing" objects from a Set mainly to fix a few "McCoy walking to places he should not" issues
+* This is called in Set::open()
+* Note:
+* - ScummVM (post fix) save games will have the removed objects information
+* - Original save games will not have the removed objects info if the save game room scene was an affected scene
+*   but they will get them if the player exits and re-enters. This should not be an issue.
+*/
+void Set::patchOutBadObjectsFromSet() {
+	int removedIndexRef = 0;
+	switch (_vm->_scene->getSceneId()) {
+	case kSceneNR11:
+		for (int objectId = 0; objectId < _objectCount; ++objectId) {
+			if ((objectId == 46 && _objects[objectId].name == "BOX53")
+			    || (objectId == 36 && _objects[objectId].name == "BOX43")
+				|| (objectId == 37 && _objects[objectId].name == "BOX44")
+			    || (objectId == 13 && _objects[objectId].name == "LOFT04")
+			) {
+				// Removing obj 46, 36, 37 (BOX53, BOX43, BOX44) fixes paths in the scene
+				// Removing obj 13 (LOFT04) fixes duplicate named box that confuses the engine
+				_objects[objectId].name = Common::String::format("REMOVED%02d", removedIndexRef++);
+				_objects[objectId].isObstacle  = 0;
+				_objects[objectId].isClickable = 0;
+				_objects[objectId].isHotMouse  = 0;
+				_objects[objectId].unknown1    = 0;
+				_objects[objectId].isTarget    = 0;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return;
+}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 } // End of namespace BladeRunner

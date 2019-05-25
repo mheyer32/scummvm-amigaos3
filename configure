@@ -1765,7 +1765,7 @@ else
 fi
 
 case $_host in
-caanoo | gp2x | gp2xwiz | openpandora | ps2 | psp2)
+caanoo | gp2x | gp2xwiz | openpandora | ps2 | psp2 | switch)
 	if test "$_debug_build" = auto; then
 		# If you want to debug one of these platforms, use '--disable-optimizations --enable-debug'
 		_debug_build=no
@@ -2816,7 +2816,7 @@ case $_host_os in
 		;;
 	mingw*)
 		append_var DEFINES "-DWIN32"
-		append_var DEFINES "-D__USE_MINGW_ANSI_STDIO=0"
+		# append_var DEFINES "-D__USE_MINGW_ANSI_STDIO=0"  # Modern MinGW does not need it
 		append_var LDFLAGS "-static-libgcc -static-libstdc++"
 		append_var LIBS "-lmingw32 -lwinmm -lgdi32"
 		append_var OBJS "dists/scummvm.o"
@@ -5813,6 +5813,7 @@ vpath %.asm \$(srcdir)
 vpath %.s \$(srcdir)
 vpath %.S \$(srcdir)
 vpath %.rc \$(srcdir)
+vpath %.md \$(srcdir)
 include \$(srcdir)/Makefile
 EOF
 

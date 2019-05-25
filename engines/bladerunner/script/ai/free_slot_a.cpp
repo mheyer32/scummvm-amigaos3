@@ -159,7 +159,7 @@ void AIScriptFreeSlotA::CompletedMovementTrack() {
 		break;
 
 	case 406:
-		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotA, 0, 0, 0, 8, 4, 7, 8, 0, 0, 100, 5, 300, 0);
+		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotA, kActorCombatStateIdle, false, kActorMcCoy, 8, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 5, 300, false);
 		break;
 
 	default:
@@ -286,7 +286,7 @@ bool AIScriptFreeSlotA::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 
 	case kGoalFreeSlotAAttackMcCoy:
 		Actor_Set_Targetable(kActorFreeSlotA, true);
-		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotA, 0, 0, 0, 8, 4, 7, 8, 25, 0, 75, 5, 300, 0);
+		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotA, kActorCombatStateIdle, false, kActorMcCoy, 8, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 25, 0, 75, 5, 300, false);
 		break;
 
 	case kGoalFreeSlotAUG15Fall:
@@ -659,7 +659,7 @@ void AIScriptFreeSlotA::goToRandomUGxx() {
 		// replacing with something more normal
 		World_Waypoint_Set(463, kSetUG09, 91.0f, 156.94f, -498.0f);
 		World_Waypoint_Set(464, kSetUG09, -29.60f, 156.94f, -498.0f);
-		AI_Movement_Track_Append(kActorFreeSlotA, 463, 4);
+		AI_Movement_Track_Append(kActorFreeSlotA, 463, 1);
 		AI_Movement_Track_Append(kActorFreeSlotA, 464, 1);
 		AI_Movement_Track_Append(kActorFreeSlotA, 463, 1);
 #endif

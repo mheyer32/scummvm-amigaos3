@@ -121,7 +121,7 @@ void AIScriptFreeSlotB::CompletedMovementTrack() {
 		break;
 
 	case 406:
-		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotB, 0, 0, 0, 8, 4, 7, 8, 0, 0, 100, 5, 300, 0);
+		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotB, kActorCombatStateIdle, false, kActorMcCoy, 8, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 0, 0, 100, 5, 300, false);
 		break;
 
 	default:
@@ -195,7 +195,7 @@ bool AIScriptFreeSlotB::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 
 	case 302:
 		Actor_Set_Targetable(kActorFreeSlotB, true);
-		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotB, 0, 0, 0, 8, 4, 7, 8, 25, 0, 75, 5, 300, 0);
+		Non_Player_Actor_Combat_Mode_On(kActorFreeSlotB, kActorCombatStateIdle, false, kActorMcCoy, 8, kAnimationModeCombatIdle, kAnimationModeCombatWalk, kAnimationModeCombatRun, 25, 0, 75, 5, 300, false);
 		break;
 
 	case 400:
@@ -534,10 +534,10 @@ void AIScriptFreeSlotB::processGoal301() {
 		AI_Movement_Track_Append(kActorFreeSlotB, 466, 1);
 #else
 		// replacing with something more normal
-		World_Waypoint_Set(466, kSetUG09, -152.51f, 156.94f, -498.0f);
+		World_Waypoint_Set(466, kSetUG09, -149.0f,  156.94f, -498.0f);
 		World_Waypoint_Set(547, kSetUG09,  -32.60f, 156.94f, -498.0f);
-		AI_Movement_Track_Append(kActorFreeSlotB, 466, 4);
-		AI_Movement_Track_Append(kActorFreeSlotB, 547, 1);
+		AI_Movement_Track_Append(kActorFreeSlotB, 466, 1);
+		AI_Movement_Track_Append(kActorFreeSlotB, 547, 2);
 		AI_Movement_Track_Append(kActorFreeSlotB, 466, 1);
 #endif // BLADERUNNER_ORIGINAL_BUGS
 		break;

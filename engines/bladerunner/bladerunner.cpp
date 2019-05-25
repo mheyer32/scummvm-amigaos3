@@ -83,6 +83,7 @@
 #include "common/savefile.h"
 #include "common/system.h"
 #include "common/debug-channels.h"
+#include "common/translation.h"
 #include "gui/message.h"
 
 #include "engines/util.h"
@@ -111,7 +112,7 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 
 	_sitcomMode       = false;
 	_shortyMode       = false;
-	_cutContent       = true;
+	_cutContent       = Common::String(desc->gameId).contains("bladerunner-final");
 
 	_playerLosesControlCounter = 0;
 
@@ -312,40 +313,58 @@ Common::Error BladeRunnerEngine::run() {
 
 	if (!startup(hasSavegames)) {
 		shutdown();
-		return Common::Error(Common::kUnknownError, "Failed to initialize resources");
+		return Common::Error(Common::kUnknownError, _("Failed to initialize resources"));
 	}
 
 	if (warnUserAboutUnsupportedGame()) {
+		// improvement: Use a do-while() loop to handle the normal end-game state
+		// so that the game won't exit abruptly after end credits
+		do {
+			// additional code for gracefully handling end-game after _endCredits->show()
+			_gameOver = false;
+			_gameIsRunning = true;
+			if (!playerHasControl()) {
+				// force a player gains control
+				playerGainsControl(true);
+			}
+			if (_mouse->isDisabled()) {
+				// force a mouse enable here since otherwise, after end-game,
+				// we need extra call(s) to mouse->enable to get the _disabledCounter to 0
+				_mouse->enable(true);
+			}
+			// end of additional code for gracefully handling end-game
 
-		if (ConfMan.hasKey("save_slot")) {
-			loadGameState(ConfMan.getInt("save_slot"));
-		} else if (hasSavegames) {
-			_kia->_forceOpen = true;
-			_kia->open(kKIASectionLoad);
-		}
-		// TODO: why is game starting new game here when everything is done in startup?
-		//  else {
-		// 	newGame(kGameDifficultyMedium);
-		// }
+			if (ConfMan.hasKey("save_slot") && ConfMan.getInt("save_slot") != -1) {
+				loadGameState(ConfMan.getInt("save_slot"));
+				ConfMan.set("save_slot", "-1");
+			} else if (hasSavegames) {
+				_kia->_forceOpen = true;
+				_kia->open(kKIASectionLoad);
+			}
+			// TODO: why is game starting new game here when everything is done in startup?
+			//  else {
+			// 	newGame(kGameDifficultyMedium);
+			// }
 
-		gameLoop();
+			gameLoop();
 
-		_mouse->disable();
+			_mouse->disable();
 
-		if (_gameOver) {
-			// In the original game this created a single "END_GAME_STATE.END"
-			// which had the a valid format of a save game but was never accessed
-			// from the loading screen. (Due to the .END extension)
-			// It was also a single file that was overwritten each time the player
-			// finished the game.
-			// Maybe its purpose was debugging (?) by renaming it to .SAV and also
-			// for the game to "know" if the player has already finished the game at least once (?)
-			// although that latter one seems not to be used for anything, or maybe it was planned
-			// to be used for a sequel (?). We will never know.
-			// Disabling as in current state it will only fill-up save slots
-			// autoSaveGame(4, true);
-			_endCredits->show();
-		}
+			if (_gameOver) {
+				// In the original game this created a single "END_GAME_STATE.END"
+				// which had the a valid format of a save game but was never accessed
+				// from the loading screen. (Due to the .END extension)
+				// It was also a single file that was overwritten each time the player
+				// finished the game.
+				// Maybe its purpose was debugging (?) by renaming it to .SAV and also
+				// for the game to "know" if the player has already finished the game at least once (?)
+				// although that latter one seems not to be used for anything, or maybe it was planned
+				// to be used for a sequel (?). We will never know.
+				// Disabling as in current state it will only fill-up save slots
+				// autoSaveGame(4, true);
+				_endCredits->show();
+			}
+		} while (_gameOver); // if main game loop ended and _gameOver == false, then shutdown
 	}
 
 	shutdown();
@@ -446,7 +465,6 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	_sitcomMode = ConfMan.getBool("sitcom");
 	_shortyMode = ConfMan.getBool("shorty");
-	_cutContent = ConfMan.getBool("cutcontent");
 
 	_items = new Items(this);
 
@@ -875,7 +893,7 @@ void BladeRunnerEngine::gameTick() {
 
 	if (!_kia->isOpen() && !_sceneScript->isInsideScript() && !_aiScripts->isInsideScript()) {
 		if (!_settings->openNewScene()) {
-			Common::Error runtimeError = Common::Error(Common::kUnknownError, "A required game resource was not found");
+			Common::Error runtimeError = Common::Error(Common::kUnknownError, _("A required game resource was not found"));
 			GUI::MessageDialog dialog(runtimeError.getDesc());
 			dialog.runModal();
 			return;
@@ -1847,21 +1865,34 @@ void BladeRunnerEngine::playerLosesControl() {
 	}
 }
 
-void BladeRunnerEngine::playerGainsControl() {
-	if (_playerLosesControlCounter == 0) {
+void BladeRunnerEngine::playerGainsControl(bool force) {
+	if (!force && _playerLosesControlCounter == 0) {
 		warning("Unbalanced call to BladeRunnerEngine::playerGainsControl");
 	}
 
-	if (_playerLosesControlCounter > 0)
-		--_playerLosesControlCounter;
-
-	if (_playerLosesControlCounter == 0) {
-		_mouse->enable();
+	if (force) {
+		_playerLosesControlCounter = 0;
+		_mouse->enable(force);
+	} else {
+		if (_playerLosesControlCounter > 0) {
+			--_playerLosesControlCounter;
+		}
+		if (_playerLosesControlCounter == 0) {
+			_mouse->enable();
+		}
 	}
 }
 
 void BladeRunnerEngine::playerDied() {
 	playerLosesControl();
+
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	_ambientSounds->removeAllNonLoopingSounds(true);
+	_ambientSounds->removeAllLoopingSounds(4);
+	_music->stop(4);
+	_audioSpeech->stopSpeech();
+#endif // BLADERUNNER_ORIGINAL_BUGS
 
 	int timeWaitEnd = _time->current() + 5000;
 	while (_time->current() < timeWaitEnd) {
@@ -1946,10 +1977,21 @@ bool BladeRunnerEngine::loadGame(Common::SeekableReadStream &stream) {
 	SaveFileReadStream s(stream);
 
 	_ambientSounds->removeAllNonLoopingSounds(true);
+#if BLADERUNNER_ORIGINAL_BUGS
 	_ambientSounds->removeAllLoopingSounds(1);
 	_music->stop(2);
+#else
+	// loading into another game that also has music would
+	// two music tracks to overlap and none was stopped
+	_ambientSounds->removeAllLoopingSounds(0);
+	_music->stop(0);
+#endif // BLADERUNNER_ORIGINAL_BUGS
 	_audioSpeech->stopSpeech();
 	_actorDialogueQueue->flush(true, false);
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	_screenEffects->toggleEntry(-1, false); // clear the skip list
+#endif
 	_screenEffects->_entries.clear();
 
 	int size = s.readInt();
@@ -1970,12 +2012,36 @@ bool BladeRunnerEngine::loadGame(Common::SeekableReadStream &stream) {
 	_scene->_set->load(s);
 	for (uint i = 0; i != _gameInfo->getGlobalVarCount(); ++i) {
 		_gameVars[i] = s.readInt();
+		if (i == 3 && _gameVars[i] != kBladeRunnerScummVMVersion) {
+			warning("This game was saved using an older version of the engine (v%d), currently the engine is at v%d", _gameVars[i], kBladeRunnerScummVMVersion);
+		}
 	}
 	_music->load(s);
 	// _audioPlayer->load(s) // zero func
 	// _audioSpeech->load(s) // zero func
 	_combat->load(s);
 	_gameFlags->load(s);
+
+	if ((_gameFlags->query(kFlagGamePlayedInRestoredContentMode) && !_cutContent)
+	    || (!_gameFlags->query(kFlagGamePlayedInRestoredContentMode) && _cutContent)
+	){
+		Common::String warningMsg;
+		if (!_cutContent) {
+			warningMsg = _("WARNING: This game was saved in Restored Cut Content mode, but you are playing in Original Content mode. The mode will be adjusted to Restored Cut Content for this session until you completely Quit the game.");
+		} else {
+			warningMsg = _("WARNING: This game was saved in Original Content mode, but you are playing in Restored Cut Content mode. The mode will be adjusted to Original Content mode for this session until you completely Quit the game.");
+		}
+		GUI::MessageDialog dialog(warningMsg, _("Continue"), 0);
+		dialog.runModal();
+		_cutContent = !_cutContent;
+		// force a Key Up event, since we need it to remove the KIA
+		// but it's lost due to the modal dialogue
+		Common::EventManager *eventMan = _system->getEventManager();
+		Common::Event event;
+		event.type = Common::EVENT_KEYUP;
+		eventMan->pushEvent(event);
+	}
+
 	_items->load(s);
 	_sceneObjects->load(s);
 	_ambientSounds->load(s);
@@ -2003,7 +2069,6 @@ bool BladeRunnerEngine::loadGame(Common::SeekableReadStream &stream) {
 
 	_settings->setNewSetAndScene(_settings->getSet(), _settings->getScene());
 	_settings->setChapter(_settings->getChapter());
-
 	return true;
 }
 

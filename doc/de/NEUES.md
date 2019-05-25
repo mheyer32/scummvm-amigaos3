@@ -2,9 +2,98 @@ Umfangreichere Informationen über die Änderungen des aktuellen experimentellen
 Programmcodes finden Sie auf Englisch unter:
         https://github.com/scummvm/scummvm/commits/
 
-2.1.0 (??.??.2018)
+#### 2.1.0 (??.??.2019)
+
+ Neue Spiele:
+   - Might and Magic IV - Clouds of Xeen.
+   - Might and Magic V - Darkside of Xeen.
+   - Might and Magic - World of Xeen.
+   - Might and Magic - World of Xeen 2 CD Talkie (mit Sprachausgabe).
+   - Might and Magic - Swords of Xeen.
+
+ Allgemein:
+   - Verbesserte Performance der grafischen Benutzeroberfläche.
+   - Skalier-Optionen hinzugefügt, die steuern, wie das ScummVM-Fenster auf
+     dem Bildschirm dargestellt wird.
+   - Fehlerhafte Steuerung des Mauszeigers korrigiert, wenn dieser über die Tastatur
+     gesteuert wird.
+   - Code der Roland MT-32-Emulation auf Munt 2.3.0 aktualisiert.
+
+ Drascula:
+   - Fehler beim Laden eines in Kapitel 1 gespeicherten Spielstands korrigiert.
+
+ Full Pipe:
+   - Die Spielzeit wird nun korrekt wiederhergestellt, wenn ein Spielstand geladen wird.
+   - Fehler behoben, der zu einem enormen Speicherverbrauch in Szene 22 führt.
+
+ Kyra:
+   - Unterstützung für die Amiga-Version von Eye of the Beholder I + II hinzugefügt.
+   - Unterstützung für die FM-Towns-Version von Eye of the Beholder II hinzugefügt.
+   - Mehrere Fehlerkorrekturen.
+
+ MOHAWK:
+   - Hauptmenü für die 25th Anniversary Edition von Myst ME hinzugefügt.
+   - Hauptmenü für die 25th Anniversary Edition von Riven hinzugefügt.
+   - Automatisches Speichern in Speicherplatz 0 für Myst und Riven hinzugefügt.
+   - Tastenkürzel für das Laden und Speichern von Spielständen wie im Handbuch
+     von Myst und Riven dokumentiert hinzugefügt.
+   - Absturz im Observatorium in Myst behoben.
+   - Absturz auf Jungle Island in Riven behoben.
+   - Benutzerfreundlichkeit für einige Puzzles in Myst und Riven verbessert.
+   - Korrektur mehrerer Abstürze, Grafik- und Sound-Fehler in Myst und Riven.
+
+ SCI:
+   - Absturz in Police Quest IV: Open Season behoben.
+   - Grafikeffekte in Quest for Glory I (VGA) verbessert.
+
  SCUMM:
    - Lippensynchronisation für v6- und v7+-Spiele hinzugefügt.
+   - Verbesserung der Audio-Qualität in den Spielen von Humongous Entertainment durch Verwendung
+     des Miles AdLib-Treibers.
+   - Potenzielle Stabel-Überläufe in The Dig und Full Throttle behoben.
+   - Sprachausgabe in der U-Boot-Szene von Indiana Jones and the Fate of Atlantis korrigiert.
+     Benutzer müssen nun die Datei monster.sou mit einer aktuellen Version der scummvm-tools
+     neu erstellen, damit diese Fehlerkorrektur auch bei komprimierten Audiodateien greift.
+   - Fehler in der deutschen Version von SPY Fox 3: Operation Ozone korrigiert. Das Spiel kann
+     nun komplett durchgespielt werden.
+
+ Sherlock:
+   - Absturz in der spanischen Version behoben, der auftritt, wenn mit der Dame im Geschäft des 
+     Schneiders gesprochen wird.
+
+ SKY:
+   - Workaround für einen Fehler des Originalspiels hinzugefügt, der die Darstellung des Intros
+     verbessert. Bilder werden nun nicht mehr abgeschnitten, sondern korrekt dargestellt, da diese
+     im Vollbild-Format (320x200px) in den Spieldaten enthalten sind.
+
+ Tinsel:
+   - Fehler beim Laden von Spielständen in Discworld 1 korrigiert, der auftritt, wenn Rincewind einen Gegenstand trägt.
+   - Fehler korrigiert, der einen Absturz in Discworld 1 verursachen kann.
+   - In Discworld 1 werden Gegenstände, die abgelegt werden und sich nie im Gepäck oder in Rincewinds Inventar
+     befanden, nun korrekt im Gepäck abgelegt, anstatt verloren zu gehen.
+
+ Titanic:
+   - Fehler korrigiert, der das Spiel zum Absturz bringen kann, wenn ein Stockwerk manuell angewählt wird.
+   - Der Text-Parser wird nun zwischen den einzelnen Sätzen einer Unterhaltung korrekt zurückgesetzt.
+   - Fehler korrigiert, der zu einer fehlerhaften Darstellung des Mauszeigers führen kann.
+   - Fehler korrigiert, der zu einer Animations-Schleife des Barbots führen kann, wenn vor ihm ein Spielstand geladen wurde.
+   - Fehler korrigiert, der zum Absturz führen kann, wenn der Papagei danach gefragt wird, wer das Schiff sabotiert hat.
+
+ Tucker:
+   - Mehrere Grafikfehler in Bud Tucker in Double Trouble behoben.
+   - Mehrere Probleme mit der Darstellung von Zeichen und Untertiteln behoben.
+   - Fehlerhafte Sound-Effekte korrigiert.
+   - Die Blasen im "Plugs Shop" sind nun immer sichtbar.
+   - Fehlende Animation hinzugefügt, wenn sich Ego und Billie auf dem Boot befinden.
+   - Fehler korrigiert, der in der zweiten Museums-Szene zu einer Sackgasse führen kann.
+   - Bud kann sich nun nicht mehr außerhalb des begehbaren Bereichs bewegen, wenn er den Club besucht.
+   - Bud kann außerdem nicht mehr durch geschlossene Türen gehen.
+   - Im Inventar kann nun das Mausrad zum scrollen verwendet werden.
+   - Die Sprachausgabe kann nun übersprungen werden.
+   - Verbesserte Behandlung von Spielständen sowie Unterstützung für automatisches Speichern hinzugefügt.
+
+ ZVISION:
+   - Grafikfehler in Zork: Grand Inquisitor behoben.
 
  PS Vita-Portierung:
    - Unterstützung für Touch-Steuerung hinzugefügt.
@@ -12,8 +101,12 @@ Programmcodes finden Sie auf Englisch unter:
  PSP-Portierung:
    - Unterstützung für Seitenverhältniskorrektur hinzugefügt.
    - Bewegung des Mauszeigers ist nun gleichmäßiger.
-   - Einstell-Möglichkeit für Mauszeiger-Geschwindigkeit und Joystick-Deadzone hinzugefügt.
-2.0.0 (17.12.2017)
+   - Einstellungsmöglichkeit für Mauszeiger-Geschwindigkeit und Joystick-Deadzone hinzugefügt.
+
+ SDL-Portierung:
+   - Unterstützung für Gamecontroller hinzugefügt.
+
+#### 2.0.0 (17.12.2017)
  Neue Spiele:
    - Unterstützung für Full Pipe hinzugefügt.
    - Unterstützung für Hi-Res Adventure #3: Cranston Manor hinzugefügt.
@@ -211,7 +304,7 @@ Programmcodes finden Sie auf Englisch unter:
      automatisch das erste Gerät ausgewählt.
    - Verhalten des Datei-Browsers verbessert.
 
-1.9.0 (17.10.2016)
+#### 1.9.0 (17.10.2016)
  Neue Spiele:
    - Unterstützung für Myst hinzugefügt.
    - Unterstützung für Myst: Masterpiece Edition hinzugefügt.
@@ -282,7 +375,7 @@ Programmcodes finden Sie auf Englisch unter:
    - Unterstützung für automatische Aktualisierungen über WinSparkle hinzugefügt.
 
 
-1.8.1 (25.05.2016)
+#### 1.8.1 (25.05.2016)
  Neue Portierungen:
    - Portierung für den Nintendo 3DS hinzugefügt.
    - Portierung für Android SDL hinzugefügt.
@@ -369,7 +462,7 @@ Programmcodes finden Sie auf Englisch unter:
  GCW0-Portierung:
    - Verbesserte Unterstützung für die in ScummVM integrierte Dokumentation.
 
-1.8.0 (04.03.2016)
+#### 1.8.0 (04.03.2016)
  Neue Spiele:
    - Unterstützung für Rex Nebular and the Cosmic Gender Bender hinzugefügt.
    - Unterstützung für Sfinx hinzugefügt.
@@ -474,7 +567,7 @@ Programmcodes finden Sie auf Englisch unter:
  Tinsel:
    - Unterstützung für AdLib-Musik in Discworld 1 verbessert.
 
-1.7.0 (21.07.2014)
+#### 1.7.0 (21.07.2014)
  Neue Spiele:
    - Unterstützung für Chivalry is Not Dead hinzugefügt.
    - Unterstützung für Return to Ringworld hinzugefügt.
@@ -574,7 +667,7 @@ SCUMM:
  Tizen-Portierung:
    - Die BADA-Portierung wurde mit Tizen zusammengeführt/aktualisiert.
 
-1.6.0 (31.05.2013)
+#### 1.6.0 (31.05.2013)
  Neue Spiele:
    - Unterstützung für 3 Skulls of the Toltecs hinzugefügt.
    - Unterstützung für Eye of the Beholder hinzugefügt.
@@ -667,7 +760,7 @@ SCUMM:
    - Unterstützung hinzugefügt für verbesserte Musik von James Woodcock.
      http://www.jameswoodcock.co.uk/category/scummvm-music-enhancement-project/
 
-1.5.0 (27.07.2012)
+#### 1.5.0 (27.07.2012)
  Neue Spiele:
    - Unterstützung für Backyard Baseball 2003 hinzugefügt.
    - Unterstützung für Blue Force hinzugefügt.
@@ -743,7 +836,7 @@ SCUMM:
      (Die Stapelverarbeitungsdatei migration.bat kann verwendet werden, um die
      Spielstände vom alten Standard-Verzeichnis in das neue zu kopieren.)
 
-1.4.1 (27.01.2012)
+#### 1.4.1 (27.01.2012)
  AGOS:
    - Das Laden von Videos direkt aus InstallShield-Archiven in der
      Windows-Version von Floyd - Es gibt noch Helden korrigiert.
@@ -775,7 +868,7 @@ SCUMM:
      nicht alle Kanäle zurückgesetzt wurden und somit einige Noten falsch
      klangen.
 
-1.4.0 (11.11.2011)
+#### 1.4.0 (11.11.2011)
  Neue Spiele:
    - Unterstützung für Lands of Lore: The Throne of Chaos hinzugefügt.
    - Unterstützung für Blue's Birthday Adventure hinzugefügt.
@@ -841,7 +934,7 @@ SCUMM:
    - Plugins bei Android 3.x repariert.
    - Standardmäßigen Speicherort für Spielstände auf SD-Karte verschoben.
 
-1.3.1 (12.07.2011)
+#### 1.3.1 (12.07.2011)
  Allgemein:
    - Audiogeräte-Erkennung und Zurückgreifen auf Alternativen verbessert.
      Es sollten keine stillen Fehler mehr aufgrund ungültiger Audiogeräte
@@ -869,7 +962,7 @@ SCUMM:
    - Grafikfehler in FM-TOWNS-Versionen von Spielen auf ARM-Geräten beseitigt
      (Android, iPhone, usw.).
 
-1.3.0 (28.05.2011)
+#### 1.3.0 (28.05.2011)
  Neue Spiele:
    - Unterstützung für Backyard Baseball hinzugefügt.
    - Unterstützung für Backyard Baseball 2001 hinzugefügt.
@@ -1025,7 +1118,7 @@ SCUMM:
    - Unterstützung für ladbare Module hinzugefügt.
    - 16-Bit-Mauszeiger in HE-Spielen korrigiert.
 
-1.2.1 (19.12.2010)
+#### 1.2.1 (19.12.2010)
  Allgemein:
    - Ungarische Übersetzung hinzugefügt.
    - Brasilianisch-portugiesische Übersetzung hinzugefügt.
@@ -1040,7 +1133,7 @@ SCUMM:
  Lure:
    - Mehrere Bewegungsfehler bei Nicht-Spielern beseitigt.
 
-1.2.0 (15.10.2010)
+#### 1.2.0 (15.10.2010)
  Neue Spiele:
    - Unterstützung für Fascination hinzugefügt.
 
@@ -1179,7 +1272,7 @@ SCUMM:
    - System von GP2XWIZ in GPH umbenannt, um die Bandbreite der unterstützten
      Geräte besser wiederzuspiegeln.
 
-1.1.1 (02.05.2010)
+#### 1.1.1 (02.05.2010)
  Neue Portierungen:
    - Portierung für Nintendo 64 hinzugefügt. (Eigentlich schon in 1.1.0
      hinzugefügt, aber es wurde vergessen, dies zu erwähnen.)
@@ -1232,7 +1325,7 @@ SCUMM:
    - Neue virtuelle Tastatur hinzugefügt, die für schnelle D-Pad-Eingabe
      optimiert ist.
 
-1.1.0 (04.04.2010)
+#### 1.1.0 (04.04.2010)
  Neue Spiele:
    - Unterstützung für Blue's Art Time Activities hinzugefügt.
    - Unterstützung für Blue's Reading Time Activities hinzugefügt.
@@ -1272,7 +1365,7 @@ SCUMM:
    - Unterstützung für Kanji-Renderung in japanischer Version von
      Monkey Island Sega CD hinzugefügt.
 
-1.0.0 (15.11.2009)
+#### 1.0.0 (15.11.2009)
  Neue Portierungen:
    - Portierung für MotoEZX und MotoMAGX hinzugefügt.
 
@@ -1357,7 +1450,7 @@ SCUMM:
  WinCE-Portierung:
    - Kompatibilität mit VGA-Geräten verbessert.
 
-1.0.0rc1 (31.08.2009)
+#### 1.0.0rc1 (31.08.2009)
  Neue Spiele:
    - Unterstützung für Discworld hinzugefügt.
    - Unterstützung für Discworld 2 - Vermutlich vermisst hinzugefügt.
@@ -1422,7 +1515,7 @@ SCUMM:
      Geräte mit höherer Farbentiefe)
    - Unterstützung für MPEG-2 und FLAC eingestellt.
 
-0.13.1 (27.04.2009)
+#### 0.13.1 (27.04.2009)
  AGOS:
    - Absturz nach Wiedergabe von OmniTV-Video in Floyd - Es gibt noch Helden
      beseitigt.
@@ -1476,7 +1569,7 @@ SCUMM:
  WinCE-Portierung:
    - Problem behoben, das bei VGA-Geräten zu zufälligen Abstürzen führen konnte.
 
-0.13.0 (28.02.2009)
+#### 0.13.0 (28.02.2009)
  Allgemein:
    - MIDI-Treiber für Atari ST / FreeMint hinzugefügt.
    - „Laden“-Schaltfläche zu Startmenü hinzugefügt (nicht von allen Engines
@@ -1514,7 +1607,7 @@ SCUMM:
  SCUMM:
    - Funkspruch-Effekt in The Dig integriert.
 
-0.12.0 (31.08.2008)
+#### 0.12.0 (31.08.2008)
  Neue Spiele:
    - Unterstützung für The Legend of Kyrandia: Book Two: Hand of Fate
      hinzugefügt.
@@ -1555,7 +1648,7 @@ SCUMM:
    - Unterstützung für AdLib-MIDI-Kombination in Monkey Island 1
      (Diskettenversion) hinzugefügt.
 
-0.11.1 (29.02.2008)
+#### 0.11.1 (29.02.2008)
  SCUMM:
    - Verbesserungen für Untersystem von Digital iMUSE. Dies behebt verschiedene
      Störungen in The Curse of Monkey Island.
@@ -1589,7 +1682,7 @@ SCUMM:
    - Palettenstörung in Erben der Erde beseitigt, wenn man die Karte anschaut,
      während man sich am Dock befindet.
 
-0.11.0 (15.01.2008)
+#### 0.11.0 (15.01.2008)
  Neue Spiele:
    - Unterstützung für Elvira: Mistress of the Dark hinzugefügt.
    - Unterstützung für Elvira 2: The Jaws of Cerberus hinzugefügt.
@@ -1681,7 +1774,7 @@ SCUMM:
    - Unterstützung für F200-Touchscreen
    - Verschiedene Fehler in Eingabe-Code beseitigt.
 
-0.10.0 (20.06.2007)
+#### 0.10.0 (20.06.2007)
  Neue Spiele:
    - Engine Cinematique evo 1 hinzugefügt. Momentan wird nur Future Wars
      unterstützt.
@@ -1781,7 +1874,7 @@ SCUMM:
    - PalmOS Porting SDK wird nun verwendet, was die Verwendung der
      Standardbibliotheken der Programmiersprache C ermöglicht.
 
-0.9.1 (29.10.2006)
+#### 0.9.1 (29.10.2006)
  Neue Portierungen:
    - Portierung für Nintendo DS hinzugefügt.
    - Portierung für GP2X hinzugefügt.
@@ -1845,7 +1938,7 @@ SCUMM:
    - Mehrere Fehler beseitigt.
    - Unterstützung für 2002-basierende Geräte wieder hinzugefügt.
 
-0.9.0 (25.06.2006)
+#### 0.9.0 (25.06.2006)
  Neue Spiele:
    - Kyra-Engine hinzugefügt (für die Kyrandia-Reihe). Momentan wird nur der
      erste Teil der Reihe unterstützt.
@@ -1907,7 +2000,7 @@ SCUMM:
    - Hinzugefügt: Überall: Modus für umgekehrtes Querformat
    - Beseitigt: PocketPC: Dialoge abgeschnitten/nicht neu gezeichnet
 
-0.8.2 (08.02.2006)
+#### 0.8.2 (08.02.2006)
  Allgemein:
    - Zusammensetzen von OS-X-Paket bei Verwendung von GCC 3.3 repariert.
 
@@ -1927,7 +2020,7 @@ SCUMM:
    - QVGA-Smartphone-Erkennung repariert (diesmal wirklich :p).
    - Problem mit Doppelrechtsklick bei Smartphone behoben.
 
-0.8.1 (31.01.2006)
+#### 0.8.1 (31.01.2006)
  Allgemein:
    - Kompilierung mit GCC 2.95 repariert.
    - LaTex-Dokumentation repariert.
@@ -2012,7 +2105,7 @@ SCUMM:
    - Patches von Knakos (Fehlerbeseitigung bei QVGA-Smartphones, einfachere
      Tastenzuweisung und vereinfachter Konsolenwechsel)
 
-0.8.0 (30.10.2005)
+#### 0.8.0 (30.10.2005)
  Neue Spiele:
    - SAGA-Engine hinzugefügt (für die Spiele „I Have No Mouth, and I Must
      Scream“ und „Erben der Erde“).
@@ -2071,7 +2164,7 @@ SCUMM:
      compress_sword2 komprimiert wurden, werden natürlich immer noch denselben
      Fehler haben. Möglicherweise wollen Sie diese neu erzeugen.
 
-0.7.1 (27.03.2005)
+#### 0.7.1 (27.03.2005)
  Allgemein:
    - MT-32-Emulator hinzugefügt [er wurde eigentlich schon in Version 0.7.0
      hinzugefügt, aber wir haben vergessen, ihn in dieser Datei zu
@@ -2113,7 +2206,7 @@ SCUMM:
    - Absturz beseitigt, wenn man mit spanischem Text in Diskettenversion mit dem
      Gärtner redet.
 
-0.7.0 (24.12.2004)
+#### 0.7.0 (24.12.2004)
  Neue Spiele:
    - 26 Titel von Humongous Entertainment hinzugefügt; nur wenige sind
      durchspielbar.
@@ -2141,8 +2234,8 @@ SCUMM:
      Benutzeroberfläche gibt.
    - Anstatt des aktuellen Verzeichnisses wird nun folgendes Standardverzeichnis
      auf folgenden Plattformen für Spielstände verwendet:
-         Mac OS X:            $HOME/Documents/ScummVM Savegames/
-         Andere UNIX-Systeme: $HOME/.scummvm/
+         - Mac OS X:            $HOME/Documents/ScummVM Savegames/
+         - Andere UNIX-Systeme: $HOME/.scummvm/
    - Neuen „Über“-Dialog mit rollender Liste aller Mitwirkenden hinzugefügt.
 
  SCUMM:
@@ -2177,7 +2270,7 @@ SCUMM:
    - Umgehungslösungen für einige seltene Skriptfehler hinzugefügt, durch deren
      Auftreten man das Spiel nicht mehr gewinnen konnte.
 
-0.6.1b (03.08.2004)
+#### 0.6.1b (03.08.2004)
  Allgemein:
    - Fehler bei Kopieren und Einfügen im Startmenü beseitigt, der den
      Speicherpfad beschädigen konnte.
@@ -2190,7 +2283,7 @@ SCUMM:
  Simon:
    - Durch VOC verursachten Absturz beseitigt.
 
-0.6.1 (25.07.2004)
+#### 0.6.1 (25.07.2004)
  Allgemein:
    - Sound-Störung beseitigt, wenn zwei oder mehr Ogg-Vorbis-Sounds als
      Datenstrom aus demselben Datei-Handle ausgegeben werden, z. B. im Vorspann
@@ -2213,7 +2306,7 @@ SCUMM:
  Simon:
    - Abstürze in einigen internationalen Versionen beseitigt.
 
-0.6.0 (14.03.2004)
+#### 0.6.0 (14.03.2004)
  Neue Spiele:
    - Engine für Baphomets Fluch 1 hinzugefügt.
    - Engine für Baphomets Fluch 2 hinzugefügt.
@@ -2270,7 +2363,7 @@ SCUMM:
    - Tastaturunterstützung für Kanonenkampf in Curse of Monkey Island
    - Tastaturunterstützung für Rennfahr-Szene in Vollgas
 
-0.5.1 (06.08.2003)
+#### 0.5.1 (06.08.2003)
 - Programm-Code für Spielstände von Beneath a Steel Sky umgeschrieben (siehe
   Hinweis in README unter „Known Bugs“).
 - Beseitigung von Fehlern beim Überspringen von Dialogen sowie bei der
@@ -2289,7 +2382,7 @@ SCUMM:
   nicht im oberen Teil des Bildschirms verwenden konnte, indem zu einer
   fehlerbereinigten Version von SDL verlinkt wurde.
 
-0.5.0 (02.08.2003)
+#### 0.5.0 (02.08.2003)
 - Verbesserte Versionen von Maniac Mansion und Zak McKracken werden nun
   unterstützt und sind komplett durchspielbar.
 - Unterstützung für Amiga-Version von Monkey Island 1 hinzugefügt.
@@ -2307,7 +2400,7 @@ SCUMM:
 - Option für Seitenverhältniskorrektur hinzugefügt.
 - Viele weitere Fehlerbeseitigungen, Verbesserungen und Optimierungen
 
-0.4.1 (25.05.2003)
+#### 0.4.1 (25.05.2003)
 - Filter AdvMame3x hinzugefügt.
 - Absturz in Curse of Monkey Island (und wahrscheinlich auch anderen Spielen)
   beseitigt.
@@ -2315,7 +2408,7 @@ SCUMM:
 - Absturz in SDL-System beseitigt.
 - Mehrere Fehler bei iMuse beseitigt.
 
-0.4.0 (11.05.2003)
+#### 0.4.0 (11.05.2003)
 - Unterstützung für Curse of Monkey Island (experimentell)
 - Unterstützung für EGA-Versionen von Loom, Monkey Island und Indy3 hinzugefügt.
 - Verbesserte Musikunterstützung in Indy3 und Diskettenversionen von
@@ -2340,7 +2433,7 @@ SCUMM:
   hinzugefügt.
 - Programm-Code-Säuberungen
 
-0.3.0b (08.12.2002)
+#### 0.3.0b (08.12.2002)
 - Massive Säuberungsarbeiten bei iMUSE. Die Musik in Sam & Max wird nun korrekt
   abgespielt.
 - Viele Fehlerbeseitigungen für Zak256 + Unterstützung für Sound und Musik
@@ -2362,7 +2455,7 @@ SCUMM:
 - Neue Benutzeroberfläche im Spiel
 - Startmenü mit Spieleliste
 
-0.2.0 (14.04.2002)
+#### 0.2.0 (14.04.2002)
 - Engine-Kern umgeschrieben.
 - Verbesserte Benutzeroberfläche im Spiel, einschließlich
   Optionen-/Lautstärke-Einstellungen
@@ -2379,12 +2472,12 @@ SCUMM:
 - Experimentelle Unterstützung für V7-SCUMM-Spiele (Vollgas/The Dig)
 - Experimentelle Unterstützung für V3-SCUMM-Spiele (Zak256/Indy3)
 
-0.1.0 (13.01.2002)
+#### 0.1.0 (13.01.2002)
 - Eine Menge Änderungen
 
-0.0.2 (12.10.2001)
+#### 0.0.2 (12.10.2001)
 - Fehlerbeseitigungen
 - Unterstützung für Laden & Speichern
 
-0.0.1 (08.10.2001)
+#### 0.0.1 (08.10.2001)
 - Erste Version

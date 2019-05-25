@@ -39,6 +39,7 @@ namespace Hugo {
  */
 class Hugo : public GlkAPI, public HTokens, public StringFunctions {
 private:
+	int _savegameSlot;
 	winid_t mainwin, currentwin;
 	winid_t secondwin, auxwin;
 	bool runtime_warnings;
@@ -73,7 +74,6 @@ private:
 	int object_size;
 	Common::SeekableReadStream *game;
 	HUGO_FILE script;
-	HUGO_FILE save;
 	HUGO_FILE playback;
 	HUGO_FILE record;
 	HUGO_FILE io; char ioblock; char ioerror;
@@ -181,7 +181,7 @@ private:
 	char parse_called_twice;
 	char reparse_everything;
 	char punc_string[64];					///< punctuation string
-	bool  full_buffer;
+	byte full_buffer;
 
 	/**
 	 * to MatchObject()
@@ -972,8 +972,6 @@ private:
 	 */
 	void RunRoutine(long addr);
 
-	int SaveGameData();
-
 	int RunSave();
 
 	int RunScriptSet();
@@ -1043,9 +1041,14 @@ private:
 	char *hugo_fgets(char *buf, int max, Common::SeekableReadStream *s) {
 		char *ptr = buf;
 		char c;
-		while (s->pos() < s->size() && (c = hugo_fgetc(s)) != '\n')
+		while (s->pos() < s->size() && --max > 0) {
+			c = hugo_fgetc(s);
+			if (c == '\n' || c == '\0')
+				break;
 			*ptr++ = c;
-		return buffer;
+		}
+		*ptr++ = '\0';
+		return buf;
 	}
 	char *hugo_fgets(char *buf, int max, strid_t s) {
 		Common::SeekableReadStream *rs = *s;
@@ -1133,10 +1136,7 @@ private:
 	void hugo_blockfree(void *block) { free(block); }
 
 #if defined (DEBUGGER)
-	int CheckinRange(uint v1, uint v2, const char *v3) {
-		// TODO: Where the heck is this actualy implemented in Gargoyle
-		return 1;
-	}
+	int CheckinRange(uint v1, uint v2, const char *v3) { return 1; }
 
 	/**
 	* Shorthand since many of these object functions may call CheckinRange() if the debugger
@@ -1144,7 +1144,7 @@ private:
 	*/
 	int CheckObjectRange(int obj);
 
-	void DebugRunRoutine(long addr) {}
+	void DebugRunRoutine(long addr) { RunRoutine(addr); }
 
 	void RuntimeWarning(const char *msg) {}
 
@@ -1193,12 +1193,12 @@ public:
 	/**
 	 * Load a savegame from the passed stream
 	 */
-	virtual Common::Error loadGameData(strid_t file) override;
+	virtual Common::Error loadGameData(strid_t save) override;
 
 	/**
 	 * Save the game to the passed stream
 	 */
-	virtual Common::Error saveGameData(strid_t file, const Common::String &desc) override;
+	virtual Common::Error saveGameData(strid_t save, const Common::String &desc) override;
 };
 
 } // End of namespace Hugo

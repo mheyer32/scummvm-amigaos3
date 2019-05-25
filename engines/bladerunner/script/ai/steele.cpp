@@ -512,28 +512,42 @@ int AIScriptSteele::GetFriendlinessModifierIfGetsClue(int otherActorId, int clue
 
 	switch (clueId) {
 	case kClueMcCoyRecoveredHoldensBadge:
+		// fall through
 	case kClueMcCoyRetiredLucy:
+		// fall through
 	case kClueMcCoyRetiredDektora:
+		// fall through
 	case kClueMcCoyRetiredSadik:
+		// fall through
 	case kClueMcCoyShotZubenInTheBack:
+		// fall through
 	case kClueMcCoyRetiredLutherLance:
+		// fall through
 	case kClueClovisOrdersMcCoysDeath:
+		// fall through
 	case kClueMcCoyIsKind:
+		// fall through
 	case kClueMcCoyIsInsane:
 		return 5;
 
 	case kClueMcCoyKilledRunciter1:
+		// fall through
 	case kClueMcCoyShotGuzza:
+		// fall through
 	case kClueMcCoyKilledRunciter2:
-		return 0;
+		return 0; // TODO shouldn't this be a negative number?
 
 	case kClueMcCoyLetZubenEscape:
 		return -4;
 
 	case kClueMcCoyWarnedIzo:
+		// fall through
 	case kClueMcCoyHelpedIzoIzoIsAReplicant:
+		// fall through
 	case kClueMcCoyHelpedDektora:
+		// fall through
 	case kClueMcCoyHelpedLucy:
+		// fall through
 	case kClueMcCoyHelpedGordo:
 		return -5;
 
@@ -745,6 +759,7 @@ bool AIScriptSteele::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	case kGoalSteeleShootIzo:
 		Actor_Force_Stop_Walking(kActorMcCoy);
 		Sound_Play(kSfxSMCAL3, 100, 0, 0, 50);
+		// Scene_Exits_Enable() is done in Izo's kGoalIzoDie - CompletedMovementTrack() case
 		Actor_Set_Goal_Number(kActorIzo, kGoalIzoDie);
 		Actor_Change_Animation_Mode(kActorMcCoy, kAnimationModeIdle);
 		Actor_Face_Actor(kActorMcCoy, kActorSteele, true);
@@ -765,7 +780,9 @@ bool AIScriptSteele::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Face_Actor(kActorSteele, kActorMcCoy, true);
 		Actor_Says(kActorSteele, 1930, kAnimationModeTalk);
 		Actor_Set_Goal_Number(kActorSteele, kGoalSteeleLeaveRC03);
-		Player_Gains_Control();
+#if BLADERUNNER_ORIGINAL_BUGS
+		Player_Gains_Control(); // redundant - causes "WARNING: Unbalanced call to BladeRunnerEngine::playerGainsControl"
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		return true;
 
 	case kGoalSteeleArrestIzo:
@@ -802,9 +819,10 @@ bool AIScriptSteele::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 		Actor_Says(kActorSteele, 2140, kAnimationModeTalk);
 		Actor_Says(kActorMcCoy, 4850, kAnimationModeTalk);
 		Actor_Says(kActorSteele, 2150, kAnimationModeTalk);
+		// Scene_Exits_Enable() is done in Izo's kGoalIzoGetArrested - CompletedMovementTrack() case
 		Actor_Set_Goal_Number(kActorIzo, kGoalIzoGetArrested);
 		Actor_Set_Goal_Number(kActorSteele, kGoalSteeleLeaveRC03);
-		Actor_Set_Goal_Number(kActorSteele, kGoalSteeleDefault);
+		Actor_Set_Goal_Number(kActorSteele, kGoalSteeleDefault); // TODO - a bug? why set to default here?
 		return true;
 
 	case kGoalSteeleIzoBlockedByMcCoy:

@@ -49,6 +49,11 @@ public:
 	virtual InterpreterType getInterpreterType() const override { return INTERPRETER_SCOTT; }
 
 	/**
+	  * Returns true whether a given feature is supported by the engine
+	  */
+	virtual bool hasFeature(EngineFeature f) const override;
+
+	/**
 	 * Load a savegame from the passed stream
 	 */
 	virtual Common::Error loadGameData(strid_t file) override;
@@ -58,6 +63,8 @@ public:
 	 */
 	virtual Common::Error saveGameData(strid_t file, const Common::String &desc) override;
 };
+
+extern TADS *g_vm;
 
 } // End of namespace TADS
 } // End of namespace Glk

@@ -38,6 +38,7 @@
 #include "bladerunner/scene.h"
 #include "bladerunner/scene_objects.h"
 #include "bladerunner/items.h"
+#include "bladerunner/item_pickup.h"
 #include "bladerunner/screen_effects.h"
 #include "bladerunner/settings.h"
 #include "bladerunner/set.h"
@@ -74,22 +75,41 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 
 	_isDebuggerOverlay = false;
 
-	_viewActorsOnly = false;
+	_viewActorsToggle = false;
+	_view3dObjectsToggle = false;
+	_viewItemsToggle = false;
 	_viewLights = false;
 	_viewFogs = false;
-	_viewSceneObjects = false;
 	_viewScreenEffects = false;
 	_viewObstacles = false;
-	_viewRegions = false;
+	_viewRegionsNormalToggle = false;
+	_viewRegionsExitsToggle = false;
 	_viewUI = false;
-	_viewWaypoints = false;
+	_viewWaypointsNormalToggle = false;
+	_viewWaypointsFleeToggle = false;
+	_viewWaypointsCoverToggle = false;
 	_viewWalkboxes = false;
 	_viewZBuffer = false;
+
+	_specificActorsDrawn = false;
+	_specific3dObjectsDrawn = false;
+	_specificItemsDrawn = false;
+	_specificEffectsDrawn = false;
+	_specificLightsDrawn = false;
+	_specificFogsDrawn = false;
+	_specificRegionNormalDrawn = false;
+	_specificRegionExitsDrawn = false;
+	_specificWaypointNormalDrawn = false;
+	_specificWaypointFleeDrawn = false;
+	_specificWaypointCoverDrawn = false;
+	_specificWalkboxesDrawn = false;
+
 	_playFullVk = false;
 	_showStatsVk = false;
 	_showMazeScore = false;
 
 	registerCmd("anim", WRAP_METHOD(Debugger, cmdAnimation));
+	registerCmd("health", WRAP_METHOD(Debugger, cmdHealth));
 	registerCmd("draw", WRAP_METHOD(Debugger, cmdDraw));
 	registerCmd("list", WRAP_METHOD(Debugger, cmdList));
 	registerCmd("flag", WRAP_METHOD(Debugger, cmdFlag));
@@ -111,15 +131,22 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("object", WRAP_METHOD(Debugger, cmdObject));
 	registerCmd("item", WRAP_METHOD(Debugger, cmdItem));
 	registerCmd("region", WRAP_METHOD(Debugger, cmdRegion));
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+	registerCmd("effect", WRAP_METHOD(Debugger, cmdEffect));
+#endif // BLADERUNNER_ORIGINAL_BUGS
 }
 
 Debugger::~Debugger() {
+	if(!_specificDrawnObjectsList.empty()) {
+		_specificDrawnObjectsList.clear();
+	}
 }
 
 bool Debugger::cmdAnimation(int argc, const char **argv) {
-	if (argc != 2 && argc != 3) {
+	if (argc != 2 && argc != 4) {
 		debugPrintf("Get or set animation mode of the actor.\n");
-		debugPrintf("Usage: %s <actorId> [<animationMode>]\n", argv[0]);
+		debugPrintf("Usage: %s <actorId> [<animationMode> <showDamageAnimationWhenMoving>]\n", argv[0]);
 		return true;
 	}
 
@@ -135,85 +162,277 @@ bool Debugger::cmdAnimation(int argc, const char **argv) {
 		return true;
 	}
 
-	if (argc == 3) {
+	if (argc == 4) {
 		int animationMode = atoi(argv[2]);
-		debugPrintf("actorAnimationMode(%i) = %i\n", actorId, animationMode);
+		int showDmgWhenMoving = atoi(argv[3]);
+		actor->setFlagDamageAnimIfMoving(showDmgWhenMoving!=0);
 		actor->changeAnimationMode(animationMode, true);
+		debugPrintf("actorAnimationMode(%i) = %i, showDamageWhenMoving = %i\n", actorId, animationMode, actor->getFlagDamageAnimIfMoving());
 		return false;
 	}
 
-	debugPrintf("actorAnimationMode(%i) = %i\n", actorId, actor->getAnimationMode());
+	debugPrintf("actorAnimationMode(%i) = %i, showDamageWhenMoving = %i, inCombat = %i\n", actorId, actor->getAnimationMode(), actor->getFlagDamageAnimIfMoving(), actor->inCombat());
+	return true;
+}
+
+bool Debugger::cmdHealth(int argc, const char **argv) {
+	if (argc != 2 && argc != 4) {
+		debugPrintf("Get or set health for the actor.\n");
+		debugPrintf("Usage: %s <actorId> [<health> <max health>]\n", argv[0]);
+		return true;
+	}
+
+	int actorId = atoi(argv[1]);
+
+	Actor *actor = nullptr;
+	if (actorId >= 0 && actorId < (int)_vm->_gameInfo->getActorCount()) {
+		actor = _vm->_actors[actorId];
+	}
+
+	if (actor == nullptr) {
+		debugPrintf("Unknown actor %i\n", actorId);
+		return true;
+	}
+
+	if (argc == 4) {
+		int currHealth = atoi(argv[2]);
+		int maxHealth = atoi(argv[3]);
+		currHealth = CLIP(currHealth, 0, 100);
+		maxHealth = CLIP(maxHealth, 0, 100);
+		if (currHealth > maxHealth) {
+			debugPrintf("Actor's current health cannot be greater than their max health\n");
+			return true;
+		}
+		actor->setHealth(currHealth, maxHealth);
+	}
+
+	debugPrintf("actor health(%i) = %i, max: %i\n", actorId, actor->getCurrentHP(), actor->getMaxHP());
 	return true;
 }
 
 bool Debugger::cmdDraw(int argc, const char **argv) {
-	if (argc != 2) {
-		debugPrintf("Enables debug rendering of actors, screen effect, fogs, lights, scene objects, obstacles, regions, ui elements, walk boxes, waypoints, zbuffer or disables debug rendering.\n");
-		debugPrintf("Usage: %s (act | eff | fog | lit | obj | obstacles | reg | ui | walk | way | zbuf | reset)\n", argv[0]);
-		return true;
+	bool invalidSyntax = false;
+
+	if (argc != 2 && argc != 3) {
+		invalidSyntax = true;
+	} else {
+		Common::String arg = argv[1];
+
+		int specificObjectId = -1;
+		DebuggerDrawnObject dbgDrawnObj;
+		dbgDrawnObj.type = debuggerObjTypeUndefined;
+
+		if (argc == 3) {
+			specificObjectId = atoi(argv[2]);
+			dbgDrawnObj.objId = specificObjectId;
+			dbgDrawnObj.sceneId = _vm->_scene->getSceneId();
+			dbgDrawnObj.setId = _vm->_scene->getSetId();
+		}
+
+		if (arg == "allobj") {
+			if (_viewActorsToggle && _view3dObjectsToggle && _viewItemsToggle) {
+				_viewActorsToggle = false;
+				_view3dObjectsToggle  = false;
+				_viewItemsToggle = false;
+			} else {
+				_viewActorsToggle = true;
+				_view3dObjectsToggle  = true;
+				_viewItemsToggle = true;
+			}
+			debugPrintf("Drawing all scene objects (actors, 3d objects, items) = %i\n", _viewActorsToggle && _view3dObjectsToggle && _viewItemsToggle);
+		} else if (arg == "act") {
+			if (argc == 2) {
+				_viewActorsToggle = !_viewActorsToggle;
+				debugPrintf("Drawing all actors in scene = %s\n", _viewActorsToggle? "true" : "false");
+			} else {
+				_viewActorsToggle = false;
+				dbgDrawnObj.setId = -1;
+				dbgDrawnObj.sceneId = -1;
+				dbgDrawnObj.type = debuggerObjTypeActor;
+			}
+		} else if (arg == "obj") {
+			if (argc == 2) {
+				_view3dObjectsToggle = !_view3dObjectsToggle;
+				debugPrintf("Drawing all 3d objects in scene = %s\n", _view3dObjectsToggle? "true" : "false");
+			} else {
+				_view3dObjectsToggle = false;
+				dbgDrawnObj.type = debuggerObjType3dObject;
+			}
+		} else if (arg == "item") {
+			if (argc == 2) {
+				_viewItemsToggle = !_viewItemsToggle;
+				debugPrintf("Drawing all items in scene = %s\n", _viewItemsToggle? "true" : "false");
+			} else {
+				_viewItemsToggle = false;
+				dbgDrawnObj.setId = -1;
+				dbgDrawnObj.sceneId = -1;
+				dbgDrawnObj.type = debuggerObjTypeItem;
+			}
+		} else if (arg == "eff") {
+			if (argc == 2) {
+				_viewScreenEffects = !_viewScreenEffects;
+				debugPrintf("Drawing all screen effects = %s\n", _viewScreenEffects? "true" : "false");
+			} else {
+				_viewScreenEffects = false;
+				dbgDrawnObj.type = debuggerObjTypeEffect;
+			}
+		} else if (arg == "fog") {
+			if (argc == 2) {
+				_viewFogs = !_viewFogs;
+				debugPrintf("Drawing all fogs = %s\n", _viewFogs? "true" : "false");
+			} else {
+				_viewFogs = false;
+				dbgDrawnObj.type = debuggerObjTypeFog;
+			}
+		} else if (arg == "lit") {
+			if (argc == 2) {
+				_viewLights = !_viewLights;
+				debugPrintf("Drawing all lights = %s\n", _viewLights? "true" : "false");
+			} else {
+				_viewLights = false;
+				dbgDrawnObj.type = debuggerObjTypeLight;
+			}
+		} else if (arg == "allreg") {
+			if (_viewRegionsNormalToggle && _viewRegionsExitsToggle) {
+				_viewRegionsNormalToggle = false;
+				_viewRegionsExitsToggle  = false;
+			} else {
+				_viewRegionsNormalToggle = true;
+				_viewRegionsExitsToggle  = true;
+			}
+			debugPrintf("Drawing all scene regions (regular, exits) = %s\n", (_viewRegionsNormalToggle && _viewRegionsExitsToggle)? "true" : "false");
+		} else if (arg == "regnorm") {
+			if (argc == 2) {
+				_viewRegionsNormalToggle = !_viewRegionsNormalToggle;
+				debugPrintf("Drawing all normal regions = %s\n", _viewRegionsNormalToggle? "true" : "false");
+			} else {
+				_viewRegionsNormalToggle = false;
+				dbgDrawnObj.type = debuggerObjTypeRegionNormal;
+			}
+		} else if (arg == "regexit") {
+			if (argc == 2) {
+				_viewRegionsExitsToggle = !_viewRegionsExitsToggle;
+				debugPrintf("Drawing all exit regions = %s\n", _viewRegionsExitsToggle? "true" : "false");
+			} else {
+				_viewRegionsExitsToggle = false;
+				dbgDrawnObj.type = debuggerObjTypeRegionExit;
+			}
+		} else if (arg == "obstacles") {
+			_viewObstacles = !_viewObstacles;
+			debugPrintf("Drawing obstacles = %s\n", _viewObstacles? "true" : "false");
+		} else if (arg == "ui") {
+			_viewUI = !_viewUI;
+			debugPrintf("Drawing all UI elements = %s\n", _viewUI? "true" : "false");
+		} else if (arg == "allway") {
+			if (_viewWaypointsNormalToggle && _viewWaypointsFleeToggle && _viewWaypointsCoverToggle) {
+				_viewWaypointsNormalToggle = false;
+				_viewWaypointsFleeToggle  = false;
+				_viewWaypointsCoverToggle = false;
+			} else {
+				_viewWaypointsNormalToggle = true;
+				_viewWaypointsFleeToggle = true;
+				_viewWaypointsCoverToggle = true;
+			}
+			debugPrintf("Drawing all waypoints (regular, cover, flee) = %s\n", (_viewWaypointsNormalToggle && _viewWaypointsFleeToggle && _viewWaypointsCoverToggle)? "true" : "false");
+		} else if (arg == "waynorm") {
+			if (argc == 2) {
+				_viewWaypointsNormalToggle = !_viewWaypointsNormalToggle;
+				debugPrintf("Drawing all normal waypoints = %s\n", _viewWaypointsNormalToggle? "true" : "false");
+			} else {
+				_viewWaypointsNormalToggle = false;
+				dbgDrawnObj.setId = -1;
+				dbgDrawnObj.sceneId = -1;
+				dbgDrawnObj.type = debuggerObjTypeWaypointNorm;
+			}
+		} else if (arg == "wayflee") {
+			if (argc == 2) {
+				_viewWaypointsFleeToggle = !_viewWaypointsFleeToggle;
+				debugPrintf("Drawing all flee waypoints = %s\n", _viewWaypointsFleeToggle? "true" : "false");
+			} else {
+				_viewWaypointsFleeToggle = false;
+				dbgDrawnObj.setId = -1;
+				dbgDrawnObj.sceneId = -1;
+				dbgDrawnObj.type = debuggerObjTypeWaypoingFlee;
+			}
+		} else if (arg == "waycov") {
+			if (argc == 2) {
+				_viewWaypointsCoverToggle = !_viewWaypointsCoverToggle;
+				debugPrintf("Drawing all cover waypoints = %s\n", _viewWaypointsCoverToggle? "true" : "false");
+			} else {
+				_viewWaypointsCoverToggle = false;
+				dbgDrawnObj.setId = -1;
+				dbgDrawnObj.sceneId = -1;
+				dbgDrawnObj.type = debuggerObjTypeWaypointCover;
+			}
+		} else if (arg == "walk") {
+			if (argc == 2) {
+				_viewWalkboxes = !_viewWalkboxes;
+				debugPrintf("Drawing all walk boxes = %s\n", _viewWalkboxes? "true" : "false");
+			} else {
+				_viewWalkboxes = false;
+				dbgDrawnObj.type = debuggerObjTypeWalkbox;
+			}
+		} else if (arg == "zbuf") {
+			_viewZBuffer = !_viewZBuffer;
+			debugPrintf("Drawing Z buffer = %s\n", _viewZBuffer? "true" : "false");
+		} else if (arg == "reset") {
+
+			if(!_specificDrawnObjectsList.empty()) {
+				_specificDrawnObjectsList.clear();
+			}
+
+			_viewActorsToggle = false;
+			_view3dObjectsToggle = false;
+			_viewItemsToggle = false;
+			_viewObstacles = false;
+			_viewRegionsNormalToggle = false;
+			_viewRegionsExitsToggle = false;
+			_viewScreenEffects = false;
+			_viewFogs = false;
+			_viewLights = false;
+			_viewUI = false;
+			_viewWaypointsNormalToggle = false;
+			_viewWaypointsFleeToggle = false;
+			_viewWaypointsCoverToggle = false;
+			_viewWalkboxes = false;
+			_viewZBuffer = false;
+
+			debugPrintf("Drawing all scene objects (actors, 3d objects, items) = %s\n", (_viewActorsToggle && _view3dObjectsToggle && _viewItemsToggle)? "true" : "false");
+			debugPrintf("Drawing scene actors = %s\n", _viewActorsToggle? "true" : "false");
+			debugPrintf("Drawing scene 3d objects = %s\n", _view3dObjectsToggle? "true" : "false");
+			debugPrintf("Drawing scene items = %s\n", _viewItemsToggle? "true" : "false");
+			debugPrintf("Drawing obstacles = %s\n", _viewObstacles? "true" : "false");
+			debugPrintf("Drawing all regions (regular, exits) = %s\n", (_viewRegionsNormalToggle && _viewRegionsExitsToggle)? "true" : "false");
+			debugPrintf("Drawing regular regions = %s\n",  _viewRegionsNormalToggle? "true" : "false");
+			debugPrintf("Drawing exit regions = %s\n",  _viewRegionsExitsToggle? "true" : "false");
+			debugPrintf("Drawing screen effects = %s\n", _viewScreenEffects? "true" : "false");
+			debugPrintf("Drawing fogs = %s\n", _viewFogs? "true" : "false");
+			debugPrintf("Drawing lights = %s\n", _viewLights? "true" : "false");
+			debugPrintf("Drawing UI elements = %s\n", _viewUI? "true" : "false");
+			debugPrintf("Drawing all waypoints (regular, cover, flee) = %s\n", (_viewWaypointsNormalToggle && _viewWaypointsFleeToggle && _viewWaypointsCoverToggle)? "true" : "false");
+			debugPrintf("Drawing regular waypoints = %s\n", _viewWaypointsNormalToggle? "true" : "false");
+			debugPrintf("Drawing flee waypoints = %s\n", _viewWaypointsFleeToggle? "true" : "false");
+			debugPrintf("Drawing cover waypoints = %s\n", _viewWaypointsCoverToggle? "true" : "false");
+			debugPrintf("Drawing walkboxes = %s\n", _viewWalkboxes? "true" : "false");
+			debugPrintf("Drawing Z buffer = %s\n", _viewZBuffer? "true" : "false");
+		} else {
+			invalidSyntax = true;
+		}
+
+		if (!invalidSyntax) {
+			if (dbgDrawnObj.type != debuggerObjTypeUndefined) {
+				toggleObjectInDbgDrawList(dbgDrawnObj);
+			}
+			updateTogglesForDbgDrawListInCurrentSetAndScene();
+		}
 	}
 
-	Common::String arg = argv[1];
-	if (arg == "act") {
-		_viewSceneObjects = !_viewSceneObjects;
-		_viewActorsOnly = _viewSceneObjects;
-		debugPrintf("Drawing actors = %i\n", _viewSceneObjects);
-	} else if (arg == "eff") {
-		_viewScreenEffects = !_viewScreenEffects;
-		debugPrintf("Drawing screen effects = %i\n", _viewScreenEffects);
-	} else if (arg == "fog") {
-		_viewFogs = !_viewFogs;
-		debugPrintf("Drawing fogs = %i\n", _viewFogs);
-	} else if (arg == "lit") {
-		_viewLights = !_viewLights;
-		debugPrintf("Drawing lights = %i\n", _viewLights);
-	} else if (arg == "reg") {
-		_viewRegions = !_viewRegions;
-		debugPrintf("Drawing regions = %i\n", _viewRegions);
-	}else if (arg == "obj") {
-		_viewSceneObjects = !_viewSceneObjects;
-		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
-	} else if (arg == "obstacles") {
-		_viewObstacles = !_viewObstacles;
-		debugPrintf("Drawing obstacles = %i\n", _viewObstacles);
-	} else if (arg == "ui") {
-		_viewUI = !_viewUI;
-		debugPrintf("Drawing UI elements = %i\n", _viewUI);
-	} else if (arg == "way") {
-		_viewWaypoints = !_viewWaypoints;
-		debugPrintf("Drawing waypoints = %i\n", _viewWaypoints);
-	} else if (arg == "walk") {
-		_viewWalkboxes = !_viewWalkboxes;
-		debugPrintf("Drawing walk boxes = %i\n", _viewWalkboxes);
-	} else if (arg == "zbuf") {
-		_viewZBuffer = !_viewZBuffer;
-		debugPrintf("Drawing Z buffer = %i\n", _viewZBuffer);
-	} else if (arg == "reset") {
-		_viewActorsOnly = false;
-		_viewScreenEffects = false;
-		_viewFogs = false;
-		_viewLights = false;
-		_viewObstacles = false;
-		_viewRegions = false;
-		_viewSceneObjects = false;
-		_viewUI = false;
-		_viewWaypoints = false;
-		_viewWalkboxes = false;
-		_viewZBuffer = false;
-
-		debugPrintf("Drawing screen effects = %i\n", _viewScreenEffects);
-		debugPrintf("Drawing fogs = %i\n", _viewFogs);
-		debugPrintf("Drawing lights = %i\n", _viewLights);
-		debugPrintf("Drawing obstacles = %i\n", _viewObstacles);
-		debugPrintf("Drawing regions = %i\n", _viewRegions);
-		debugPrintf("Drawing scene objects = %i\n", _viewSceneObjects);
-		debugPrintf("Drawing UI elements = %i\n", _viewUI);
-		debugPrintf("Drawing waypoints = %i\n", _viewWaypoints);
-		debugPrintf("Drawing walkboxes = %i\n", _viewWalkboxes);
-		debugPrintf("Drawing Z buffer = %i\n", _viewZBuffer);
+	if (invalidSyntax) {
+		debugPrintf("Enables debug rendering of actors, screen effect, fogs, lights, scene objects\nobstacles, regions, ui elements, walk boxes, waypoints, zbuffer or disables debug rendering.\n");
+		debugPrintf("Usage 1: %s (allobj | obstacles | allreg | ui | allway | zbuf | reset)\n", argv[0]);
+		debugPrintf("Usage 2a: %s (act | obj | item | regnorm | regexit | waynorm | wayflee | waycov) [<id>]\n", argv[0]);
+		debugPrintf("Usage 2b: %s (eff | fog | lit | walk) [<id>]\n", argv[0]);
 	}
-
-	_isDebuggerOverlay = _viewSceneObjects | _viewScreenEffects | _viewRegions | _viewLights | _viewFogs | _viewWaypoints | _viewWalkboxes;
 	return true;
 }
 
@@ -1383,6 +1602,15 @@ bool Debugger::cmdItem(int argc, const char **argv) {
 				debugPrintf("No item was found with the specified id: %d in the scene\n", itemId);
 				return true;
 			}
+		} else if (modeName == "spin" && argc == 3) {
+			int itemAnimationId = atoi(argv[2]);
+			if (itemAnimationId >=0 && itemAnimationId <= 996) {
+				_vm->_itemPickup->setup(itemAnimationId, 320, 240);
+				return false; // close the debugger
+			} else {
+				debugPrintf("Valid value range for item animation Ids is [0, 996]\n");
+				return true;
+			}
 		} else {
 			invalidSyntax = true;
 		}
@@ -1399,6 +1627,7 @@ bool Debugger::cmdItem(int argc, const char **argv) {
 		debugPrintf("Usage 3: %s flags  <id> <isVisible> <isTarget>\n", argv[0]);
 		debugPrintf("Usage 4: %s bounds <id> <posX> <posY> <posZ>  <facing> <height> <width>\n", argv[0]);
 		debugPrintf("Usage 5: %s remove <id>\n", argv[0]);
+		debugPrintf("Usage 6: %s spin <animationId>\n", argv[0]);
 	}
 	return true;
 }
@@ -1506,6 +1735,51 @@ bool Debugger::cmdRegion(int argc, const char **argv) {
 	return true;
 }
 
+#if BLADERUNNER_ORIGINAL_BUGS
+#else
+bool Debugger::cmdEffect(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 3) {
+		invalidSyntax = true;
+	} else {
+		int effectId = atoi(argv[2]);
+		Common::String modeName = argv[1];
+		modeName.toLowercase();
+
+		if (modeName == "list") {
+			if (effectId >= 0 && effectId < (int)_vm->_screenEffects->_entries.size()) {
+				ScreenEffects::Entry &entry = _vm->_screenEffects->_entries[effectId];
+				debugPrintf("%2d. Effect (h: %d, x: %d, y: %d, z: %d\n", effectId, (int)entry.height, (int)entry.x, (int)entry.y, (int)entry.z);
+			} else {
+				debugPrintf("There is no such effect in the scene!\n");
+			}
+		} else if (modeName == "skip") {
+			if (effectId >= 0 && effectId < (int)_vm->_screenEffects->_entries.size()) {
+				_vm->_screenEffects->toggleEntry(effectId, true);
+				debugPrintf("Skipped effect %2d\n", effectId);
+			} else {
+				debugPrintf("There is no such effect to remove in the scene!\n");
+			}
+		} else if (modeName == "restore") {
+			if (effectId >= 0 && effectId < (int)_vm->_screenEffects->kMaxEffectsInScene) {
+				_vm->_screenEffects->toggleEntry(effectId, false);
+				debugPrintf("Attempting to restored effect %2d\n", effectId);
+			}
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("List properties or skip/restore a screen-effect obj in the current scene\n");
+		debugPrintf("Usage 1: %s  list     <id>\n", argv[0]);
+		debugPrintf("Usage 2: %s  (skip | restore) <id>\n", argv[0]);
+	}
+	return true;
+}
+#endif // BLADERUNNER_ORIGINAL_BUGS
+
 /**
 * Toggle playing a full VK session (full) and showing current test statistics as subtitles
 * Only available in VK mode
@@ -1566,7 +1840,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 
 					if (sceneObject->type == kSceneObjectTypeActor) {
 						Actor *actor = _vm->_actors[sceneObject->id - kSceneObjectOffsetActors];
-						debugPrintf("%d: %s (Clk: %s, Trg: %s, Prs: %s, Obs: %s, Mvg: %s)\n    Goal: %d, Set: %d, Anim mode: %d id:%d\n    Pos(%02.2f,%02.2f,%02.2f)\n",
+						debugPrintf("%d: %s (Clk: %s, Trg: %s, Prs: %s, Obs: %s, Mvg: %s)\n    Goal: %d, Set: %d, Anim mode: %d id:%d showDmg: %s inCombat: %s\n    Pos(%02.2f,%02.2f,%02.2f)\n",
 									 sceneObject->id - kSceneObjectOffsetActors,
 									 _vm->_textActorNames->getText(sceneObject->id - kSceneObjectOffsetActors),
 									 sceneObject->isClickable? "T" : "F",
@@ -1578,9 +1852,11 @@ bool Debugger::cmdList(int argc, const char **argv) {
 									 actor->getSetId(),
 									 actor->getAnimationMode(),
 									 actor->getAnimationId(),
+									 actor->getFlagDamageAnimIfMoving()? "T" : "F",
+									 actor->inCombat()? "T" : "F",
 									 actor->getPosition().x,
 									 actor->getPosition().y,
-									 _vm->_actors[sceneObject->id - kSceneObjectOffsetActors]->getPosition().z);
+									 actor->getPosition().z);
 						++count;
 					}
 				}
@@ -1617,7 +1893,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 						break;
 					}
 
-					debugPrintf("%d: %s (Mvg: %s, Walk:%s, Run:%s, Ret:%s, Trg: %s, Cmb: %s, Rep: %s)\n    Hp: %d, Fac: %d, Friend: %d\n    Goal: %d, Set: %d, Anim mode: %d id:%d\n    Pos(%02.2f,%02.2f,%02.2f), Walkbx:%d\n",
+					debugPrintf("%d: %s (Mvg: %s, Walk:%s, Run:%s, Ret:%s, Trg: %s, Rep: %s)\n    Hp: %d, Fac: %d, Friend: %d\n    Goal: %d, Set: %d, Anim mode: %d id:%d showDmg: %s inCombat: %s\n    Pos(%02.2f,%02.2f,%02.2f), Walkbx:%d\n",
 						actorId,
 						_vm->_textActorNames->getText(actorId),
 						actor->isMoving()?  "T" : "F",
@@ -1625,7 +1901,6 @@ bool Debugger::cmdList(int argc, const char **argv) {
 						actor->isRunning()? "T" : "F",
 						actor->isRetired()? "T" : "F",
 						actor->isTarget()?  "T" : "F",
-						actor->inCombat()?  "T" : "F",
 						isReplicant?        "T" : "F",
 						actor->getCurrentHP(),
 						actor->getFacing(),
@@ -1634,6 +1909,8 @@ bool Debugger::cmdList(int argc, const char **argv) {
 						actor->getSetId(),
 						actor->getAnimationMode(),
 						actor->getAnimationId(),
+						actor->getFlagDamageAnimIfMoving()? "T" : "F",
+						actor->inCombat()? "T" : "F",
 						actor->getPosition().x,
 						actor->getPosition().y,
 						actor->getPosition().z,
@@ -1673,7 +1950,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 				}
 			}
 			debugPrintf("%d objects were found in scene.\n", count);
-		} else if (arg == "items") {
+		} else if (arg == "item") {
 			debugPrintf("Listing scene items: \n");
 			int count = 0;
 			for (int i = 0; i < _vm->_sceneObjects->_count; i++) {
@@ -1737,7 +2014,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 				char waypointText[40];
 				Vector3 a = waypoint->position;
 				sprintf(waypointText, "Waypoint %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
-				debugPrintf("%02d. %s\n", count, waypointText);
+				debugPrintf("%s\n", waypointText);
 				++count;
 			}
 
@@ -1750,7 +2027,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 				char coverText[40];
 				Vector3 a = cover->position;
 				sprintf(coverText, "Cover %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
-				debugPrintf("%02d. %s\n", count, coverText);
+				debugPrintf("%s\n", coverText);
 				++count;
 			}
 
@@ -1763,7 +2040,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 				char fleeText[40];
 				Vector3 a = flee->position;
 				sprintf(fleeText, "Flee %i, Pos(%02.2f,%02.2f,%02.2f)", i, a.x, a.y, a.z);
-				debugPrintf("%02d. %s\n", count, fleeText);
+				debugPrintf("%s\n", fleeText);
 				++count;
 			}
 			debugPrintf("%d waypoints were found in scene.\n", count);
@@ -1773,14 +2050,14 @@ bool Debugger::cmdList(int argc, const char **argv) {
 			for (int i = 0; i < _vm->_scene->_set->_walkboxCount; i++) {
 				Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
 
-				debugPrintf("%02d. Walkbox %s, vertices: %d\n", i, walkbox->name.c_str(), walkbox->vertexCount);
+				debugPrintf("%2d. Walkbox %s, vertices: %d\n", i, walkbox->name.c_str(), walkbox->vertexCount);
 			}
 			debugPrintf("%d walkboxes were found in scene.\n", _vm->_scene->_set->_walkboxCount);
 		} else if (arg == "fog") {
 			debugPrintf("Listing fogs: \n");
 			int count = 0;
 			for (Fog *fog = _vm->_scene->_set->_effects->_fogs; fog != nullptr; fog = fog->_next) {
-				debugPrintf("%02d. Fog %s\n", count, fog->_name.c_str());
+				debugPrintf("%2d. Fog %s\n", count, fog->_name.c_str());
 				++count;
 			}
 			debugPrintf("%d fogs were found in scene.\n", count);
@@ -1789,9 +2066,17 @@ bool Debugger::cmdList(int argc, const char **argv) {
 			// list lights
 			for (int i = 0; i < (int)_vm->_lights->_lights.size(); i++) {
 				Light *light = _vm->_lights->_lights[i];
-				debugPrintf("%02d. Light %s\n", i, light->_name.c_str());
+				debugPrintf("%2d. Light %s\n", i, light->_name.c_str());
 			}
 			debugPrintf("%d lights were found in scene.\n", (int)_vm->_lights->_lights.size());
+		} else if (arg == "eff") {
+			debugPrintf("Listing scene effects: \n");
+			// list scene effects
+			for (uint i = 0; i < _vm->_screenEffects->_entries.size(); i++) {
+				ScreenEffects::Entry &entry = _vm->_screenEffects->_entries[i];
+				debugPrintf("%2d. Effect (h: %d, x: %d, y: %d, z: %d\n", i, (int)entry.height, (int)entry.x, (int)entry.y, (int)entry.z);
+			}
+			debugPrintf("%d scene effects were found in scene.\n", (int)_vm->_screenEffects->_entries.size());
 		} else {
 			debugPrintf("Invalid item type was specified.\n");
 		}
@@ -1799,7 +2084,7 @@ bool Debugger::cmdList(int argc, const char **argv) {
 
 	if (invalidSyntax) {
 		debugPrintf("Enables debug listing of actors, scene objects, items, waypoints, regions, lights, fogs and walk-boxes.\n");
-		debugPrintf("Usage 1: %s (act | obj | items | way | reg | lit | fog | walk )\n", argv[0]);
+		debugPrintf("Usage 1: %s (act | obj | item | way | reg | eff | lit | fog | walk )\n", argv[0]);
 		debugPrintf("Usage 2: %s act <actorId>\n", argv[0]);
 	}
 	return true;
@@ -1807,13 +2092,30 @@ bool Debugger::cmdList(int argc, const char **argv) {
 
 
 void Debugger::drawDebuggerOverlay() {
-	if (_viewSceneObjects) drawSceneObjects();
-	if (_viewScreenEffects) drawScreenEffects();
-	if (_viewLights) drawLights();
-	if (_viewFogs) drawFogs();
-	if (_viewRegions) drawRegions();
-	if (_viewWaypoints) drawWaypoints();
-	if (_viewWalkboxes) drawWalkboxes();
+
+	updateTogglesForDbgDrawListInCurrentSetAndScene();
+
+	if (_viewActorsToggle || _specificActorsDrawn
+	    || _view3dObjectsToggle || _specific3dObjectsDrawn
+	    || _viewItemsToggle || _specificItemsDrawn
+	) {
+		drawSceneObjects();
+	}
+	if (_viewScreenEffects || _specificEffectsDrawn) drawScreenEffects();
+	if (_viewLights || _specificLightsDrawn) drawLights();
+	if (_viewFogs || _specificFogsDrawn) drawFogs();
+	if (_viewRegionsNormalToggle || _specificRegionNormalDrawn
+	    || _viewRegionsExitsToggle || _specificRegionExitsDrawn
+	) {
+		drawRegions();
+	}
+	if (_viewWaypointsNormalToggle || _specificWaypointNormalDrawn
+	    || _viewWaypointsFleeToggle || _specificWaypointFleeDrawn
+	    || _viewWaypointsCoverToggle || _specificWaypointCoverDrawn
+	) {
+		drawWaypoints();
+	}
+	if (_viewWalkboxes || _specificWalkboxesDrawn) drawWalkboxes();
 }
 
 void Debugger::drawBBox(Vector3 start, Vector3 end, View *view, Graphics::Surface *surface, int color) {
@@ -1856,34 +2158,43 @@ void Debugger::drawSceneObjects() {
 			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (a + b));
 			int color;
 
-			if (_viewActorsOnly && sceneObject->type != kSceneObjectTypeActor)
-				continue;
-
 			switch (sceneObject->type) {
 			case kSceneObjectTypeUnknown:
 				break;
 			case kSceneObjectTypeActor:
-				color = _vm->_surfaceFront.format.RGBToColor(255, 0, 0);
-				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
-				_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
-				_vm->_mainFont->drawColor(_vm->_textActorNames->getText(sceneObject->id - kSceneObjectOffsetActors), _vm->_surfaceFront, pos.x, pos.y, color);
+				if (_viewActorsToggle
+				    || (_specificActorsDrawn && findInDbgDrawList(debuggerObjTypeActor, sceneObject->id - kSceneObjectOffsetActors, -1, -1) != -1)
+				) {
+					color = _vm->_surfaceFront.format.RGBToColor(255, 0, 0);
+					drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
+					_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
+					_vm->_mainFont->drawColor(_vm->_textActorNames->getText(sceneObject->id - kSceneObjectOffsetActors), _vm->_surfaceFront, pos.x, pos.y, color);
+				}
 				break;
 			case kSceneObjectTypeItem:
-				color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
-				char itemText[40];
-				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
-				sprintf(itemText, "item %i", sceneObject->id - kSceneObjectOffsetItems);
-				_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
-				_vm->_mainFont->drawColor(itemText, _vm->_surfaceFront, pos.x, pos.y, color);
+				if (_viewItemsToggle
+				    || (_specificItemsDrawn && findInDbgDrawList(debuggerObjTypeItem, sceneObject->id - kSceneObjectOffsetItems, -1, -1) != -1)
+				) {
+					color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
+					char itemText[40];
+					drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
+					sprintf(itemText, "item %i", sceneObject->id - kSceneObjectOffsetItems);
+					_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
+					_vm->_mainFont->drawColor(itemText, _vm->_surfaceFront, pos.x, pos.y, color);
+				}
 				break;
 			case kSceneObjectTypeObject:
-				color = _vm->_surfaceFront.format.RGBToColor(127, 127, 127);
-				if (sceneObject->isClickable) {
-					color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
+				if (_view3dObjectsToggle
+				    || (_specific3dObjectsDrawn && findInDbgDrawList(debuggerObjType3dObject, sceneObject->id - kSceneObjectOffsetObjects, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+				) {
+					color = _vm->_surfaceFront.format.RGBToColor(127, 127, 127);
+					if (sceneObject->isClickable) {
+						color = _vm->_surfaceFront.format.RGBToColor(0, 255, 0);
+					}
+					drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
+					_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
+					_vm->_mainFont->drawColor(_vm->_scene->objectGetName(sceneObject->id - kSceneObjectOffsetObjects), _vm->_surfaceFront, pos.x, pos.y, color);
 				}
-				drawBBox(a, b, _vm->_view, &_vm->_surfaceFront, color);
-				_vm->_surfaceFront.frameRect(sceneObject->screenRectangle, color);
-				_vm->_mainFont->drawColor(_vm->_scene->objectGetName(sceneObject->id - kSceneObjectOffsetObjects), _vm->_surfaceFront, pos.x, pos.y, color);
 				break;
 			}
 		}
@@ -1893,142 +2204,184 @@ void Debugger::drawSceneObjects() {
 void Debugger::drawLights() {
 	// draw lights
 	for (int i = 0; i < (int)_vm->_lights->_lights.size(); i++) {
-		Light *light = _vm->_lights->_lights[i];
-		Matrix4x3 m = light->_matrix;
-		m = invertMatrix(m);
-		Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
-		float t = posOrigin.y;
-		posOrigin.y = posOrigin.z;
-		posOrigin.z = -t;
+		if (_viewLights
+		    || (_specificLightsDrawn && findInDbgDrawList(debuggerObjTypeLight, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+		) {
+			Light *light = _vm->_lights->_lights[i];
+			Matrix4x3 m = light->_matrix;
+			m = invertMatrix(m);
+			Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
+			float t = posOrigin.y;
+			posOrigin.y = posOrigin.z;
+			posOrigin.z = -t;
 
-		Vector3 posTarget = m * Vector3(0.0f, 0.0f, -100.0f);
-		t = posTarget.y;
-		posTarget.y = posTarget.z;
-		posTarget.z = -t;
+			Vector3 posTarget = m * Vector3(0.0f, 0.0f, -100.0f);
+			t = posTarget.y;
+			posTarget.y = posTarget.z;
+			posTarget.z = -t;
 
-		Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
-		int color = _vm->_surfaceFront.format.RGBToColor(light->_color.r * 255.0f, light->_color.g * 255.0f, light->_color.b * 255.0f);
+			Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
+			int color = _vm->_surfaceFront.format.RGBToColor(light->_color.r * 255.0f, light->_color.g * 255.0f, light->_color.b * 255.0f);
 
-		drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
+			drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
 
-		Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
-		Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
+			Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
+			Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
 
-		_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
+			_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
 
-		_vm->_mainFont->drawColor(light->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
+			_vm->_mainFont->drawColor(light->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
+		}
 	}
 }
 
 void Debugger::drawFogs() {
-	for (Fog *fog = _vm->_scene->_set->_effects->_fogs; fog != nullptr; fog = fog->_next) {
+	Fog *fog = _vm->_scene->_set->_effects->_fogs;
+	for (int i = 0; fog != nullptr; ++i) {
+		if (_viewFogs
+		    || (_specificFogsDrawn && findInDbgDrawList(debuggerObjTypeFog, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+		) {
+			// Matrix4x3 m = fog->_matrix;
+			// m = invertMatrix(m);
+			Matrix4x3 m = fog->_inverted;
 
-		// Matrix4x3 m = fog->_matrix;
-		// m = invertMatrix(m);
-		Matrix4x3 m = fog->_inverted;
+			Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
+			float t = posOrigin.y;
+			posOrigin.y = posOrigin.z;
+			posOrigin.z = -t;
 
-		Vector3 posOrigin = m * Vector3(0.0f, 0.0f, 0.0f);
-		float t = posOrigin.y;
-		posOrigin.y = posOrigin.z;
-		posOrigin.z = -t;
+			Vector3 posTarget = m * Vector3(0.0f, 0.0f, -100.0f);
+			t = posTarget.y;
+			posTarget.y = posTarget.z;
+			posTarget.z = -t;
 
-		Vector3 posTarget = m * Vector3(0.0f, 0.0f, -100.0f);
-		t = posTarget.y;
-		posTarget.y = posTarget.z;
-		posTarget.z = -t;
+			Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
+			int color = _vm->_surfaceFront.format.RGBToColor(fog->_fogColor.r * 255.0f, fog->_fogColor.g * 255.0f, fog->_fogColor.b * 255.0f);
 
-		Vector3 size = Vector3(5.0f, 5.0f, 5.0f);
-		int color = _vm->_surfaceFront.format.RGBToColor(fog->_fogColor.r * 255.0f, fog->_fogColor.g * 255.0f, fog->_fogColor.b * 255.0f);
+			drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
 
-		drawBBox(posOrigin - size, posOrigin + size, _vm->_view, &_vm->_surfaceFront, color);
+			Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
+			Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
 
-		Vector3 posOriginT = _vm->_view->calculateScreenPosition(posOrigin);
-		Vector3 posTargetT = _vm->_view->calculateScreenPosition(posTarget);
+			// TODO: draw line only for cone fogs, draw boxes or circles for the other types
+			_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
 
-		// TODO: draw line only for cone fogs, draw boxes or circles for the other types
-		_vm->_surfaceFront.drawLine(posOriginT.x, posOriginT.y, posTargetT.x, posTargetT.y, color);
-
-		_vm->_mainFont->drawColor(fog->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
+			_vm->_mainFont->drawColor(fog->_name, _vm->_surfaceFront, posOriginT.x, posOriginT.y, color);
+		}
+		fog = fog->_next;
 	}
 }
 
 void Debugger::drawRegions() {
-	//draw regions
-	for (int i = 0; i < 10; i++) {
-		Regions::Region *region = &_vm->_scene->_regions->_regions[i];
-		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(0, 0, 255));
+	if (_viewRegionsNormalToggle || _specificRegionNormalDrawn) {
+		//draw regions
+		for (int i = 0; i < 10; i++) {
+			Regions::Region *region = &_vm->_scene->_regions->_regions[i];
+			if (!region->present) continue;
+			if (_viewRegionsNormalToggle
+				|| (_specificRegionNormalDrawn && findInDbgDrawList(debuggerObjTypeRegionNormal, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+			) {
+				_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(0, 0, 255));
+			}
+		}
 	}
 
-	//draw exits
-	for (int i = 0; i < 10; i++) {
-		Regions::Region *region = &_vm->_scene->_exits->_regions[i];
-		if (!region->present) continue;
-		_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(255, 255, 255));
+	if (_viewRegionsExitsToggle || _specificRegionExitsDrawn) {
+		//draw exits
+		for (int i = 0; i < 10; i++) {
+			Regions::Region *region = &_vm->_scene->_exits->_regions[i];
+			if (!region->present) continue;
+			if (_viewRegionsExitsToggle
+				|| (_specificRegionExitsDrawn && findInDbgDrawList(debuggerObjTypeRegionExit, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+			) {
+				_vm->_surfaceFront.frameRect(region->rectangle, _vm->_surfaceFront.format.RGBToColor(255, 255, 255));
+			}
+		}
 	}
 }
 
 void Debugger::drawWaypoints() {
-	//draw world waypoints
-	for (int i = 0; i < _vm->_waypoints->_count; i++) {
-		Waypoints::Waypoint *waypoint = &_vm->_waypoints->_waypoints[i];
-		if(waypoint->setId != _vm->_scene->getSetId()) {
-			continue;
+	if (_viewWaypointsNormalToggle || _specificWaypointNormalDrawn)  {
+		//draw world waypoints
+		for (int i = 0; i < _vm->_waypoints->_count; i++) {
+			Waypoints::Waypoint *waypoint = &_vm->_waypoints->_waypoints[i];
+			if(waypoint->setId != _vm->_scene->getSetId()) {
+				continue;
+			}
+			if (_viewWaypointsNormalToggle
+				|| (_specificWaypointNormalDrawn && findInDbgDrawList(debuggerObjTypeWaypointNorm, i, -1, -1) != -1)
+			) {
+				Vector3 pos = waypoint->position;
+				Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
+				int color = _vm->_surfaceFront.format.RGBToColor(255, 255, 255);
+				drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
+				Vector3 spos = _vm->_view->calculateScreenPosition(pos);
+				char waypointText[40];
+				sprintf(waypointText, "waypoint %i", i);
+				_vm->_mainFont->drawColor(waypointText, _vm->_surfaceFront, spos.x, spos.y, color);
+			}
 		}
-		Vector3 pos = waypoint->position;
-		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = _vm->_surfaceFront.format.RGBToColor(255, 255, 255);
-		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
-		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
-		char waypointText[40];
-		sprintf(waypointText, "waypoint %i", i);
-		_vm->_mainFont->drawColor(waypointText, _vm->_surfaceFront, spos.x, spos.y, color);
 	}
 
-	//draw combat cover waypoints
-	for (int i = 0; i < (int)_vm->_combat->_coverWaypoints.size(); i++) {
-		Combat::CoverWaypoint *cover = &_vm->_combat->_coverWaypoints[i];
-		if (cover->setId != _vm->_scene->getSetId()) {
-			continue;
+	if (_viewWaypointsCoverToggle || _specificWaypointCoverDrawn) {
+		//draw combat cover waypoints
+		for (int i = 0; i < (int)_vm->_combat->_coverWaypoints.size(); i++) {
+			Combat::CoverWaypoint *cover = &_vm->_combat->_coverWaypoints[i];
+			if (cover->setId != _vm->_scene->getSetId()) {
+				continue;
+			}
+			if (_viewWaypointsCoverToggle
+				|| (_specificWaypointCoverDrawn && findInDbgDrawList(debuggerObjTypeWaypointCover, i, -1, -1) != -1)
+			) {
+				Vector3 pos = cover->position;
+				Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
+				int color = _vm->_surfaceFront.format.RGBToColor(255, 0, 255);
+				drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
+				Vector3 spos = _vm->_view->calculateScreenPosition(pos);
+				char coverText[40];
+				sprintf(coverText, "cover %i", i);
+				_vm->_mainFont->drawColor(coverText, _vm->_surfaceFront, spos.x, spos.y, color);
+			}
 		}
-		Vector3 pos = cover->position;
-		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = _vm->_surfaceFront.format.RGBToColor(255, 0, 255);
-		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
-		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
-		char coverText[40];
-		sprintf(coverText, "cover %i", i);
-		_vm->_mainFont->drawColor(coverText, _vm->_surfaceFront, spos.x, spos.y, color);
 	}
 
-	//draw combat flee waypoints
-	for (int i = 0; i < (int)_vm->_combat->_fleeWaypoints.size(); i++) {
-		Combat::FleeWaypoint *flee = &_vm->_combat->_fleeWaypoints[i];
-		if (flee->setId != _vm->_scene->getSetId()) {
-			continue;
+	if (_viewWaypointsFleeToggle || _specificWaypointFleeDrawn) {
+		//draw combat flee waypoints
+		for (int i = 0; i < (int)_vm->_combat->_fleeWaypoints.size(); i++) {
+			Combat::FleeWaypoint *flee = &_vm->_combat->_fleeWaypoints[i];
+			if (flee->setId != _vm->_scene->getSetId()) {
+				continue;
+			}
+			if (_viewWaypointsFleeToggle
+				|| (_specificWaypointFleeDrawn && findInDbgDrawList(debuggerObjTypeWaypoingFlee, i, -1, -1) != -1)
+			) {
+				Vector3 pos = flee->position;
+				Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
+				int color = _vm->_surfaceFront.format.RGBToColor(0, 255, 255);
+				drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
+				Vector3 spos = _vm->_view->calculateScreenPosition(pos);
+				char fleeText[40];
+				sprintf(fleeText, "flee %i", i);
+				_vm->_mainFont->drawColor(fleeText, _vm->_surfaceFront, spos.x, spos.y, color);
+			}
 		}
-		Vector3 pos = flee->position;
-		Vector3 size = Vector3(3.0f, 3.0f, 3.0f);
-		int color = _vm->_surfaceFront.format.RGBToColor(0, 255, 255);
-		drawBBox(pos - size, pos + size, _vm->_view, &_vm->_surfaceFront, color);
-		Vector3 spos = _vm->_view->calculateScreenPosition(pos);
-		char fleeText[40];
-		sprintf(fleeText, "flee %i", i);
-		_vm->_mainFont->drawColor(fleeText, _vm->_surfaceFront, spos.x, spos.y, color);
 	}
 }
 
 void Debugger::drawWalkboxes() {
 	//draw walkboxes
 	for (int i = 0; i < _vm->_scene->_set->_walkboxCount; i++) {
-		Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
-
-		for (int j = 0; j < walkbox->vertexCount; j++) {
-			Vector3 start = _vm->_view->calculateScreenPosition(walkbox->vertices[j]);
-			Vector3 end = _vm->_view->calculateScreenPosition(walkbox->vertices[(j + 1) % walkbox->vertexCount]);
-			_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
-			Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (walkbox->vertices[j] + walkbox->vertices[(j + 1) % walkbox->vertexCount]));
-			_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
+		if (_viewWalkboxes
+		    || (_specificWalkboxesDrawn && findInDbgDrawList(debuggerObjTypeWalkbox, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+		) {
+			Set::Walkbox *walkbox = &_vm->_scene->_set->_walkboxes[i];
+			for (int j = 0; j < walkbox->vertexCount; j++) {
+				Vector3 start = _vm->_view->calculateScreenPosition(walkbox->vertices[j]);
+				Vector3 end = _vm->_view->calculateScreenPosition(walkbox->vertices[(j + 1) % walkbox->vertexCount]);
+				_vm->_surfaceFront.drawLine(start.x, start.y, end.x, end.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
+				Vector3 pos = _vm->_view->calculateScreenPosition(0.5 * (walkbox->vertices[j] + walkbox->vertices[(j + 1) % walkbox->vertexCount]));
+				_vm->_mainFont->drawColor(walkbox->name, _vm->_surfaceFront, pos.x, pos.y, _vm->_surfaceFront.format.RGBToColor(255, 255, 0));
+			}
 		}
 	}
 }
@@ -2036,23 +2389,150 @@ void Debugger::drawWalkboxes() {
 void Debugger::drawScreenEffects() {
 	//draw aesc
 	for (uint i = 0; i < _vm->_screenEffects->_entries.size(); i++) {
-		ScreenEffects::Entry &entry = _vm->_screenEffects->_entries[i];
-		int j = 0;
-		for (int y = 0; y < entry.height; y++) {
-			for (int x = 0; x < entry.width; x++) {
-				Common::Rect r((entry.x + x) * 2, (entry.y + y) * 2, (entry.x + x) * 2 + 2, (entry.y + y) * 2 + 2);
+		if (_viewScreenEffects
+		    || (_specificEffectsDrawn && findInDbgDrawList(debuggerObjTypeEffect, i, _vm->_scene->getSetId(), _vm->_scene->getSceneId()) != -1)
+		) {
+			ScreenEffects::Entry &entry = _vm->_screenEffects->_entries[i];
+			int j = 0;
+			for (int y = 0; y < entry.height; y++) {
+				for (int x = 0; x < entry.width; x++) {
+					Common::Rect r((entry.x + x) * 2, (entry.y + y) * 2, (entry.x + x) * 2 + 2, (entry.y + y) * 2 + 2);
 
-				int ec = entry.data[j++];
-				const int bladeToScummVmConstant = 256 / 16;
+					int ec = entry.data[j++];
+					const int bladeToScummVmConstant = 256 / 16;
 
-				int color = _vm->_surfaceFront.format.RGBToColor(
-					CLIP(entry.palette[ec].r * bladeToScummVmConstant, 0, 255),
-					CLIP(entry.palette[ec].g * bladeToScummVmConstant, 0, 255),
-					CLIP(entry.palette[ec].b * bladeToScummVmConstant, 0, 255));
-				_vm->_surfaceFront.fillRect(r, color);
+					int color = _vm->_surfaceFront.format.RGBToColor(
+						CLIP(entry.palette[ec].r * bladeToScummVmConstant, 0, 255),
+						CLIP(entry.palette[ec].g * bladeToScummVmConstant, 0, 255),
+						CLIP(entry.palette[ec].b * bladeToScummVmConstant, 0, 255));
+					_vm->_surfaceFront.fillRect(r, color);
+				}
 			}
 		}
 	}
+}
+
+void Debugger::toggleObjectInDbgDrawList(DebuggerDrawnObject &drObj) {
+	if (drObj.type == debuggerObjTypeUndefined || drObj.objId < 0) {
+		return;
+	}
+
+	//  Check if there already exists such object in the list:
+	//  if it exists then do a remove action
+	//  else do a push_back action (provided that size() < kMaxSpecificObjectsDrawnCount)
+	int foundAt = findInDbgDrawList(drObj.type, drObj.objId, drObj.setId, drObj.sceneId);
+
+	if (foundAt >= 0) {
+		_specificDrawnObjectsList.remove_at(foundAt);
+	} else {
+		if (_specificDrawnObjectsList.size() < kMaxSpecificObjectsDrawnCount) {
+			// TODO check if there actually is an object of such an ID in the current scene!
+			_specificDrawnObjectsList.push_back(drObj);
+		} else {
+			debugPrintf("The specific drawn objects list is full. Try running a draw reset or explicitly removing objects from it\n");
+		}
+	}
+}
+
+/**
+* drObjType can be a valid object type, or debuggerObjTypeUndefined as a wildcard for all object types
+* drObjId can be a valid object id or -1 as a wildcard
+* drObjSetId can be a valid Set id or -1 as a wildcard
+* drObjSceneId can be a valid Scene id or -1 as a wildcard
+* return the position in the list, if the specific drawn objects list contains the object of the specified type and id
+*        and it belongs to the current set and scene,
+*        or -1 otherwise
+*/
+int Debugger::findInDbgDrawList(DebuggerDrawnObjectType drObjType, int drObjId, int drObjSetId, int drObjSceneId) {
+	if (_specificDrawnObjectsList.empty()) {
+		return -1;
+	}
+
+	for (int i = 0; i < (int) _specificDrawnObjectsList.size(); ++i) {
+		if ((drObjType == debuggerObjTypeUndefined || drObjType == _specificDrawnObjectsList[i].type)
+			&& (drObjId == -1 || drObjId == _specificDrawnObjectsList[i].objId)
+		    && (drObjSetId == -1 || _specificDrawnObjectsList[i].setId == -1 || drObjSetId == _specificDrawnObjectsList[i].setId)
+		    && (drObjSceneId == -1 || _specificDrawnObjectsList[i].sceneId == -1 || drObjSceneId == _specificDrawnObjectsList[i].sceneId)
+		){
+			// TODO for actors, 3d objects, items and waypoints it's probably preferable to ignore the sceneId (?)
+			return i;
+		}
+	}
+	return -1;
+}
+
+void Debugger::updateTogglesForDbgDrawListInCurrentSetAndScene() {
+	_specificActorsDrawn = false;
+	_specific3dObjectsDrawn = false;
+	_specificItemsDrawn = false;
+	_specificEffectsDrawn = false;
+	_specificLightsDrawn = false;
+	_specificFogsDrawn = false;
+	_specificRegionNormalDrawn = false;
+	_specificRegionExitsDrawn = false;
+	_specificWaypointNormalDrawn = false;
+	_specificWaypointFleeDrawn = false;
+	_specificWaypointCoverDrawn = false;
+	_specificWalkboxesDrawn = false;
+	for (int i = 0; i < (int) _specificDrawnObjectsList.size(); ++i) {
+		if ((_specificDrawnObjectsList[i].sceneId == -1 ||  _specificDrawnObjectsList[i].sceneId == _vm->_scene->getSceneId() )
+		    && (_specificDrawnObjectsList[i].setId == -1 || _specificDrawnObjectsList[i].setId == _vm->_scene->getSetId())
+		) {
+			switch (_specificDrawnObjectsList[i].type) {
+			case debuggerObjTypeActor:
+				_specificActorsDrawn = true;
+				break;
+			case debuggerObjType3dObject:
+				_specific3dObjectsDrawn = true;
+				break;
+			case debuggerObjTypeItem:
+				_specificItemsDrawn = true;
+				break;
+			case debuggerObjTypeRegionNormal:
+				_specificRegionNormalDrawn = true;
+				break;
+			case debuggerObjTypeRegionExit:
+				_specificRegionExitsDrawn = true;
+				break;
+			case debuggerObjTypeWaypointNorm:
+				_specificWaypointNormalDrawn = true;
+				break;
+			case debuggerObjTypeWaypoingFlee:
+				_specificWaypointFleeDrawn = true;
+				break;
+			case debuggerObjTypeWaypointCover:
+				_specificWaypointCoverDrawn = true;
+				break;
+			case debuggerObjTypeWalkbox:
+				_specificWalkboxesDrawn = true;
+				break;
+			case debuggerObjTypeEffect:
+				_specificEffectsDrawn = true;
+				break;
+			case debuggerObjTypeLight:
+				_specificLightsDrawn = true;
+				break;
+			case debuggerObjTypeFog:
+				_specificFogsDrawn = true;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	_isDebuggerOverlay = _viewActorsToggle || _specificActorsDrawn
+					 || _view3dObjectsToggle || _specific3dObjectsDrawn
+					 || _viewItemsToggle || _specificItemsDrawn
+					 || _viewRegionsNormalToggle || _specificRegionNormalDrawn
+					 || _viewRegionsExitsToggle || _specificRegionExitsDrawn
+					 || _viewScreenEffects || _specificEffectsDrawn
+					 || _viewLights || _specificLightsDrawn
+					 || _viewFogs || _specificFogsDrawn
+					 || _viewWaypointsNormalToggle || _specificWaypointNormalDrawn
+					 || _viewWaypointsFleeToggle || _specificWaypointFleeDrawn
+					 || _viewWaypointsCoverToggle || _specificWaypointCoverDrawn
+					 || _viewWalkboxes || _specificWalkboxesDrawn
+					 || !_specificDrawnObjectsList.empty();
 }
 
 } // End of namespace BladeRunner

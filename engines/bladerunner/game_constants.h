@@ -441,7 +441,7 @@ enum SpinnerDestinations {
 enum Flags {
 	kFlagNotUsed0 = 0, // is never checked
 	kFlagRC02Entered = 1,
-	// 2 is never used
+	kFlagGamePlayedInRestoredContentMode = 2, // Re-purposed. Original: 2 is never used
 	kFlagRC01GotOfficersStatement = 3,
 	kFlagRC02Left = 4,
 	// 5 is never used
@@ -1174,7 +1174,11 @@ enum Flags {
 enum Variables {
 	kVariableChapter = 1,
 	kVariableChinyen = 2,
-	// variables 3 - 8 are not used
+	kVariableGameVersion = 3, // re-purposed, original: not used, so it would have value of 0 in the classic version
+	kVariableUG18CountUpForNextTrainAction = 4, // re-purposed, original: not used
+	kVariableUG18StateOfTrains = 5,             // re-purposed, original: not used
+	kVariableUG18StateOfGuzzaCorpse = 6,        // re-purposed, original: not used
+	// variables 7 - 8 are not used
 	kVariablePoliceMazeScore = 9,
 	kVariablePoliceMazePS10TargetCounter = 10,
 	kVariablePoliceMazePS11TargetCounter = 11,
@@ -1685,6 +1689,7 @@ enum GameItems {
 };
 
 enum GameModelAnimations {
+	// McCoy animations
 	kModelAnimationMcCoyWithGunIdle              =   0,
 	kModelAnimationMcCoyWithGunGotHitRight       =   1,
 	kModelAnimationMcCoyWithGunGotHitLeft        =   2,
@@ -1739,6 +1744,45 @@ enum GameModelAnimations {
 	kModelAnimationMcCoyCrouchedIdle             =  51,
 	kModelAnimationMcCoyCrouchedGetsUp           =  52,
 	kModelAnimationMcCoyDrinkingBooze            =  53,
+	// Dektora animations
+	kModelAnimationDektoraCombatIdle             = 134,
+	kModelAnimationDektoraCombatWalkingA         = 135,
+	kModelAnimationDektoraCombatWalkingB         = 136,
+	kModelAnimationDektoraCombatGotHitRight      = 137,
+	kModelAnimationDektoraCombatGotHitLeft       = 138,
+	kModelAnimationDektoraCombatBegin            = 139, // assumes fighting pose
+	kModelAnimationDektoraCombatEnd              = 140, // exits combat mode
+	kModelAnimationDektoraCombatLegAttack        = 141,
+	kModelAnimationDektoraCombatPunchAttack      = 142,
+	kModelAnimationDektoraWalking                = 143,
+	kModelAnimationDektoraRunning                = 144, // fast walking
+	kModelAnimationDektoraClimbStairsUp          = 145,
+	kModelAnimationDektoraClimbStairsDown        = 146,
+	kModelAnimationDektoraFrontShoveMove         = 147,
+	kModelAnimationDektoraBackDodgeMove          = 148,
+	kModelAnimationDektoraFallsDead              = 149,
+	kModelAnimationDektoraSittingIdle            = 150,
+	kModelAnimationDektoraSittingShootingGun     = 151, // unused?
+	kModelAnimationDektoraSittingSubtleTalking   = 152,
+	kModelAnimationDektoraSittingIntenseTalking  = 153,
+	kModelAnimationDektoraSittingPullingGunOut   = 154,
+	kModelAnimationDektoraSittingHoldingGun      = 155,
+	kModelAnimationDektoraStandingIdle           = 156, // slow nod left right, could be talking too
+	kModelAnimationDektoraStandingTalkGestureA   = 157, // dismissive / questioning
+	kModelAnimationDektoraStandingNodShort       = 158, // could be talking too
+	kModelAnimationDektoraStandingTalkAgreeing   = 159,
+	kModelAnimationDektoraStandingTalkGestureB   = 160, // mellow
+	kModelAnimationDektoraStandingTalkGestureC   = 161, // move both hands
+	kModelAnimationDektoraStandingTalkGestureD   = 162, // appreciative
+	kModelAnimationDektoraInFlamesA              = 163,
+	kModelAnimationDektoraInFlamesGotHit         = 164, // unused?
+	kModelAnimationDektoraInFlamesStartFalling   = 165,
+	kModelAnimationDektoraInFlamesB              = 166,
+	kModelAnimationDektoraInFlamesEndFalling     = 167,
+	kModelAnimationDektoraDancingA               = 168,
+	kModelAnimationDektoraDancingB               = 169,
+	kModelAnimationDektoraDancingC               = 170,
+	kModelAnimationDektoraDancingFinale          = 171,
 	//
 	kModelAnimationBulletBobsTrackingGun       = 440,
 	kModelAnimationMaleTargetEmptyHandsActive  = 441,
@@ -1751,7 +1795,7 @@ enum GameModelAnimations {
 	kModelAnimationFemaleTargetWithBabyDead    = 448, // 447+1
 	kModelAnimationFemaleTargetWithGunActive   = 449,
 	kModelAnimationFemaleTargetWithGunDead     = 450, // 449+1
-
+	// Rachael Animations
 	kModelAnimationRachaelWalking                  = 822,
 	kModelAnimationRachaelIdle                     = 823,
 	kModelAnimationRachaelIdleOscilate             = 824, // unused
@@ -1763,6 +1807,23 @@ enum GameModelAnimations {
 	kModelAnimationRachaelTalkHaltMovement         = 830,
 	kModelAnimationRachaelTalkHandOnChest          = 831,
 	kModelAnimationRachaelTalkHandWaveToRight      = 832,
+
+	kModelAnimationHysteriaPatron1DanceStandingUpSemiSitAndUp = 877,
+	kModelAnimationHysteriaPatron1DanceStandingUpLeftMotion   = 878,
+	kModelAnimationHysteriaPatron1DanceStandingUpStowingMoney = 879, // original unused
+	kModelAnimationHysteriaPatron1DanceSplitsDuckAndDown      = 880,
+	kModelAnimationHysteriaPatron1DanceSplitsSemiUpAndDown    = 881,
+	kModelAnimationHysteriaPatron1DanceSplitsBackAndForth     = 882,
+	kModelAnimationHysteriaPatron1DanceStandingUpToSplits     = 883,
+	kModelAnimationHysteriaPatron1DanceSplitsToStandingUp     = 884,
+	kModelAnimationHysteriaPatron2DanceHandsBellyMotion       = 885, // most used
+	kModelAnimationHysteriaPatron2DanceHandsUpLeftMotion      = 886,
+	kModelAnimationHysteriaPatron2DanceHandsUpSitAndUp        = 887,
+	kModelAnimationHysteriaPatron2DanceHandsDownHipsSwirl     = 888,
+	kModelAnimationHysteriaPatron2DanceHandsDownLegSwirl      = 889,
+	kModelAnimationHysteriaPatron2DanceHandsDownLeanBackForth = 890,
+	kModelAnimationHysteriaPatron2DanceHandsUpToHandsDown     = 891,
+	kModelAnimationHysteriaPatron2DanceHandsDownToHandsUp     = 892,
 
 	kModelAnimationBadge                       = 931,
 	kModelAnimationBomb                        = 932,
@@ -1801,7 +1862,7 @@ enum GameModelAnimations {
 	kModelAnimationWeaponsOrderForm            = 965,
 	kModelAnimationShellCasings                = 966,
 	kModelAnimationSlug                        = 967,
-//	kModelAnimation                            = 968, // unused - a knife?
+//	kModelAnimationKnife                       = 968, // unused - 3 frames - a knife? - spins badly
 	kModelAnimationStrangeScale                = 969,
 	kModelAnimationHysteriaToken               = 970,
 	kModelAnimationToyDog                      = 971,
@@ -1821,14 +1882,14 @@ enum GameModelAnimations {
 	kModelAnimationCrystalsCigarette           = 985,
 	kModelAnimationSpinnerKeys                 = 986,
 	kModelAnimationBriefcase                   = 987,
-	kModelAnimationDNAEvidenceOnePart          = 988,
-//	kModelAnimation                            = 989, // unused?
-	kModelAnimationDNAEvidenceTwoParts         = 990,
-	kModelAnimationDNAEvidenceThreeParts       = 991,
-//	kModelAnimation                            = 992, // unused?
+	kModelAnimationDNAEvidence01OutOf6         = 988,
+//	kModelAnimationDNAEvidence02OutOf6         = 989, // unused - actual 2 parts of DNA
+	kModelAnimationDNAEvidence03OutOf6         = 990, // used for two parts found
+	kModelAnimationDNAEvidence04OutOf6         = 991, // used for three parts found
+//	kModelAnimationDNAEvidence05OutOf6         = 992, // unused - actual 5 parts of DNA
 	kModelAnimationDNAEvidenceComplete         = 993,
-//	kModelAnimation                            = 994, // unused?
-    kModelAnimationAmmoType01                  = 995, // from Bullet Bob's
+//	kModelAnimationAmmoType00                  = 994, // unused - simple bullet
+	kModelAnimationAmmoType01                  = 995, // from Bullet Bob's
 	kModelAnimationAmmoType02                  = 996  // from Izo stash (Act 4)
 };
 
@@ -2241,7 +2302,7 @@ enum GoalSadik {
 	kGoalSadikUG18PrepareShootMcCoy = 307,
 	kGoalSadikUG18ShootMcCoy = 308,
 	kGoalSadikUG18Leave = 310,
-	kGoalSadikUG18NeedsReactorCoreFromMcCoy = 416,
+	kGoalSadikKP06NeedsReactorCoreFromMcCoy = 416,
 	kGoalSadikGone = 599
 };
 
@@ -2377,11 +2438,61 @@ enum GoalOfficerLeary {
 	kGoalOfficerLearyDefault = 0,
 	kGoalOfficerLearyRC01WalkToCrowd = 1,
 #if BLADERUNNER_ORIGINAL_BUGS
-	kGoalOfficerLearyRC01CrowdInterrogation = 2
+	kGoalOfficerLearyRC01CrowdInterrogation = 2,
 #else
 	kGoalOfficerLearyRC01CrowdInterrogation = 2,
-	kGoalOfficerLearyRC01ResumeWalkToCrowd = 4
+	kGoalOfficerLearyRC01ResumeWalkToCrowd = 4, // added OfficerLeary goal
 #endif // BLADERUNNER_ORIGINAL_BUGS
+	kGoalOfficerLearyPoliceDoneFromRC01 = 3,
+	kGoalOfficerLearyEndOfAct1 = 99,
+	kGoalOfficerLearyVisitsBulletBob = 102, // un-triggered
+	kGoalOfficerLearyStartOfAct4 = 300,
+	kGoalOfficerLearyHuntingAroundAct4 = 305,
+	kGoalOfficerLearyPrepareToHuntAroundAct4 = 306,
+	kGoalOfficerLearyBlockingUG07 = 307,
+	// 308 - 309 un-triggered?
+	kGoalOfficerLearyAttackMcCoyAct4 = 310,
+	kGoalOfficerLearyStartOfAct5 = 400,
+	kGoalOfficerLearyDummyGoalAct5 = 410,
+	kGoalOfficerLearyPoliceWait120SecondsToAttackHF05 = 420,
+	kGoalOfficerLearyPoliceWait60SecondsToAttackHF05 = 425,
+	kGoalOfficerLearyPoliceAboutToAttackHF05 = 430,
+	kGoalOfficerLearyDead = 599
+};
+
+
+enum GoalOfficerGrayford {
+	kGoalOfficerGrayfordDefault = 0,
+	kGoalOfficerGrayfordWalksInPS03a = 1,
+	kGoalOfficerGrayfordWalksInPS03b = 2,
+	kGoalOfficerGrayfordWalksInPS03c = 3,
+	kGoalOfficerGrayfordWalksInPS03d = 4,
+	kGoalOfficerGrayfordWalksInFreeSlotC = 5,
+	kGoalOfficerGrayfordWalksInPS09a = 6,
+	kGoalOfficerGrayfordWalksInPS09b = 7,
+	kGoalOfficerGrayfordWalksInPS09c = 8,
+	kGoalOfficerGrayfordWalksInPS03e = 9,
+	kGoalOfficerGrayfordPrepareToRestartWalkAround = 10,
+	kGoalOfficerGrayfordStopAndTalk1 = 99, // this is used temporarily to make him stop and talk
+	kGoalOfficerGrayfordArrivesToDR04 = 101,
+	kGoalOfficerGrayfordArrivedAtDR04 = 102,
+	kGoalOfficerGrayfordTalkToMcCoyAndReportAtDR04 = 103,
+	kGoalOfficerGrayfordPatrolsAtDR04a = 104,
+	kGoalOfficerGrayfordPatrolsAtDR04b = 105,
+	kGoalOfficerGrayfordStopPatrolToTalkToMcCoyAtDR04 = 106,
+	kGoalOfficerGrayfordLeavesWithMorajiCorpseDR04 = 110,
+	kGoalOfficerGrayfordArrestMcCoyInTB03Act4 = 399, // TB02_TB03
+	kGoalOfficerGrayfordStopAndTalkDR04 = 199, // this is used temporarily to make him stop and talk while at UG04 (Moraji's death scene)
+	kGoalOfficerGrayfordStartOfAct4 = 300,
+	kGoalOfficerGrayfordHuntingAroundAct4 = 305,
+	kGoalOfficerGrayfordPrepareToHuntAroundAct4 = 306,
+	kGoalOfficerGrayfordBlockingUG07 = 307,
+	kGoalOfficerGrayfordArrestsMcCoyAct4CT12 = 308,
+	kGoalOfficerGrayfordAttackMcCoyAct4 = 310,
+	kGoalOfficerGrayfordStartOfAct5 = 400,
+	kGoalOfficerGrayfordDummyGoalAct5 = 410,
+	kGoalOfficerGrayfordPoliceAboutToAttackHF05 = 430,
+	kGoalOfficerGrayfordDead = 599
 };
 
 enum GoalHanoi {

@@ -21,44 +21,25 @@
  */
 
 #include "glk/tads/tads.h"
+#include "glk/tads/os_glk.h"
 #include "common/config-manager.h"
 #include "common/translation.h"
 
 namespace Glk {
 namespace TADS {
 
+TADS *g_vm;
+
 TADS::TADS(OSystem *syst, const GlkGameDescription &gameDesc) : GlkAPI(syst, gameDesc) {
-	/*
-	 * GLK Initialization
-	 */
+	g_vm = this;
+}
 
-	// Open the story window
-	story_win = glk_window_open(0, 0, 0, wintype_TextBuffer, 0);
-	if (!story_win)
-		error("fatal: could not open window!\n");
+bool TADS::hasFeature(EngineFeature f) const {
+	// The TADS codebases rely on a lot of static globals, so RTL can't be supported
+	if (f == kSupportsRTL)
+		return false;
 
-	// get default colors for main window
-	if (!glk_style_measure(story_win, style_Normal, stylehint_TextColor, &mainfg))
-		mainfg = 0;
-
-	if (!glk_style_measure(story_win, style_Normal, stylehint_BackColor, &mainbg))
-		mainbg = 0;
-
-	// get default colors for status window
-	status_win = glk_window_open(story_win, winmethod_Above | winmethod_Fixed, 1,
-		wintype_TextGrid, 0);
-
-	if (!glk_style_measure(status_win, style_Normal, stylehint_TextColor, &statusfg))
-		statusfg = 0;
-
-	if (!glk_style_measure(status_win, style_Normal, stylehint_BackColor, &statusbg))
-		statusbg = 0;
-
-	// close status window; reopened on request
-	glk_window_close(status_win, 0);
-	status_win = nullptr;
-
-	glk_set_window(story_win);
+	return GlkAPI::hasFeature(f);
 }
 
 Common::Error TADS::loadGameData(strid_t file) {

@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm/commits/
 
-#### 2.1.0 (2018-??-??)
+#### 2.1.0 (2019-??-??)
 
  New games:
    - Might and Magic IV - Clouds of Xeen.
@@ -57,6 +57,9 @@ For a more comprehensive changelog of the latest experimental code, see:
      for this to take effect when using compressed audio.
    - Fixed an issue in the wig maker room in the German version of SPY Fox 3: Operation Ozone
      which makes the game completable.
+
+ Sherlock:
+   - Fixed crash in Spanish version talking to lady in Tailor shop
 
  SKY:
    - Added workaround for original game bug to improve intro and not cut off images which exist
