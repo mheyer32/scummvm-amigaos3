@@ -436,6 +436,22 @@ void Set::load(SaveFileReadStream &f) {
 */
 void Set::overrideSceneObjectInfo(int objectId) const {
 	switch (_vm->_scene->getSceneId()) {
+	case kSceneRC02:
+		// improve path for Runciter to his desk
+		// this won't fix the issue entirely (of Runciter awkwardly walking around the cage to reach his desk)
+		// but it make it less of an occurrence
+		if (objectId == 0 && _objects[objectId].name == "TABLETOP") {
+			_objects[objectId].bbox.setXYZ(9.0f, -1235.57f, 108386.98f, 47.90f, -1214.99f, 108410.42f);
+		} else if (objectId == 2 && _objects[objectId].name == "OUTR_DESK") {
+			_objects[objectId].bbox.setXYZ(-4.0f, -1239.81f, 108315.97f, 83.98f, -1185.50f, 108387.42f);
+		} else if (objectId == 42 && _objects[objectId].name == "P_BURN01") {
+			_objects[objectId].bbox.setXYZ(-4.0f, -1239.81f, 108312.98f, 87.98f, -1185.50f, 108388.19f);
+		} else if (objectId == 15 && _objects[objectId].name == "POLE_ROP01") {
+			_objects[objectId].bbox.setXYZ(-76.48f, -1239.31f, 108308.19f, -56.32f, -1191.11f, 108326.42f);
+		} else if (objectId == 16 && _objects[objectId].name == "POLE_ROP02") {
+			_objects[objectId].bbox.setXYZ(-75.17f, -1239.29f, 108340.13f, -56.32f, -1221.16f, 108365.65f);
+		}
+		break;
 	case kSceneBB06:
 		// Sebastian's room with doll
 		if (objectId == 3 && _objects[objectId].name == "BOX31") {
@@ -462,6 +478,15 @@ void Set::overrideSceneObjectInfo(int objectId) const {
 			// still it's best to fix its clickbox and remove clickable or restore functionality from
 			// the scene script
 			_objects[objectId].bbox.setXYZ(695.63f, 42.65f, -628.10f, 706.71f, 69.22f, -614.47f);
+		}
+		break;
+	case kSceneNR05:
+		if (objectId == 10 && _objects[objectId].name == "BOX08") {
+			_objects[objectId].bbox.setXYZ(-748.75f, 0.0f, -257.39f, -685.37f, 32.01f, -211.47f);
+		} else if (objectId == 11 && _objects[objectId].name == "BOX09") {
+			_objects[objectId].bbox.setXYZ(-729.00f, 0.0f, -179.27f, -690.00f, 33.47f, -15.80f);
+		} else if (objectId == 12 && _objects[objectId].name == "BOX11") {
+			_objects[objectId].bbox.setXYZ(-688.03f, 0.0f, -67.41f, -490.38f, 29.10f, -32.86f);
 		}
 		break;
 	case kSceneNR11:
@@ -505,6 +530,17 @@ void Set::overrideSceneObjectInfo(int objectId) const {
 	}
 }
 
+void Set::setupNewObjectInSet(Common::String objName, BoundingBox objBbox) {
+	int objectId = _objectCount;
+	_objects[objectId].name = objName.c_str();
+	_objects[objectId].bbox = objBbox;
+	_objects[objectId].isObstacle  = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un)Obstacle_Object()
+	_objects[objectId].isClickable = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un)Clickable_Object()
+	_objects[objectId].isHotMouse  = 0;
+	_objects[objectId].unknown1    = 0;
+	_objects[objectId].isTarget    = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un_)Combat_Target_Object
+	_objectCount++;
+}
 /**
 * Used for adding objects in a Set mainly to fix a few "McCoy walking to places he should not" issues
 * This is called in Set::open()
@@ -516,33 +552,52 @@ void Set::overrideSceneObjectInfo(int objectId) const {
 */
 void Set::patchInAdditionalObjectsInSet() {
 	Common::String custObjName;
-	int objectId = _objectCount;
 	BoundingBox bbox;
 	switch (_vm->_scene->getSceneId()) {
+	case kSceneHF06:
+		// block clicking / path access to northern part of the scene
+		// which causes McCoy and Police officers/ rats to go behind the map
+		bbox = BoundingBox(220.00f, 350.02f, -90.86f, 310.00f, 380.02f, -70.71f);
+		custObjName = "FRONTBLOCK1";
+		setupNewObjectInSet(custObjName, bbox);
+
+		bbox = BoundingBox(20.00f, 350.02f, -90.86f, 170.00f, 380.02f, -45.71f);
+		custObjName = "FRONTBLOCK2";
+		setupNewObjectInSet(custObjName, bbox);
+		break;
+
 	case kScenePS05:
 		// block actual passage to ESPER room because
 		// it causes McCoy to sometimes go behind the wall
 		bbox = BoundingBox(730.50f, -0.0f, -481.10f, 734.51f, 144.75f, -437.55f);
 		custObjName = "MAINFBLOCK";
+		setupNewObjectInSet(custObjName, bbox);
 		break;
+
+	case kSceneNR05:
+		bbox = BoundingBox(-690.0f, 0.0f, -155.0f, -640.0f, 33.47f, -100.0f);
+		custObjName = "CUSTLFTBLOCK";
+		setupNewObjectInSet(custObjName, bbox);
+		break;
+
+	case kSceneUG08:
+		// block clicking / path access to northern part of the scene
+		// which causes McCoy and Police officers/ rats to go behind the map
+		bbox = BoundingBox(-386.26f, -8.07f, -1078.99f, 100.00f, 170.63f, -478.99f);
+		custObjName = "NORTHBLOCK";
+		setupNewObjectInSet(custObjName, bbox);
+		break;
+
 	case kSceneUG13:
 		// Underground homeless place
 		// block passage to empty elevator chute
 		bbox = BoundingBox(-80.00f, 35.78f, -951.75f, 74.36f, 364.36f, -810.56f);
 		custObjName = "ELEVBLOCK";
+		setupNewObjectInSet(custObjName, bbox);
 		break;
 	default:
 		return;
 	}
-
-	_objectCount++;
-	_objects[objectId].name = custObjName.c_str();
-	_objects[objectId].bbox = bbox;
-	_objects[objectId].isObstacle  = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un)Obstacle_Object()
-	_objects[objectId].isClickable = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un)Clickable_Object()
-	_objects[objectId].isHotMouse  = 0;
-	_objects[objectId].unknown1    = 0;
-	_objects[objectId].isTarget    = 0; // init as false - Can be changed in Scene script eg. SceneLoaded() with (Un_)Combat_Target_Object
 }
 
 /**
@@ -555,27 +610,48 @@ void Set::patchInAdditionalObjectsInSet() {
 */
 void Set::patchOutBadObjectsFromSet() {
 	int removedIndexRef = 0;
-	switch (_vm->_scene->getSceneId()) {
-	case kSceneNR11:
-		for (int objectId = 0; objectId < _objectCount; ++objectId) {
+	bool removeCurrObj = false;
+	for (int objectId = 0; objectId < _objectCount; ++objectId) {
+		switch (_vm->_scene->getSceneId()) {
+		case kSceneNR05:
+			if ((objectId == 0 && _objects[objectId].name == "NM1-1+")
+			    || (objectId == 2 && _objects[objectId].name == "NM1-1+")
+			    || (objectId == 3 && _objects[objectId].name == "NM1-1+")
+			) {
+				// Remove objects that are named the same and set as clickables
+				// leave only objectId == 1, named "NM1-1+"
+				removeCurrObj = true;
+			}
+			break;
+		case kSceneNR11:
 			if ((objectId == 46 && _objects[objectId].name == "BOX53")
 			    || (objectId == 36 && _objects[objectId].name == "BOX43")
-				|| (objectId == 37 && _objects[objectId].name == "BOX44")
+			    || (objectId == 37 && _objects[objectId].name == "BOX44")
 			    || (objectId == 13 && _objects[objectId].name == "LOFT04")
 			) {
 				// Removing obj 46, 36, 37 (BOX53, BOX43, BOX44) fixes paths in the scene
 				// Removing obj 13 (LOFT04) fixes duplicate named box that confuses the engine
-				_objects[objectId].name = Common::String::format("REMOVED%02d", removedIndexRef++);
-				_objects[objectId].isObstacle  = 0;
-				_objects[objectId].isClickable = 0;
-				_objects[objectId].isHotMouse  = 0;
-				_objects[objectId].unknown1    = 0;
-				_objects[objectId].isTarget    = 0;
+				removeCurrObj = true;
 			}
+			break;
+		case kSceneDR02:
+			if ((objectId == 44 && _objects[objectId].name == "TRASH CAN WITH FIRE")) {
+				// Removing obj 44 (TRASH CAN WITH FIRE) fixes duplicate named box (id: 29) that confuses the engine
+				removeCurrObj = true;
+			}
+			break;
+		default:
+			break;
 		}
-		break;
-	default:
-		break;
+		if (removeCurrObj) {
+			removeCurrObj = false;
+			_objects[objectId].name = Common::String::format("REMOVED%02d", removedIndexRef++);
+			_objects[objectId].isObstacle  = 0;
+			_objects[objectId].isClickable = 0;
+			_objects[objectId].isHotMouse  = 0;
+			_objects[objectId].unknown1    = 0;
+			_objects[objectId].isTarget    = 0;
+		}
 	}
 	return;
 }

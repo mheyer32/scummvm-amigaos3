@@ -255,6 +255,11 @@ Common::Error BladeRunnerEngine::loadGameState(int slot) {
 		error("Invalid savegame");
 	}
 
+	setTotalPlayTime(header._playTime);
+	// this essentially does something similar with setTotalPlayTime
+	// reseting and updating Blade Runner's _pauseStart and offset before starting a loaded game
+	_time->resetPauseStart();
+
 	loadGame(*saveFile);
 
 	delete saveFile;
@@ -284,6 +289,7 @@ Common::Error BladeRunnerEngine::saveGameState(int slot, const Common::String &d
 
 	BladeRunner::SaveFileHeader header;
 	header._name = desc;
+	header._playTime = getTotalPlayTime();
 
 	BladeRunner::SaveFileManager::writeHeader(*saveFile, header);
 	_time->pause();
@@ -335,8 +341,17 @@ Common::Error BladeRunnerEngine::run() {
 			// end of additional code for gracefully handling end-game
 
 			if (ConfMan.hasKey("save_slot") && ConfMan.getInt("save_slot") != -1) {
+				// when loading from ScummVM main menu, we should emulate
+				// the Kia pause/resume in order to get a valid "current" time when the game
+				// is actually loaded (assuming delays can be introduced by a popup warning dialogue)
+				if(!_time->isLocked()) {
+					_time->pause();
+				}
 				loadGameState(ConfMan.getInt("save_slot"));
 				ConfMan.set("save_slot", "-1");
+				if(_time->isLocked()) {
+					_time->resume();
+				}
 			} else if (hasSavegames) {
 				_kia->_forceOpen = true;
 				_kia->open(kKIASectionLoad);
@@ -401,7 +416,6 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 	_surfaceBack.create(640, 480, screenPixelFormat());
 
 	_time = new Time(this);
-
 	// Try to load the SUBTITLES.MIX first, before Startup.MIX
 	// allows overriding any identically named resources (such as the original font files and as a bonus also the TRE files for the UI and dialogue menu)
 	_subtitles = new Subtitles(this);
@@ -971,6 +985,8 @@ void BladeRunnerEngine::gameTick() {
 	_overlays->tick();
 
 	if (!inDialogueMenu) {
+		// TODO This is probably responsible for actors getting stuck in place
+		// after reaching a waypoint when dialoge menu is open
 		actorsUpdate();
 	}
 
@@ -1357,6 +1373,26 @@ void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool bu
 		int exitIndex = _scene->_exits->getRegionAtXY(x, y);
 		int regionIndex = _scene->_regions->getRegionAtXY(x, y);
 
+		if (_debugger->_showMouseClickInfo) {
+			// Region has highest priority when overlapping
+			debug("Mouse: %02.2f, %02.2f, %02.2f", scenePosition.x, scenePosition.y, scenePosition.z);
+			if ((sceneObjectId < kSceneObjectOffsetActors || sceneObjectId >= kSceneObjectOffsetItems) && exitIndex >= 0) {
+				debug("Clicked on Region-Exit=%d", exitIndex);
+			} else if (regionIndex >= 0) {
+				debug("Clicked on Region-Regular=%d", regionIndex);
+			}
+			// In debug mode we're interested in *all* object/actors/items under mouse click
+			if (sceneObjectId >= kSceneObjectOffsetActors && sceneObjectId < kSceneObjectOffsetItems) {
+				debug("Clicked on Actor: %d", sceneObjectId  - kSceneObjectOffsetActors);
+			}
+			if (sceneObjectId >= kSceneObjectOffsetItems && sceneObjectId < kSceneObjectOffsetObjects) {
+				debug("Clicked on Item: %d", sceneObjectId  - kSceneObjectOffsetItems);
+			}
+			if (sceneObjectId >= kSceneObjectOffsetObjects && sceneObjectId <= (95 + kSceneObjectOffsetObjects) ) {
+				debug("Clicked on Object: %d", sceneObjectId - kSceneObjectOffsetObjects);
+			}
+		}
+
 		if ((sceneObjectId < kSceneObjectOffsetActors || sceneObjectId >= kSceneObjectOffsetItems) && exitIndex >= 0) {
 			handleMouseClickExit(exitIndex, x, y, buttonDown);
 		} else if (regionIndex >= 0) {
@@ -1367,7 +1403,7 @@ void BladeRunnerEngine::handleMouseAction(int x, int y, bool mainButton, bool bu
 			handleMouseClickActor(sceneObjectId - kSceneObjectOffsetActors, mainButton, buttonDown, scenePosition, x, y);
 		} else if (sceneObjectId >= kSceneObjectOffsetItems && sceneObjectId < kSceneObjectOffsetObjects) {
 			handleMouseClickItem(sceneObjectId - kSceneObjectOffsetItems, buttonDown);
-		} else if (sceneObjectId >= kSceneObjectOffsetObjects && sceneObjectId <= 293) {
+		} else if (sceneObjectId >= kSceneObjectOffsetObjects && sceneObjectId <= (95 + kSceneObjectOffsetObjects)) {
 			handleMouseClick3DObject(sceneObjectId - kSceneObjectOffsetObjects, buttonDown, isClickable, isTarget);
 		}
 	} else if (buttonDown) {

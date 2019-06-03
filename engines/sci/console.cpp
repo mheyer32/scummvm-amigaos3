@@ -73,7 +73,7 @@ int g_debug_simulated_key = 0;
 bool g_debug_track_mouse_clicks = false;
 
 // Refer to the "addresses" command on how to pass address parameters
-static int parse_reg_t(EngineState *s, const char *str, reg_t *dest, bool mayBeValue);
+static int parse_reg_t(EngineState *s, const char *str, reg_t *dest);
 
 Console::Console(SciEngine *engine) : GUI::Debugger(),
 	_engine(engine), _debugState(engine->_debugState) {
@@ -1471,7 +1471,7 @@ bool Console::cmdAudioDump(int argc, const char **argv) {
 		int numChannels = 1;
 		int bytesPerSample = 1;
 		bool sourceIs8Bit = true;
-		uint32 compressedSize;
+		uint32 compressedSize = 0;
 		uint32 decompressedSize;
 
 		if (isSol) {
@@ -1728,19 +1728,18 @@ bool Console::cmdParse(int argc, const char **argv) {
 	}
 
 	char *error;
-	char string[1000];
+	Common::String string = argv[1];
 
 	// Construct the string
-	strcpy(string, argv[1]);
 	for (int i = 2; i < argc; i++) {
-		strcat(string, " ");
-		strcat(string, argv[i]);
+		string += " ";
+		string += argv[i];
 	}
 
-	debugPrintf("Parsing '%s'\n", string);
+	debugPrintf("Parsing '%s'\n", string.c_str());
 
 	ResultWordListList words;
-	bool res = _engine->getVocabulary()->tokenizeString(words, string, &error);
+	bool res = _engine->getVocabulary()->tokenizeString(words, string.c_str(), &error);
 	if (res && !words.empty()) {
 		int syntax_fail = 0;
 
@@ -1782,15 +1781,14 @@ bool Console::cmdSaid(int argc, const char **argv) {
 	}
 
 	char *error;
-	char string[1000];
+	Common::String string = argv[1];
 	byte spec[1000];
 
 	int p;
 	// Construct the string
-	strcpy(string, argv[1]);
 	for (p = 2; p < argc && strcmp(argv[p],"&") != 0; p++) {
-		strcat(string, " ");
-		strcat(string, argv[p]);
+		string += " ";
+		string += argv[p];
 	}
 
 	if (p >= argc-1) {
@@ -1850,12 +1848,12 @@ bool Console::cmdSaid(int argc, const char **argv) {
 	}
 	spec[len++] = 0xFF;
 
-	debugN("Matching '%s' against:", string);
+	debugN("Matching '%s' against:", string.c_str());
 	_engine->getVocabulary()->debugDecipherSaidBlock(SciSpan<const byte>(spec, len));
 	debugN("\n");
 
 	ResultWordListList words;
-	bool res = _engine->getVocabulary()->tokenizeString(words, string, &error);
+	bool res = _engine->getVocabulary()->tokenizeString(words, string.c_str(), &error);
 	if (res && !words.empty()) {
 		int syntax_fail = 0;
 
@@ -2098,7 +2096,7 @@ bool Console::cmdPlaneItemList(int argc, const char **argv) {
 
 	reg_t planeObject = NULL_REG;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &planeObject, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &planeObject)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2126,7 +2124,7 @@ bool Console::cmdVisiblePlaneItemList(int argc, const char **argv) {
 
 	reg_t planeObject = NULL_REG;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &planeObject, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &planeObject)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2201,7 +2199,7 @@ bool Console::cmdShowSavedBits(int argc, const char **argv) {
 
 	reg_t memoryHandle = NULL_REG;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &memoryHandle, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &memoryHandle)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2625,7 +2623,7 @@ bool Console::cmdSongInfo(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2668,7 +2666,7 @@ bool Console::cmdToggleSound(int argc, const char **argv) {
 
 	reg_t id;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &id, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &id)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2760,7 +2758,7 @@ bool Console::cmdGCShowReachable(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2792,7 +2790,7 @@ bool Console::cmdGCShowFreeable(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2825,7 +2823,7 @@ bool Console::cmdGCNormalize(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -2946,7 +2944,7 @@ bool Console::cmdVMVars(int argc, const char **argv) {
 		printBasicVarInfo(*curValue);
 		debugPrintf("\n");
 	} else {
-		if (parse_reg_t(s, setValue, curValue, true)) {
+		if (parse_reg_t(s, setValue, curValue)) {
 			debugPrintf("Invalid value/address passed.\n");
 			debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 			debugPrintf("Or pass a decimal or hexadecimal value directly (e.g. 12, 1Ah)\n");
@@ -2993,7 +2991,7 @@ bool Console::cmdValueType(int argc, const char **argv) {
 
 	reg_t val;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &val, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &val)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3034,7 +3032,7 @@ bool Console::cmdViewListNode(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3057,14 +3055,14 @@ bool Console::cmdViewReference(int argc, const char **argv) {
 	reg_t reg = NULL_REG;
 	reg_t reg_end = NULL_REG;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &reg, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &reg)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
 	}
 
 	if (argc > 2) {
-		if (parse_reg_t(_engine->_gamestate, argv[2], &reg_end, false)) {
+		if (parse_reg_t(_engine->_gamestate, argv[2], &reg_end)) {
 			debugPrintf("Invalid address passed.\n");
 			debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 			return true;
@@ -3088,14 +3086,14 @@ bool Console::cmdDumpReference(int argc, const char **argv) {
 	reg_t reg = NULL_REG;
 	reg_t reg_end = NULL_REG;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &reg, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &reg)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
 	}
 
 	if (argc > 2) {
-		if (parse_reg_t(_engine->_gamestate, argv[2], &reg_end, false)) {
+		if (parse_reg_t(_engine->_gamestate, argv[2], &reg_end)) {
 			debugPrintf("Invalid address passed.\n");
 			debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 			return true;
@@ -3204,7 +3202,7 @@ bool Console::cmdViewObject(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3548,7 +3546,7 @@ bool Console::cmdDisassemble(int argc, const char **argv) {
 	bool printBytecode = false;
 	bool printBWTag = false;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &objAddr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &objAddr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3613,7 +3611,7 @@ bool Console::cmdDisassembleAddress(int argc, const char **argv) {
 	bool printBytes = false;
 	uint32 size;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &vpc, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &vpc)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3804,7 +3802,7 @@ bool Console::cmdSend(int argc, const char **argv) {
 
 	reg_t object;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &object, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &object)) {
 		debugPrintf("Invalid address \"%s\" passed.\n", argv[1]);
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -3840,7 +3838,7 @@ bool Console::cmdSend(int argc, const char **argv) {
 	stackframe[0] = make_reg(0, selectorId);
 	stackframe[1] = make_reg(0, send_argc);
 	for (int i = 0; i < send_argc; i++) {
-		if (parse_reg_t(_engine->_gamestate, argv[3+i], &stackframe[2+i], false)) {
+		if (parse_reg_t(_engine->_gamestate, argv[3+i], &stackframe[2+i])) {
 			debugPrintf("Invalid address \"%s\" passed.\n", argv[3+i]);
 			debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 			return true;
@@ -4286,7 +4284,7 @@ bool Console::cmdBreakpointAddress(int argc, const char **argv) {
 
 	reg_t addr;
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &addr, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &addr)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -4510,7 +4508,7 @@ bool Console::cmdMapVocab994(int argc, const char **argv) {
 		return true;
 	}
 
-	if (parse_reg_t(_engine->_gamestate, argv[1], &reg, false)) {
+	if (parse_reg_t(_engine->_gamestate, argv[1], &reg)) {
 		debugPrintf("Invalid address passed.\n");
 		debugPrintf("Check the \"addresses\" command on how to use addresses\n");
 		return true;
@@ -4598,7 +4596,7 @@ bool Console::cmdAddresses(int argc, const char **argv) {
 }
 
 // Returns 0 on success
-static int parse_reg_t(EngineState *s, const char *str, reg_t *dest, bool mayBeValue) {
+static int parse_reg_t(EngineState *s, const char *str, reg_t *dest) {
 	// Pointer to the part of str which contains a numeric offset (if any)
 	const char *offsetStr = NULL;
 
@@ -4616,7 +4614,7 @@ static int parse_reg_t(EngineState *s, const char *str, reg_t *dest, bool mayBeV
 			*dest = s->_executionStack.back().addr.pc;
 			offsetStr = str + 3;
 		} else if (!scumm_strnicmp(str + 1, "P", 1)) {
-			*dest = s->_executionStack.back().addr.pc;;
+			*dest = s->_executionStack.back().addr.pc;
 			offsetStr = str + 2;
 		} else if (!scumm_strnicmp(str + 1, "PREV", 4)) {
 			*dest = s->r_prev;
@@ -5027,14 +5025,12 @@ void Console::printReference(reg_t reg, reg_t reg_end) {
 		case SIG_TYPE_REFERENCE: {
 			switch (_engine->_gamestate->_segMan->getSegmentType(reg.getSegment())) {
 #ifdef ENABLE_SCI32
-				case SEG_TYPE_ARRAY: {
+				case SEG_TYPE_ARRAY:
 					printArray(reg);
 					break;
-				}
-				case SEG_TYPE_BITMAP: {
+				case SEG_TYPE_BITMAP:
 					printBitmap(reg);
 					break;
-				}
 #endif
 				default: {
 					const SegmentRef block = _engine->_gamestate->_segMan->dereference(reg);

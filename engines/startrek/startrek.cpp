@@ -67,6 +67,7 @@ StarTrekEngine::StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gam
 	DebugMan.addDebugChannel(kDebugGeneral, "general", "General");
 
 	_gfx = nullptr;
+	_activeMenu = nullptr;
 	_sound = nullptr;
 	_macResFork = nullptr;
 
@@ -104,6 +105,8 @@ StarTrekEngine::StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gam
 }
 
 StarTrekEngine::~StarTrekEngine() {
+	delete _activeMenu->nextMenu;
+	delete _activeMenu;
 	delete _gfx;
 	delete _sound;
 	delete _macResFork;
@@ -124,7 +127,7 @@ Common::Error StarTrekEngine::run() {
 	initGraphics(SCREEN_WIDTH, SCREEN_HEIGHT, &format);
 	initializeEventsAndMouse();
 
-	bool shouldPlayIntro = false;
+	bool shouldPlayIntro = true;
 	bool loadedSave = false;
 
 	if (ConfMan.hasKey("save_slot")) {
@@ -259,13 +262,14 @@ void StarTrekEngine::runTransportSequence(const Common::String &name) {
 	_gfx->loadPalette("palette");
 	_gfx->drawDirectToScreen(bgImage);
 	_system->updateScreen();
+	_system->delayMillis(10);
 
 	for (int i = 0; i < (_awayMission.redshirtDead ? 3 : 4); i++) {
 		Common::String filename = getCrewmanAnimFilename(i, name);
 		int x = crewmanTransportPositions[i][0];
 		int y = crewmanTransportPositions[i][1];
 		loadActorAnim(i, filename, x, y, 1.0);
-		_actorList[i].animationString[0] = '\0';
+		_actorList[i].animationString.clear();
 	}
 
 	if (_missionToLoad.equalsIgnoreCase("feather") && name[4] == 'b') {
@@ -418,11 +422,15 @@ SharedPtr<FileStream> StarTrekEngine::loadFile(Common::String filename, int file
 	// The Judgment Rites demo has its files not in the standard archive
 	if (getGameType() == GType_STJR && (getFeatures() & GF_DEMO)) {
 		Common::File *file = new Common::File();
-		if (!file->open(filename.c_str()))
+		if (!file->open(filename.c_str())) {
+			delete file;
 			error("Could not find file \'%s\'", filename.c_str());
-		byte *data = (byte *)malloc(file->size());
-		file->read(data, file->size());
-		return SharedPtr<FileStream>(new FileStream(data, file->size(), bigEndian));
+		}
+		int32 size = file->size();
+		byte *data = (byte *)malloc(size);
+		file->read(data, size);
+		delete file;
+		return SharedPtr<FileStream>(new FileStream(data, size, bigEndian));
 	}
 
 	Common::SeekableReadStream *indexFile = 0;
@@ -546,9 +554,13 @@ SharedPtr<FileStream> StarTrekEngine::loadFile(Common::String filename, int file
 
 	delete dataFile;
 	delete dataRunFile;
-	byte *data = (byte *)malloc(stream->size());
-	stream->read(data, stream->size());
-	return SharedPtr<FileStream>(new FileStream(data, stream->size(), bigEndian));
+
+	int32 size = stream->size();
+	byte *data = (byte *)malloc(size);
+	stream->read(data, size);
+	delete stream;
+
+	return SharedPtr<FileStream>(new FileStream(data, size, bigEndian));
 }
 
 SharedPtr<FileStream> StarTrekEngine::loadFileWithParams(Common::String filename, bool unk1, bool unk2, bool unk3) {
@@ -593,7 +605,7 @@ void StarTrekEngine::playMovieMac(Common::String filename) {
 			if (event.type == Common::EVENT_KEYDOWN && event.kbd.keycode == Common::KEYCODE_ESCAPE)
 				continuePlaying = false;
 
-		g_system->delayMillis(10);
+		_system->delayMillis(10);
 	}
 
 	delete qtDecoder;

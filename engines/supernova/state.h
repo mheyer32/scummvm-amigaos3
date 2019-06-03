@@ -23,6 +23,7 @@
 #ifndef SUPERNOVA_STATE_H
 #define SUPERNOVA_STATE_H
 
+#include "common/error.h"
 #include "common/events.h"
 #include "common/rect.h"
 #include "common/keyboard.h"
@@ -192,7 +193,7 @@ public:
 	bool airless();
 	void shock();
 	Common::EventType getMouseInput();
-	uint16 getKeyInput(bool blockForPrintChar = false);
+	int getKeyInput();
 	void getInput();
 	void wait(int ticks);
 	void waitOnInput(int ticks);

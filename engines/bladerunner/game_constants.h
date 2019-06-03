@@ -123,7 +123,7 @@ enum Clues {
 	kClueCrowdInterviewB = 17,
 	kClueZubenRunsAway = 18,
 	kClueZubenInterview = 19,
-	kClueZuben = 20,
+	kClueZubenSquadPhoto = 20,
 	kClueBigManLimping = 21,
 	kClueRunciterInterviewA = 22,
 	kClueRunciterInterviewB1 = 23,
@@ -444,7 +444,7 @@ enum Flags {
 	kFlagGamePlayedInRestoredContentMode = 2, // Re-purposed. Original: 2 is never used
 	kFlagRC01GotOfficersStatement = 3,
 	kFlagRC02Left = 4,
-	// 5 is never used
+	kFlagMcCoyCommentsOnMurderedAnimals = 5, // Re-purposed. Original: 5 is never used
 	kFlagRC02RunciterInterview = 6,
 	kFlagCT01TalkToHowieAboutDeadZuben = 7, // Re-purposed. Original: 7 is never used
 	kFlagRC01toRC02 = 8,
@@ -551,7 +551,7 @@ enum Flags {
 	kFlagHC04toHC02 = 109,
 	kFlagHC02toHC04 = 110,
 	kFlagPS07KleinTalkClues = 111,
-	// 112 is never used
+	kFlagMcCoyCommentsOnAnimoids = 112,  // Re-purposed. Original: 112 is never used
 	kFlagScorpionsInAR02 = 113,   // Re-purposed. Original: 113 is never used
 	kFlagRC03toRC01 = 114,
 	kFlagRC01toRC03 = 115,
@@ -847,7 +847,7 @@ enum Flags {
 	kFlagHC02HawkersBarkeepBraceletTalk = 405,
 	kFlagUnused406 = 406, // is never checked
 	kFlagUnused407 = 407, // is never checked
-	// 408 is never used
+	kFlagMcCoyCommentsOnStatues = 408, // re-purposed. Original: 408 is never used
 	kFlagMA01GaffApproachMcCoy = 409,
 	kFlagBB06AndroidDestroyed = 410,
 	kFlagKP02toUG12 = 411,
@@ -1076,9 +1076,9 @@ enum Flags {
 	kFlagNR11BurnedUp = 634,
 	kFlagNR11SteeleShoot = 635,
 	kFlagNR08Faded = 636,
-	// 637 is never used
+	kFlagMcCoyCommentsOnOldProjector = 637, // Re-purposed. Original: 637 is never used
 	kFlagNR07McCoyIsCop = 638,
-	// 639 is never used
+	kFlagMcCoyCommentsOnEyeOfEyeworks = 639, // Re-purposed. Original: 639 is never used
 	kFlagNR10CameraDestroyed = 640,
 	kFlagNR10toNR11 = 641, // is never checked
 	kFlagNR10McCoyBlinded = 642,

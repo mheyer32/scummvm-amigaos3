@@ -337,7 +337,6 @@ int StarTrekEngine::showActionMenu() {
 			break;
 
 		case TREKEVENT_LBUTTONDOWN:
-selectAndExit:
 			displayMenu = false;
 			addEventBack = true;
 			break;
@@ -404,7 +403,9 @@ exitMenu:
 			case Common::KEYCODE_RETURN:
 			case Common::KEYCODE_KP_ENTER:
 			case Common::KEYCODE_F1: // Exit menu with whatever is selected
-				goto selectAndExit;
+				displayMenu = false;
+				addEventBack = true;
+				break;
 
 			case Common::KEYCODE_PAGEUP:
 			case Common::KEYCODE_KP9:
@@ -499,8 +500,8 @@ void StarTrekEngine::loadMenuButtons(String mnuFilename, int xpos, int ypos) {
 	if (_activeMenu == nullptr)
 		_keyboardControlsMouseOutsideMenu = _keyboardControlsMouse;
 
-	SharedPtr<Menu> oldMenu = _activeMenu;
-	_activeMenu = SharedPtr<Menu>(new Menu());
+	Menu *oldMenu = _activeMenu;
+	_activeMenu = new Menu();
 	_activeMenu->nextMenu = oldMenu;
 
 	SharedPtr<FileStream> stream = loadFile(mnuFilename + ".MNU");
@@ -851,7 +852,9 @@ void StarTrekEngine::unloadMenuButtons() {
 			_gfx->delSprite(sprite);
 	}
 
+	Menu *prevMenu = _activeMenu;
 	_activeMenu = _activeMenu->nextMenu;
+	delete prevMenu;
 
 	if (_activeMenu == nullptr)
 		_keyboardControlsMouse = _keyboardControlsMouseOutsideMenu;
@@ -1020,10 +1023,11 @@ void StarTrekEngine::showRepublicMap(int16 arg0, int16 turbolift) {
 	actorFunc1();
 	_gfx->pushSprites();
 
-	if (!_awayMission.veng.scannedComputerBank) {
+	if (!_awayMission.veng.showedRepublicMapFirstTime) {
 		_gfx->setBackgroundImage(_gfx->loadBitmap("veng9b"));
 		_gfx->copyBackgroundScreen();
 		_system->updateScreen();
+		_system->delayMillis(10);
 		_gfx->setPri(15);
 		_gfx->fadeinScreen();
 
@@ -1067,13 +1071,20 @@ void StarTrekEngine::showRepublicMap(int16 arg0, int16 turbolift) {
 			}
 		}
 
-		_awayMission.veng.scannedComputerBank = true; // FIXME?
+		// BUGFIX: Original game used variable "scannedComputerBank" (0x32) instead of
+		// "showedRepublicMapFirstTime" (0x33), which is used elsewhere. Byte 0x33 is
+		// otherwise unused, so maybe this is a weird off-by-1 error.
+		// The effective result is that scanning the computer bank would cause the preview
+		// of the map screen to not appear.
+		_awayMission.veng.showedRepublicMapFirstTime = true;
+
 		_gfx->fadeoutScreen();
 	}
 
 	_gfx->setBackgroundImage(_gfx->loadBitmap("veng9"));
 	_gfx->copyBackgroundScreen();
 	_system->updateScreen();
+	_system->delayMillis(10);
 	_gfx->setPri(15);
 
 	Sprite someSprite;
@@ -1159,6 +1170,7 @@ lclick:
 	_gfx->setBackgroundImage(_gfx->loadBitmap(_screenName));
 	_gfx->copyBackgroundScreen();
 	_system->updateScreen();
+	_system->delayMillis(10);
 
 	_gfx->drawAllSprites();
 

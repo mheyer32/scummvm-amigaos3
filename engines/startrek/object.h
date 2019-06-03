@@ -77,10 +77,10 @@ enum Objects {
 
 struct Actor {
 	bool spriteDrawn;
-	char animFilename[16];
+	Common::String animFilename;
 	uint16 animType;
 	Sprite sprite;
-	char bitmapFilename[10];
+	Common::String bitmapFilename;
 	Fixed8 scale;
 	SharedPtr<FileStream> animFile;
 	uint16 numAnimFrames;
@@ -97,7 +97,7 @@ struct Actor {
 	bool triggerActionWhenAnimFinished;
 	uint16 finishedAnimActionParam;
 
-	char animationString2[8];
+	Common::String animationString2;
 	uint16 field70;
 	uint16 field72;
 	uint16 field74;
@@ -124,7 +124,7 @@ struct Actor {
 	uint16 field94;
 	uint16 field96;
 
-	char animationString[10];
+	Common::String animationString;
 
 	// These might be part of "animationString"?
 	uint16 fielda2;
@@ -134,10 +134,8 @@ struct Actor {
 public:
 	Actor() :
 		spriteDrawn(false),
-		//animFilename[16],
 		animType(0),
 		sprite(),
-		//bitmapFilename[10],
 		scale(0),
 		animFile(),
 		numAnimFrames(0),
@@ -167,15 +165,10 @@ public:
 		direction(0),
 		field94(0),
 		field96(0),
-		//char animationString[10];
 
 		fielda2(0),
 		fielda4(0),
 		fielda6(0) {
-		memset(animFilename, 0, sizeof(animFilename));
-		memset(bitmapFilename, 0, sizeof(bitmapFilename));
-		memset(animationString2, 0, sizeof(animationString2));
-		memset(animationString, 0, sizeof(animationString));
 	}
 
 };

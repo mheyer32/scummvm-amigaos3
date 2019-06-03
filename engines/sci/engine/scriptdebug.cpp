@@ -372,6 +372,8 @@ reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag,
 					case kSelectorNone:
 						debugN("INVALID");
 						break;
+					default:
+						break;
 					}
 				}
 
@@ -940,6 +942,8 @@ void debugSelectorCall(reg_t send_obj, Selector selector, int argc, StackPtr arg
 				}
 			}
 		break;
+	default:
+		break;
 	}	// switch
 }
 
@@ -1095,7 +1099,8 @@ void logBacktrace() {
 		case EXEC_STACK_TYPE_CALL: // Normal function
 			if (call.type == EXEC_STACK_TYPE_CALL)
 			con->debugPrintf(" %x: script %d - ", i, s->_segMan->getScript(call.addr.pc.getSegment())->getScriptNumber());
-			if (call.debugSelector != NULL_SELECTOR) {
+			
+			if (call.debugSelector != -1) {
 				con->debugPrintf("%s::%s(", objname, g_sci->getKernel()->getSelectorName(call.debugSelector).c_str());
 			} else if (call.debugExportId != -1) {
 				con->debugPrintf("export %d (", call.debugExportId);

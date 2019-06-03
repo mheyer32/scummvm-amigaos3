@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ScummVM 1.10.0git\n"
 "Report-Msgid-Bugs-To: scummvm-devel@lists.scummvm.org\n"
-"POT-Creation-Date: 2019-05-26 09:29+0200\n"
-"PO-Revision-Date: 2019-05-26 07:29+0000\n"
+"POT-Creation-Date: 2019-05-31 23:02+0200\n"
+"PO-Revision-Date: 2019-05-31 22:07+0000\n"
 "Last-Translator: Lothar Serra Mari <serra@scummvm.org>\n"
 "Language-Team: German <https://translations.scummvm.org/projects/scummvm/"
 "scummvm/de/>\n"
@@ -374,7 +374,7 @@ msgstr "Extras:"
 #: gui/editgamedialog.cpp:278 gui/editgamedialog.cpp:280
 #: gui/editgamedialog.cpp:281
 msgid "Specifies path to additional data used by the game"
-msgstr "Legt den Verzeichnispfad für zusätzliche Spieldateien fest"
+msgstr "Legt das Verzeichnis für zusätzliche Spieldateien fest"
 
 #: gui/editgamedialog.cpp:280 gui/options.cpp:1615
 msgctxt "lowres"
@@ -3151,15 +3151,15 @@ msgstr ""
 msgid "Cutscene file '%s' not found!"
 msgstr "Zwischensequenz \"%s\" nicht gefunden!"
 
-#: engines/bladerunner/bladerunner.cpp:316
+#: engines/bladerunner/bladerunner.cpp:322
 msgid "Failed to initialize resources"
 msgstr "Konnte Ressourcen nicht initialisieren"
 
-#: engines/bladerunner/bladerunner.cpp:896
+#: engines/bladerunner/bladerunner.cpp:910
 msgid "A required game resource was not found"
 msgstr "Eine benötigte Spiel-Ressource konnte nicht gefunden werden"
 
-#: engines/bladerunner/bladerunner.cpp:2030
+#: engines/bladerunner/bladerunner.cpp:2066
 msgid ""
 "WARNING: This game was saved in Restored Cut Content mode, but you are "
 "playing in Original Content mode. The mode will be adjusted to Restored Cut "
@@ -3170,7 +3170,7 @@ msgstr ""
 "Modus wird für diese Spielesitzung auf \"Entfernte Inhalte wiederherstellen"
 "\" gesetzt, bis Sie das Spiel komplett beenden."
 
-#: engines/bladerunner/bladerunner.cpp:2032
+#: engines/bladerunner/bladerunner.cpp:2068
 msgid ""
 "WARNING: This game was saved in Original Content mode, but you are playing "
 "in Restored Cut Content mode. The mode will be adjusted to Original Content "
@@ -3181,7 +3181,7 @@ msgstr ""
 "Der Modus wird für diese Spielesitzung auf \"Original-Inhalte\" gesetzt, bis "
 "Sie das Spiel komplett beenden."
 
-#: engines/bladerunner/bladerunner.cpp:2034
+#: engines/bladerunner/bladerunner.cpp:2070
 msgid "Continue"
 msgstr "Fortsetzen"
 
@@ -5085,6 +5085,11 @@ msgstr ""
 "Der Text für die Sprache %s konnte nicht in der Engine-Datendatei '%s' "
 "gefunden werden."
 
+#: engines/supernova/supernova.cpp:441
+#, c-format
+msgid "Unable to find '%s' in game folder."
+msgstr "'%s' konnte im Spiel-Ordner nicht gefunden werden."
+
 #: engines/sword1/animation.cpp:524
 #, c-format
 msgid "PSX stream cutscene '%s' cannot be played in paletted mode"
@@ -5272,7 +5277,7 @@ msgstr "Animation während Drehen im Panorama-Modus ausschalten"
 
 #: engines/zvision/detection_tables.h:91
 msgid "Use high resolution MPEG video"
-msgstr "Nutze hochauflösende MPEG-Filme"
+msgstr "Verwende hochauflösende MPEG-Filme"
 
 #: engines/zvision/detection_tables.h:92
 msgid "Use MPEG video from the DVD version instead of lower resolution AVI"

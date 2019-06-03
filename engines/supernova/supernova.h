@@ -95,6 +95,8 @@ public:
 	void setTextSpeed();
 	const Common::String &getGameString(int idx) const;
 	void setGameString(int idx, const Common::String &string);
+	void showHelpScreen();
+	Common::Error showTextReader(const char *filename);
 
 	// forwarding calls
 	void playSound(AudioId sample);

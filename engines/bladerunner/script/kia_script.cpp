@@ -121,7 +121,7 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		KIA_Play_Actor_Dialogue(kActorMcCoy, 410);
 		KIA_Play_Actor_Dialogue(kActorZuben, 50);
 		break;
-	case kClueZuben:
+	case kClueZubenSquadPhoto:
 		KIA_Play_Photograph(33);
 		KIA_Play_Actor_Dialogue(kActorVoiceOver, 350);
 		break;
@@ -489,7 +489,17 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		break;
 	case kClueGordosLighterReplicant:
 		KIA_Play_Slice_Model(kModelAnimationGordosLighterReplicant);
-		KIA_Play_Actor_Dialogue(kActorVoiceOver, 350);
+		if (_vm->_cutContent) {
+			if (Actor_Clue_Query(kActorMcCoy, kClueZubenSquadPhoto)) {
+				KIA_Play_Actor_Dialogue(kActorVoiceOver, 1450);
+			} else {
+				KIA_Play_Actor_Dialogue(kActorVoiceOver, 350);
+			}
+			KIA_Play_Actor_Dialogue(kActorVoiceOver, 1460);
+			KIA_Play_Actor_Dialogue(kActorVoiceOver, 1470);
+		} else {
+			KIA_Play_Actor_Dialogue(kActorVoiceOver, 350);
+		}
 		break;
 	case kClueGordosLighterHuman:
 		KIA_Play_Slice_Model(kModelAnimationGordosLighterHuman);
@@ -797,26 +807,35 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		KIA_Play_Actor_Dialogue(kActorSteele, 3540);
 		break;
 	case kClueGrigorianInterviewB1:
-		KIA_Play_Actor_Dialogue(kActorSteele, 3550);
-		KIA_Play_Actor_Dialogue(kActorGrigorian, 1360);
+		// Izo is a Replicant
+		KIA_Play_Actor_Dialogue(kActorSteele, 3550); // Describe them to me again.
+		KIA_Play_Actor_Dialogue(kActorGrigorian, 1360); // Just the Rastafarian fellow. And that-- that friend of his. A slim blond man, Asian. With-- with a ponytail.
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1370);
-		KIA_Play_Actor_Dialogue(kActorSteele, 3560);
+		if (_vm->_cutContent) {
+			KIA_Play_Actor_Dialogue(kActorSteele, 3620); // Let me ask you a question.
+			KIA_Play_Actor_Dialogue(kActorSteele, 3630);
+			KIA_Play_Actor_Dialogue(kActorGrigorian, 1380);
+			KIA_Play_Actor_Dialogue(kActorSteele, 3640);  // such as
+			KIA_Play_Actor_Dialogue(kActorGrigorian, 1390);
+		}
+		KIA_Play_Actor_Dialogue(kActorSteele, 3560); // Bravo, Spencer.
 		KIA_Play_Actor_Dialogue(kActorSteele, 3570);
 		break;
 	case kClueGrigorianInterviewB2:
-		KIA_Play_Actor_Dialogue(kActorSteele, 3580);
-		KIA_Play_Actor_Dialogue(kActorGrigorian, 1400);
+		// Izo is a human
+		KIA_Play_Actor_Dialogue(kActorSteele, 3580); // Describe them for me again.
+		KIA_Play_Actor_Dialogue(kActorGrigorian, 1400); // There was that Rastafarian fellow and one of our ex members showed up.
 		KIA_Play_Actor_Dialogue(kActorSteele, 3590);
-		KIA_Play_Actor_Dialogue(kActorGrigorian, 1410);
+		KIA_Play_Actor_Dialogue(kActorGrigorian, 1410); // A Japanese man named Izo.
 		KIA_Play_Actor_Dialogue(kActorSteele, 3600);
-		KIA_Play_Actor_Dialogue(kActorGrigorian, 1420);
-		KIA_Play_Actor_Dialogue(kActorGrigorian, 1430);
+		KIA_Play_Actor_Dialogue(kActorGrigorian, 1420); // We're a pacifist organization and we have rules
+		KIA_Play_Actor_Dialogue(kActorGrigorian, 1430); // Izo refused to check in his samurai sword
 		KIA_Play_Actor_Dialogue(kActorSteele, 3610);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1440);
-		KIA_Play_Actor_Dialogue(kActorSteele, 3620);
+		KIA_Play_Actor_Dialogue(kActorSteele, 3620); // Let me ask you a question.
 		KIA_Play_Actor_Dialogue(kActorSteele, 3630);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1450);
-		KIA_Play_Actor_Dialogue(kActorSteele, 3640);
+		KIA_Play_Actor_Dialogue(kActorSteele, 3640);  // such as
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1460);
 		KIA_Play_Actor_Dialogue(kActorSteele, 3650);
 		break;

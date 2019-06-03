@@ -107,6 +107,7 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	_playFullVk = false;
 	_showStatsVk = false;
 	_showMazeScore = false;
+	_showMouseClickInfo = false;
 
 	registerCmd("anim", WRAP_METHOD(Debugger, cmdAnimation));
 	registerCmd("health", WRAP_METHOD(Debugger, cmdHealth));
@@ -131,6 +132,7 @@ Debugger::Debugger(BladeRunnerEngine *vm) : GUI::Debugger() {
 	registerCmd("object", WRAP_METHOD(Debugger, cmdObject));
 	registerCmd("item", WRAP_METHOD(Debugger, cmdItem));
 	registerCmd("region", WRAP_METHOD(Debugger, cmdRegion));
+	registerCmd("click", WRAP_METHOD(Debugger, cmdClick));
 #if BLADERUNNER_ORIGINAL_BUGS
 #else
 	registerCmd("effect", WRAP_METHOD(Debugger, cmdEffect));
@@ -1282,8 +1284,21 @@ bool Debugger::cmdSubtitle(int argc, const char **argv) {
 	if (argc != 2) {
 		invalidSyntax = true;
 	} else {
+		if (!_vm->_subtitles->isSystemActive()) {
+			debugPrintf("Subtitles system is currently disabled\n");
+		}
+
 		Common::String subtitleText = argv[1];
-		if (subtitleText == "reset") {
+		if (subtitleText == "info") {
+			debugPrintf("Subtitles version info: v%s (%s) %s by: %s\n",
+			            _vm->_subtitles->getSubtitlesInfo().versionStr.c_str(),
+			            _vm->_subtitles->getSubtitlesInfo().dateOfCompile.c_str(),
+			            _vm->_subtitles->getSubtitlesInfo().languageMode.c_str(),
+			            _vm->_subtitles->getSubtitlesInfo().credits.c_str());
+			debugPrintf("Subtitles fonts loaded: %s\n",
+			            _vm->_subtitles->isSubsFontsLoaded()? "True":"False");
+
+		} else if (subtitleText == "reset") {
 			_vm->_subtitles->setGameSubsText("", false);
 		} else {
 			debugPrintf("Showing text: %s\n", subtitleText.c_str());
@@ -1293,9 +1308,9 @@ bool Debugger::cmdSubtitle(int argc, const char **argv) {
 	}
 
 	if (invalidSyntax) {
-		debugPrintf("Show specified text as subtitle or clear the current subtitle (with the reset option).\n");
+		debugPrintf("Show subtitles info, or display and clear (reset) a specified text as subtitle or clear the current subtitle.\n");
 		debugPrintf("Use double quotes to encapsulate the text.\n");
-		debugPrintf("Usage: %s (\"<text_to_display>\" | reset)\n", argv[0]);
+		debugPrintf("Usage: %s (\"<text_to_display>\" | info | reset)\n", argv[0]);
 	}
 	return true;
 
@@ -1735,6 +1750,36 @@ bool Debugger::cmdRegion(int argc, const char **argv) {
 	return true;
 }
 
+/**
+* Toggle showing mouse click info in the text console (not the debugger window)
+*/
+bool Debugger::cmdClick(int argc, const char **argv) {
+	bool invalidSyntax = false;
+
+	if (argc != 2) {
+		invalidSyntax = true;
+	} else {
+		//
+		// set a debug variable to enable showing the mouse click info
+		//
+		Common::String argName = argv[1];
+		argName.toLowercase();
+		if (argc == 2 && argName == "toggle") {
+			_showMouseClickInfo = !_showMouseClickInfo;
+			debugPrintf("Showing mouse click info = %s\n", _showMouseClickInfo ? "True":"False");
+			return false; // close the debugger console
+		} else {
+			invalidSyntax = true;
+		}
+	}
+
+	if (invalidSyntax) {
+		debugPrintf("Toggle showing mouse info (on mouse click) in the text console\n");
+		debugPrintf("Usage: %s toggle\n", argv[0]);
+	}
+	return true;
+}
+
 #if BLADERUNNER_ORIGINAL_BUGS
 #else
 bool Debugger::cmdEffect(int argc, const char **argv) {
@@ -1923,6 +1968,14 @@ bool Debugger::cmdList(int argc, const char **argv) {
 				invalidSyntax = true;
 			}
 		} else if (arg == "obj") {
+			debugPrintf("View info\nCamera position: (%5.2f, %5.2f, %5.2f), Viewport position: (%5.2f, %5.2f, %5.2f), FoVx: %2.2f\n",
+						_vm->_view->_cameraPosition.x,
+						_vm->_view->_cameraPosition.y,
+						_vm->_view->_cameraPosition.z,
+						_vm->_view->_viewportPosition.x,
+						_vm->_view->_viewportPosition.y,
+						_vm->_view->_viewportPosition.z,
+						_vm->_view->_fovX);
 			debugPrintf("Listing scene objects: \n");
 			int count = 0;
 			for (int i = 0; i < _vm->_sceneObjects->_count; i++) {
