@@ -3249,7 +3249,8 @@ if test -n "$_host"; then
 			append_var CXXFLAGS "-I./camd-37.1/development/include"
 #			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
-			_machine_flags="-noixemul -m68030 -flto"
+			# don't need thread safety for some static objects, no need to link pthread
+			_machine_flags="-noixemul -m68030 -flto -fno-threadsafe-statics"
 			append_var CXXFLAGS "$_machine_flags"
 			append_var LDFLAGS  "$_machine_flags"
 
