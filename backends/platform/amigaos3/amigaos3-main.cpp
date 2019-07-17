@@ -183,9 +183,11 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
 	int closeWb = 0;
 
-	struct Process* proc = (struct Process*)FindTask(NULL);
-	printf("Process stack size is %ld bytes.\n", proc->pr_StackSize);
-	if (proc->pr_StackSize < 100000) {
+	struct Task * task = FindTask(NULL);
+	ptrdiff_t ss = (char*)task->tc_SPUpper - (char*)task->tc_SPLower;
+
+	printf("Process stack size is %d bytes.\n", ss);
+	if (ss < 100000) {
 		printf("Process stack size is smaller than 100000. Exiting.\n");
 		exit(EXIT_FAILURE);
 	}
