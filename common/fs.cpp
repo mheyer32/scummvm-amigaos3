@@ -152,6 +152,22 @@ WriteStream *FSNode::createWriteStream() const {
 	return _realNode->createWriteStream();
 }
 
+bool FSNode::createDirectory() const {
+	if (_realNode == nullptr)
+		return false;
+
+	if (_realNode->exists()) {
+		if (_realNode->isDirectory()) {
+			warning("FSNode::createDirectory: '%s' already exists", getName().c_str());
+		} else {
+			warning("FSNode::createDirectory: '%s' is a file", getName().c_str());
+		}
+		return false;
+	}
+
+	return _realNode->createDirectory();
+}
+
 FSDirectory::FSDirectory(const FSNode &node, int depth, bool flat)
   : _node(node), _cached(false), _depth(depth), _flat(flat) {
 }

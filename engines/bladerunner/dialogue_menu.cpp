@@ -143,6 +143,25 @@ bool DialogueMenu::addToList(int answer, bool done, int priorityPolite, int prio
 	return true;
 }
 
+/**
+* Aux function - used in cut content mode to re-use some NeverRepeatOnceSelected dialogue options for different characters
+*/
+bool DialogueMenu::clearNeverRepeatWasSelectedFlag(int answer) {
+	int foundIndex = -1;
+	for (int i = 0; i != _neverRepeatListSize; ++i) {
+		if (answer == _neverRepeatValues[i]) {
+			foundIndex = i;
+			break;
+		}
+	}
+
+	if (foundIndex >= 0 && _neverRepeatWasSelected[foundIndex]) {
+		_neverRepeatWasSelected[foundIndex] = false;
+		return true;
+	}
+	return false;
+}
+
 bool DialogueMenu::addToListNeverRepeatOnceSelected(int answer, int priorityPolite, int priorityNormal, int prioritySurly) {
 	int foundIndex = -1;
 	for (int i = 0; i != _neverRepeatListSize; ++i) {
@@ -324,7 +343,7 @@ void DialogueMenu::draw(Graphics::Surface &s) {
 
 		if (_items[i].colorIntensity < targetColorIntensity) {
 			_items[i].colorIntensity += 4;
-			if(_items[i].colorIntensity > targetColorIntensity) {
+			if (_items[i].colorIntensity > targetColorIntensity) {
 				_items[i].colorIntensity = targetColorIntensity;
 			}
 		} else if (_items[i].colorIntensity > targetColorIntensity) {
@@ -361,8 +380,8 @@ void DialogueMenu::draw(Graphics::Surface &s) {
 	for (int i = 0; i != _listSize; ++i) {
 		_shapes[1].draw(s, x1, y);
 		_shapes[4].draw(s, x2, y);
-		uint16 color = s.format.RGBToColor((_items[i].colorIntensity / 2) * (256 / 32), (_items[i].colorIntensity / 2) * (256 / 32), _items[i].colorIntensity * (256 / 32));
-		_vm->_mainFont->drawColor(_items[i].text, s, x, y, color);
+		uint32 color = s.format.RGBToColor((_items[i].colorIntensity / 2) * (256 / 32), (_items[i].colorIntensity / 2) * (256 / 32), _items[i].colorIntensity * (256 / 32));
+		_vm->_mainFont->drawString(&s, _items[i].text, x, y, s.w, color);
 		y += kLineHeight;
 	}
 	for (; x != x2; ++x) {
@@ -388,7 +407,7 @@ const char *DialogueMenu::getText(int id) const {
 void DialogueMenu::calculatePosition(int unusedX, int unusedY) {
 	_maxItemWidth = 0;
 	for (int i = 0; i != _listSize; ++i) {
-		_maxItemWidth = MAX(_maxItemWidth, _vm->_mainFont->getTextWidth(_items[i].text));
+		_maxItemWidth = MAX(_maxItemWidth, _vm->_mainFont->getStringWidth(_items[i].text));
 	}
 	_maxItemWidth += 2;
 
@@ -533,13 +552,13 @@ void DialogueMenu::darkenRect(Graphics::Surface &s, int x1, int y1, int x2, int 
 	if (x1 < x2 && y1 < y2) {
 		for (int y = y1; y != y2; ++y) {
 			for (int x = x1; x != x2; ++x) {
-				uint16 *p = (uint16 *)s.getBasePtr(x, y);
+				void *p = s.getBasePtr(CLIP(x, 0, s.w - 1), CLIP(y, 0, s.h - 1));
 				uint8 r, g, b;
-				s.format.colorToRGB(*p, r, g, b);
+				s.format.colorToRGB(READ_UINT32(p), r, g, b);
 				r /= 4;
 				g /= 4;
 				b /= 4;
-				*p = s.format.RGBToColor(r, g, b);
+				drawPixel(s, p, s.format.RGBToColor(r, g, b));
 			}
 		}
 	}

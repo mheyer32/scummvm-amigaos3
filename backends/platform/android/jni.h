@@ -64,6 +64,7 @@ public:
 	static bool setTextInClipboard(const Common::String &text);
 	static bool isConnectionLimited();
 	static void showVirtualKeyboard(bool enable);
+	static void showKeyboardControl(bool enable);
 	static void addSysArchivesToSearchSet(Common::SearchSet &s, int priority);
 
 	static inline bool haveSurface();
@@ -101,6 +102,7 @@ private:
 	static jmethodID _MID_isConnectionLimited;
 	static jmethodID _MID_setWindowCaption;
 	static jmethodID _MID_showVirtualKeyboard;
+	static jmethodID _MID_showKeyboardControl;
 	static jmethodID _MID_getSysArchives;
 	static jmethodID _MID_initSurface;
 	static jmethodID _MID_deinitSurface;
@@ -130,8 +132,6 @@ private:
 
 	static void pushEvent(JNIEnv *env, jobject self, int type, int arg1,
 							int arg2, int arg3, int arg4, int arg5, int arg6);
-	static void enableZoning(JNIEnv *env, jobject self, jboolean enable);
-
 	static void setPause(JNIEnv *env, jobject self, jboolean value);
 
 	static jstring getCurrentCharset(JNIEnv *env, jobject self);

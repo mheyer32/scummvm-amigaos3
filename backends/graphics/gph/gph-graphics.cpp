@@ -61,10 +61,8 @@ int GPHGraphicsManager::getGraphicsModeScale(int mode) const {
 	return scale;
 }
 
-void GPHGraphicsManager::setGraphicsModeIntern() {
-	Common::StackLock lock(_graphicsMutex);
+ScalerProc *GPHGraphicsManager::getGraphicsScalerProc(int mode) const {
 	ScalerProc *newScalerProc = 0;
-
 	switch (_videoMode.mode) {
 	case GFX_NORMAL:
 		newScalerProc = Normal1x;
@@ -72,26 +70,15 @@ void GPHGraphicsManager::setGraphicsModeIntern() {
 	case GFX_HALF:
 		newScalerProc = DownscaleAllByHalf;
 		break;
-
-	default:
-		error("Unknown gfx mode %d", _videoMode.mode);
 	}
 
-	_scalerProc = newScalerProc;
-
-	if (!_screen || !_hwScreen)
-		return;
-
-	// Blit everything to the screen
-	_forceRedraw = true;
-
-	// Even if the old and new scale factors are the same, we may have a
-	// different scaler for the cursor now.
-	blitCursor();
+	return newScalerProc;
 }
 
 void GPHGraphicsManager::initSize(uint w, uint h, const Graphics::PixelFormat *format) {
 	assert(_transactionMode == kTransactionActive);
+
+	_gameScreenShakeOffset = 0;
 
 #ifdef USE_RGB_COLOR
 	// Avoid redundant format changes
@@ -231,16 +218,16 @@ void GPHGraphicsManager::internUpdateScreen() {
 #endif
 
 	// If the shake position changed, fill the dirty area with blackness
-	if (_currentShakePos != _newShakePos ||
-	        (_cursorNeedsRedraw && _mouseBackup.y <= _currentShakePos)) {
-		SDL_Rect blackrect = {0, 0, _videoMode.screenWidth *_videoMode.scaleFactor, _newShakePos *_videoMode.scaleFactor};
+	if (_currentShakePos != _gameScreenShakeOffset ||
+		(_cursorNeedsRedraw && _mouseBackup.y <= _currentShakePos)) {
+		SDL_Rect blackrect = {0, 0, (Uint16)(_videoMode.screenWidth * _videoMode.scaleFactor), (Uint16)(_gameScreenShakeOffset * _videoMode.scaleFactor)};
 
 		if (_videoMode.aspectRatioCorrection && !_overlayVisible)
 			blackrect.h = real2Aspect(blackrect.h - 1) + 1;
 
 		SDL_FillRect(_hwScreen, &blackrect, 0);
 
-		_currentShakePos = _newShakePos;
+		_currentShakePos = _gameScreenShakeOffset;
 
 		_forceRedraw = true;
 	}

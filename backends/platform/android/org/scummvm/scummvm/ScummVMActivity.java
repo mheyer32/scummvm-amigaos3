@@ -15,10 +15,12 @@ import android.os.Environment;
 import android.text.ClipboardManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -39,31 +41,20 @@ public class ScummVMActivity extends Activity {
 		}
 	}
 
-	private class MyScummVM extends ScummVM {
-		private boolean usingSmallScreen() {
-			// Multiple screen sizes came in with Android 1.6.  Have
-			// to use reflection in order to continue supporting 1.5
-			// devices :(
-			DisplayMetrics metrics = new DisplayMetrics();
-			getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-			try {
-				// This 'density' term is very confusing.
-				int DENSITY_LOW = metrics.getClass().getField("DENSITY_LOW").getInt(null);
-				int densityDpi = metrics.getClass().getField("densityDpi").getInt(metrics);
-				return densityDpi <= DENSITY_LOW;
-			} catch (Exception e) {
-				return false;
-			}
+	public View.OnClickListener keyboardBtnOnClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			runOnUiThread(new Runnable() {
+					public void run() {
+						toggleKeyboard();
+					}
+				});
 		}
+	};
 
+	private class MyScummVM extends ScummVM {
 		public MyScummVM(SurfaceHolder holder) {
 			super(ScummVMActivity.this.getAssets(), holder);
-
-			// Enable ScummVM zoning on 'small' screens.
-			// FIXME make this optional for the user
-			// disabled for now since it crops too much
-			//enableZoning(usingSmallScreen());
 		}
 
 		@Override
@@ -151,6 +142,15 @@ public class ScummVMActivity extends Activity {
 		}
 
 		@Override
+		protected void showKeyboardControl(final boolean enable) {
+			runOnUiThread(new Runnable() {
+					public void run() {
+						showKeyboardView(enable);
+					}
+				});
+		}
+
+		@Override
 		protected String[] getSysArchives() {
 			return new String[0];
 		}
@@ -232,6 +232,9 @@ public class ScummVMActivity extends Activity {
 		{
 			_events = new ScummVMEventsHoneycomb(this, _scummvm, _mouseHelper);
 		}
+
+		// On screen button listener
+		((ImageView)findViewById(R.id.show_keyboard)).setOnClickListener(keyboardBtnOnClickListener);
 
 		main_surface.setOnKeyListener(_events);
 		main_surface.setOnTouchListener(_events);
@@ -322,6 +325,25 @@ public class ScummVMActivity extends Activity {
 		else
 			imm.hideSoftInputFromWindow(main_surface.getWindowToken(),
 										InputMethodManager.HIDE_IMPLICIT_ONLY);
+	}
+
+	private void toggleKeyboard() {
+		SurfaceView main_surface = (SurfaceView)findViewById(R.id.main_surface);
+		InputMethodManager imm = (InputMethodManager)
+			getSystemService(INPUT_METHOD_SERVICE);
+
+		imm.toggleSoftInputFromWindow(main_surface.getWindowToken(),
+		                              InputMethodManager.SHOW_IMPLICIT,
+		                              InputMethodManager.HIDE_IMPLICIT_ONLY);
+	}
+
+	private void showKeyboardView(boolean show) {
+		ImageView keyboardBtn = (ImageView)findViewById(R.id.show_keyboard);
+
+		if (show)
+			keyboardBtn.setVisibility(View.VISIBLE);
+		else
+			keyboardBtn.setVisibility(View.GONE);
 	}
 
 	private void showMouseCursor(boolean show) {

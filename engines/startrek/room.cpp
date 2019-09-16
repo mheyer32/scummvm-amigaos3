@@ -20,7 +20,6 @@
  *
  */
 
-#include "startrek/filestream.h"
 #include "startrek/iwfile.h"
 #include "startrek/room.h"
 #include "startrek/startrek.h"
@@ -46,13 +45,12 @@
 namespace StarTrek {
 
 Room::Room(StarTrekEngine *vm, const Common::String &name) : _vm(vm), _awayMission(&vm->_awayMission) {
-	SharedPtr<FileStream> rdfFile = _vm->loadFile(name + ".RDF");
+	Common::MemoryReadStreamEndian *rdfFile = _vm->loadFile(name + ".RDF");
 
 	int size = rdfFile->size();
 	_rdfData = new byte[size];
 	rdfFile->read(_rdfData, size);
-
-	_roomIndex = name.lastChar() - '0';
+	delete rdfFile;
 
 	_roomActionList = nullptr;
 
@@ -115,11 +113,13 @@ Room::Room(StarTrekEngine *vm, const Common::String &name) : _vm(vm), _awayMissi
 	}
 
 	loadRoomMessages();
+	loadOtherRoomMessages();
 	memset(&_roomVar, 0, sizeof(_roomVar));
 }
 
 Room::~Room() {
 	_lookMessages.clear();
+	_lookWithTalkerMessages.clear();
 	_talkMessages.clear();
 	delete[] _rdfData;
 }
@@ -127,40 +127,71 @@ Room::~Room() {
 void Room::loadRoomMessages() {
 	// TODO: There are some more messages which are not stored in that offset
 	uint16 messagesOffset = readRdfWord(32);
-	byte *text = _rdfData + messagesOffset;
-	int messageNum;
-	bool isTalkMessage;
+	const char *text = (const char *)_rdfData + messagesOffset;
+	const char roomIndexChar = '0' + _vm->_roomIndex;
 
 	do {
-		while (*text != '#')
+		while (text[0] != '#' || (text[1] != _vm->_missionName[0] && text[4] != roomIndexChar))
 			text++;
 
-		if (text[5] != '\\')
-			error("loadRoomMessages: Invalid message");
-
-		isTalkMessage = (text[10] == '_');
-
-		// TODO: There are also 'L' messages (look at something, but has a talker).
-		// These clash with the normal talk ones (with underscores)
-		if (text[10] == 'L') {
-			while (*text != '\0')
-				text++;
-
-			continue;
-		}
-
-		sscanf((const char *)(text + 11), "%3d", &messageNum);
-		if (text[14] != '#')
-			error("loadRoomMessages: Invalid message");
-
-		if (isTalkMessage)
-			_talkMessages[messageNum] = Common::String((const char *)text);
-		else
-			_lookMessages[messageNum] = Common::String((const char *)text);
+		if (text[5] == '\\')
+			loadRoomMessage(text);
 
 		while (*text != '\0')
 			text++;
+
+		// Peek the next byte, in case there's a filler text
+		if (Common::isAlpha(*(text + 1))) {
+			while (*text != '\0')
+				text++;
+		}
 	} while (*(text + 1) == '#');
+}
+
+void Room::loadRoomMessage(const char *text) {
+	int messageNum;
+	bool isTalkMessage;
+	bool isLookWithTalkerMessage;
+	char textType = text[10];	// _ and U: talk message, N: look message, L: look with talker message
+
+	if (text[5] != '\\')
+		error("loadRoomMessage: Invalid message");
+
+	isTalkMessage = (textType == '_' || textType == 'U');	// U = Uhura
+	isLookWithTalkerMessage = (textType == 'L');
+
+	sscanf((const char *)(text + 11), "%3d", &messageNum);
+	if (text[14] != '#')
+		error("loadRoomMessage: Invalid message");
+
+	if (isTalkMessage)
+		_talkMessages[messageNum] = Common::String((const char *)text);
+	else if (isLookWithTalkerMessage)
+		_lookWithTalkerMessages[messageNum] = Common::String((const char *)text);
+	else
+		_lookMessages[messageNum] = Common::String((const char *)text);
+
+}
+
+void Room::loadOtherRoomMessages() {
+	uint16 startOffset = readRdfWord(14);
+	uint16 endOffset = readRdfWord(16);
+	uint16 offset = startOffset;
+
+	while (offset < endOffset) {
+		uint16 nextOffset = readRdfWord(offset + 4);
+		if (nextOffset >= endOffset)
+			break;
+
+		while (offset < nextOffset) {
+			const char *text = (const char *)_rdfData + offset;
+
+			if (text[0] == '#' && text[1] == _vm->_missionName[0] && text[5] == '\\')
+				loadRoomMessage(text);
+
+			offset++;
+		}
+	}
 }
 
 uint16 Room::readRdfWord(int offset) {
@@ -340,7 +371,7 @@ int Room::showRoomSpecificText(const char **array) {
 	return _vm->showText(&StarTrekEngine::readTextFromArrayWithChoices, (uintptr)array, 20, 20, textColor, true, false, false);
 }
 
-int Room::showText(const TextRef *textIDs, bool fromRDF) {
+int Room::showMultipleTexts(const TextRef *textIDs, bool fromRDF, bool lookWithTalker) {
 	int numIDs = 0;
 	int retval;
 	while (textIDs[numIDs] != TX_BLANK)
@@ -350,9 +381,14 @@ int Room::showText(const TextRef *textIDs, bool fromRDF) {
 
 	for (int i = 0; i <= numIDs; i++) {
 		// TODO: This isn't nice, but it's temporary till we migrate to reading text from RDF files
-		if (i > 0 && fromRDF)
-			text[i] = (textIDs[0] == TX_NULL) ? _lookMessages[textIDs[i]].c_str() : _talkMessages[textIDs[i]].c_str();
-		else
+		if (i > 0 && fromRDF) {
+			if (textIDs[0] == TX_NULL)
+				text[i] = _lookMessages[textIDs[i]].c_str();
+			else if (lookWithTalker)
+				text[i] = _lookWithTalkerMessages[textIDs[i]].c_str();
+			else
+				text[i] = _talkMessages[textIDs[i]].c_str();
+		} else
 			text[i] = g_gameStrings[textIDs[i]];
 	}
 
@@ -362,16 +398,16 @@ int Room::showText(const TextRef *textIDs, bool fromRDF) {
 	return retval;
 }
 
-int Room::showText(TextRef speaker, TextRef text, bool fromRDF) {
+int Room::showText(TextRef speaker, TextRef text, bool fromRDF, bool lookWithTalker) {
 	TextRef textIDs[3];
 	textIDs[0] = speaker;
 	textIDs[1] = text;
 	textIDs[2] = TX_BLANK;
-	return showText(textIDs, fromRDF);
+	return showMultipleTexts(textIDs, fromRDF, lookWithTalker);
 }
 
-int Room::showText(TextRef text, bool fromRDF) {
-	return showText(TX_NULL, text, fromRDF);
+int Room::showDescription(TextRef text, bool fromRDF, bool lookWithTalker) {
+	return showText(TX_NULL, text, fromRDF, lookWithTalker);
 }
 
 void Room::giveItem(int item) {
@@ -435,11 +471,11 @@ void Room::walkCrewmanC(int actorIndex, int16 destX, int16 destY, void (Room::*f
 }
 
 void Room::loadMapFile(const Common::String &name) {
-	_vm->_mapFilename = name;
-	_vm->_iwFile.reset();
-	_vm->_mapFile.reset();
-	_vm->_iwFile = SharedPtr<IWFile>(new IWFile(_vm, name + ".iw"));
+	delete _vm->_mapFile;
 	_vm->_mapFile = _vm->loadFile(name + ".map");
+
+	_vm->_iwFile.reset();
+	_vm->_iwFile = SharedPtr<IWFile>(new IWFile(_vm, name + ".iw"));
 }
 
 void Room::showBitmapFor5Ticks(const Common::String &bmpName, int priority) {
@@ -512,20 +548,25 @@ void Room::endMission(int16 score, int16 arg1, int16 arg2) {
 	// TODO: This is a stopgap measure (loading the next away mission immediately).
 	// Replace this with the proper code later.
 	_vm->_gameMode = GAMEMODE_BEAMDOWN;
-	if (_vm->_missionName == "DEMON")
-		_vm->_missionToLoad = "TUG";
-	if (_vm->_missionName == "TUG")
-		_vm->_missionToLoad = "LOVE";
-	if (_vm->_missionName == "LOVE")
-		_vm->_missionToLoad = "MUDD";
-	if (_vm->_missionName == "MUDD")
-		_vm->_missionToLoad = "FEATHER";
-	if (_vm->_missionName == "FEATHER")
-		_vm->_missionToLoad = "TRIAL";
-	if (_vm->_missionName == "TRIAL")
-		_vm->_missionToLoad = "SINS";
-	if (_vm->_missionName == "SINS")
-		_vm->_missionToLoad = "VENG";
+
+	const char *missionNames[] = {
+		"DEMON",
+		"TUG",
+		"LOVE",
+		"MUDD",
+		"FEATHER",
+		"TRIAL",
+		"SINS",
+		"VENG"
+	};
+
+	for (int i = 0; i < ARRAYSIZE(missionNames)-1; i++) {
+		if (_vm->_missionName == missionNames[i]) {
+			_vm->_missionToLoad = missionNames[i + 1];
+			break;
+		}
+	}
+
 	_vm->_roomIndexToLoad = 0;
 }
 
@@ -569,7 +610,7 @@ Common::String Room::getCrewmanAnimFilename(int object, const Common::String &st
 	return _vm->getCrewmanAnimFilename(object, str);
 }
 
-void Room::spockScan(int direction, TextRef text, bool changeDirection) {
+void Room::spockScan(int direction, TextRef text, bool changeDirection, bool fromRDF) {
 	const char *dirs = "nsew";
 	Common::String anim = "sscan_";
 	anim.setChar(dirs[direction], 5);
@@ -581,10 +622,10 @@ void Room::spockScan(int direction, TextRef text, bool changeDirection) {
 	playSoundEffectIndex(SND_TRICORDER);
 
 	if (text != -1)
-		showText(TX_SPEAKER_SPOCK, text);
+		showText(TX_SPEAKER_SPOCK, text, fromRDF);
 }
 
-void Room::mccoyScan(int direction, TextRef text, bool changeDirection) {
+void Room::mccoyScan(int direction, TextRef text, bool changeDirection, bool fromRDF) {
 	const char *dirs = "nsew";
 	Common::String anim = "mscan_";
 	anim.setChar(dirs[direction], 5);
@@ -596,7 +637,7 @@ void Room::mccoyScan(int direction, TextRef text, bool changeDirection) {
 	playSoundEffectIndex(SND_TRICORDER);
 
 	if (text != -1)
-		showText(TX_SPEAKER_MCCOY, text);
+		showText(TX_SPEAKER_MCCOY, text, fromRDF);
 }
 
 } // End of namespace StarTrek

@@ -41,10 +41,11 @@ class Versailles_Documentation {
 public:
 	Versailles_Documentation() : _engine(nullptr), _fontManager(nullptr), _messages(nullptr),
 		_linksData(nullptr), _linksSize(0) { }
-	~Versailles_Documentation() { delete _linksData; }
+	~Versailles_Documentation() { delete [] _linksData; }
 
 	void init(const Sprites *sprites, FontManager *fontManager, const Common::StringArray *messages,
-	          CryOmni3DEngine *engine);
+	          CryOmni3DEngine *engine, const Common::String &allDocsFileName,
+	          const Common::String &linksDocsFileName);
 	void handleDocArea();
 	void handleDocInGame(const Common::String &record);
 
@@ -109,8 +110,8 @@ private:
 	void loadLinksFile();
 	void getLinks(const Common::String &record, Common::Array<LinkInfo> &links);
 
-	static const char *kAllDocsFile;
-	static const char *kLinksDocsFile;
+	Common::String _allDocsFileName;
+	Common::String _linksDocsFileName;
 
 	static const uint kPopupMenuMargin = 5;
 

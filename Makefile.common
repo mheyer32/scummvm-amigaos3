@@ -314,6 +314,12 @@ ifdef USE_SDL_NET
 DIST_FILES_NETWORKING:=$(addprefix $(srcdir)/dists/networking/,wwwroot.zip)
 endif
 
+# Virtual keyboard files
+DIST_FILES_VKEYBD=
+ifdef ENABLE_VKEYBD
+DIST_FILES_VKEYBD:=$(addprefix $(srcdir)/backends/vkeybd/packs/,vkeybd_default.zip vkeybd_small.zip)
+endif
+
 # Engine data files
 DIST_FILES_ENGINEDATA=
 ifdef ENABLE_ACCESS
@@ -321,6 +327,9 @@ DIST_FILES_ENGINEDATA+=access.dat
 endif
 ifdef ENABLE_CRYO
 DIST_FILES_ENGINEDATA+=cryo.dat
+endif
+ifdef ENABLE_CRYOMNI3D
+DIST_FILES_ENGINEDATA+=cryomni3d.dat
 endif
 ifdef ENABLE_DRASCULA
 DIST_FILES_ENGINEDATA+=drascula.dat

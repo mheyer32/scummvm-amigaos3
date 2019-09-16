@@ -68,13 +68,9 @@ void KIASectionHelp::close() {
 	_scrollBox->hide();
 }
 
-void KIASectionHelp::draw(Graphics::Surface &surface){
+void KIASectionHelp::draw(Graphics::Surface &surface) {
 	_vm->_kia->_shapes->get(69)->draw(surface, 501, 123);
 	_uiContainer->draw(surface);
-}
-
-void KIASectionHelp::handleKeyUp(const Common::KeyState &kbd) {
-	_uiContainer->handleKeyUp(kbd);
 }
 
 void KIASectionHelp::handleMouseMove(int mouseX, int mouseY) {

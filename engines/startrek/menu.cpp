@@ -504,10 +504,9 @@ void StarTrekEngine::loadMenuButtons(String mnuFilename, int xpos, int ypos) {
 	_activeMenu = new Menu();
 	_activeMenu->nextMenu = oldMenu;
 
-	SharedPtr<FileStream> stream = loadFile(mnuFilename + ".MNU");
+	Common::MemoryReadStreamEndian *stream = loadFile(mnuFilename + ".MNU");
 
-	_activeMenu->menuFile = stream;
-	_activeMenu->numButtons = _activeMenu->menuFile->size() / 16;
+	_activeMenu->numButtons = stream->size() / 16;
 
 	for (int i = 0; i < _activeMenu->numButtons; i++) {
 		_activeMenu->sprites[i] = Sprite();
@@ -531,6 +530,8 @@ void StarTrekEngine::loadMenuButtons(String mnuFilename, int xpos, int ypos) {
 		_activeMenu->sprites[i].drawPriority = 15;
 		_activeMenu->sprites[i].drawPriority2 = 8;
 	}
+
+	delete stream;
 
 	if (_activeMenu->retvals[_activeMenu->numButtons - 1] == 0) {
 		// Set default retvals for buttons
@@ -1166,8 +1167,8 @@ lclick:
 	someSprite.bitmap.reset();
 	_gfx->popSprites();
 
-	_gfx->loadPri(_screenName);
-	_gfx->setBackgroundImage(_gfx->loadBitmap(_screenName));
+	_gfx->loadPri(getScreenName());
+	_gfx->setBackgroundImage(_gfx->loadBitmap(getScreenName()));
 	_gfx->copyBackgroundScreen();
 	_system->updateScreen();
 	_system->delayMillis(10);

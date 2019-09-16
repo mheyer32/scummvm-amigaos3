@@ -46,7 +46,7 @@ TabWidget::TabWidget(GuiObject *boss, const String &name)
 }
 
 void TabWidget::init() {
-	setFlags(WIDGET_ENABLED);
+	setFlags(WIDGET_ENABLED | WIDGET_TRACK_MOUSE);
 	_type = kTabWidget;
 	_activeTab = -1;
 	_firstVisibleTab = 0;
@@ -62,7 +62,7 @@ void TabWidget::init() {
 	_bodyLP = g_gui.xmlEval()->getVar("Globals.TabWidget.Body.Padding.Left");
 	_bodyRP = g_gui.xmlEval()->getVar("Globals.TabWidget.Body.Padding.Right");
 
-	_butRP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButtonPadding.Right", 0);
+	_butRP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Padding.Right", 0);
 	_butTP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Padding.Top", 0);
 	_butW = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Width", 10);
 	_butH = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Height", 10);
@@ -71,6 +71,7 @@ void TabWidget::init() {
 	int y = _butTP - _tabHeight;
 	_navLeft = new ButtonWidget(this, x, y, _butW, _butH, "<", 0, kCmdLeft);
 	_navRight = new ButtonWidget(this, x + _butW + 2, y, _butW, _butH, ">", 0, kCmdRight);
+	_lastRead = -1;
 }
 
 TabWidget::~TabWidget() {
@@ -216,6 +217,30 @@ void TabWidget::handleMouseDown(int x, int y, int button, int clickCount) {
 		setActiveTab(tabID);
 }
 
+void TabWidget::handleMouseMoved(int x, int y, int button) {
+	assert(y < _tabHeight);
+
+	if (x < 0)
+		return;
+
+	// Determine which tab the mouse is on
+	int tabID;
+	for (tabID = _firstVisibleTab; tabID <= _lastVisibleTab; ++tabID) {
+		x -= _tabs[tabID]._tabWidth;
+		if (x < 0)
+			break;
+	}
+
+	if (tabID <= _lastVisibleTab) {
+		if (tabID != _lastRead) {
+			read(_tabs[tabID].title);
+			_lastRead = tabID;
+		}
+	}
+	else
+		_lastRead = -1;
+}
+
 bool TabWidget::handleKeyDown(Common::KeyState state) {
 	if (state.hasFlags(Common::KBD_SHIFT) && state.keycode == Common::KEYCODE_TAB)
 		adjustTabs(kTabBackwards);
@@ -258,9 +283,9 @@ void TabWidget::reflowLayout() {
 	_minTabWidth = g_gui.xmlEval()->getVar("Globals.TabWidget.Tab.Width");
 	_titleVPad = g_gui.xmlEval()->getVar("Globals.TabWidget.Tab.Padding.Top");
 
-	_butRP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.PaddingRight", 0);
+	_butRP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Padding.Right", 0);
 	_butTP = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Padding.Top", 0);
-	_butW = g_gui.xmlEval()->getVar("GlobalsTabWidget.NavButton.Width", 10);
+	_butW = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Width", 10);
 	_butH = g_gui.xmlEval()->getVar("Globals.TabWidget.NavButton.Height", 10);
 
 	// If widgets were added or removed in the current tab, without tabs
@@ -375,7 +400,7 @@ Widget *TabWidget::findWidget(int x, int y) {
 void TabWidget::computeLastVisibleTab(bool adjustFirstIfRoom) {
 	int availableWidth = _w;
 	if (_navButtonsVisible)
-		availableWidth -= 2 + _butW * 2;
+		availableWidth -= 2 + _butW * 2 + _butRP;
 
 	_lastVisibleTab = _tabs.size() - 1;
 	for (int i = _firstVisibleTab; i < (int)_tabs.size(); ++i) {

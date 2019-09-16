@@ -51,13 +51,12 @@ void OSystem_Switch::initBackend() {
 	ConfMan.registerDefault("gfx_mode", "2x");
 	ConfMan.registerDefault("filtering", true);
 	ConfMan.registerDefault("output_rate", 48000);
-	ConfMan.registerDefault("touchpad_mouse_mode", true);
+	ConfMan.registerDefault("touchpad_mouse_mode", false);
+
+	ConfMan.setBool("fullscreen", true);
 
 	if (!ConfMan.hasKey("joystick_num")) {
 		ConfMan.setInt("joystick_num", 0);
-	}
-	if (!ConfMan.hasKey("fullscreen")) {
-		ConfMan.setBool("fullscreen", true);
 	}
 	if (!ConfMan.hasKey("aspect_ratio")) {
 		ConfMan.setBool("aspect_ratio", false);
@@ -72,12 +71,12 @@ void OSystem_Switch::initBackend() {
 		ConfMan.setInt("output_rate", 48000);
 	}
 	if (!ConfMan.hasKey("touchpad_mouse_mode")) {
-		ConfMan.setBool("touchpad_mouse_mode", true);
+		ConfMan.setBool("touchpad_mouse_mode", false);
 	}
 
 	// Create the savefile manager
 	if (_savefileManager == 0) {
-		_savefileManager = new POSIXSaveFileManager();
+		_savefileManager = new DefaultSaveFileManager("./saves");
 	}
 
 	// Event source
@@ -89,6 +88,40 @@ void OSystem_Switch::initBackend() {
 	OSystem_SDL::initBackend();
 }
 
+bool OSystem_Switch::hasFeature(Feature f) {
+	if (f == kFeatureFullscreenMode)
+		return false;
+	return (f == kFeatureTouchpadMode ||
+		OSystem_SDL::hasFeature(f));
+}
+
+void OSystem_Switch::setFeatureState(Feature f, bool enable) {
+	switch (f) {
+	case kFeatureTouchpadMode:
+		ConfMan.setBool("touchpad_mouse_mode", enable);
+		break;
+	case kFeatureFullscreenMode:
+		break;
+	default:
+		OSystem_SDL::setFeatureState(f, enable);
+		break;
+	}
+}
+
+bool OSystem_Switch::getFeatureState(Feature f) {
+	switch (f) {
+	case kFeatureTouchpadMode:
+		return ConfMan.getBool("touchpad_mouse_mode");
+		break;
+	case kFeatureFullscreenMode:
+		return true;
+		break;
+	default:
+		return OSystem_SDL::getFeatureState(f);
+		break;
+	}
+}
+
 void OSystem_Switch::logMessage(LogMessageType::Type type, const char *message) {
 	printf("%s\n", message);
 }
@@ -97,7 +130,6 @@ Common::String OSystem_Switch::getDefaultConfigFileName() {
 	return _baseConfigName;
 }
 
-Common::WriteStream *OSystem_Switch::createLogFile() {
-	Common::FSNode file("scummvm.log");
-	return file.createWriteStream();
+Common::String OSystem_Switch::getDefaultLogFileName() {
+	return "scummvm.log";
 }

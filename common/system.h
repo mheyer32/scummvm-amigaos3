@@ -49,6 +49,9 @@ class TaskbarManager;
 #if defined(USE_UPDATES)
 class UpdateManager;
 #endif
+#if defined(USE_TTS)
+class TextToSpeechManager;
+#endif
 #if defined(USE_SYSDIALOGS)
 class DialogManager;
 #endif
@@ -60,6 +63,7 @@ class HardwareInputSet;
 class Keymap;
 class KeymapperDefaultBindings;
 #endif
+class Encoding;
 }
 
 class AudioCDManager;
@@ -107,6 +111,7 @@ enum Type {
  * control audio CD playback, and sound output.
  */
 class OSystem : Common::NonCopyable {
+	friend class Common::Encoding;
 protected:
 	OSystem();
 	virtual ~OSystem();
@@ -180,6 +185,15 @@ protected:
 	 * @note _updateManager is deleted by the OSystem destructor.
 	 */
 	Common::UpdateManager *_updateManager;
+#endif
+
+#if defined(USE_TTS)
+	/**
+	 * No default value is provided for _textToSpeechManager by OSystem.
+	 *
+	 * @note _textToSpeechManager is deleted by the OSystem destructor.
+	 */
+	Common::TextToSpeechManager *_textToSpeechManager;
 #endif
 
 #if defined(USE_SYSDIALOGS)
@@ -1317,6 +1331,17 @@ public:
 	}
 #endif
 
+#if defined(USE_TTS)
+	/**
+	 * Returns the TextToSpeechManager, used to handle text to speech features.
+	 *
+	 * @return the TextToSpeechManager for the current architecture
+	 */
+	virtual Common::TextToSpeechManager *getTextToSpeechManager() {
+		return _textToSpeechManager;
+	}
+#endif
+
 #if defined(USE_SYSDIALOGS)
 	/**
 	 * Returns the DialogManager, used to handle system dialogs.
@@ -1476,7 +1501,31 @@ public:
 	 */
 	virtual Common::String getSystemLanguage() const;
 
+	/**
+	 * Returns whether connection's limited (if available on the target system).
+	 *
+	 * Returns true if connection seems limited.
+	 */
+	virtual bool isConnectionLimited();
+
 	//@}
+	
+protected:
+
+	/**
+	 * This allows derived classes to implement encoding conversion using platform
+	 * specific API.
+	 * This method shouldn't be called directly. Use Common::Encoding instead.
+	 *
+	 * @param to Encoding to convert the string to
+	 * @param from Encoding to convert the string from
+	 * @param string The string that should be converted
+	 * @param length Size of the string in bytes
+	 *
+	 * @return Converted string, which must be freed, or nullptr if the conversion
+	 * isn't possible.
+	 */
+	virtual char *convertEncoding(const char *to, const char *from, const char *string, size_t length) { return nullptr; }
 };
 
 

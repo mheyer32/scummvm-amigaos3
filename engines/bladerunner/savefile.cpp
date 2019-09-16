@@ -150,7 +150,7 @@ bool SaveFileManager::readHeader(Common::SeekableReadStream &in, SaveFileHeader 
 		s.read(thumbnailData, kThumbnailSize);
 
 		header._thumbnail->init(80, 60, 160, thumbnailData, gameDataPixelFormat());
-		header._thumbnail->convertToInPlace(screenPixelFormat());
+
 		s.seek(pos);
 	}
 
@@ -190,7 +190,7 @@ void SaveFileWriteStream::padBytes(int count) {
 	}
 }
 
-void SaveFileWriteStream::writeInt(int v) {
+void SaveFileWriteStream::writeInt(int32 v) {
 	writeUint32LE(v);
 }
 
@@ -248,7 +248,7 @@ void SaveFileWriteStream::writeBoundingBox(const BoundingBox &v, bool serialized
 
 SaveFileReadStream::SaveFileReadStream(Common::SeekableReadStream &s) : _s(s) {}
 
-int SaveFileReadStream::readInt() {
+int32 SaveFileReadStream::readInt() {
 	return readUint32LE();
 }
 

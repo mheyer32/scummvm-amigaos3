@@ -542,7 +542,7 @@ bool AmigaOS3FilesystemNode::isDirectory() const {
 	return _bIsDirectory;
 }
 
-bool AmigaOS3FilesystemNode::create(bool isDirectory) {
+bool AmigaOS3FilesystemNode::createDirectory() {
 	error("Not supported");
 	return false;
 }

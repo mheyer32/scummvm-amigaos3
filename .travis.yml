@@ -44,18 +44,21 @@ addons:
     - freetype
     - zlib
     - pandoc
+    - jack
+    update: true
 
 branches:
  only:
    - master
 
-compiler:
-  - gcc
-  - clang
-
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+    - os: linux
+      compiler: clang
+    - os: osx
+      compiler: clang
 
 dist: trusty
 

@@ -51,6 +51,7 @@
 #include "common/textconsole.h"
 #include "common/tokenizer.h"
 #include "common/translation.h"
+#include "common/text-to-speech.h"
 #include "common/osd_message_queue.h"
 
 #include "gui/gui-manager.h"
@@ -161,11 +162,11 @@ static Common::Error runGame(const Plugin *plugin, OSystem &system, const Common
 #endif
 
 	// Verify that the game path refers to an actual directory
-        if (!dir.exists()) {
+	if (!dir.exists()) {
 		err = Common::kPathDoesNotExist;
-        } else if (!dir.isDirectory()) {
+	} else if (!dir.isDirectory()) {
 		err = Common::kPathNotDirectory;
-        }
+	}
 
 	// Create the game engine
 	if (err.getCode() == Common::kNoError) {
@@ -260,8 +261,16 @@ static Common::Error runGame(const Plugin *plugin, OSystem &system, const Common
 	    && ConfMan.getBool("gui_use_game_language")
 	    && ConfMan.hasKey("language")) {
 		TransMan.setLanguage(ConfMan.get("language"));
+#ifdef USE_TTS
+		Common::TextToSpeechManager *ttsMan;
+		if ((ttsMan = g_system->getTextToSpeechManager()) != nullptr) {
+			Common::String language = ConfMan.get("language");
+			language.setChar(2, '\0');
+			ttsMan->setLanguage(language);
+		}
+#endif // USE_TTS
 	}
-#endif
+#endif // USE_TRANSLATION
 
 	// Initialize any game-specific keymaps
 	engine->initKeymap();
@@ -289,7 +298,15 @@ static Common::Error runGame(const Plugin *plugin, OSystem &system, const Common
 
 #ifdef USE_TRANSLATION
 	TransMan.setLanguage(previousLanguage);
-#endif
+#ifdef USE_TTS
+		Common::TextToSpeechManager *ttsMan;
+		if ((ttsMan = g_system->getTextToSpeechManager()) != nullptr) {
+			Common::String language = ConfMan.get("language");
+			language.setChar(2, '\0');
+			ttsMan->setLanguage(language);
+		}
+#endif // USE_TTS
+#endif // USE_TRANSLATION
 
 	// Return result (== 0 means no error)
 	return result;
@@ -541,8 +558,16 @@ extern "C" int scummvm_main(int argc, const char * const argv[]) {
 				break;
 			}
 #endif
+#ifdef USE_TTS
+			Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+			ttsMan->pushState();
+#endif
 			// Try to run the game
 			Common::Error result = runGame(plugin, system, specialDebug);
+
+#ifdef USE_TTS
+			ttsMan->popState();
+#endif
 
 #ifdef ENABLE_EVENTRECORDER
 			// Flush Event recorder file. The recorder does not get reinitialized for next game

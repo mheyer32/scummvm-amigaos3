@@ -32,6 +32,11 @@
 namespace CryOmni3D {
 namespace Versailles {
 
+Versailles_DialogsManager::Versailles_DialogsManager(CryOmni3DEngine_Versailles *engine,
+        bool padAudioFileName) :
+	_engine(engine), _padAudioFileName(padAudioFileName) {
+}
+
 bool Versailles_DialogsManager::play(const Common::String &sequence) {
 	// Prepare with specific Versailles stuff
 	if (!_engine->preprocessDialog(sequence)) {
@@ -42,18 +47,18 @@ bool Versailles_DialogsManager::play(const Common::String &sequence) {
 
 	_engine->setCursor(181);
 	// No need to adjust hide cursor counter, there isn't any in ScummVM
-	bool cursorWasVisible = g_system->showMouse(true);
+	bool cursorWasVisible = _engine->showMouse(true);
 
 	bool slowStop = false;
 	bool didSth = DialogsManager::play(sequence, slowStop);
 
-	g_system->showMouse(cursorWasVisible);
+	_engine->showMouse(cursorWasVisible);
 
 	if (didSth && slowStop) {
 		if (_engine->showSubtitles()) {
 			bool skip = false;
 			uint end = g_system->getMillis() + 2000;
-			while (!g_engine->shouldQuit() && g_system->getMillis() < end && !skip) {
+			while (!_engine->shouldAbort() && g_system->getMillis() < end && !skip) {
 				g_system->updateScreen();
 				g_system->delayMillis(10);
 				if (_engine->pollEvents() &&
@@ -93,8 +98,10 @@ void Versailles_DialogsManager::playDialog(const Common::String &video, const Co
 	Common::String videoFName(_engine->prepareFileName(video, "hnm"));
 	Common::String soundFName(sound);
 
-	while (soundFName.size() < 8) {
-		soundFName += '_';
+	if (_padAudioFileName) {
+		while (soundFName.size() < 8) {
+			soundFName += '_';
+		}
 	}
 	soundFName = _engine->prepareFileName(soundFName, "wav");
 
@@ -123,7 +130,7 @@ void Versailles_DialogsManager::playDialog(const Common::String &video, const Co
 		return;
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 
 	uint16 width = videoDecoder->getWidth();
 	uint16 height = videoDecoder->getHeight();
@@ -189,7 +196,7 @@ void Versailles_DialogsManager::playDialog(const Common::String &video, const Co
 
 		bool skipWait = false;
 		uint end = g_system->getMillis() + duration;
-		while (!g_engine->shouldQuit() && g_system->getMillis() < end && !skipWait) {
+		while (!_engine->shouldAbort() && g_system->getMillis() < end && !skipWait) {
 			g_system->updateScreen();
 			g_system->delayMillis(10);
 			if (_engine->pollEvents() && _engine->checkKeysPressed(1, Common::KEYCODE_SPACE)) {
@@ -206,7 +213,7 @@ void Versailles_DialogsManager::playDialog(const Common::String &video, const Co
 		audioDecoder = nullptr;
 
 		bool skipVideo = false;
-		while (!g_engine->shouldQuit() && _engine->_mixer->isSoundHandleActive(audioHandle) && !skipVideo) {
+		while (!_engine->shouldAbort() && _engine->_mixer->isSoundHandleActive(audioHandle) && !skipVideo) {
 			if (_engine->pollEvents() && _engine->checkKeysPressed(1, Common::KEYCODE_SPACE)) {
 				skipVideo = true;
 			}
@@ -235,7 +242,7 @@ void Versailles_DialogsManager::playDialog(const Common::String &video, const Co
 	// It's intentional that _lastImage is set with the first video image
 
 	delete videoDecoder;
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 }
 
 void Versailles_DialogsManager::displayMessage(const Common::String &text) {
@@ -249,7 +256,7 @@ uint Versailles_DialogsManager::askPlayerQuestions(const Common::String &video,
 	}
 
 	if (questions.size() == 0 || questions.size() > 5) {
-		return -1;
+		return uint(-1);
 	}
 
 	FontManager &fontManager = _engine->_fontManager;
@@ -292,7 +299,7 @@ uint Versailles_DialogsManager::askPlayerQuestions(const Common::String &video,
 
 	bool finished = false;
 	bool update = true;
-	uint selectedQuestion = -1;
+	uint selectedQuestion = uint(-1);
 	while (!finished) {
 		if (update) {
 			update = false;
@@ -311,17 +318,17 @@ uint Versailles_DialogsManager::askPlayerQuestions(const Common::String &video,
 
 		if (_engine->pollEvents()) {
 			_engine->clearKeys();
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				finished = true;
-				selectedQuestion = -1;
+				selectedQuestion = uint(-1);
 				break;
 			}
 			Common::Point mousePos = _engine->getMousePos();
-			if (_engine->getDragStatus() == kDragStatus_Finished && selectedQuestion != -1u) {
+			if (_engine->getDragStatus() == kDragStatus_Finished && selectedQuestion != uint(-1)) {
 				finished = true;
 			} else if (mousePos.x >= 608 || mousePos.y < offsetY) {
-				if (selectedQuestion != -1u) {
-					selectedQuestion = -1;
+				if (selectedQuestion != uint(-1)) {
+					selectedQuestion = uint(-1);
 					update = true;
 				}
 			} else {
@@ -336,7 +343,7 @@ uint Versailles_DialogsManager::askPlayerQuestions(const Common::String &video,
 						update = true;
 					}
 				} else {
-					selectedQuestion = -1;
+					selectedQuestion = uint(-1);
 					update = true;
 				}
 			}

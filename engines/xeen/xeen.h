@@ -149,11 +149,6 @@ private:
 	 * Plays the actual game
 	 */
 	void play();
-
-	/**
-	 * Shows a please wait dialog
-	 */
-	void pleaseWait();
 protected:
 	int _loadSaveSlot;
 protected:
@@ -205,16 +200,50 @@ public:
 	XeenEngine(OSystem *syst, const XeenGameDescription *gameDesc);
 	virtual ~XeenEngine();
 
+	/**
+	 * Returns the features
+	 */
 	uint32 getFeatures() const;
+
+	/**
+	 * Returns the game language
+	 */
 	Common::Language getLanguage() const;
+
+	/**
+	 * Returns the game's platform
+	 */
 	Common::Platform getPlatform() const;
-	uint16 getVersion() const;
+
+	/**
+	 * Gets the game Id
+	 */
 	uint32 getGameID() const;
+
+	/**
+	 * Returns the game Id, but with a reuslt of Clouds or Dark Side for World of Xeen,
+	 * depending on which side the player is currently on
+	 */
+	uint32 getSpecificGameId() const;
+
+	/**
+	 * Returns the game features
+	 */
 	uint32 getGameFeatures() const;
+
+	/**
+	 * Returns true if the game is the CD version
+	 */
 	bool getIsCD() const;
 
+	/**
+	 * Returns a random number
+	 */
 	int getRandomNumber(int maxNumber);
 
+	/**
+	 * Returns a random number
+	 */
 	int getRandomNumber(int minNumber, int maxNumber);
 
 	/**
@@ -275,6 +304,16 @@ public:
 	 * Saves engine settings
 	 */
 	void saveSettings();
+
+	/**
+	 * Show an error message in a GUI dialog
+	 */
+	void GUIError(const Common::String &msg);
+
+	/**
+	 * Checks if an auto save should be done, and if so, takes care of it
+	 */
+	void autoSaveCheck(int &lastSaveTime);
 };
 
 extern XeenEngine *g_vm;

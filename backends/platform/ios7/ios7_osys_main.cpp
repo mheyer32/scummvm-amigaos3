@@ -172,6 +172,8 @@ bool OSystem_iOS7::hasFeature(Feature f) {
 	case kFeatureCursorPalette:
 	case kFeatureFilteringMode:
 	case kFeatureVirtualKeyboard:
+	case kFeatureClipboardSupport:
+	case kFeatureOpenUrl:
 		return true;
 
 	default:
@@ -412,4 +414,7 @@ void iOS7_main(int argc, char **argv) {
 		//*stderr = NULL;
 		fclose(newfp);
 	}
+
+	// prevents hanging on exit
+	exit(0);
 }

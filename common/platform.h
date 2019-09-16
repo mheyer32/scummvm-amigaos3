@@ -60,6 +60,7 @@ enum Platform : byte {
 	kPlatformIOS,
 	kPlatformOS2,
 	kPlatformBeOS,
+	kPlatformPocketPC,
 
 	kPlatformUnknown = 0xFF
 };

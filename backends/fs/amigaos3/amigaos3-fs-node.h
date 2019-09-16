@@ -38,7 +38,7 @@ public:
 	virtual bool isWritable() const;
 	virtual Common::SeekableReadStream *createReadStream();
 	virtual Common::WriteStream *createWriteStream();
-	virtual bool create(bool isDirectory);
+	virtual bool createDirectory();
 };
 
 #endif

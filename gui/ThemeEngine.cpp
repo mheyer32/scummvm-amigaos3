@@ -61,10 +61,6 @@ const char *const ThemeEngine::kImageStopSmallButton = "stopbtn_small.bmp";
 const char *const ThemeEngine::kImageEditSmallButton = "editbtn_small.bmp";
 const char *const ThemeEngine::kImageSwitchModeSmallButton = "switchbtn_small.bmp";
 const char *const ThemeEngine::kImageFastReplaySmallButton = "fastreplay_small.bmp";
-const char *const ThemeEngine::kImageDropboxLogo = "dropbox.bmp";
-const char *const ThemeEngine::kImageOneDriveLogo = "onedrive.bmp";
-const char *const ThemeEngine::kImageGoogleDriveLogo = "googledrive.bmp";
-const char *const ThemeEngine::kImageBoxLogo = "box.bmp";
 
 struct TextDrawData {
 	const Graphics::Font *_fontPtr;
@@ -534,7 +530,12 @@ bool ThemeEngine::addFont(TextData textId, const Common::String &file, const Com
 				error("Couldn't load font '%s'/'%s'", file.c_str(), scalableFile.c_str());
 #ifdef USE_TRANSLATION
 				TransMan.setLanguage("C");
-#endif
+#ifdef USE_TTS
+				Common::TextToSpeechManager *ttsMan;
+				if ((ttsMan = g_system->getTextToSpeechManager()) != nullptr)
+					ttsMan->setLanguage("en");
+#endif // USE_TTS
+#endif // USE_TRANSLATION
 				return false; // fall-back attempt failed
 			}
 			// Success in fall-back attempt to standard (non-localized) font.
@@ -542,7 +543,12 @@ bool ThemeEngine::addFont(TextData textId, const Common::String &file, const Com
 			// FIXME If we return false anyway why would we attempt the fall-back in the first place?
 #ifdef USE_TRANSLATION
 			TransMan.setLanguage("C");
-#endif
+#ifdef USE_TTS
+				Common::TextToSpeechManager *ttsMan;
+				if ((ttsMan = g_system->getTextToSpeechManager()) != nullptr)
+					ttsMan->setLanguage("en");
+#endif // USE_TTS
+#endif // USE_TRANSLATION
 			// Returning true here, would allow falling back to standard fonts for the missing ones,
 			// but that leads to "garbage" glyphs being displayed on screen for non-Latin languages
 			return false;
@@ -1034,7 +1040,7 @@ void ThemeEngine::drawScrollbar(const Common::Rect &r, int sliderY, int sliderHe
 	drawDD(kDDScrollbarBase, r);
 
 	Common::Rect r2 = r;
-	const int buttonExtra = (r.width() * 120) / 100;
+	const int buttonExtra = r.width() + 1; // scrollbar.cpp's UP_DOWN_BOX_HEIGHT
 
 	r2.bottom = r2.top + buttonExtra;
 	drawDD(scrollState == kScrollbarStateUp ? kDDScrollbarButtonHover : kDDScrollbarButtonIdle, r2,

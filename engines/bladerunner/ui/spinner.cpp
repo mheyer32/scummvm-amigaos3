@@ -79,7 +79,8 @@ int Spinner::chooseDestination(int loopId, bool immediately) {
 	}
 
 	if (loopId < 0) {
-		_isOpen = true;
+		// call Spinner:open()
+		open();
 	} else {
 		_vm->playerLosesControl();
 		_vm->_scene->loopStartSpecial(kSceneLoopModeSpinner, loopId, immediately);
@@ -271,10 +272,10 @@ void Spinner::tick() {
 		_vm->_subtitles->tick(_vm->_surfaceFront);
 	}
 	_vm->blitToScreen(_vm->_surfaceFront);
+
 	if (_vm->_cutContent) {
 		tickDescription();
 	}
-	_vm->_system->delayMillis(10);
 }
 
 void Spinner::setSelectedDestination(int destination) {
@@ -293,7 +294,7 @@ void Spinner::reset() {
 
 	_actorId = -1;
 	_sentenceId = -1;
-	_timeSpeakDescription = 0;
+	_timeSpeakDescriptionStart = 0u;
 
 	for (int i = 0; i != (int)_shapes.size(); ++i) {
 		delete _shapes[i];
@@ -302,7 +303,7 @@ void Spinner::reset() {
 }
 
 void Spinner::resume() {
-	if(_vqaPlayer == nullptr) {
+	if (_vqaPlayer == nullptr) {
 		return;
 	}
 
@@ -413,20 +414,21 @@ void Spinner::destinationFocus(int destinationImage) {
 void Spinner::setupDescription(int actorId, int sentenceId) {
 	_actorId = actorId;
 	_sentenceId = sentenceId;
-	_timeSpeakDescription = _vm->_time->current() + 600;
+	_timeSpeakDescriptionStart = _vm->_time->current();
 }
 
 // copied from elevator.cpp code
 void Spinner::resetDescription() {
 	_actorId = -1;
 	_sentenceId = -1;
-	_timeSpeakDescription = 0;
+	_timeSpeakDescriptionStart = 0u;
 }
 
 // copied from elevator.cpp code
 void Spinner::tickDescription() {
-	int now = _vm->_time->current();
-	if (_actorId <= 0 || now < _timeSpeakDescription) {
+	uint32 now = _vm->_time->current();
+	// unsigned difference is intentional
+	if (_actorId <= 0 || (now - _timeSpeakDescriptionStart < 600u)) {
 		return;
 	}
 

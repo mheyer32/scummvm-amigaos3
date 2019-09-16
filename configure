@@ -167,6 +167,8 @@ _taskbar=auto
 _updates=no
 _libunity=auto
 _dialogs=auto
+_iconv=auto
+_tts=auto
 # Default option behavior yes/no
 _debug_build=auto
 _release_build=auto
@@ -175,6 +177,7 @@ _use_cxx11=no
 _verbose_build=no
 _text_console=no
 _mt32emu=yes
+_lua=yes
 _build_scalers=yes
 _build_hq_scalers=yes
 _enable_prof=no
@@ -256,8 +259,7 @@ add_feature png "PNG" "_png"
 add_feature theoradec "libtheoradec" "_theoradec"
 add_feature vorbis "Vorbis file support" "_vorbis _tremor"
 add_feature zlib "zlib" "_zlib"
-
-
+add_feature lua "lua" "_lua"
 
 # Directories for installing ScummVM.
 # This list is closely based on what GNU autoconf does,
@@ -665,6 +667,26 @@ engine_disable_all() {
 	done
 }
 
+# Enable all unstable engines
+engine_enable_all_unstable() {
+	for engine in $_engines; do
+		engine_build_default=`get_engine_build_default $engine`
+		if test $engine_build_default = no ; then
+			set_var _engine_${engine}_build "yes"
+		fi
+	done
+}
+
+# Disable all unstable engines
+engine_disable_all_unstable() {
+	for engine in $_engines; do
+		engine_build_default=`get_engine_build_default $engine`
+		if test $engine_build_default = no ; then
+			set_var _engine_${engine}_build "no"
+		fi
+	done
+}
+
 # Enable the given engine
 engine_enable() {
 	# Get the parameter
@@ -985,6 +1007,10 @@ Game engines:
   --enable-all-engines     enable all engines, including those which are
                            broken or unsupported
   --disable-all-engines    disable all engines
+  --enable-all-unstable-engines     enable the engines which are
+                                    broken or unsupported
+  --disable-all-unstable-engines    disable only the engines which are
+                                    broken or unsupported
   --enable-engine=<engine name>[,<engine name>...] enable engine(s) listed
   --disable-engine=<engine name>[,<engine name>...] disable engine(s) listed
   --enable-engine-static=<engine name>[,<engine name>...]
@@ -1006,6 +1032,7 @@ Optional Features:
   --enable-plugins         enable the support for dynamic plugins
   --default-dynamic        make plugins dynamic by default
   --disable-mt32emu        don't enable the integrated MT-32 emulator
+  --disable-lua            don't enable Lua support
   --disable-nuked-opl      don't build Nuked OPL driver
   --disable-16bit          don't enable 16bit color support
   --disable-highres        don't enable support for high resolution engines >320x240
@@ -1024,6 +1051,8 @@ Optional Features:
   --enable-text-console    use text console instead of graphical console
   --enable-verbose-build   enable regular echoing of commands during build
                            process
+  --enable-tts			   build support for text to speech
+  --disable-tts			   don't build support for text to speech
   --disable-bink           don't build with Bink video support
   --opengl-mode=MODE       OpenGL (ES) mode to use for OpenGL output [auto]
                            available modes: auto for autodetection
@@ -1116,6 +1145,9 @@ Optional Libraries:
 
   --with-libcurl-prefix=DIR    prefix where libcurl is installed (optional)
   --disable-libcurl        disable libcurl networking library [autodetect]
+
+  --with-iconv-prefix=DIR    prefix where libiconv is installed (optional)
+  --disable-iconv        disable libiconv encoding conversion library [autodetect]
 
 Some influential environment variables:
   AR                 archiver command
@@ -1224,6 +1256,8 @@ for ac_option in $@; do
 	--disable-updates)            _updates=no            ;;
 	--enable-libunity)            _libunity=yes          ;;
 	--disable-libunity)           _libunity=no           ;;
+	--enable-tts)                 _tts=yes               ;;
+	--disable-tts)                _tts=no                ;;
 	--enable-bink)                _bink=yes              ;;
 	--disable-bink)               _bink=no               ;;
 	--opengl-mode=*)
@@ -1234,6 +1268,8 @@ for ac_option in $@; do
 	--default-dynamic)           _plugins_default=dynamic;;
 	--enable-mt32emu)            _mt32emu=yes            ;;
 	--disable-mt32emu)           _mt32emu=no             ;;
+	--enable-lua)                _lua=yes                ;;
+	--disable-lua)               _lua=no                 ;;
 	--enable-nuked-opl)          _nuked_opl=yes          ;;
 	--disable-nuked-opl)         _nuked_opl=no           ;;
 	--enable-translation)        _translation=yes        ;;
@@ -1246,6 +1282,8 @@ for ac_option in $@; do
 	--disable-eventrecorder)     _eventrec=no            ;;
 	--enable-text-console)       _text_console=yes       ;;
 	--disable-text-console)      _text_console=no        ;;
+	--enable-iconv)              _iconv=yes              ;;
+	--disable-iconv)             _iconv=no               ;;
 	--with-fluidsynth-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		FLUIDSYNTH_CFLAGS="-I$arg/include"
@@ -1344,6 +1382,11 @@ for ac_option in $@; do
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		SDL_NET_CFLAGS="-I$arg/include"
 		SDL_NET_LIBS="-L$arg/lib"
+		;;
+	--with-iconv-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		ICONV_CFLAGS="-I$arg/include"
+		ICONV_LIBS="-L$arg/lib"
 		;;
 	--backend=*)
 		_backend=`echo $ac_option | cut -d '=' -f 2`
@@ -1446,6 +1489,12 @@ for ac_option in $@; do
 		;;
 	--disable-all-engines)
 		engine_disable_all
+		;;
+	--enable-all-unstable-engines)
+		engine_enable_all_unstable
+		;;
+	--disable-all-unstable-engines)
+		engine_disable_all_unstable
 		;;
 	--enable-engine=* | --enable-engines=*)
 		for engine_name in `echo $ac_option | cut -d '=' -f 2- | tr ',' '\n'`; do
@@ -1765,7 +1814,7 @@ else
 fi
 
 case $_host in
-caanoo | gp2x | gp2xwiz | openpandora | ps2 | psp2 | switch)
+arm-*riscos | caanoo | gp2x | gp2xwiz | openpandora | ps2 | psp | psp2 | switch)
 	if test "$_debug_build" = auto; then
 		# If you want to debug one of these platforms, use '--disable-optimizations --enable-debug'
 		_debug_build=no
@@ -2931,6 +2980,7 @@ case $_host_os in
 		;;
 	switch)
 		_pkgconfig="$DEVKITPRO/portlibs/switch/bin/aarch64-none-elf-pkg-config"
+		_libcurlpath="$DEVKITPRO/portlibs/switch/bin"
 		_sdlpath="$DEVKITPRO/portlibs/switch/bin"
 		append_var DEFINES "-DSWITCH -D__SWITCH__ -DNINTENDO_SWITCH"
 		append_var CXXFLAGS "-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -ftls-model=local-exec"
@@ -3161,6 +3211,8 @@ if test -n "$_host"; then
 			_build_scalers=no
 			_mt32emu=no
 			_nuked_opl=no
+			_bink=no
+			_lua=no
 			_port_mk="backends/platform/ds/ds.mk"
 			;;
 		gamecube)
@@ -3180,7 +3232,7 @@ if test -n "$_host"; then
 		gcw0)
 			_sysroot=`$CXX --print-sysroot`
 			_sdlpath=$_sysroot/usr/bin
-			append_var DEFINES "-DDINGUX -DGCW0 -DGUI_ONLY_FULLSCREEN"
+			append_var DEFINES "-DDINGUX -DGCW0"
 			append_var DEFINES "-DREDUCE_MEMORY_USAGE"
 			append_var CXXFLAGS "-mips32"
 			_backend="dingux"
@@ -3479,7 +3531,6 @@ if test -n "$_host"; then
 			_port_mk="backends/platform/sdl/psp2/psp2.mk"
 			;;
 		psp)
-			append_var DEFINES "-DGUI_ONLY_FULLSCREEN"
 			_backend="psp"
 			_build_scalers=no
 			_mt32emu=no
@@ -3496,6 +3547,10 @@ if test -n "$_host"; then
 			;;
 		switch)
 			_backend="switch"
+			# Switch port crashes when switching between SDL2 and OpenGL
+			# graphics. But OpenGL works when it is enabled from the start.
+			# This might be related to a known crash on OpenGL de-init due
+			# to the OpenGL implementation on this platform.
 			_opengl_mode=gles2
 			_vkeybd=yes
 			_port_mk="backends/platform/sdl/switch/switch.mk"
@@ -3612,7 +3667,7 @@ case $_backend in
 	ios7)
 		append_var LIBS "-lobjc -framework UIKit -framework CoreGraphics -framework OpenGLES"
 		append_var LIBS "-framework QuartzCore -framework CoreFoundation -framework Foundation"
-		append_var LIBS "-framework AudioToolbox -framework CoreAudio"
+		append_var LIBS "-framework AudioToolbox -framework CoreAudio -framework SystemConfiguration "
 		append_var LDFLAGS "-miphoneos-version-min=7.1 -arch armv7"
 		append_var CFLAGS "-miphoneos-version-min=7.1 -arch armv7"
 		append_var CXXFLAGS "-miphoneos-version-min=7.1 -arch armv7"
@@ -4178,6 +4233,11 @@ fi
 define_in_config_if_yes "$_mt32emu" 'USE_MT32EMU'
 
 #
+# Check whether Lua support is requested
+#
+define_in_config_if_yes "$_lua" 'USE_LUA'
+
+#
 # Check whether Nuked OPL emulator support is disabled
 #
 define_in_config_if_no "$_nuked_opl" 'DISABLE_NUKED_OPL'
@@ -4241,6 +4301,46 @@ EOF
 fi
 define_in_config_if_yes "$_ogg" 'USE_OGG'
 echo "$_ogg"
+#
+# Check for TTS
+#
+echocheck "TTS libraries"
+if test "$_tts" = auto ; then
+	_tts=no
+	case $_host_os in
+		mingw*)
+			cat > $TMPC << EOF
+#include <windows.h>
+#include <Servprov.h>
+#include <sapi.h>
+int main(void) { return 0; }
+EOF
+			cc_check -lsapi -lole32 && _tts=yes
+			if test "$_host_os" = "mingw32" ; then
+				_tts=no
+			fi
+			;;
+		linux*)
+			cat > $TMPC << EOF
+#include <speech-dispatcher/libspeechd.h>
+int main(void) { return 0; }
+EOF
+			cc_check -lspeechd && _tts=yes
+			;;
+		darwin*)
+			# Check the API is available. The most recent API we need is for the NSSpeechSynthesizerDelegate protocole
+			cat > $TMPC << EOF
+#include <AppKit/NSSpeechSynthesizer.h>
+@interface SpeechDelegate : NSObject<NSSpeechSynthesizerDelegate> {
+}
+@end
+int main(void) { return 0; }
+EOF
+			cc_check -ObjC++ -lobjc && _tts=yes
+			;;
+	esac
+fi
+echo "$_tts"
 
 #
 # Check for Vorbis
@@ -4723,7 +4823,11 @@ if test "$_libcurl" != "no"; then
 	if test -z "$_libcurlconfig"; then
 		_libcurl=no
 	else
-		LIBCURL_LIBS=`$_libcurlconfig --libs`
+		if test -n "$_staticlibpath"; then
+			LIBCURL_LIBS=`$_libcurlconfig --static-libs`
+		else
+			LIBCURL_LIBS=`$_libcurlconfig --libs`
+		fi
 		LIBCURL_CFLAGS=`$_libcurlconfig --cflags`
 
 		case $_host_os in
@@ -5078,6 +5182,10 @@ esac
 
 if test "$_opengl_mode" = auto ; then
 	case $_backend in
+		android)
+			# Android always runs in GLES mode
+			_opengl_mode=gles
+			;;
 		sdl)
 			case $_sdlversion in
 				1.2.*)
@@ -5273,6 +5381,38 @@ if test "$_pandocext" = "default"; then
 		_pandocext=".$_pandocformat"
 	fi
 fi
+#
+# Check for iconv
+#
+echocheck "Iconv"
+if test "$_iconv" = auto ; then
+	_iconv=no
+	cat > $TMPC << EOF
+#include <iconv.h>
+int main(void) { iconv_t conv = iconv_open("UTF-8//IGNORE", "CP850"); return 0; }
+EOF
+	cc_check $ICONV_CFLAGS $ICONV_LIBS -liconv && _iconv=yes
+fi
+if test "$_iconv" = yes ; then
+	append_var LIBS "$ICONV_LIBS -liconv"
+	append_var INCLUDES "$ICONV_CFLAGS"
+
+	# check if iconv uses const char** as it's second parameter
+	_iconv_uses_const=no
+	cat > $TMPC << EOF
+#include <iconv.h>
+int main(void) {
+	iconv_t conv = iconv_open("UTF-8//IGNORE", "CP850");
+	const char **inbuf = 0;
+	iconv(conv, inbuf, 0, 0, 0);
+	return 0;
+}
+EOF
+	cc_check $ICONV_CFLAGS $ICONV_LIBS -liconv && _iconv_uses_const=yes
+	define_in_config_if_yes "$_iconv_uses_const" 'ICONV_USES_CONST'
+fi
+define_in_config_if_yes "$_iconv" 'USE_ICONV'
+echo "$_iconv"
 
 #
 # Enable vkeybd / keymapper / event recorder
@@ -5373,6 +5513,37 @@ fi
 define_in_config_if_yes $_dialogs 'USE_SYSDIALOGS'
 
 #
+# Check whether to build TTS integration support
+#
+echo_n "Building text-to-speech support... "
+if test "$_tts" = "no"; then
+	echo "no"
+else
+	case $_host_os in
+	linux*)
+		echo "linux"
+		_tts=yes
+		define_in_config_if_yes $_tts 'USE_SPEECH_DISPATCHER'
+		append_var LIBS '-lspeechd'
+		;;
+	mingw*)
+		echo "win32"
+		_tts=yes
+		append_var LIBS '-lsapi -lole32'
+		;;
+	darwin*)
+		echo "osx"
+		_tts=yes
+		;;
+	*)
+		echo "no"
+		_tts=no
+		;;
+	esac
+fi
+define_in_config_if_yes $_tts 'USE_TTS'
+
+#
 # Check whether to build Bink video support
 #
 echo_n "Building Bink video support... "
@@ -5471,6 +5642,10 @@ fi
 
 if test "$_mt32emu" = yes ; then
 	echo_n ", MT-32 emulator"
+fi
+
+if test "$_lua" = yes ; then
+	echo_n ", Lua"
 fi
 
 if test "$_nuked_opl" = yes ; then

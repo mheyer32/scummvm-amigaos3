@@ -66,6 +66,8 @@ public:
 	Room(StarTrekEngine *vm, const Common::String &name);
 	~Room();
 
+	friend class Console;
+
 	uint16 readRdfWord(int offset);
 
 	/**
@@ -143,8 +145,6 @@ public:
 	 */
 	Common::Point getSpawnPosition(int crewmanIndex);
 
-	int showText(TextRef speaker, TextRef text, bool fromRDF = false);
-
 public:
 	byte *_rdfData;
 
@@ -155,11 +155,13 @@ private:
 	const RoomAction *_roomActionList;
 	int _numRoomActions;
 
-	int _roomIndex; // ie. for DEMON2, this is 2
 	Common::HashMap<int, Common::String> _lookMessages;
+	Common::HashMap<int, Common::String> _lookWithTalkerMessages;
 	Common::HashMap<int, Common::String> _talkMessages;
 
 	void loadRoomMessages();
+	void loadOtherRoomMessages();
+	void loadRoomMessage(const char *text);
 
 	int findFunctionPointer(int action, void (Room::*funcPtr)());
 
@@ -186,8 +188,10 @@ private:
 	 * Cmd 0x03
 	 */
 	int showRoomSpecificText(const char **textAddr);
-	int showText(const TextRef *text, bool fromRDF = false);
-	int showText(TextRef text, bool fromRDF = false);
+	int showMultipleTexts(const TextRef *text, bool fromRDF = false, bool lookWithTalker = false);
+	int showDescription(TextRef text, bool fromRDF = false, bool lookWithTalker = false);
+	int showText(TextRef speaker, TextRef text, bool fromRDF = false, bool lookWithTalker = false);
+
 	/**
 	 * Cmd 0x04
 	 */
@@ -208,10 +212,14 @@ private:
 	 */
 	void walkCrewman(int actorIndex, int16 destX, int16 destY, uint16 finishedAnimActionParam = 0);
 	void walkCrewmanC(int actorIndex, int16 destX, int16 destY, void (Room::*funcPtr)());      // Cmd 0x08
+
+public:
 	/**
 	 * Cmd 0x09: Loads a pair of .map and .iw files to change the room's collisions and pathfinding.
 	 */
 	void loadMapFile(const Common::String &name);
+
+private:
 	/**
 	 * Cmd 0x0a
 	 */
@@ -274,8 +282,8 @@ private:
 	 * If "changeDirection" is true, they remain facing that direction even after their
 	 * animation is finished. The game is inconsistent about doing this.
 	 */
-	void spockScan(int direction, TextRef text, bool changeDirection = false);
-	void mccoyScan(int direction, TextRef text, bool changeDirection = false);
+	void spockScan(int direction, TextRef text, bool changeDirection = false, bool fromRDF = false);
+	void mccoyScan(int direction, TextRef text, bool changeDirection = false, bool fromRDF = false);
 
 	// Room-specific code
 public:

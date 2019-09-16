@@ -308,7 +308,7 @@ bool DialogsManager::play(const Common::String &sequence, bool &slowStop) {
 			for (; *questionEnd != '>'; questionEnd++) { }
 			questions.push_back(Common::String(questionStart, questionEnd));
 		}
-		uint eocInserted = -1;
+		uint eocInserted = uint(-1);
 		if (!endOfConversationFound && questions.size() > 0) {
 			eocInserted = questions.size();
 			questions.push_back(_endOfConversationText);
@@ -323,8 +323,8 @@ bool DialogsManager::play(const Common::String &sequence, bool &slowStop) {
 			// We must give a subject
 			uint playerChoice = askPlayerQuestions(video, questions);
 			didSomething = true;
-			// -1 when shouldQuit
-			if (playerChoice == -1u || playerChoice == eocInserted) {
+			// -1 when shouldAbort
+			if (playerChoice == uint(-1) || playerChoice == eocInserted) {
 				break;
 			}
 

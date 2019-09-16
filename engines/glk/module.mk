@@ -3,6 +3,7 @@ MODULE := engines/glk
 MODULE_OBJS := \
 	blorb.o \
 	conf.o \
+	debugger.o \
 	detection.o \
 	events.o \
 	fonts.o \
@@ -11,6 +12,7 @@ MODULE_OBJS := \
 	glk_dispa.o \
 	pc_speaker.o \
 	picture.o \
+	quetzal.o \
 	raw_decoder.o \
 	screen.o \
 	selection.o \
@@ -25,14 +27,77 @@ MODULE_OBJS := \
 	window_pair.o \
 	window_text_buffer.o \
 	window_text_grid.o \
+	advsys/advsys.o \
+	advsys/detection.o \
+	advsys/game.o \
+	advsys/glk_interface.o \
+	advsys/vm.o \
 	alan2/alan2.o \
-	alan2/decode.o \
 	alan2/detection.o \
-	alan2/execute.o \
-	alan2/interpreter.o \
+	alan2/alan_version.o \
+	alan2/args.o \
+	alan2/debug.o \
+	alan2/decode.o \
+	alan2/exe.o \
+	alan2/glkio.o \
+	alan2/inter.o \
+	alan2/main.o \
+	alan2/params.o \
 	alan2/parse.o \
+	alan2/reverse.o \
 	alan2/rules.o \
-	alan2/saveload.o \
+	alan2/stack.o \
+	alan2/sysdep.o \
+	alan2/term.o \
+	alan2/types.o \
+	alan3/acode.o \
+	alan3/act.o \
+	alan3/actor.o \
+	alan3/alan3.o \
+	alan3/alan_version.o \
+	alan3/alt_info.o \
+	alan3/attribute.o \
+	alan3/checkentry.o \
+	alan3/class.o \
+	alan3/compatibility.o \
+	alan3/container.o \
+	alan3/current.o \
+	alan3/debug.o \
+	alan3/decode.o \
+	alan3/detection.o \
+	alan3/dictionary.o \
+	alan3/event.o \
+	alan3/exe.o \
+	alan3/fnmatch.o \
+	alan3/glkio.o \
+	alan3/instance.o \
+	alan3/inter.o \
+	alan3/lists.o \
+	alan3/literal.o \
+	alan3/location.o \
+	alan3/main.o \
+	alan3/memory.o \
+	alan3/msg.o \
+	alan3/options.o \
+	alan3/output.o \
+	alan3/parameter_position.o \
+	alan3/params.o \
+	alan3/parse.o \
+	alan3/reverse.o \
+	alan3/rules.o \
+	alan3/save.o \
+	alan3/scan.o \
+	alan3/score.o \
+	alan3/set.o \
+	alan3/stack.o \
+	alan3/state.o \
+	alan3/state_stack.o \
+	alan3/syntax.o \
+	alan3/sysdep.o \
+	alan3/syserr.o \
+	alan3/types.o \
+	alan3/utils.o \
+	alan3/word.o \
 	frotz/bitmap_font.o \
 	frotz/config.o \
 	frotz/detection.o \

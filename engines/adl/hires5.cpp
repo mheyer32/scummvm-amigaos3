@@ -28,7 +28,7 @@
 
 #include "adl/adl_v4.h"
 #include "adl/detection.h"
-#include "adl/display.h"
+#include "adl/display_a2.h"
 #include "adl/graphics.h"
 #include "adl/disk.h"
 #include "adl/sound.h"
@@ -87,6 +87,7 @@ Common::String HiRes5Engine::getLine() {
 }
 
 void HiRes5Engine::drawLight(uint index, byte color) const {
+	Display_A2 *display = static_cast<Display_A2 *>(_display);
 	const byte xCoord[5] = { 189, 161, 133, 105, 77 };
 	const byte yCoord = 72;
 
@@ -94,12 +95,16 @@ void HiRes5Engine::drawLight(uint index, byte color) const {
 
 	for (int yDelta = 0; yDelta < 4; ++yDelta)
 		for (int xDelta = 0; xDelta < 7; ++xDelta)
-			_display->putPixel(Common::Point(xCoord[index] + xDelta, yCoord + yDelta), color);
+			display->putPixel(Common::Point(xCoord[index] + xDelta, yCoord + yDelta), color);
 
-	_display->updateHiResScreen();
+	display->renderGraphics();
 }
 
 void HiRes5Engine::animateLights() const {
+	// Skip this if we're running a debug script
+	if (_inputScript)
+		return;
+
 	int index;
 	byte color = 0x2a;
 
@@ -235,36 +240,38 @@ int HiRes5Engine::o_winGame(ScriptEnv &e) {
 }
 
 void HiRes5Engine::runIntro() {
+	Display_A2 *display = static_cast<Display_A2 *>(_display);
+
 	insertDisk(2);
 
 	StreamPtr stream(_disk->createReadStream(0x10, 0x0, 0x00, 31));
 
-	_display->setMode(DISPLAY_MODE_HIRES);
-	_display->loadFrameBuffer(*stream);
-	_display->updateHiResScreen();
+	display->setMode(Display::kModeGraphics);
+	display->loadFrameBuffer(*stream);
+	display->renderGraphics();
 
 	inputKey();
 
-	_display->home();
-	_display->setMode(DISPLAY_MODE_TEXT);
+	display->home();
+	display->setMode(Display::kModeText);
 
 	stream.reset(_disk->createReadStream(0x03, 0xc, 0x34, 1));
 	Common::String menu(readString(*stream));
 
 	while (!g_engine->shouldQuit()) {
-		_display->home();
-		_display->printString(menu);
+		display->home();
+		display->printString(menu);
 
 		Common::String cmd(inputString());
 
 		// We ignore the backup and format menu options
-		if (!cmd.empty() && cmd[0] == APPLECHAR('1'))
+		if (!cmd.empty() && cmd[0] == _display->asciiToNative('1'))
 			break;
 	};
 }
 
 void HiRes5Engine::init() {
-	_graphics = new GraphicsMan_v3(*_display);
+	_graphics = new GraphicsMan_v3<Display_A2>(*static_cast<Display_A2 *>(_display));
 
 	insertDisk(2);
 

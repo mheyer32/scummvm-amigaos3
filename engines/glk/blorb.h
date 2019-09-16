@@ -46,6 +46,7 @@ enum {
 	ID_FORM = MKTAG('F', 'O', 'R', 'M'),
 	ID_IFRS = MKTAG('I', 'F', 'R', 'S'),
 	ID_RIdx = MKTAG('R', 'I', 'd', 'x'),
+	ID_APal = MKTAG('A', 'P', 'a', 'l'),
 
 	ID_Snd = MKTAG('S', 'n', 'd', ' '),
 	ID_Exec = MKTAG('E', 'x', 'e', 'c'),
@@ -89,6 +90,11 @@ private:
 	 * Parses the Blorb file index to load in a list of the chunks
 	 */
 	Common::ErrorCode load();
+
+	/**
+	 * Add possible Blorb filenames for Infocom games
+	 */
+	static void getInfocomBlorbFilenames(Common::StringArray &filenames, const Common::String &gameId);
 public:
 	/**
 	 * Constructor
@@ -146,6 +152,12 @@ public:
 	 * Returns true if a given filename has a Blorb file extension
 	 */
 	static bool hasBlorbExt(const Common::String &filename);
+
+	/**
+	 * Return a list of possible filenames for blorb files
+	 */
+	static void getBlorbFilenames(const Common::String &srcFilename, Common::StringArray &filenames,
+		InterpreterType interpType, const Common::String &gameId);
 };
 
 } // End of namespace Glk

@@ -115,7 +115,7 @@ void SceneScriptMA06::PlayerWalkedIn() {
 		//
 		if ((Game_Flag_Query(kFlagMA07toMA06) || Game_Flag_Query(kFlagMA01toMA06))
 		     && Actor_Query_Goal_Number(kActorRachael) == kGoalRachaelIsInsideMcCoysElevatorAct3
-		){
+		) {
 			normalElevatorBusiness = false;
 			// Act 3 Deleted scene (can happen within the elevator or outside the building)
 			// Skip floor panel selection - force go to MCCOY 88F
@@ -145,16 +145,16 @@ void SceneScriptMA06::PlayerWalkedIn() {
 			Ambient_Sounds_Remove_Looping_Sound(kSfxSPINUP1,  1);         // stop elev moving sound
 			Ambient_Sounds_Remove_Looping_Sound(kSfxAPRTFAN1, 1);         // stop other ambient
 			Ambient_Sounds_Remove_Looping_Sound(kSfxELEAMB3,  1);         // stop other ambient
-			Actor_Says_With_Pause(kActorRachael, 300, 1.0, 14);  // GoodbyeMcCoy
-			Actor_Says(kActorRachael, 310, 14);                  // Isnt ThisYourFloor --
-			Actor_Says(kActorMcCoy, 2860, 14);                   // YouTakeCareOfYoursel
+			Actor_Says_With_Pause(kActorRachael, 300, 1.0f, 14);  // GoodbyeMcCoy
+			Actor_Says(kActorRachael, 310, 14);                   // Isnt ThisYourFloor --
+			Actor_Says(kActorMcCoy, 2860, 14);                    // YouTakeCareOfYoursel
 
 			Set_Enter(kSetMA02_MA04, kSceneMA02);
 			Scene_Loop_Start_Special(kSceneLoopModeChangeSet, kMA06LoopDoorClose, true);
 			Sound_Play(kSfxELDOORO2, 100, 50, 50, 50);
 		} else if (Game_Flag_Query(kFlagMA02toMA06)
 			&& Actor_Query_Goal_Number(kActorRachael) == kGoalRachaelIsInsideMcCoysElevatorAct4
-		){
+		) {
 			normalElevatorBusiness = false;
 			// Act 4 deleted scene case with Rachael
 			//
@@ -243,7 +243,7 @@ void SceneScriptMA06::activateElevator() {
 	Game_Flag_Reset(kFlagMA06toMA01);
 	Game_Flag_Reset(kFlagMA06ToMA02);
 	Game_Flag_Reset(kFlagMA06toMA07);
-	int floor = 0;
+
 	while (true) {
 		if (Game_Flag_Query(kFlagMA06ToMA02)) {
 			break;
@@ -257,12 +257,12 @@ void SceneScriptMA06::activateElevator() {
 
 		Actor_Says(kActorAnsweringMachine, 80, kAnimationModeTalk);
 		Player_Gains_Control();
-		floor = Elevator_Activate(kElevatorMA);
+		int floorLevel = Elevator_Activate(kElevatorMA);
 #if BLADERUNNER_ORIGINAL_BUGS
 #else
 		// Fix for a crash/ freeze bug;
 		//  To reproduce original issue: in Act 4, visit Rajiff, then exit to ground floor. Re-enter elevator and press Alt+F4
-		if (floor < 0) {
+		if (floorLevel < 0) {
 			break;
 		}
 #endif // BLADERUNNER_ORIGINAL_BUGS
@@ -270,9 +270,9 @@ void SceneScriptMA06::activateElevator() {
 
 		Scene_Loop_Start_Special(kSceneLoopModeOnce, kMA06LoopMainLoop, true);
 
-		if (floor > 1) {
+		if (floorLevel > 1) {
 			Game_Flag_Set(kFlagMA06toMA07);
-		} else if (floor == 1) {
+		} else if (floorLevel == 1) {
 			if (Game_Flag_Query(kFlagSpinnerAtMA01)) {
 				Game_Flag_Set(kFlagMA06toMA01);
 			} else {
@@ -280,7 +280,7 @@ void SceneScriptMA06::activateElevator() {
 				Delay(500);
 				Actor_Says(kActorAnsweringMachine, 610, 3);
 			}
-		} else { // floor == 0
+		} else { // floorLevel == 0
 			Actor_Says(kActorMcCoy, 2940, 18);
 			if (Global_Variable_Query(kVariableChapter) == 4
 			 && Game_Flag_Query(kFlagMA02RajifTalk)

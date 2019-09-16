@@ -86,6 +86,9 @@ ScummVM Team
        Arnaud Boutonne
        Paul Gilbert
 
+    Chewy:
+       Filippos Karapetis
+
     Cine:
        Vincent Hamm                 - (retired)
        Pawel Kolodziejski
@@ -100,6 +103,19 @@ ScummVM Team
        Paul Gilbert
        Vincent Hamm                 - (retired)
 
+    Cryomni3D:
+       Philippe Valembois
+
+    Director:
+       Eugene Sandulenko
+       Dmitry Iskrich
+       Steven Hoefel
+       Tobia Tesan
+
+    DM:
+       Arnaud Boutonne
+       Bendeguz Nagy
+
     Draci:
        Denis Kasak
        Robert Spalek
@@ -108,10 +124,6 @@ ScummVM Team
        Filippos Karapetis
        Pawel Kolodziejski
        Thierry Crozat
-
-    DM:
-       Arnaud Boutonne
-       Bendeguz Nagy
 
     DreamWeb:
        Torbjorn Andersson
@@ -146,6 +158,10 @@ ScummVM Team
        Scott Thomas
        Jordi Vilalta Prat
 
+    HDB:
+       Eugene Sandulenko
+       Nipun Garg                   - GSoC student
+
     Hopkins:
        Arnaud Boutonne
        Paul Gilbert
@@ -177,8 +193,14 @@ ScummVM Team
        Jordi Vilalta Prat
        Julien Templier
 
+    Lilliput:
+       Arnaud Boutonne
+
     Lure:
        Paul Gilbert
+
+    MacVenture:
+       Borja Lorente                - GSoC student
 
     MADE:
        Benjamin Haisch
@@ -216,6 +238,13 @@ ScummVM Team
     Pegasus:
        Matthew Hoops                - (retired)
 
+    Pink:
+       Andrei Prykhodko
+       Eugene Sandulenko
+
+    Plumbers:
+       Retro-Junk;
+
     Prince:
        Eugene Sandulenko
        Lukasz Watka
@@ -235,6 +264,7 @@ ScummVM Team
        Eugene Sandulenko
 
     SCI:
+       Chris Benshoof
        Greg Frieger
        Paul Gilbert
        Max Horn                     - (retired)
@@ -255,6 +285,11 @@ ScummVM Team
        Oliver Kiehl                 - (retired)
        Joost Peters
 
+    Supernova:
+       Joseph-Eugene Winzer
+       Jaromir Wysoglad
+       Thierry Crozat
+
     Sword1:
        Fabio Battaglia              - PSX version support
        Thierry Crozat               - Mac version support
@@ -265,7 +300,7 @@ ScummVM Team
        Fabio Battaglia              - PSX version support
        Jonathan Gray                - (retired)
 
-    Sword25:
+    Sword2.5:
        Torbjorn Andersson
        Paul Gilbert
        Max Horn                     - (retired)
@@ -316,6 +351,9 @@ ScummVM Team
        Arnaud Boutonne
        Paul Gilbert
 
+    WAGE:
+       Eugene Sandulenko
+
     Wintermute:
        Einar Johan T. Somaaen
        Tobia Tesan
@@ -349,6 +387,7 @@ ScummVM Team
     iPhone / iPad:
        Oystein Eftevaag
        Vincent Benony
+       Thierry Crozat
 
     LinuxMoto:
        Lubomyr Lisen
@@ -366,6 +405,10 @@ ScummVM Team
     Nintendo DS:
        Bertrand Augereau            - HQ software scaler
        Neil Millstone
+
+    Nintendo Switch:
+       Cpasjuste
+       rsn8887
 
     OpenPandora:
        John Willis
@@ -506,7 +549,7 @@ Other contributions
     Haiku:
        Luc Schrijvers
 
-    Mac OS X:
+    macOS:
        Max Horn                     - (retired)
        Oystein Eftevaag
        Thierry Crozat
@@ -626,6 +669,10 @@ Other contributions
     Mortevielle:
        Hugo Labrande                - Improve English translation
        Thierry Crozat               - Improve English translation
+
+    Supernova:
+       Joseph-Eugene Winzer         - English translation
+       Thierry Crozat               - English translation
 
   Websites (design)
   -----------------
@@ -814,4 +861,10 @@ Special thanks to
 
    The mindFactory team for writing Broken Sword 2.5, a splendid fan-made
    sequel, and for sharing the source code with us.
+
+   John Romero for sharing the source code of Hyperspace Delivery Boy! with
+   us.
+
+   Steffen Dingel for sharing the source code of the Mission Supernova game
+   with us.
 

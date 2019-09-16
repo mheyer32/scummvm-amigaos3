@@ -33,6 +33,9 @@ public:
 
 	virtual void init() override;
 	virtual void initBackend() override;
+	virtual bool hasFeature(Feature f) override;
+	virtual void setFeatureState(Feature f, bool enable) override;
+	virtual bool getFeatureState(Feature f) override;
 	virtual void logMessage(LogMessageType::Type type, const char *message) override;
 
 protected:
@@ -41,8 +44,7 @@ protected:
 	Common::String _baseConfigName;
 
 	virtual Common::String getDefaultConfigFileName() override;
-
-	virtual Common::WriteStream *createLogFile() override;
+	virtual Common::String getDefaultLogFileName() override;
 };
 
 #endif

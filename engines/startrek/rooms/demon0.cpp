@@ -53,7 +53,7 @@ void Room::demon0Tick140() {
 	if (_awayMission->demon.mccoyMentionedFlora)
 		return;
 
-	showText(TX_SPEAKER_MCCOY, TX_DEM0_016);
+	showText(TX_SPEAKER_MCCOY, 16, true);
 
 	_awayMission->demon.mccoyMentionedFlora = true;
 }
@@ -162,7 +162,7 @@ void Room::demon0TalkToPrelate() {
 
 	const TextRef *response = nullptr;
 
-	switch (showText(options1, true)) {
+	switch (showMultipleTexts(options1, true)) {
 	case 0:
 		response = firstResponse0;
 		break;
@@ -175,42 +175,42 @@ void Room::demon0TalkToPrelate() {
 	}
 
 	if (response != nullptr)
-		showText(response, true);
+		showMultipleTexts(response, true);
 
-	if (showText(options2, true) == 1)
+	if (showMultipleTexts(options2, true) == 1)
 		demon0BadResponse();
 
-	showText(secondResponse, true);
+	showMultipleTexts(secondResponse, true);
 
-	if (showText(options3, true) == 1)
+	if (showMultipleTexts(options3, true) == 1)
 		demon0BadResponse();
 
-	showText(thirdResponse, true);
+	showMultipleTexts(thirdResponse, true);
 
 	if (_awayMission->demon.wasRudeToPrelate)
-		showText(badConclusion, true);
+		showMultipleTexts(badConclusion, true);
 	else
-		showText(goodConclusion, true);
+		showMultipleTexts(goodConclusion, true);
 }
 
 void Room::demon0LookAtPrelate() {
-	showText(4, true);
+	showDescription(4, true);
 }
 
 void Room::demon0UsePhaserOnSnow() {
 	// BUG: doesn't check if redshirt is dead.
-	showText(TX_SPEAKER_EVERTS, TX_DEM0_039);
+	showText(TX_SPEAKER_EVERTS, 39, true);
 }
 
 void Room::demon0UsePhaserOnSign() {
-	showText(TX_SPEAKER_MCCOY, TX_DEM0_017);
+	showText(TX_SPEAKER_MCCOY, 17, true);
 }
 
 void Room::demon0UsePhaserOnShelter() {
-	showText(TX_SPEAKER_MCCOY, TX_DEM0_015);
-	showText(TX_SPEAKER_SPOCK, TX_DEM0_013);
+	showText(TX_SPEAKER_MCCOY, 15, true);
+	showText(TX_SPEAKER_SPOCK, 13, true);
 	if (!_awayMission->redshirtDead)
-		showText(TX_SPEAKER_EVERTS, TX_DEM0_040);
+		showText(TX_SPEAKER_EVERTS, 40, true);
 }
 
 void Room::demon0UsePhaserOnPrelate() {
@@ -222,39 +222,39 @@ void Room::demon0LookAtSign() {
 }
 
 void Room::demon0LookAtTrees() {
-	showText(6, true);
+	showDescription(6, true);
 }
 
 void Room::demon0LookAtSnow() {
-	showText(7, true);
+	showDescription(7, true);
 }
 
 void Room::demon0LookAnywhere() {
-	showText(0, true);
+	showDescription(0, true);
 }
 
 void Room::demon0LookAtBushes() {
-	showText(10, true);
+	showDescription(10, true);
 }
 
 void Room::demon0LookAtKirk() {
-	showText(5, true);
+	showDescription(5, true);
 }
 
 void Room::demon0LookAtMcCoy() {
-	showText(2, true);
+	showDescription(2, true);
 }
 
 void Room::demon0LookAtRedShirt() {
-	showText(3, true);
+	showDescription(3, true);
 }
 
 void Room::demon0LookAtSpock() {
-	showText(9, true);
+	showDescription(9, true);
 }
 
 void Room::demon0LookAtShelter() {
-	showText(1, true);
+	showDescription(1, true);
 }
 
 void Room::demon0TalkToKirk() {

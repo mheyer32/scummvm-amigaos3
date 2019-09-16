@@ -148,7 +148,7 @@ bool StarTrekEngine::loadGame(int slot) {
 			Actor *a = &_actorList[i];
 			if (a->spriteDrawn) {
 				if (a->animType != 1)
-					a->animFile = loadFile(a->animFilename + ".anm");
+					a->animFile = SharedPtr<Common::MemoryReadStreamEndian>(loadFile(a->animFilename + ".anm"));
 				_gfx->addSprite(&a->sprite);
 				a->sprite.setBitmap(loadAnimationFrame(a->bitmapFilename, a->scale));
 			}
@@ -305,7 +305,8 @@ bool StarTrekEngine::saveOrLoadGameData(Common::SeekableReadStream *in, Common::
 			ser.syncAsUint16LE(a->fielda6);
 		}
 
-		ser.syncString(_mapFilename);
+		Common::String unused = getScreenName();
+		ser.syncString(unused);
 
 		// Away mission struct
 		for (int i = 0; i < 8; i++)

@@ -35,7 +35,7 @@ make amigaos3dist -j8
 Will build in 8 threads and put the resulting binaries where '--with-amiga-prefix' pointed to.
 
 
-# [ScummVM README](https://www.scummvm.org/) · [![Build Status](https://travis-ci.org/scummvm/scummvm.svg?branch=master)](https://travis-ci.org/scummvm/scummvm) [![Translation status](https://translations.scummvm.org/widgets/scummvm/-/scummvm/svg-badge.svg)](https://translations.scummvm.org/engage/scummvm/?utm_source=widget) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md#pull-requests)
+# [ScummVM README](https://www.scummvm.org/) · [![Build Status](https://travis-ci.org/scummvm/scummvm.svg?branch=master)](https://travis-ci.org/scummvm/scummvm) [![Translation status](https://translations.scummvm.org/widgets/scummvm/-/scummvm/svg-badge.svg)](https://translations.scummvm.org/engage/scummvm/?utm_source=widget) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md#pull-requests) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/200a9bd3f7a647b48415efb484cc8bdc)](https://www.codacy.com/app/sev-/scummvm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=scummvm/scummvm&amp;utm_campaign=Badge_Grade)
 
 For more information, compatibility lists, details on donating, the
 latest release, progress reports and more, please visit the ScummVM home
@@ -54,50 +54,51 @@ page at: <https://www.scummvm.org/>
       - [3.2) Datafiles](#32-datafiles)
       - [3.3) Multi-CD games notes](#33-multi-cd-games-notes)
       - [3.4) Known Problems](#34-known-problems)
-      - [3.5) Extra Data Files](#35-extra-data-files)      
-      - [3.6) Broken Sword games notes](#36-broken-sword-games-notes)
-          - [3.6.1) Broken Sword](#361-broken-sword)
-          - [3.6.2) Broken Sword II](#362-broken-sword-ii)
-          - [3.6.3) Broken Sword games
-            cutscenes](#363-broken-sword-games-cutscenes)
-          - [3.6.4) Broken Sword games cutscenes, in
-            retrospect](#364-broken-sword-games-cutscenes-in-retrospect)
-      - [3.7) Day of the Tentacle notes](#37-day-of-the-tentacle-notes)      
-      - [3.8) Dragon History notes](#38-dragon-history-notes)
-      - [3.9) Flight of the Amazon Queen
-        notes](#39-flight-of-the-amazon-queen-notes)
-      - [3.10) Gobliiins notes](#310-gobliiins-notes)
-      - [3.11) Inherit the Earth: Quest for the Orb
-        notes](#311-inherit-the-earth-quest-for-the-orb-notes)      
-      - [3.12) Mickey's Space Adventure
-        notes](#312-mickeys-space-adventure-notes)
-      - [3.13) Might and Magic Xeen games
-        notes](#313-might-and-magic-xeen-games-notes)
-      - [3.14) Myst game notes](#314-myst-game-notes)      
-      - [3.15) Quest for Glory notes](#315-quest-for-glory-notes)
-      - [3.16) Riven game notes](#316-riven-game-notes)
-      - [3.17) Simon the Sorcerer games
-        notes](#317-simon-the-sorcerer-games-notes)
-      - [3.18) Starship Titanic game
-        notes](#318-starship-titanic-game-notes)
-      - [3.19) The Curse of Monkey Island
-        notes](#319-the-curse-of-monkey-island-notes)
-      - [3.20) The Feeble Files notes](#320-the-feeble-files-notes)
-      - [3.21) The Legend of Kyrandia
-        notes](#321-the-legend-of-kyrandia-notes)
-      - [3.22) Troll's Tale notes](#322-trolls-tale-notes)
-      - [3.23) Winnie the Pooh notes](#323-winnie-the-pooh-notes)
-      - [3.24) Sierra AGI games: Predictive Input
-        Dialog](#324-sierra-agi-games-predictive-input-dialog)
-      - [3.25) Sierra SCI games: Simultaneous speech and
-        subtitles](#325-sierra-sci-games-simultaneous-speech-and-subtitles)
-      - [3.26) Zork games notes](#326-zork-games-notes)
-          - [3.26.1) Zork Nemesis: The Forbidden
-            Lands](#3261-zork-nemesis-the-forbidden-lands)
-          - [3.26.2) Zork: Grand
-            Inquisitor](#3262-zork-grand-inquisitor)
-      - [3.27) Commodore64 games notes](#327-commodore64-games-notes)
-      - [3.28) Macintosh games notes](#328-macintosh-games-notes)
+      - [3.5) Extra Data Files](#35-extra-data-files)
+      - [3.6) Blade Runner notes](#36-blade-runner-notes)
+      - [3.7) Broken Sword games notes](#37-broken-sword-games-notes)
+          - [3.7.1) Broken Sword](#371-broken-sword)
+          - [3.7.2) Broken Sword II](#372-broken-sword-ii)
+          - [3.7.3) Broken Sword games
+            cutscenes](#373-broken-sword-games-cutscenes)
+          - [3.7.4) Broken Sword games cutscenes, in
+            retrospect](#374-broken-sword-games-cutscenes-in-retrospect)
+      - [3.8) Day of the Tentacle notes](#38-day-of-the-tentacle-notes)
+      - [3.9) Dragon History notes](#39-dragon-history-notes)
+      - [3.10) Flight of the Amazon Queen
+        notes](#310-flight-of-the-amazon-queen-notes)
+      - [3.11) Gobliiins notes](#311-gobliiins-notes)
+      - [3.12) Inherit the Earth: Quest for the Orb
+        notes](#312-inherit-the-earth-quest-for-the-orb-notes)
+      - [3.13) Mickey's Space Adventure
+        notes](#313-mickeys-space-adventure-notes)
+      - [3.14) Might and Magic Xeen games
+        notes](#314-might-and-magic-xeen-games-notes)
+      - [3.15) Myst game notes](#315-myst-game-notes)
+      - [3.16) Quest for Glory notes](#316-quest-for-glory-notes)
+      - [3.17) Riven game notes](#317-riven-game-notes)
+      - [3.18) Simon the Sorcerer games
+        notes](#318-simon-the-sorcerer-games-notes)
+      - [3.19) Starship Titanic game
+        notes](#319-starship-titanic-game-notes)
+      - [3.20) The Curse of Monkey Island
+        notes](#320-the-curse-of-monkey-island-notes)
+      - [3.21) The Feeble Files notes](#321-the-feeble-files-notes)
+      - [3.22) The Legend of Kyrandia
+        notes](#322-the-legend-of-kyrandia-notes)
+      - [3.23) Troll's Tale notes](#323-trolls-tale-notes)
+      - [3.24) Winnie the Pooh notes](#324-winnie-the-pooh-notes)
+      - [3.25) Sierra AGI games: Predictive Input
+        Dialog](#325-sierra-agi-games-predictive-input-dialog)
+      - [3.26) Sierra SCI games: Simultaneous speech and
+        subtitles](#326-sierra-sci-games-simultaneous-speech-and-subtitles)
+      - [3.27) Zork games notes](#327-zork-games-notes)
+          - [3.27.1) Zork Nemesis: The Forbidden
+            Lands](#3271-zork-nemesis-the-forbidden-lands)
+          - [3.27.2) Zork: Grand
+            Inquisitor](#3272-zork-grand-inquisitor)
+      - [3.28) Commodore64 games notes](#328-commodore64-games-notes)
+      - [3.29) Macintosh games notes](#329-macintosh-games-notes)
   - [4.0) Supported Platforms](#40-supported-platforms)
   - [5.0) Running ScummVM](#50-running-scummvm)
       - [5.1) Command Line Options](#51-command-line-options)
@@ -431,6 +432,7 @@ supported games can be found here:
 | 3 Skulls of the Toltecs                                             | \[toltecs\]     |
 | Amazon: Guardians of Eden                                           | \[access\]      |
 | Beavis and Butt-head in Virtual Stupidity                           | \[bbvs\]        |
+| Blade Runner                                                        | \[bladerunner\] |
 | Blue Force                                                          | \[blueforce\]   |
 | Broken Sword: The Return of the Templars                            | \[sword25\]     |
 | Bud Tucker in Double Trouble                                        | \[tucker\]      |
@@ -476,6 +478,7 @@ supported games can be found here:
 | Tony Tough and the Night of Roasted Moths                           | \[tony\]        |
 | Touche: The Adventures of the Fifth Musketeer                       | \[touche\]      |
 | U.F.O.s / Gnap: Der Schurke aus dem All                             | \[gnap\]        |
+| Versailles: 1685                                                    | \[versailles\]  |
 | Voyeur                                                              | \[voyeur\]      |
 | Zork: Grand Inquisitor                                              | \[zgi\]         |
 | Zork Nemesis: The Forbidden Lands                                   | \[znemesis\]    |
@@ -739,10 +742,29 @@ Games that require additional data:
   - Kyrandia Series (kyra.dat)
   - Lands of Lore Series (kyra.dat)
   - Lure of the Temptress (lure.dat)
+  - Versailles 1685 (cryomni3d.dat)
 
 The most up to date list of Engine data files can be found in our [source code repository](https://github.com/scummvm/scummvm/tree/master/dists/engine-data)
 
-### 3.6) Broken Sword games notes
+### 3.6) Blade Runner notes
+
+Supported versions are English (both CD and DVD), French, German,
+Italian, Russian (by Fargus Multimedia) and Spanish. Other unofficial
+versions exist but they are based on the English version.
+
+All *.mix, *.tlk and *.dat files are needed from all 4 CDs/DVD.
+Files named CDFRAMES.DAT need to be renamed to CDFRAMES1.DAT,
+CDFRAMES2.DAT, CDFRAMES3.DAT and CDFRAMES4.DAT according on
+the CD they came from. Other files with the same name on different
+CDs are identical and it doesn't matter which one is used.
+
+To enable subtitles, download a file from our [Downloads](https://www.scummvm.org/games/#bladerunner) page
+and place file SUBTITLES.MIX next to the other game files.
+
+"Blade Runner with restored content" is not yet supported and might
+contain game breaking bugs.
+
+### 3.7) Broken Sword games notes
 
 The instructions for the Broken Sword games are for the Sold-Out
 Software versions, with each game on two CDs, since these were the
@@ -750,7 +772,7 @@ versions most easily available at the time ScummVM gained support for
 them. Hopefully they are general enough to be useful to other releases
 as well.
 
-#### 3.6.1) Broken Sword
+#### 3.7.1) Broken Sword
 
 For this game, you will need all of the files from the clusters
 directories on both CDs. For the Windows and Macintosh versions, you
@@ -766,7 +788,7 @@ either identical or, in one case, so nearly identical that it makes
 little difference. The PlayStation version requires tunes.dat and
 tunes.tab.
 
-#### 3.6.2) Broken Sword II
+#### 3.7.2) Broken Sword II
 
 For this game, you will need all of the files from the clusters
 directories on both CDs. (Actually, a few of them may not be strictly
@@ -780,7 +802,7 @@ like.
 In addition, you will need the cd.inf and, optionally, the startup.inf
 files from the sword2 directory on CD 1.
 
-#### 3.6.3) Broken Sword games cutscenes
+#### 3.7.3) Broken Sword games cutscenes
 
 The cutscenes for the Broken Sword games have a bit of a history (see
 the next section, if you are interested), but in general all you need to
@@ -820,7 +842,7 @@ and follow the instructions in its readme.txt file. The subtitle pack
 currently does not work when running PlayStation videos. (Broken Sword
 II already has subtitles; no extra work is needed for them.)
 
-#### 3.6.4) Broken Sword games cutscenes, in retrospect
+#### 3.7.4) Broken Sword games cutscenes, in retrospect
 
 The original releases of the Broken Sword games used RAD Game Tools's
 Smacker(tm) format. As RAD was unwilling to open the older legacy
@@ -844,7 +866,7 @@ dropped. From a technical standpoint, this was a good thing since
 decoding MPEG movies added a lot of complexity, and they didn't look as
 good as the Smacker and DXA versions anyway.
 
-### 3.7) Day of the Tentacle notes
+### 3.8) Day of the Tentacle notes
 
 At one point in the game, you come across a computer that allows you to
 play the original Maniac Mansion as an easter egg. ScummVM supports
@@ -864,7 +886,7 @@ override the ID of the game to run. Be aware, though, that not all games
 support returning to the launcher, and setting it up to use Day of the
 Tentacle itself as the easter egg game is not recommended.
 
-### 3.8) Dragon History notes
+### 3.9) Dragon History notes
 
 There are 4 language variants of the game: Czech, English, Polish and
 German. Each of them is distributed in a separate archive. The only
@@ -882,7 +904,7 @@ All game files and the walkthrough can be downloaded from:
 
 <http://www.ucw.cz/draci-historie/index-en.html>
 
-### 3.9) Flight of the Amazon Queen notes
+### 3.10) Flight of the Amazon Queen notes
 
 Only the original non-freeware version of Flight of the Amazon Queen
 (from original CD), requires the `queen.tbl` datafile (available from the `Downloads` page on our website) in either the
@@ -895,7 +917,7 @@ specific version, and thus removing the run-time dependency on the
 `queen.tbl` file. This tool also allows you to compress the speech and
 sound effects with MP3, OGG or FLAC.
 
-### 3.10) Gobliiins notes
+### 3.11) Gobliiins notes
 
 The CD versions of the Gobliiins series contain one big audio track
 which you need to rip (see the section on using compressed audio files)
@@ -904,7 +926,7 @@ without the CD in the drive all the time. The speech is also in that
 track and its volume is therefore changed with the music volume control
 as well.
 
-### 3.11) Inherit the Earth: Quest for the Orb notes
+### 3.12) Inherit the Earth: Quest for the Orb notes
 
 In order to run the Mac OS X Wyrmkeep re-release of the game you will
 need to copy over data from the CD to your hard disk. If you're on a PC
@@ -923,7 +945,7 @@ For the old Mac OS 9 release you need to copy the files in MacBinary
 format, as they should include both resource and data forks. Copy all
 'ITE \*' files.
 
-### 3.12) Mickey's Space Adventure notes
+### 3.13) Mickey's Space Adventure notes
 
 To run Mickey's Space Adventure under ScummVM, the original executable
 of the game (mickey.exe) is needed together with the game's data files.
@@ -937,7 +959,7 @@ that direction. The player can then simply click on the edges of the
 game's screen to change location, similar to many adventure games, which
 is simpler and more straightforward than moving around using the menu.
 
-### 3.13) Might and Magic Xeen games notes
+### 3.14) Might and Magic Xeen games notes
 
 To properly play the World of Xeen CD Talkie using original discs, use
 LAME or some other encoder to rip the cd audio tracks to files, either
@@ -975,7 +997,7 @@ games in the ScummVM launcher. They are:
     allowing the relative strength/value of armor and weapons to be
     compared.
 
-### 3.14) Myst game notes
+### 3.15) Myst game notes
 
 Left Click: Move/action  
 Space: Pause the game  
@@ -985,7 +1007,7 @@ F5: Menu
 Myst will autosave to slot 0 if no save or an autosave is present in
 slot 0.
 
-### 3.15) Quest for Glory notes
+### 3.16) Quest for Glory notes
 
 It is possible to import characters, beginning with Quest for Glory II,
 from past games to future games and continue from the stats earned from
@@ -1008,7 +1030,7 @@ on the import screen.
 
 Example: qfg2-thief.sav
 
-### 3.16) Riven game notes
+### 3.17) Riven game notes
 
 Left Click: Move/action  
 Arrow Keys: Movement  
@@ -1023,19 +1045,19 @@ Ctrl-s: Save game
 Riven will autosave to slot 0 if no save or an autosave is present in
 slot 0.
 
-### 3.17) Simon the Sorcerer games notes
+### 3.18) Simon the Sorcerer games notes
 
 If you have the dual version of Simon the Sorcerer 1 or 2 on CD, you
 will find the Windows version in the main directory of the CD and the
 DOS version in the DOS directory of the CD.
 
-### 3.18) Starship Titanic game notes
+### 3.19) Starship Titanic game notes
 
 For the purposes of solving the starfield puzzle, only mouse clicks, L
 and Tab are really needed, though the action glyph in the PET can be
 used instead of Tab.
 
-### 3.19) The Curse of Monkey Island notes
+### 3.20) The Curse of Monkey Island notes
 
 For this game, you will need the comi.la0, comi.la1 and comi.la2 files.
 The comi.la0 file can be found on either CD, but since they are
@@ -1046,7 +1068,7 @@ containing all of the files from -both- "resource" subdirectories on the
 two CDs. Some of the files appear on both CDs, but again they're
 identical.
 
-### 3.20) The Feeble Files notes
+### 3.21) The Feeble Files notes
 
 Amiga/Macintosh: You need to install a small pack of cutscenes that are
 missing in both of these versions of The Feeble Files. It's called "The
@@ -1072,7 +1094,7 @@ follows:
   - Rename voices.wav on CD3 to voices3.wav
   - Rename voices.wav on CD4 to voices4.wav
 
-### 3.21) The Legend of Kyrandia notes
+### 3.22) The Legend of Kyrandia notes
 
 To run The Legend of Kyrandia under ScummVM you need the `kyra.dat`
 file. The file should already be included in official ScummVM packages.
@@ -1082,13 +1104,13 @@ Windows release of ScummVM should contain the file embedded into the
 executable, thus you only need to grab it in case ScummVM complains
 about the file being missing.
 
-### 3.22) Troll's Tale notes
+### 3.23) Troll's Tale notes
 
 The original game came in a PC booter disk, therefore it is necessary to
 dump the contents of that disk in an image file and name it "troll.img"
 to be able to play the game under ScummVM.
 
-### 3.23) Winnie the Pooh notes
+### 3.24) Winnie the Pooh notes
 
 It is possible to import saved games from the original interpreter of
 the game into ScummVM.
@@ -1102,7 +1124,7 @@ that direction. The player can then simply click on the edges of the
 game's screen to change location, similar to many adventure games, which
 is simpler and more straightforward than moving around using the menu.
 
-### 3.24) Sierra AGI games: Predictive Input Dialog
+### 3.25) Sierra AGI games: Predictive Input Dialog
 
 The Predictive Input Dialog is a ScummVM aid for running AGI engine
 games (which notoriously require command line input) on devices with
@@ -1156,7 +1178,7 @@ been made in some ScummVM ports to make its use more comfortable by
 naturally mapping the functionality to the numeric keypad. Also, the
 dialog's buttons can be navigated with the arrow and the enter keys.
 
-### 3.25) Sierra SCI games: Simultaneous speech and subtitles
+### 3.26) Sierra SCI games: Simultaneous speech and subtitles
 
 Certain CD versions of Sierra SCI games had both speech and text
 resources. Some have an option to toggle between the two, but there are
@@ -1233,37 +1255,31 @@ Captioning" from the in-game "Game" menu. Speech can be disabled by
 selecting "Audio Mixer" from the in-game "Game" menu and setting the
 speech volume to zero.
 
-### 3.26) Zork games notes
+### 3.27) Zork games notes
 
 To run the supported Zork games (Zork Nemesis: The Forbidden Lands and
 Zork: Grand Inquisitor) you need to copy some (extra) data to its
 corresponding destination.
 
-#### 3.26.1) Zork Nemesis: The Forbidden Lands
+#### 3.27.1) Zork Nemesis: The Forbidden Lands
 
 Download the Liberation(tm) fonts package
 <https://releases.pagure.org/liberation-fonts/liberation-fonts-ttf-2.00.1.tar.gz>
 and unpack all the ttf files into your ScummVM extras directory.
-Alternatively, download the GNU FreeFont TTF package
-<https://ftp.gnu.org/gnu/freefont/freefont-ttf.zip> and unzip all the
-ttf files from the sfd directory into your ScummVM extras directory,
-though at the time of writing these fonts cause some text rendering
-issues. Download the subtitles patch
-<https://www.thezorklibrary.com/installguides/znpatch.zip> and unzip the
-addon directory into the game root directory
+Alternatively, ScummVM comes with the GNU FreeFont fonts, though at the
+time of writing these fonts cause some text rendering issues. Download
+the subtitles patch <https://www.thezorklibrary.com/installguides/znpatch.zip>
+and unzip the addon directory into the game root directory
 
-#### 3.26.2) Zork: Grand Inquisitor
+#### 3.27.2) Zork: Grand Inquisitor
 
 Download the Liberation(tm) fonts package
 <https://releases.pagure.org/liberation-fonts/liberation-fonts-ttf-2.00.1.tar.gz>
 and unpack all the ttf files into your ScummVM extras directory.
-Alternatively, download the GNU FreeFont TTF package
-<https://ftp.gnu.org/gnu/freefont/freefont-ttf.zip> and unzip all the
-ttf files from the sfd directory into your ScummVM extras directory,
-though at the time of writing these fonts cause some text rendering
-issues.
+Alternatively, ScummVM comes with the GNU FreeFont fonts, though at the
+time of writing these fonts cause some text rendering issues.
 
-### 3.27) Commodore64 games notes
+### 3.28) Commodore64 games notes
 
 Both Maniac Mansion and Zak McKracken run but Maniac Mansion is not yet
 playable. Simply name the D64 disks "maniac1.d64" and "maniac2.d64"
@@ -1276,7 +1292,7 @@ autodetected by ScummVM, and you must make sure that the platform is set
 to Commodore64. We recommend using the much simpler approach described
 in the previous paragraph.
 
-### 3.28) Macintosh games notes
+### 3.29) Macintosh games notes
 
 All LucasArts SCUMM based adventures, except COMI, also exist in
 versions for the Macintosh. ScummVM can use most (all?) of them,
@@ -1511,9 +1527,11 @@ Engines which currently support returning to the Launcher are:
 
     AGI
     AGOS
+    BLADERUNNER
     CINE
     COMPOSER
     CRUISE
+    CRYOMNI3D
     DRACI
     DRASCULA
     GOB
@@ -1644,6 +1662,20 @@ games and other games.
     F5                     - Displays a save/load box
     Escape                 - Skips the game intro
     Period (.)             - Skips current line of text
+
+  Blade Runner:
+    Ctrl-d                 - Starts the debugger
+    Space                  - Toggle combat mode
+    Enter or Escape        - Skips a video or a line of dialogue
+    Escape                 - Show game menu
+    Tab                    - Activate last database
+    F1                     - Online help
+    F2                     - Save game menu
+    F3                     - Load game menu
+    F4                     - Crime scene database
+    F5                     - Suspect database
+    F6                     - Clue database
+    F10                    - Quit game
 
   Broken Sword:
     F5 or Escape           - Displays save/load box
@@ -1947,6 +1979,15 @@ Using saved games from original versions isn't supported by all game
 engines. Only the following games can use saved games from their
 original versions.
 
+  - Blade Runner
+
+      - Use the debugger console and command "save" to save the game to
+        the original format and command "load" to load such a one
+      - Saved games between different languages are interchangeable
+      - It is not recommended to convert saved games from the version
+        with restored content as they might behave unexpectedly
+        or might cause game breaking bugs
+
   - Elvira 1
     
       - Add 8 bytes (saved game name) to the start of the saved game
@@ -2014,9 +2055,11 @@ Engines which currently support `--list-saves` are:
 
   - AGI
   - AGOS
+  - BLADERUNNER
   - CGE
   - CINE
   - CRUISE
+  - CRYOMNI3D
   - DRACI
   - GROOVIE
   - HUGO
@@ -2051,9 +2094,11 @@ slot number.
 Engines which currently support `--save-slot` / `-x are`:
 
   - AGI
+  - BLADERUNNER
   - CGE
   - CINE
   - CRUISE
+  - CRYOMNI3D
   - DRACI
   - GROOVIE
   - HUGO
@@ -2693,6 +2738,12 @@ Sierra games using the SCI engine add the following non-standard keywords:
                                 instead of the DOS ones (King's Quest 6)
     silver_cursors     bool     Use the alternate set of silver cursors,
                                 instead of the normal golden ones (Space Quest 4)
+
+Blade Runner adds the following non-standard keywords:
+    shorty             bool     If true, game will shrink the actors and make
+                                their voices high pitched
+    sitcom             bool     If true, game will add laughter after actor's
+                                line or narration
 
 Broken Sword II adds the following non-standard keywords:
 

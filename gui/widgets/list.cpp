@@ -41,10 +41,10 @@ ListWidget::ListWidget(Dialog *boss, const String &name, const char *tooltip, ui
 	// This ensures that _entriesPerPage is properly initialized.
 	reflowLayout();
 
-	_scrollBar = new ScrollBarWidget(this, _w - _scrollBarWidth + 1, 0, _scrollBarWidth, _h);
+	_scrollBar = new ScrollBarWidget(this, _w - _scrollBarWidth, 0, _scrollBarWidth, _h);
 	_scrollBar->setTarget(this);
 
-	setFlags(WIDGET_ENABLED | WIDGET_CLEARBG | WIDGET_RETAIN_FOCUS | WIDGET_WANT_TICKLE);
+	setFlags(WIDGET_ENABLED | WIDGET_CLEARBG | WIDGET_RETAIN_FOCUS | WIDGET_WANT_TICKLE | WIDGET_TRACK_MOUSE);
 	_type = kListWidget;
 	_editMode = false;
 	_numberingMode = kListNumberingOne;
@@ -62,6 +62,8 @@ ListWidget::ListWidget(Dialog *boss, const String &name, const char *tooltip, ui
 
 	_quickSelect = true;
 	_editColor = ThemeEngine::kFontColorNormal;
+
+	_lastRead = -1;
 }
 
 ListWidget::ListWidget(Dialog *boss, int x, int y, int w, int h, const char *tooltip, uint32 cmd)
@@ -72,7 +74,7 @@ ListWidget::ListWidget(Dialog *boss, int x, int y, int w, int h, const char *too
 	// This ensures that _entriesPerPage is properly initialized.
 	reflowLayout();
 
-	_scrollBar = new ScrollBarWidget(this, _w - _scrollBarWidth + 1, 0, _scrollBarWidth, _h);
+	_scrollBar = new ScrollBarWidget(this, _w - _scrollBarWidth, 0, _scrollBarWidth, _h);
 	_scrollBar->setTarget(this);
 
 	setFlags(WIDGET_ENABLED | WIDGET_CLEARBG | WIDGET_RETAIN_FOCUS | WIDGET_WANT_TICKLE);
@@ -93,6 +95,8 @@ ListWidget::ListWidget(Dialog *boss, int x, int y, int w, int h, const char *too
 
 	_quickSelect = true;
 	_editColor = ThemeEngine::kFontColorNormal;
+
+	_lastRead = -1;
 }
 
 bool ListWidget::containsWidget(Widget *w) const {
@@ -260,6 +264,31 @@ void ListWidget::handleMouseUp(int x, int y, int button, int clickCount) {
 
 void ListWidget::handleMouseWheel(int x, int y, int direction) {
 	_scrollBar->handleMouseWheel(x, y, direction);
+}
+
+void ListWidget::handleMouseMoved(int x, int y, int button) {
+	if (!isEnabled())
+		return;
+
+	// Determine if we are inside the widget
+	if (x < 0 || x > _w)
+		return;
+
+	// First check whether the selection changed
+	int item = findItem(x, y);
+
+	if (item != -1) {
+		if(_lastRead != item) {
+			read(_dataList[item]);
+			_lastRead = item;
+		}
+	}
+	else
+		_lastRead = -1;
+}
+
+void ListWidget::handleMouseLeft(int button) {
+	_lastRead = -1;
 }
 
 
@@ -658,7 +687,7 @@ void ListWidget::reflowLayout() {
 	assert(_entriesPerPage > 0);
 
 	if (_scrollBar) {
-		_scrollBar->resize(_w - _scrollBarWidth + 1, 0, _scrollBarWidth, _h);
+		_scrollBar->resize(_w - _scrollBarWidth, 0, _scrollBarWidth, _h);
 		scrollBarRecalc();
 		scrollToCurrent();
 	}

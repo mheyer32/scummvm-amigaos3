@@ -61,6 +61,10 @@
 #include "graphics/pixelformat.h"
 #include "image/bmp.h"
 
+#ifdef USE_TTS
+#include "common/text-to-speech.h"
+#endif
+
 #ifdef _WIN32_WCE
 extern bool isSmartphone();
 #endif
@@ -305,7 +309,7 @@ void initGraphics(int width, int height, const Graphics::PixelFormat *format) {
 	// Error out on size switch failure
 	if (gfxError & OSystem::kTransactionSizeChangeFailed) {
 		Common::String message;
-		message = Common::String::format("Could not switch to resolution: '%dx%d'.", width, height);
+		message = Common::String::format(_("Could not switch to resolution '%dx%d'."), width, height);
 
 		GUIErrorMessage(message);
 		error("%s", message.c_str());
@@ -322,18 +326,16 @@ void initGraphics(int width, int height, const Graphics::PixelFormat *format) {
 #endif
 
 	if (gfxError & OSystem::kTransactionModeSwitchFailed) {
-		Common::String message = _("Could not switch to video mode: '");
-		message += ConfMan.get("gfx_mode");
-		message += "'.";
+		Common::String message;
+		message = Common::String::format(_("Could not switch to video mode '%s'."), ConfMan.get("gfx_mode").c_str());
 
 		GUI::MessageDialog dialog(message);
 		dialog.runModal();
 	}
 
 	if (gfxError & OSystem::kTransactionStretchModeSwitchFailed) {
-		Common::String message = _("Could not switch to stretch mode: '");
-		message += ConfMan.get("stretch_mode");
-		message += "'.";
+		Common::String message;
+		message = Common::String::format(_("Could not switch to stretch mode '%s'."), ConfMan.get("stretch_mode").c_str());
 
 		GUI::MessageDialog dialog(message);
 		dialog.runModal();
@@ -515,6 +517,11 @@ void Engine::pauseEngineIntern(bool pause) {
 void Engine::openMainMenuDialog() {
 	if (!_mainMenuDialog)
 		_mainMenuDialog = new MainMenuDialog(this);
+#ifdef USE_TTS
+	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+	ttsMan->pushState();
+	g_gui.initTextToSpeech();
+#endif
 
 	setGameToLoadSlot(-1);
 
@@ -522,7 +529,7 @@ void Engine::openMainMenuDialog() {
 
 	// Load savegame after main menu execution
 	// (not from inside the menu loop to avoid
-	// mouse cursor glitches and simliar bugs,
+	// mouse cursor glitches and similar bugs,
 	// e.g. #2822778).
 	if (_saveSlotToLoad >= 0) {
 		Common::Error status = loadGameState(_saveSlotToLoad);
@@ -536,6 +543,9 @@ void Engine::openMainMenuDialog() {
 	}
 
 	syncSoundSettings();
+#ifdef USE_TTS
+	ttsMan->popState();
+#endif
 }
 
 bool Engine::warnUserAboutUnsupportedGame() {

@@ -33,6 +33,8 @@
 
 #include "engines/engine.h"
 
+#include "graphics/cursorman.h"
+
 #include "cryomni3d/font_manager.h"
 #include "cryomni3d/objects.h"
 #include "cryomni3d/sprites.h"
@@ -59,8 +61,15 @@ class ImageDecoder;
  */
 namespace CryOmni3D {
 
+class DATSeekableStream;
+
 enum CryOmni3DGameType {
 	GType_VERSAILLES
+};
+
+enum CryOmni3DGameFeatures {
+	GF_VERSAILLES_NUMERICFONTS             = (1 << 0), // Fonts are font01.crf, ...
+	GF_VERSAILLES_AUDIOPADDING             = (1 << 1)  // Audio files have underscore padding before extension
 };
 
 struct CryOmni3DGameDescription;
@@ -91,14 +100,17 @@ public:
 	const CryOmni3DGameDescription *_gameDescription;
 	const char *getGameId() const;
 	uint32 getFeatures() const;
-	const char *getAppName() const;
 	uint16 getVersion() const;
 	Common::Platform getPlatform() const;
 	uint8 getGameType() const;
 	Common::Language getLanguage() const;
 
-	bool hasFeature(EngineFeature f) const;
+	bool hasFeature(EngineFeature f) const override;
+	bool canLoadGameStateCurrently() override { return _canLoadSave; }
+	bool canSaveGameStateCurrently() override { return _canLoadSave; }
 
+	void setCanLoadSave(bool canLoadSave) { _canLoadSave = canLoadSave; }
+	static const uint kSaveDescriptionLen = 20;
 private:
 	void pauseEngineIntern(bool);
 
@@ -106,13 +118,15 @@ public:
 	Image::ImageDecoder *loadHLZ(const Common::String &filename);
 
 	void fillSurface(byte color);
+	/* We use CursorMan because it avoids problems with cursors in GMM */
 	void setCursor(const Graphics::Cursor &cursor) const;
 	void setCursor(uint cursorId) const;
+	bool showMouse(bool visible) { return CursorMan.showMouse(visible); }
 	typedef void (CryOmni3DEngine::*HNMCallback)(uint frameNum);
 	void playHNM(const Common::String &filename,
 	             Audio::Mixer::SoundType soundType = Audio::Mixer::kPlainSoundType,
 	             HNMCallback beforeDraw = nullptr, HNMCallback afterDraw = nullptr);
-	void displayHLZ(const Common::String &filename);
+	bool displayHLZ(const Common::String &filename, uint32 timeout = uint(-1));
 
 	bool pollEvents();
 	Common::Point getMousePos();
@@ -143,6 +157,8 @@ public:
 	virtual void setupPalette(const byte *colors, uint start, uint num) = 0;
 
 protected:
+	DATSeekableStream *getStaticData(uint32 gameId, uint16 version) const;
+
 	void copySubPalette(byte *dst, const byte *src, uint start, uint num);
 	void setPalette(const byte *colors, uint start, uint num);
 	void lockPalette(uint startRW, uint endRW) { _lockPaletteStartRW = startRW; _lockPaletteEndRW = endRW; }
@@ -152,6 +168,8 @@ protected:
 	void setBlackPalette();
 
 protected:
+	bool _canLoadSave;
+
 	FontManager _fontManager;
 	Sprites _sprites;
 	Objects _objects;

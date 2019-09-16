@@ -28,6 +28,7 @@
 #include "sci/engine/workarounds.h"
 
 #define SCI_WORKAROUNDENTRY_TERMINATOR { (SciGameId)0, -1, -1, 0, NULL, NULL, NULL, 0, 0, { WORKAROUND_NONE, 0 } }
+#define SCI_MESSAGEWORKAROUNDENTRY_TERMINATOR { (SciGameId)0, (SciMedia)0, (kLanguage)0, -1, -1, 0, 0, 0, 0, { MSG_WORKAROUND_NONE, -1, 0, 0, 0, 0, 0, 0, 0, NULL } }
 
 namespace Sci {
 
@@ -326,6 +327,7 @@ const SciWorkaroundEntry uninitializedReadForParamWorkarounds[] = {
 	{ GID_PHANTASMAGORIA2,-1, 64926,  0,              "Thumb", "action",                          NULL,     1,     1,{ WORKAROUND_FAKE,   0 } }, // When dragging one of the volume sliders and releasing the mouse button over the +/- buttons
 	{ GID_PHANTASMAGORIA2,-1, 63019,  0,     "WynDocTextView", "cue",                             NULL,     2,     2,{ WORKAROUND_FAKE,   0 } }, // When dragging the slider next to an e-mail message
 	{ GID_SHIVERS,        -1, 64918,  0,                "Str", "strip",                           NULL,     1,     1,{ WORKAROUND_FAKE,   0 } }, // When starting a new game and entering a name
+	{ GID_SQ4,            35,   928,  0,           "Narrator", "say",                             NULL,     1,     1,{ WORKAROUND_FAKE,  11 } }, // Clicking smell on sidewalk, fixes message due to missing say parameter in sidewalk1:doVerb(6) - bug #10917
 	SCI_WORKAROUNDENTRY_TERMINATOR
 };
 
@@ -346,6 +348,7 @@ const SciWorkaroundEntry uninitializedReadWorkarounds[] = {
 	{ GID_CNICK_LSL,     250,   250,  0,           "increase", "handleEvent",                     NULL,     2,     2, { WORKAROUND_FAKE,   0 } }, // when increasing own bet for blackjack - bug #10184
 	{ GID_CNICK_LONGBOW,   0,     0,  0,          "RH Budget", "init",                            NULL,     1,     1, { WORKAROUND_FAKE,   0 } }, // when starting the game
 	{ GID_ECOQUEST,       -1,    -1,  0,                 NULL, "doVerb",                          NULL,     0,     0, { WORKAROUND_FAKE,   0 } }, // almost clicking anywhere triggers this in almost all rooms
+	{ GID_ECOQUEST2,      -1,    50,  0,         "talkButton", "cue",                             NULL,     0,     0, { WORKAROUND_FAKE,   0 } }, // clicking Ecorder talk button before clicking power button
 	{ GID_FANMADE,       516,   979,  0,                   "", "export 0",                        NULL,    20,    20, { WORKAROUND_FAKE,   0 } }, // Happens in Grotesteing after the logos
 	{ GID_FANMADE,       528,   990,  0,            "GDialog", "doit",                            NULL,     4,     4, { WORKAROUND_FAKE,   0 } }, // Happens in Cascade Quest when closing the glossary - bug #5116
 	{ GID_FANMADE,       488,     1,  0,         "RoomScript", "doit",        sig_uninitread_fanmade_1,     1,     1, { WORKAROUND_FAKE,   0 } }, // Happens in Ocean Battle while playing - bug #5335
@@ -828,13 +831,14 @@ static const uint16 sig_kGraphRedrawBox_sq4_2[] = {
 const SciWorkaroundEntry kGraphRedrawBox_workarounds[] = {
 	{ GID_SQ4,           405,   405,  0,       "swimAfterEgo", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air - accidental additional parameter specified
 	{ GID_SQ4,           405,   405,  0,                   "", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air... Russian version - bug #5573
-	{ GID_SQ4,           406,   406,  0,        "egoFollowed", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // FLOPPY: when getting shot by the police - accidental additional parameter specified
+	{ GID_SQ4,           406,   406,  0,        "egoFollowed", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when getting shot by the police - accidental additional parameter specified
 	{ GID_SQ4,            -1,   406,  0,       "swimAndShoot", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air - accidental additional parameter specified
 	{ GID_SQ4,            -1,   406,  0,                   "", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air... Russian version - bug #5573 (is for both egoFollowed and swimAndShoot)
 	{ GID_SQ4,           410,   410,  0,       "swimAfterEgo", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air - accidental additional parameter specified
 	{ GID_SQ4,           410,   410,  0,                   "", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air... Russian version - bug #5573
-	{ GID_SQ4,           411,   411,  0,       "swimAndShoot", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air - accidental additional parameter specified
-	{ GID_SQ4,           411,   411,  0,                   "", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air... Russian version - bug #5573
+	{ GID_SQ4,           411,   411,  0,        "egoFollowed", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when getting shot by the police - accidental additional parameter specified
+	{ GID_SQ4,            -1,   411,  0,       "swimAndShoot", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air - accidental additional parameter specified
+	{ GID_SQ4,            -1,   411,  0,                   "", "changeState",                      NULL,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // skateOrama when "swimming" in the air... Russian version - bug #5573
 	{ GID_SQ4,           150,   150,  0,        "laserScript", "changeState", sig_kGraphRedrawBox_sq4_1,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // when visiting the pedestral where Roger Jr. is trapped, before trashing the brain icon in the programming chapter, accidental additional parameter specified - bug #5479, German - bug #5527
 	{ GID_SQ4,           150,   150,  0,                   "", "changeState", sig_kGraphRedrawBox_sq4_1,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // same as above, for the Russian version - bug #5573
 	{ GID_SQ4,            -1,   703,  0,     "shootEgoScript", "changeState", sig_kGraphRedrawBox_sq4_2,     0,     0, { WORKAROUND_STILLCALL, 0 } }, // estros when getting shot by the police - accidental additional parameter specified
@@ -1132,6 +1136,224 @@ SciWorkaroundSolution trackOriginAndFindWorkaround(int index, const SciWorkaroun
 	noneFound.type = WORKAROUND_NONE;
 	noneFound.value = 0;
 	return noneFound;
+}
+
+// Workarounds for known broken messages
+//
+// The most common message bug is a script passing the wrong tuple or a message
+//  having the wrong tuple. This results in a "missing message" message. These
+//  requests just need to be remapped to the right message. In some cases the
+//  message text is incorrect, or missing, in which case it can be extracted
+//  from another record or faked with a hard-coded response.
+//
+// Workarounds can be optionally scoped to media (floppy vs cd), language, and
+//  room number. If a message is remapped, this will also remap any audio36 and
+//  sync36 resources with the same tuple, unless those resources have their own
+//  remapping workarounds due to their tuples being out of sync with their
+//  already broken messages, which we've seen twice.
+//
+// The one kind of broken message that we don't handle yet is when the audio is
+//  completely missing from the game. QFG4 has most of those. In speech-only
+//  mode this means no audio or text and in dual mode the text disappears
+//  quickly as most games use audio length for the message delay. That logic is
+//  in each game's Messager/Narrator/Talker scripts.
+static const SciMessageWorkaroundEntry messageWorkarounds[] = {
+	// game              media             language       room   mod    n    v    c   s    workaround-type          mod    n    v    c   s tlk  idx  len  text
+	// FPFP CD has several message sequences where audio and text were left out of sync - bug #10964
+	//  Some of the texts just say "Dummy Msg" and the real values are concatenated in the first record.
+	// Lever Brothers' intro
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  1, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99,   0,  25, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  2, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99,  26,  20, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  3, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99,  47,  58, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  4, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99, 106,  34, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  5, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99, 141,  27, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  6, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99, 169,  29, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  7, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99, 199,  52, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  24,   0,   0,  8, { MSG_WORKAROUND_EXTRACT,  220,  24,   0,   0,  1, 99, 252,  37, NULL } },
+	// Kenny's intro
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  30,   0,   0,  3, { MSG_WORKAROUND_EXTRACT,  220,  30,   0,   0,  3, 99,   0,  14, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  30,   0,   0,  4, { MSG_WORKAROUND_EXTRACT,  220,  30,   0,   0,  3, 99,  15, 245, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  220,  30,   0,   0,  5, { MSG_WORKAROUND_EXTRACT,  220,  30,   0,   0,  4, 99,   0,   0, NULL } },
+	// Helen swatting flies
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  1, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  1, 53,   0,  42, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  2, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  1, 53,  43,  93, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  3, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  1, 53, 137,  72, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  4, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  2, 53,   0,   0, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  5, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  1, 53, 210,  57, NULL } },
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  660,  35,   0,   0,  6, { MSG_WORKAROUND_EXTRACT,  660,  35,   0,   0,  3, 12,   0,   0, NULL } },
+	// Wrong talker when clicking guns on Srini in room 300
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_FLOPPY, K_LANG_NONE,     -1,  300,  17,  47,   0,  1, { MSG_WORKAROUND_EXTRACT,  300,  17,  47,   0,  1, 40,   0,   0, NULL } },
+	// Missing message when clicking full bottles of water on spigot in room 320
+	{ GID_FREDDYPHARKAS, SCI_MEDIA_FLOPPY, K_LANG_NONE,     -1,  320,  16,  34,   7,  1, { MSG_WORKAROUND_REMAP,    320,  37,  34,   7,  1,  0,   0,   0, NULL } },
+	// Missing message when clicking flashlight and other items on Magentia in room 290, floppy 1.0 - bug #10782
+	{ GID_GK1,           SCI_MEDIA_FLOPPY, K_LANG_NONE,     -1,  290,   8,   0,  35,  1, { MSG_WORKAROUND_REMAP,    290,   8,   0,   0,  1,  0,   0,   0, NULL } },
+	// Missing message when clicking photocopy of the veve on the artist after giving sketch and original veve in room 410 - bug #10818
+	{ GID_GK1,           SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  410,   3,  48,  31,  1, { MSG_WORKAROUND_REMAP,    410,   3,  24,  31,  1,  0,   0,   0, NULL } },
+	// Missing message when clicking operate on Loreli's right chair in room 420, floppy 1.0 - bug #10820
+	{ GID_GK1,           SCI_MEDIA_FLOPPY, K_LANG_NONE,     -1,  420,   4,   8,   3,  1, { MSG_WORKAROUND_REMAP,    420,   4,   8,   7,  1,  0,   0,   0, NULL } },
+	// Clicking money on Loreli when sitting or dancing in room 420 - bug #10819
+	//  The script transposes sitting vs dancing responses, passes an invalid cond for one of them, and the
+	//  audio36 for the the other has the wrong tuple, which we fix in the audio36 workarounds.
+	{ GID_GK1,           SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  420,   2,  32,   3,  1, { MSG_WORKAROUND_REMAP,    420,   2,  32,   0,  1,  0,   0,   0, NULL } },
+	{ GID_GK1,           SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  420,   2,  32,   0,  1, { MSG_WORKAROUND_REMAP,    420,   2,  32,   2,  1,  0,   0,   0, NULL } },
+	// Asking Yvette about Tut in act 2 party in floppy version - bug #10723
+	//  The last two sequences in this five part message reveal a murder that hasn't occurred yet.
+	//  We skip these as to not spoil the plot, but only in the act 2 rooms, as the message is used
+	//  in later acts where all five parts are appropriate. Sierra fixed this in the CD version by
+	//  creating a new three-sequence message for act 2 to accomplish the same thing.
+	{ GID_LAURABOW2,     SCI_MEDIA_FLOPPY, K_LANG_NONE,    350, 1885,   1,   6,  16,  4, { MSG_WORKAROUND_REMAP,   1885,   1,   6,  16,  6,  0,   0,   0, NULL } },
+	{ GID_LAURABOW2,     SCI_MEDIA_FLOPPY, K_LANG_NONE,    360, 1885,   1,   6,  16,  4, { MSG_WORKAROUND_REMAP,   1885,   1,   6,  16,  6,  0,   0,   0, NULL } },
+	{ GID_LAURABOW2,     SCI_MEDIA_FLOPPY, K_LANG_NONE,    370, 1885,   1,   6,  16,  4, { MSG_WORKAROUND_REMAP,   1885,   1,   6,  16,  6,  0,   0,   0, NULL } },
+	// Missing message when clicking carbon paper on desk lamp in room 550, floppy 1.0 - bug #10706
+	{ GID_LAURABOW2,     SCI_MEDIA_FLOPPY, K_LANG_NONE,     -1,  550,   5,  39,   6,  1, { MSG_WORKAROUND_REMAP,    550,  45,  39,   6,  1,  0,   0,   0, NULL } },
+	// Looking at coal in room 720, message is prepended with carriage return and newline
+	{ GID_LAURABOW2,     SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  720,  12,   1,   0,  1, { MSG_WORKAROUND_EXTRACT,  720,  12,   1,   0,  1, 99,   2, 255, NULL } },
+	// Using the hand icon on Keith in the Blue Room (missing message) - bug #6253
+	{ GID_PQ1,           SCI_MEDIA_ALL,    K_LANG_NONE,     -1,   38,  10,   4,   8,  1, { MSG_WORKAROUND_REMAP,     38,  10,   4,   9,  1,  0,   0,   0, NULL } },
+	// Using the eye icon on Keith in the Blue Room (no message and wrong talker) - bug #6253
+	{ GID_PQ1,           SCI_MEDIA_ALL,    K_LANG_NONE,     -1,   38,  10,   1,   0,  1, { MSG_WORKAROUND_EXTRACT,   38,  10,   1,  13,  1, 99,   0,   0, NULL } },
+	// Talking to Kaspar the shopkeeper - bug #6250
+	{ GID_QFG1VGA,       SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  322,  14,   1,  19,  1, { MSG_WORKAROUND_REMAP,    322,  14,   2,  19,  1,  0,   0,   0, NULL } },
+	// Remove the "a:" floppy drive prefix from the default character export
+	//  filename "a:shadows.sav". We do this for SCI16 games in kDrawControl.
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_NONE,     -1,   52,   2,   0,  10,  1, { MSG_WORKAROUND_EXTRACT,   52,   2,   0,  10,  1, 99,   2,  11, NULL } },
+	// Talking with the Leshy and telling him about "bush in goo" - bug #10137
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  579,   0,   0,   0,  1, { MSG_WORKAROUND_REMAP,    579,   0,   1,   0,  1,  0,   0,   0, NULL } },
+	// Examining the statue inventory item from the monastery - bug #10770
+	// The description says "squid-like monster", yet the icon is
+	// clearly an insect. It turned Chief into "an enormous beetle". We
+	// change the phrase to "monstrous insect". This message is text-only.
+	// Note: The German string contains accented characters.
+	//  0x84 "a with diaeresis"
+	//  0x94 "o with diaeresis"
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_ENGLISH,  -1,   16,  49,   1,   0,  2, { MSG_WORKAROUND_FAKE,      16,  49,   1,   0,  2, 99,   0,   0, "Carefully wrapped in a shopping bag is the grotesque sculpture of a horrible, monstrous insect." } },
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_GERMAN,   -1,   16,  49,   1,   0,  2, { MSG_WORKAROUND_FAKE,      16,  49,   1,   0,  2, 99,   0,   0, "Die groteske Skulptur eines schrecklichen, monstr\x94sen insekts ist sorgf\x84ltig in die Einkaufstasche eingewickelt." } },
+	// The CD edition mangled the Rusalka flowers dialogue. - bug #10849
+	// In the floppy edition, there are 3 lines, the first from
+	// the narrator, then two from Rusalka. The CD edition omits
+	// narration and only has the 3rd text, with the 2nd audio! The
+	// 3rd audio is orphaned but available.
+	// We only restore Rusalka's lines, providing the correct text
+	// for seq:1 to match the audio. We respond to seq:2 requests
+	// with Rusalka's last text. The orphaned audio (seq:3) has its
+	// tuple remapped to seq:2 in an audio workaround below.
+	{ GID_QFG4,          SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  520,   2,  59,   0,  1, { MSG_WORKAROUND_FAKE,     520,   2,  59,   0,  1, 28,   0,   0, "Thank you for the beautiful flowers.  No one has been so nice to me since I can remember." } },
+	{ GID_QFG4,          SCI_MEDIA_CD,     K_LANG_ENGLISH,  -1,  520,   2,  59,   0,  2, { MSG_WORKAROUND_EXTRACT,  520,   2,  59,   0,  1, 28,   0,   0, NULL } },
+	// Wrong talker when asking gnome about himself in room 320 - bug #11030.
+	//  This incorrect value caused the narrator to accidentally voice these
+	//  messages in the CD version instead of the actor who played the gnome.
+	//  There's nothing we can do about that but we can at least set the correct
+	//  talker so that the message boxes appear in the correct screen location.
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  322,  10, 149,   1,  1, { MSG_WORKAROUND_EXTRACT,  322,  10, 149,   1,  1, 13,   0,   0, NULL } },
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  322,  10, 149,   1,  2, { MSG_WORKAROUND_EXTRACT,  322,  10, 149,   1,  2, 13,   0,   0, NULL } },
+	{ GID_QFG4,          SCI_MEDIA_ALL,    K_LANG_NONE,     -1,  322,  10, 149,   1,  3, { MSG_WORKAROUND_EXTRACT,  322,  10, 149,   1,  3, 13,   0,   0, NULL } },
+	// This fixes the error message shown when speech and subtitles are
+	// enabled simultaneously in SQ4 - the (very) long dialog when Roger
+	// is talking with the aliens is missing - bug #6067.
+	// The missing text is just too big to fit in one speech bubble, and
+	// if it's added here manually and drawn on screen, it's painted over
+	// the entrance in the back where the Sequel Police enters, so it
+	// looks very ugly. Perhaps this is why this particular text is missing,
+	// as the text shown in this screen is very short (one-liners).
+	// Just output an empty string here instead of showing an error.
+	{ GID_SQ4,           SCI_MEDIA_CD,     K_LANG_NONE,     -1,   16,   7,   0,   3,  1, { MSG_WORKAROUND_FAKE,      16,   7,   0,   3,  1,  7,   0,   0, "" } },
+	// Missing message when clicking talk in room 520 - bug #10915
+	{ GID_SQ4,           SCI_MEDIA_CD,     K_LANG_NONE,     -1,  510,  99,   0,   3,  1, { MSG_WORKAROUND_REMAP,    500,  99,   0,   3,  1,  0,   0,   0, NULL } },
+	SCI_MESSAGEWORKAROUNDENTRY_TERMINATOR
+};
+
+// Audio36 workarounds are for when an audio36 resource's tuple is out of sync
+//  with its corresponding message, in which case it can be remapped. Any sync36
+//  resource with the same tuple will also be remapped. Remapping is the only
+//  workaround type available to this table. If a tuple is remapped both here
+//  and in message workarounds, this remapping is used.
+static const SciMessageWorkaroundEntry audio36Workarounds[] = {
+	// game              media             language       room   mod    n    v    c   s    workaround-type          mod    n    v    c   s tlk  idx  len  text
+	// Clicking money on Lorelei when dancing - bug #10819 (see message workarounds above)
+	{ GID_GK1,           SCI_MEDIA_CD,     K_LANG_NONE,     -1,  420,   2,  32,   0,  1, { MSG_WORKAROUND_REMAP,    420,   2,  32,   3,  1,  0,   0,   0, NULL } },
+	// Clicking Look on floor grate in room 510 - bug #10848
+	{ GID_QFG4,          SCI_MEDIA_CD,     K_LANG_NONE,     -1,  510,  23,   1,   0,  1, { MSG_WORKAROUND_REMAP,    510, 199,   1,   0,  1,  0,   0,   0, NULL } },
+	// Clicking flowers on Rusalka - bug #10849 (see message workarounds above)
+	{ GID_QFG4,          SCI_MEDIA_CD,     K_LANG_NONE,     -1,  520,   2,  59,   0,  2, { MSG_WORKAROUND_REMAP,    520,   2,  59,   0,  3,  0,   0,   0, NULL } },
+	// Casting glide spell in room 593 when standing on water
+	{ GID_QFG4,          SCI_MEDIA_CD,     K_LANG_NONE,     -1,  593,   5,   6,   7,  1, { MSG_WORKAROUND_REMAP,    570,   2,   6,  14,  1,  0,   0,   0, NULL } },
+	SCI_MESSAGEWORKAROUNDENTRY_TERMINATOR
+};
+
+// Sync36 workarounds are for when a sync36 resource's tuple is out of sync with
+//  its corresponding message, in which case it can be remapped. This hasn't
+//  been encountered yet, but remapping solves a similar LB2 sync bug.
+static const SciMessageWorkaroundEntry sync36Workarounds[] = {
+	// game              media             language       room   mod    n    v    c   s    workaround-type          mod    n    v    c   s tlk  idx  len  text
+	// Asking yvette about tut in act 2 is missing a sync resource but a duplicate message has a sync resource - bug #9956
+	{ GID_LAURABOW2,     SCI_MEDIA_CD,     K_LANG_NONE,     -1, 1885,   1,   6,  30,  2, { MSG_WORKAROUND_REMAP,   1885,   1,   6,  10,  2,  0,   0,   0, NULL } },
+	SCI_MESSAGEWORKAROUNDENTRY_TERMINATOR
+};
+
+static SciMessageWorkaroundSolution findMessageWorkaround(int module, byte noun, byte verb, byte cond, byte seq, const SciMessageWorkaroundEntry *workaroundList) {
+	const SciMessageWorkaroundEntry *workaround = workaroundList;
+	while (workaround->solution.type != MSG_WORKAROUND_NONE) {
+		if (workaround->gameId == g_sci->getGameId() &&
+			(workaround->media == SCI_MEDIA_ALL ||
+			(workaround->media == SCI_MEDIA_FLOPPY && !g_sci->isCD()) ||
+			(workaround->media == SCI_MEDIA_CD && g_sci->isCD())) &&
+			(workaround->language == K_LANG_NONE ||
+			workaround->language == g_sci->getSciLanguage()) &&
+			(workaround->roomNumber == -1 ||
+			workaround->roomNumber == g_sci->getEngineState()->currentRoomNumber()) &&
+			workaround->module == module &&
+			workaround->noun == noun &&
+			workaround->verb == verb &&
+			workaround->cond == cond &&
+			workaround->seq == seq) {
+			break;
+		}
+		workaround++;
+	}
+	return workaround->solution;
+}
+
+SciMessageWorkaroundSolution findMessageWorkaround(int module, byte noun, byte verb, byte cond, byte seq) {
+	return findMessageWorkaround(module, noun, verb, cond, seq, messageWorkarounds);
+}
+
+ResourceId remapAudio36ResourceId(const ResourceId &resourceId) {
+	int module = resourceId.getNumber();
+	byte noun = resourceId.getTuple() >> 24;
+	byte verb = (resourceId.getTuple() >> 16) & 0xff;
+	byte cond = (resourceId.getTuple() >> 8) & 0xff;
+	byte seq = resourceId.getTuple() & 0xff;
+
+	SciMessageWorkaroundSolution workaround = findMessageWorkaround(module, noun, verb, cond, seq, audio36Workarounds);
+	if (workaround.type != MSG_WORKAROUND_REMAP) {
+		workaround = findMessageWorkaround(module, noun, verb, cond, seq, messageWorkarounds);
+	}
+
+	if (workaround.type == MSG_WORKAROUND_REMAP) {
+		return ResourceId(resourceId.getType(), workaround.module, workaround.noun, workaround.verb, workaround.cond, workaround.seq);
+	}
+	return resourceId;
+}
+
+ResourceId remapSync36ResourceId(const ResourceId &resourceId) {
+	int module = resourceId.getNumber();
+	byte noun = resourceId.getTuple() >> 24;
+	byte verb = (resourceId.getTuple() >> 16) & 0xff;
+	byte cond = (resourceId.getTuple() >> 8) & 0xff;
+	byte seq = resourceId.getTuple() & 0xff;
+
+	SciMessageWorkaroundSolution workaround = findMessageWorkaround(module, noun, verb, cond, seq, sync36Workarounds);
+	if (workaround.type != MSG_WORKAROUND_REMAP) {
+		workaround = findMessageWorkaround(module, noun, verb, cond, seq, audio36Workarounds);
+	}
+	if (workaround.type != MSG_WORKAROUND_REMAP) {
+		workaround = findMessageWorkaround(module, noun, verb, cond, seq, messageWorkarounds);
+	}
+
+	if (workaround.type == MSG_WORKAROUND_REMAP) {
+		return ResourceId(resourceId.getType(), workaround.module, workaround.noun, workaround.verb, workaround.cond, workaround.seq);
+	}
+	return resourceId;
 }
 
 } // End of namespace Sci

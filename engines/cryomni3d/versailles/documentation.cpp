@@ -35,8 +35,6 @@
 namespace CryOmni3D {
 namespace Versailles {
 
-const char *Versailles_Documentation::kAllDocsFile = "tous_doc.txt";
-const char *Versailles_Documentation::kLinksDocsFile = "lien_doc.txt";
 const Versailles_Documentation::TimelineEntry Versailles_Documentation::kTimelineEntries[] = {
 	{ "1638", 340,  15 },
 	{ "1643", 470,  30 },
@@ -84,17 +82,20 @@ const Versailles_Documentation::TimelineEntry Versailles_Documentation::kTimelin
 };
 
 void Versailles_Documentation::init(const Sprites *sprites, FontManager *fontManager,
-                                    const Common::StringArray *messages, CryOmni3DEngine *engine) {
+                                    const Common::StringArray *messages, CryOmni3DEngine *engine,
+                                    const Common::String &allDocsFileName, const Common::String &linksDocsFileName) {
 	_sprites = sprites;
 	_fontManager = fontManager;
 	_messages = messages;
 	_engine = engine;
+	_allDocsFileName = allDocsFileName;
+	_linksDocsFileName = linksDocsFileName;
 
 	// Build list of records
 	Common::File allDocsFile;
 
-	if (!allDocsFile.open(kAllDocsFile)) {
-		error("Can't open %s", kAllDocsFile);
+	if (!allDocsFile.open(_allDocsFileName)) {
+		error("Can't open %s", _allDocsFileName.c_str());
 	}
 
 	uint allDocsSize = allDocsFile.size();
@@ -105,10 +106,10 @@ void Versailles_Documentation::init(const Sprites *sprites, FontManager *fontMan
 	allDocsFile.close();
 
 	const char *patterns[] = { "FICH=", nullptr };
-	RecordInfo record;
+	RecordInfo record = { uint(-1), uint(-1), uint(-1) };
 
 	char *currentPos = allDocs;
-	char *lastRecordName;
+	char *lastRecordName = nullptr;
 	bool first = true;
 
 	while (true) {
@@ -146,7 +147,7 @@ void Versailles_Documentation::init(const Sprites *sprites, FontManager *fontMan
 }
 
 void Versailles_Documentation::handleDocArea() {
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 
 	// Load all links lazily and free them at the end to not waste memory
 	// Maybe it's not really useful
@@ -173,7 +174,7 @@ void Versailles_Documentation::handleDocArea() {
 
 	_allLinks.clear();
 
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 }
 
 void Versailles_Documentation::handleDocInGame(const Common::String &record) {
@@ -184,7 +185,7 @@ void Versailles_Documentation::handleDocInGame(const Common::String &record) {
 	Common::String nextRecord;
 	MouseBoxes boxes(3);
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 	bool end = false;
 	while (!end) {
 		inGamePrepareRecord(docSurface, boxes);
@@ -212,7 +213,7 @@ void Versailles_Documentation::handleDocInGame(const Common::String &record) {
 			error("Invalid case %d when displaying doc record", action);
 		}
 	}
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 }
 
 Common::String Versailles_Documentation::docAreaHandleSummary() {
@@ -280,6 +281,12 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 	Image::BitmapDecoder bmpDecoder;
 	Common::File file;
 
+	Image::ImageDecoder *imageDecoder = _engine->loadHLZ("SOM1.HLZ");
+	if (!imageDecoder) {
+		return "";
+	}
+	const Graphics::Surface *bgFrame = imageDecoder->getSurface();
+
 	for (uint i = 0; i < ARRAYSIZE(categories); i++) {
 		if (!categories[i].bmp) {
 			// No BMP to load
@@ -295,12 +302,6 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 		bmpDecoder.destroy();
 		file.close();
 	}
-
-	Image::ImageDecoder *imageDecoder = _engine->loadHLZ("SOM1.HLZ");
-	if (!imageDecoder) {
-		return "";
-	}
-	const Graphics::Surface *bgFrame = imageDecoder->getSurface();
 
 	Graphics::ManagedSurface docSurface;
 	docSurface.create(bgFrame->w, bgFrame->h, bgFrame->format);
@@ -327,13 +328,13 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 	                      imageDecoder->getPaletteColorCount());
 
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint selectedBox = -1;
+	uint hoveredBox = uint(-1);
+	uint selectedBox = uint(-1);
 
-	while (selectedBox == -1u) {
+	while (selectedBox == uint(-1)) {
 		if (redraw) {
 			// Draw without worrying of already modified areas, that's handled when recomputing hoveredBox
 			for (uint i = 0; i < ARRAYSIZE(categories); i++) {
@@ -383,7 +384,7 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 						}
 					}
 				}
-				if (!foundBox && hoveredBox != -1u) {
+				if (!foundBox && hoveredBox != uint(-1)) {
 					if (categories[hoveredBox].highlightedImg.getPixels() != nullptr) {
 						// Restore original icon
 						const Common::Point &imgPos = categories[hoveredBox].imgPos;
@@ -391,12 +392,12 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 						                        imgPos.x - 36, imgPos.y - 65, imgPos.x + 37, imgPos.y + 8),
 						                    Common::Point(imgPos.x - 36, imgPos.y - 65));
 					}
-					hoveredBox = -1;
+					hoveredBox = uint(-1);
 					redraw = true;
 				}
 			}
 			if (_engine->getDragStatus() == kDragStatus_Finished) {
-				if (hoveredBox != -1u) {
+				if (hoveredBox != uint(-1)) {
 					selectedBox = hoveredBox;
 				}
 			}
@@ -404,12 +405,16 @@ Common::String Versailles_Documentation::docAreaHandleSummary() {
 				selectedBox = 7;
 			}
 		}
-		if (g_engine->shouldQuit()) {
+		if (_engine->shouldAbort()) {
 			selectedBox = 7;
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
+
+	for (uint i = 0; i < ARRAYSIZE(categories); i++) {
+		categories[i].highlightedImg.free();
+	}
 
 	delete imageDecoder;
 
@@ -456,13 +461,13 @@ Common::String Versailles_Documentation::docAreaHandleTimeline() {
 	               479 - _sprites->getCursor(105).getHeight(), 640, 480);
 
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint selectedBox = -1;
+	uint hoveredBox = uint(-1);
+	uint selectedBox = uint(-1);
 
-	while (selectedBox == -1u) {
+	while (selectedBox == uint(-1)) {
 		if (redraw) {
 			// Draw without worrying of already modified areas, that's handled when recomputing hoveredBox
 			for (uint i = 0; i < ARRAYSIZE(kTimelineEntries); i++) {
@@ -493,13 +498,13 @@ Common::String Versailles_Documentation::docAreaHandleTimeline() {
 						}
 					}
 				}
-				if (!foundBox && hoveredBox != -1u) {
-					hoveredBox = -1;
+				if (!foundBox && hoveredBox != uint(-1)) {
+					hoveredBox = uint(-1);
 					redraw = true;
 				}
 			}
 			if (_engine->getDragStatus() == kDragStatus_Finished) {
-				if (hoveredBox != -1u) {
+				if (hoveredBox != uint(-1)) {
 					selectedBox = hoveredBox;
 				}
 				if (boxes.hitTest(leaveBoxId, mouse)) {
@@ -510,12 +515,12 @@ Common::String Versailles_Documentation::docAreaHandleTimeline() {
 				selectedBox = leaveBoxId;
 			}
 		}
-		if (g_engine->shouldQuit()) {
+		if (_engine->shouldAbort()) {
 			selectedBox = leaveBoxId;
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 
 	delete imageDecoder;
 
@@ -529,7 +534,7 @@ Common::String Versailles_Documentation::docAreaHandleTimeline() {
 }
 
 uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record) {
-	uint action = -1;
+	uint action = uint(-1);
 
 	_currentRecord = record;
 	_visitTrace.clear();
@@ -539,7 +544,7 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 	MouseBoxes boxes(10 + ARRAYSIZE(kTimelineEntries));
 
 	while (true) {
-		if (action == -1u) {
+		if (action == uint(-1)) {
 			_currentRecord.toUppercase();
 
 			//debug("Displaying %s", _currentRecord.c_str());
@@ -550,7 +555,7 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 
 		switch (action) {
 		case 0:
-			action = -1;
+			action = uint(-1);
 			// Back
 			if (!_visitTrace.empty()) {
 				_currentRecord = _visitTrace.back();
@@ -563,13 +568,13 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 			// Back to root
 			return 1;
 		case 2:
-			action = -1;
+			action = uint(-1);
 			// Follow hyperlink keeping trace
 			_visitTrace.push_back(_currentRecord);
 			_currentRecord = nextRecord;
 			break;
 		case 3:
-			action = -1;
+			action = uint(-1);
 			// Follow hyperlink losing trace
 			_visitTrace.clear();
 			_currentRecord = nextRecord;
@@ -578,7 +583,7 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 			// Quit
 			return 2;
 		case 7:
-			action = -1;
+			action = uint(-1);
 			// General map
 			_visitTrace.clear();
 			nextRecord = docAreaHandleGeneralMap();
@@ -592,7 +597,7 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 		// castle has been selected, display its map
 		// fall through
 		case 8:
-			action = -1;
+			action = uint(-1);
 			// Castle map
 			_visitTrace.clear();
 			nextRecord = docAreaHandleCastleMap();
@@ -606,7 +611,7 @@ uint Versailles_Documentation::docAreaHandleRecords(const Common::String &record
 			}
 			break;
 		case 9:
-			action = -1;
+			action = uint(-1);
 			// Start of category
 			_currentRecord = _categoryStartRecord;
 			break;
@@ -693,14 +698,14 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
         MouseBoxes &boxes, Common::String &nextRecord) {
 	// Hovering is only handled for timeline entries
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
 	bool first = true;
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint action = -1;
+	uint hoveredBox = uint(-1);
+	uint action = uint(-1);
 
-	while (action == -1u) {
+	while (action == uint(-1)) {
 		if (redraw) {
 			g_system->copyRectToScreen(surface.getPixels(), surface.pitch, 0, 0, surface.w, surface.h);
 			redraw = false;
@@ -710,7 +715,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 
 		if (_engine->pollEvents() || first) {
 			first = false;
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				// Fake the quit
 				action = 6;
 			}
@@ -724,7 +729,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 							_fontManager->setCurrentFont(0);
 							_fontManager->setTransparentBackground(true);
 							_fontManager->setSurface(&surface);
-							if (hoveredBox != -1u) {
+							if (hoveredBox != uint(-1)) {
 								// Restore the previous entry hovered
 								_fontManager->setForeColor(243);
 								boxes.display(hoveredBox, *_fontManager);
@@ -736,11 +741,11 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 						}
 					}
 				}
-				if (!foundBox && hoveredBox != -1u) {
+				if (!foundBox && hoveredBox != uint(-1)) {
 					// Restore the previous entry hovered
 					_fontManager->setForeColor(243);
 					boxes.display(hoveredBox, *_fontManager);
-					hoveredBox = -1;
+					hoveredBox = uint(-1);
 					redraw = true;
 				}
 			} else if (_currentHasMap) { // Mutually exclusive with timeline
@@ -753,7 +758,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 				} else {
 					if (hoveredBox == 8) {
 						_engine->setCursor(181);
-						hoveredBox = -1;
+						hoveredBox = uint(-1);
 					}
 				}
 			}
@@ -767,7 +772,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 					Common::Rect iconRect = boxes.getBoxRect(2);
 					uint selectedItem = handlePopupMenu(surface, Common::Point(iconRect.right, iconRect.top),
 					                                    true, 20, items);
-					if (selectedItem != -1u) {
+					if (selectedItem != uint(-1)) {
 						nextRecord = _currentLinks[selectedItem].record;
 						action = 2;
 					}
@@ -779,7 +784,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 					Common::Rect iconRect = boxes.getBoxRect(3);
 					uint selectedItem = handlePopupMenu(surface, Common::Point(iconRect.right, iconRect.top),
 					                                    true, 20, items);
-					if (selectedItem != -1u) {
+					if (selectedItem != uint(-1)) {
 						nextRecord = _allLinks[selectedItem].record;
 						action = 3;
 					}
@@ -819,7 +824,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 				} else if (boxes.hitTest(9, mouse)) {
 					// Category name
 					action = 9;
-				} else if (_currentInTimeline && hoveredBox != -1u) {
+				} else if (_currentInTimeline && hoveredBox != uint(-1)) {
 					// Clicked on a timeline entry
 					nextRecord = "VT";
 					nextRecord += kTimelineEntries[hoveredBox - 10].year;
@@ -829,17 +834,17 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 			}
 			if (action == 4 || action == 5) {
 				if (action == 4 && _currentRecord == _categoryEndRecord) {
-					action = -1;
+					action = uint(-1);
 					continue;
 				}
 				if (action == 5 && _currentRecord == _categoryStartRecord) {
-					action = -1;
+					action = uint(-1);
 					continue;
 				}
 				Common::HashMap<Common::String, RecordInfo>::iterator hmIt = _records.find(_currentRecord);
 				if (hmIt == _records.end()) {
 					// Shouldn't happen
-					action = -1;
+					action = uint(-1);
 					continue;
 				}
 				uint recordId = hmIt->_value.id;
@@ -856,7 +861,7 @@ uint Versailles_Documentation::docAreaHandleRecord(Graphics::ManagedSurface &sur
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 	_engine->setCursor(181);
 	return action;
 }
@@ -906,6 +911,12 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 	Image::BitmapDecoder bmpDecoder;
 	Common::File file;
 
+	Image::ImageDecoder *imageDecoder = _engine->loadHLZ("PLANGR.HLZ");
+	if (!imageDecoder) {
+		return "";
+	}
+	const Graphics::Surface *bgFrame = imageDecoder->getSurface();
+
 	for (uint i = 0; i < ARRAYSIZE(areas); i++) {
 		if (areas[i].bmp) {
 			if (!file.open(areas[i].bmp)) {
@@ -938,12 +949,6 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 	boxes.setupBox(ARRAYSIZE(areas), 639 - _sprites->getCursor(105).getWidth(),
 	               479 - _sprites->getCursor(105).getHeight(), 640, 480);
 
-	Image::ImageDecoder *imageDecoder = _engine->loadHLZ("PLANGR.HLZ");
-	if (!imageDecoder) {
-		return "";
-	}
-	const Graphics::Surface *bgFrame = imageDecoder->getSurface();
-
 	Graphics::ManagedSurface mapSurface;
 	mapSurface.create(bgFrame->w, bgFrame->h, bgFrame->format);
 	mapSurface.blitFrom(*bgFrame);
@@ -954,16 +959,16 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 	                      imageDecoder->getPaletteColorCount());
 
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint selectedBox = -1;
+	uint hoveredBox = uint(-1);
+	uint selectedBox = uint(-1);
 
-	while (selectedBox == -1u) {
+	while (selectedBox == uint(-1)) {
 		if (redraw) {
 			// Draw without worrying of already modified areas, that's handled when recomputing hoveredBox
-			if (hoveredBox != -1u) {
+			if (hoveredBox != uint(-1)) {
 				if (areas[hoveredBox].highlightedImg.getPixels() != nullptr) {
 					mapSurface.transBlitFrom(areas[hoveredBox].highlightedImg,
 					                         Common::Point(areas[hoveredBox].areaPos.left, areas[hoveredBox].areaPos.top));
@@ -1018,11 +1023,11 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 						break;
 					}
 				}
-				if (!foundBox && hoveredBox != -1u) {
-					hoveredBox = -1;
+				if (!foundBox && hoveredBox != uint(-1)) {
+					hoveredBox = uint(-1);
 					redraw = true;
 				}
-				if (hoveredBox != oldHoveredBox && oldHoveredBox != -1u) {
+				if (hoveredBox != oldHoveredBox && oldHoveredBox != uint(-1)) {
 					// Restore original area
 					mapSurface.blitFrom(*bgFrame, areas[oldHoveredBox].areaPos,
 					                    Common::Point(areas[oldHoveredBox].areaPos.left, areas[oldHoveredBox].areaPos.top));
@@ -1035,7 +1040,7 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 				}
 			}
 			if (_engine->getDragStatus() == kDragStatus_Finished) {
-				if (hoveredBox != -1u && areas[hoveredBox].record) {
+				if (hoveredBox != uint(-1) && areas[hoveredBox].record) {
 					selectedBox = hoveredBox;
 				} else if (boxes.hitTest(ARRAYSIZE(areas), mouse)) {
 					selectedBox = ARRAYSIZE(areas);
@@ -1044,13 +1049,17 @@ Common::String Versailles_Documentation::docAreaHandleGeneralMap() {
 			if (_engine->checkKeysPressed(1, Common::KEYCODE_ESCAPE)) {
 				selectedBox = ARRAYSIZE(areas);
 			}
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				selectedBox = ARRAYSIZE(areas);
 			}
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
+
+	for (uint i = 0; i < ARRAYSIZE(areas); i++) {
+		areas[i].highlightedImg.free();
+	}
 
 	delete imageDecoder;
 
@@ -1073,11 +1082,11 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 		Common::Rect areaPos2;
 
 		Area(const Common::Rect &areaPos_, const char *record_, bool fillArea_ = true,
-		     uint messageId_ = -1) :
+		     uint messageId_ = uint(-1)) :
 			areaPos(areaPos_), record(record_), fillArea(fillArea_), messageId(messageId_) { }
 		Area(const Common::Rect &areaPos_, const Common::Rect &areaPos1_,
 		     const Common::Rect &areaPos2_, const char *record_, bool fillArea_ = true,
-		     uint messageId_ = -1) :
+		     uint messageId_ = uint(-1)) :
 			areaPos(areaPos_), areaPos1(areaPos1_), areaPos2(areaPos2_),
 			record(record_), fillArea(fillArea_), messageId(messageId_) { }
 	} areas[] = {
@@ -1120,7 +1129,7 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 	MouseBoxes boxes(ARRAYSIZE(areas) + 1);
 
 	for (uint i = 0; i < ARRAYSIZE(areas); i++) {
-		if (areas[i].messageId != -1u) {
+		if (areas[i].messageId != uint(-1)) {
 			areas[i].message = (*_messages)[areas[i].messageId];
 		} else {
 			areas[i].message = getRecordTitle(areas[i].record);
@@ -1172,16 +1181,16 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 	                      imageDecoder->getPaletteColorCount());
 
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint selectedBox = -1;
+	uint hoveredBox = uint(-1);
+	uint selectedBox = uint(-1);
 
-	while (selectedBox == -1u) {
+	while (selectedBox == uint(-1)) {
 		if (redraw) {
 			// Draw without worrying of already modified areas, that's handled when recomputing hoveredBox
-			if (hoveredBox != -1u) {
+			if (hoveredBox != uint(-1)) {
 				if (areas[hoveredBox].fillArea) {
 					Common::Rect rect(areas[hoveredBox].areaPos);
 					rect.bottom += 1; // fillRect needs to fill including the limit
@@ -1255,11 +1264,11 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 						break;
 					}
 				}
-				if (!foundBox && hoveredBox != -1u) {
-					hoveredBox = -1;
+				if (!foundBox && hoveredBox != uint(-1)) {
+					hoveredBox = uint(-1);
 					redraw = true;
 				}
-				if (hoveredBox != oldHoveredBox && oldHoveredBox != -1u) {
+				if (hoveredBox != oldHoveredBox && oldHoveredBox != uint(-1)) {
 					// Restore original area
 					Common::Rect areaPos = areas[oldHoveredBox].areaPos;
 					if (areas[oldHoveredBox].areaPos2.right) {
@@ -1279,7 +1288,7 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 				}
 			}
 			if (_engine->getDragStatus() == kDragStatus_Finished) {
-				if (hoveredBox != -1u && areas[hoveredBox].record) {
+				if (hoveredBox != uint(-1) && areas[hoveredBox].record) {
 					selectedBox = hoveredBox;
 				} else if (boxes.hitTest(ARRAYSIZE(areas), mouse)) {
 					selectedBox = ARRAYSIZE(areas);
@@ -1288,13 +1297,13 @@ Common::String Versailles_Documentation::docAreaHandleCastleMap() {
 			if (_engine->checkKeysPressed(1, Common::KEYCODE_ESCAPE)) {
 				selectedBox = ARRAYSIZE(areas);
 			}
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				selectedBox = ARRAYSIZE(areas);
 			}
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 
 	delete imageDecoder;
 
@@ -1340,20 +1349,20 @@ void Versailles_Documentation::inGamePrepareRecord(Graphics::ManagedSurface &sur
 uint Versailles_Documentation::inGameHandleRecord(Graphics::ManagedSurface &surface,
         MouseBoxes &boxes, Common::String &nextRecord) {
 	_engine->setCursor(181);
-	g_system->showMouse(true);
+	_engine->showMouse(true);
 
-	uint action = -1;
+	uint action = uint(-1);
 
 	g_system->copyRectToScreen(surface.getPixels(), surface.pitch, 0, 0, surface.w, surface.h);
 
-	while (action == -1u) {
+	while (action == uint(-1)) {
 		g_system->updateScreen();
 		g_system->delayMillis(10);
 
 		if (_engine->pollEvents()) {
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				// Fake the quit
-				action = 6;
+				action = 1;
 			}
 			Common::Point mouse = _engine->getMousePos();
 			if (_engine->getDragStatus() == kDragStatus_Pressed) {
@@ -1366,7 +1375,7 @@ uint Versailles_Documentation::inGameHandleRecord(Graphics::ManagedSurface &surf
 					Common::Rect iconRect = boxes.getBoxRect(2);
 					uint selectedItem = handlePopupMenu(surface, Common::Point(iconRect.right, iconRect.top),
 					                                    true, 20, items);
-					if (selectedItem != -1u) {
+					if (selectedItem != uint(-1)) {
 						nextRecord = _currentLinks[selectedItem].record;
 						action = 2;
 					}
@@ -1383,7 +1392,7 @@ uint Versailles_Documentation::inGameHandleRecord(Graphics::ManagedSurface &surf
 		}
 	}
 
-	g_system->showMouse(false);
+	_engine->showMouse(false);
 	_engine->setCursor(181);
 	return action;
 }
@@ -1538,6 +1547,8 @@ void Versailles_Documentation::drawRecordData(Graphics::ManagedSurface &surface,
 
 	_fontManager->setupBlock(blockCaption);
 	_fontManager->displayBlockText(caption);
+
+	delete imageDecoder;
 }
 
 void Versailles_Documentation::setupRecordBoxes(bool inDocArea, MouseBoxes &boxes) {
@@ -1684,8 +1695,8 @@ uint Versailles_Documentation::handlePopupMenu(const Graphics::ManagedSurface
 
 	bool fullRedraw = true;
 	bool redraw = true;
-	uint hoveredBox = -1;
-	uint action = -1;
+	uint hoveredBox = uint(-1);
+	uint action = uint(-1);
 	uint lastShownItem = items.size() - 1;
 	uint firstShownItem = lastShownItem - shownItems + 1;
 
@@ -1693,7 +1704,7 @@ uint Versailles_Documentation::handlePopupMenu(const Graphics::ManagedSurface
 
 	Common::Point mouse;
 
-	while (action == -1u) {
+	while (action == uint(-1)) {
 		if (redraw) {
 			if (fullRedraw) {
 				surface.fillRect(popupRect, 247);
@@ -1726,13 +1737,13 @@ uint Versailles_Documentation::handlePopupMenu(const Graphics::ManagedSurface
 		g_system->delayMillis(10);
 
 		if (_engine->pollEvents()) {
-			if (g_engine->shouldQuit()) {
+			if (_engine->shouldAbort()) {
 				// Fake the quit
 				break;
 			}
 			mouse = _engine->getMousePos();
 
-			uint newHovered = -1;
+			uint newHovered = uint(-1);
 			for (uint i = 0; i < shownItems; i++) {
 				if (boxes.hitTest(i, mouse)) {
 					newHovered = i;
@@ -1748,7 +1759,7 @@ uint Versailles_Documentation::handlePopupMenu(const Graphics::ManagedSurface
 
 		DragStatus dragStatus = _engine->getDragStatus();
 
-		if (hoveredBox == -1u) {
+		if (hoveredBox == uint(-1)) {
 			if (dragStatus == kDragStatus_Pressed) {
 				break;
 			} else {
@@ -1813,7 +1824,7 @@ char *Versailles_Documentation::getDocPartAddress(char *start, char *end, const 
 	}
 	char *foundPos = nullptr;
 	const char *pattern;
-	uint patternLen;
+	uint patternLen = uint(-1);
 	for (const char **patternP = patterns; *patternP && !foundPos; patternP++) {
 		pattern = *patternP;
 		patternLen = strlen(pattern);
@@ -1930,8 +1941,8 @@ Common::String Versailles_Documentation::getRecordTitle(const Common::String &re
 	const RecordInfo &recordInfo = it->_value;
 	Common::File allDocsFile;
 
-	if (!allDocsFile.open(kAllDocsFile)) {
-		error("Can't open %s", kAllDocsFile);
+	if (!allDocsFile.open(_allDocsFileName)) {
+		error("Can't open %s", _allDocsFileName.c_str());
 	}
 	allDocsFile.seek(recordInfo.position);
 
@@ -1959,8 +1970,8 @@ Common::String Versailles_Documentation::getRecordData(const Common::String &rec
 	const RecordInfo &recordInfo = it->_value;
 	Common::File allDocsFile;
 
-	if (!allDocsFile.open(kAllDocsFile)) {
-		error("Can't open %s", kAllDocsFile);
+	if (!allDocsFile.open(_allDocsFileName)) {
+		error("Can't open %s", _allDocsFileName.c_str());
 	}
 	allDocsFile.seek(recordInfo.position);
 
@@ -2004,8 +2015,8 @@ void Versailles_Documentation::loadLinksFile() {
 	}
 
 	Common::File linksFile;
-	if (!linksFile.open(kLinksDocsFile)) {
-		error("Can't open links file: %s", kLinksDocsFile);
+	if (!linksFile.open(_linksDocsFileName)) {
+		error("Can't open links file: %s", _linksDocsFileName.c_str());
 	}
 
 	_linksSize = linksFile.size();

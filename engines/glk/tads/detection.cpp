@@ -100,30 +100,20 @@ bool TADSMetaEngine::detectGames(const Common::FSList &fslist, DetectedGames &ga
 			continue;
 
 		// Check for known games
-		const TADSGameDescription *p = TADS_GAMES;
+		const GlkDetectionEntry *p = TADS_GAMES;
 		while (p->_gameId && p->_md5 && (md5 != p->_md5 || filesize != p->_filesize))
 			++p;
 
 		DetectedGame gd;
 		if (!p->_gameId) {
-			if (gDebugLevel > 0) {
-				// Print an entry suitable for putting into the detection_tables.h
-				Common::String fname = filename;
-				const char *dot = strchr(fname.c_str(), '.');
-				if (dot)
-					fname = Common::String(fname.c_str(), dot);
-
-				debug("TADS%d ENTRY0(\"%s\", \"%s\", %u),", tadsVersion, fname.c_str(), md5.c_str(), (uint)filesize);
-			}
 			const GameDescriptor &desc = tadsVersion == 2 ? TADS2_GAME_LIST[0] : TADS3_GAME_LIST[0];
-			gd = DetectedGame(desc._gameId, desc._description, Common::UNK_LANG, Common::kPlatformUnknown);
+			gameList.push_back(GlkDetectedGame(desc._gameId, desc._description, filename, md5, filesize));
 		} else {
 			PlainGameDescriptor gameDesc = findGame(p->_gameId);
 			gd = DetectedGame(p->_gameId, gameDesc.description, p->_language, Common::kPlatformUnknown, p->_extra);
+			gd.addExtraEntry("filename", filename);
+			gameList.push_back(gd);
 		}
-
-		gd.addExtraEntry("filename", filename);
-		gameList.push_back(gd);
 	}
 
 	return !gameList.empty();

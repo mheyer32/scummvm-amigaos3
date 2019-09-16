@@ -94,6 +94,16 @@ protected:
 #endif
 
 	/**
+	 * The path of the currently open log file, if any.
+	 *
+	 * @note This is currently a string and not an FSNode for simplicity;
+	 * e.g. we don't need to include fs.h here, and currently the
+	 * only use of this value is to use it to open the log file in an
+	 * editor; for that, we need it only as a string anyway.
+	 */
+	Common::String _logFilePath;
+
+	/**
 	 * Mixer manager that configures and setups SDL for
 	 * the wrapped Audio::Mixer, the true mixer.
 	 */
@@ -122,7 +132,8 @@ protected:
 	virtual AudioCDManager *createAudioCDManager();
 
 	// Logging
-	virtual Common::WriteStream *createLogFile() { return 0; }
+	virtual Common::String getDefaultLogFileName() { return Common::String(); }
+	virtual Common::WriteStream *createLogFile();
 	Backends::Log::Log *_logger;
 
 #ifdef USE_OPENGL
@@ -146,6 +157,8 @@ protected:
 	virtual bool setGraphicsMode(int mode);
 	virtual int getGraphicsMode() const;
 #endif
+protected:
+	virtual char *convertEncoding(const char *to, const char *from, const char *string, size_t length);
 };
 
 #endif

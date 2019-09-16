@@ -36,9 +36,9 @@
 #include "graphics/surface.h"
 
 //TODO: change this to debugflag
-#define BLADERUNNER_DEBUG_CONSOLE 0
+#define BLADERUNNER_DEBUG_CONSOLE     0
 #define BLADERUNNER_ORIGINAL_SETTINGS 0
-#define BLADERUNNER_ORIGINAL_BUGS 0
+#define BLADERUNNER_ORIGINAL_BUGS     0
 
 namespace Common {
 struct Event;
@@ -73,6 +73,7 @@ class DialogueMenu;
 class Elevator;
 class EndCredits;
 class ESPER;
+class Framelimiter;
 class Font;
 class GameFlags;
 class GameInfo;
@@ -108,13 +109,16 @@ class ZBuffer;
 class BladeRunnerEngine : public Engine {
 public:
 	static const int kArchiveCount = 12; // +2 to original value (10) to accommodate for SUBTITLES.MIX and one extra resource file, to allow for capability of loading all VQAx.MIX and the MODE.MIX file (debug purposes)
-	static const int kActorCount = 100;
+	static const int kActorCount =  100;
 	static const int kActorVoiceOver = kActorCount - 1;
 	// Incremental number to keep track of significant revisions of the ScummVM bladerunner engine
 	// that could potentially introduce incompatibilities with old save files or require special actions to restore compatibility
 	// This is stored in game global variable "kVariableGameVersion"
 	// Original (classic) save game files will have version number of 0
-	static const int kBladeRunnerScummVMVersion = 1; // 1: alpha testing (since May 15, 2019)
+	// Values:
+	// 1: alpha testing (from May 15, 2019 to July 17, 2019)
+	// 2: all time code uses uint32 (since July 17 2019),
+	static const int kBladeRunnerScummVMVersion = 2;
 
 	bool _gameIsRunning;
 	bool _windowIsActive;
@@ -122,6 +126,7 @@ public:
 
 	Common::String   _languageCode;
 	Common::Language _language;
+	bool             _russianCP1251;
 
 	ActorDialogueQueue *_actorDialogueQueue;
 	ScreenEffects      *_screenEffects;
@@ -162,6 +167,7 @@ public:
 	SuspectsDatabase   *_suspectsDatabase;
 	Time               *_time;
 	View               *_view;
+	Framelimiter       *_framelimiter;
 	VK                 *_vk;
 	Waypoints          *_waypoints;
 	int                *_gameVars;
@@ -178,6 +184,8 @@ public:
 
 	Actor *_actors[kActorCount];
 	Actor *_playerActor;
+
+	Graphics::PixelFormat _screenPixelFormat;
 
 	Graphics::Surface  _surfaceFront;
 	Graphics::Surface  _surfaceBack;
@@ -214,8 +222,8 @@ public:
 	int _walkSoundPan;
 	int _runningActorId;
 
-	int _mouseClickTimeLast;
-	int _mouseClickTimeDiff;
+	uint32 _mouseClickTimeLast;
+	uint32 _mouseClickTimeDiff;
 
 	int  _walkingToExitId;
 	bool _isInsideScriptExit;
@@ -232,8 +240,10 @@ public:
 	int  _walkingToActorId;
 	bool _isInsideScriptActor;
 
-	int _actorUpdateCounter;
-	int _actorUpdateTimeLast;
+	int    _actorUpdateCounter;
+	uint32 _actorUpdateTimeLast;
+
+	uint32 _timeOfMainGameLoopTickPrevious;
 
 private:
 	MIXArchive _archives[kArchiveCount];
@@ -250,6 +260,8 @@ public:
 	void pauseEngineIntern(bool pause) override;
 
 	Common::Error run() override;
+
+	bool checkFiles(Common::Array<Common::String> &missingFiles);
 
 	bool startup(bool hasSavegames = false);
 	void initChapterAndScene();
@@ -317,9 +329,34 @@ static inline const Graphics::PixelFormat gameDataPixelFormat() {
 	return Graphics::PixelFormat(2, 5, 5, 5, 1, 10, 5, 0, 15);
 }
 
+static inline void getGameDataColor(uint16 color, uint8 &a, uint8 &r, uint8 &g, uint8 &b) {
+	// gameDataPixelFormat().colorToARGB(vqaColor, a, r, g, b);
+	// using pixel format functions is too slow on some ports because of runtime checks
+	uint8 r5 = (color >> 10) & 0x1F;
+	uint8 g5 = (color >>  5) & 0x1F;
+	uint8 b5 = (color      ) & 0x1F;
+	a = color >> 15;
+	r = (r5 << 3) | (r5 >> 2);
+	g = (g5 << 3) | (g5 >> 2);
+	b = (b5 << 3) | (b5 >> 2);
+}
+
 static inline const Graphics::PixelFormat screenPixelFormat() {
-	// Should be a format supported by Android port
-	return Graphics::PixelFormat(2, 5, 5, 5, 1, 11, 6, 1, 0);
+	return ((BladeRunnerEngine*)g_engine)->_screenPixelFormat;
+}
+
+static inline void drawPixel(Graphics::Surface &surface, void* dst, uint32 value) {
+	switch (surface.format.bytesPerPixel) {
+		case 1:
+			*(uint8*)dst = (uint8)value;
+			break;
+		case 2:
+			*(uint16*)dst = (uint16)value;
+			break;
+		case 4:
+			*(uint32*)dst = (uint32)value;
+			break;
+	}
 }
 
 void blit(const Graphics::Surface &src, Graphics::Surface &dst);

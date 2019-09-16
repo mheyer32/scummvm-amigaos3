@@ -28,6 +28,7 @@
 #include "common/system.h"
 #include "common/serializer.h"
 #include "engines/engine.h"
+#include "glk/debugger.h"
 #include "glk/glk_types.h"
 #include "glk/streams.h"
 #include "glk/pc_speaker.h"
@@ -99,6 +100,13 @@ protected:
 	virtual Screen *createScreen();
 
 	/**
+	 * Creates a debugger instance
+	 */
+	virtual Debugger *createDebugger() {
+		return new Debugger();
+	}
+
+	/**
 	 * Main game loop for the individual interpreters
 	 */
 	virtual void runGame() = 0;
@@ -106,6 +114,7 @@ public:
 	Blorb *_blorb;
 	Clipboard *_clipboard;
 	Conf *_conf;
+	Debugger *_debugger;
 	Events *_events;
 	Pictures *_pictures;
 	Screen *_screen;
@@ -147,6 +156,11 @@ public:
 	 * Returns the running interpreter type
 	 */
 	virtual InterpreterType getInterpreterType() const = 0;
+
+	/**
+	 * Returns the game's Id
+	 */
+	const Common::String &getGameID() const { return _gameDescription._gameId; }
 
 	/**
 	 * Returns the game's md5
@@ -198,14 +212,20 @@ public:
 	virtual Common::Error saveGameState(int slot, const Common::String &desc) override;
 
 	/**
-	 * Load a savegame from the passed file
+	 * Load a savegame from the passed Quetzal file chunk stream
 	 */
-	virtual Common::Error loadGameData(strid_t file) = 0;
+	virtual Common::Error readSaveData(Common::SeekableReadStream *rs) = 0;
 
 	/**
-	 * Save the game to the passed file
+	 * Save the game. The passed write stream represents access to the UMem chunk
+	 * in the Quetzal save file that will be created
 	 */
-	virtual Common::Error saveGameData(strid_t file, const Common::String &desc) = 0;
+	virtual Common::Error writeGameData(Common::WriteStream *ws) = 0;
+
+	/**
+	 * Updates sound settings
+	 */
+	virtual void syncSoundSettings() override;
 
 	/**
 	 * Generate a beep
@@ -216,6 +236,11 @@ public:
 	 * Get a random number
 	 */
 	uint getRandomNumber(uint max) { return _random.getRandomNumber(max); }
+
+	/**
+	 * Set a random number seed
+	 */
+	void setRandomNumberSeed(uint seed) { _random.setSeed(seed); }
 };
 
 extern GlkEngine *g_vm;

@@ -22,12 +22,30 @@
 
 #include "base/plugins.h"
 #include "common/file.h"
+#include "common/gui_options.h"
 #include "common/savefile.h"
+#include "common/translation.h"
 #include "common/system.h"
 #include "graphics/thumbnail.h"
 #include "engines/advancedDetector.h"
 
 #include "supernova/supernova.h"
+
+#define GAMEOPTION_IMPROVED GUIO_GAMEOPTIONS1
+
+static const ADExtraGuiOptionsMap optionsList[] = {
+	{
+		GAMEOPTION_IMPROVED,
+		{
+			_s("Improved mode"),
+			_s("Removes some repetitive actions, adds possibility to change verbs by keyboard"),
+			"improved",
+			true
+		}
+	},
+
+	AD_EXTRA_GUI_OPTIONS_TERMINATOR
+};
 
 static const PlainGameDescriptor supernovaGames[] = {
 	{"msn1", "Mission Supernova 1"},
@@ -44,8 +62,8 @@ static const ADGameDescription gameDescriptions[] = {
 		AD_ENTRY1s("msn_data.000", "f64f16782a86211efa919fbae41e7568", 24163),
 		Common::DE_DEU,
 		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		ADGF_TESTING,
+		GUIO1(GAMEOPTION_IMPROVED)
 	},
 	{
 		"msn1",
@@ -53,10 +71,9 @@ static const ADGameDescription gameDescriptions[] = {
 		AD_ENTRY1s("msn_data.000", "f64f16782a86211efa919fbae41e7568", 24163),
 		Common::EN_ANY,
 		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		ADGF_TESTING,
+		GUIO1(GAMEOPTION_IMPROVED)
 	},
-
 	// Mission Supernova 2
 	{
 		"msn2",
@@ -64,8 +81,8 @@ static const ADGameDescription gameDescriptions[] = {
 		AD_ENTRY1s("ms2_data.000", "e595610cba4a6d24a763e428d05cc83f", 24805),
 		Common::DE_DEU,
 		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		ADGF_TESTING,
+		GUIO1(GAMEOPTION_IMPROVED)
 	},
 	{
 		"msn2",
@@ -73,17 +90,16 @@ static const ADGameDescription gameDescriptions[] = {
 		AD_ENTRY1s("ms2_data.000", "e595610cba4a6d24a763e428d05cc83f", 24805),
 		Common::EN_ANY,
 		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		ADGF_TESTING,
+		GUIO1(GAMEOPTION_IMPROVED)
 	},
-
 	AD_TABLE_END_MARKER
 };
 }
 
 class SupernovaMetaEngine: public AdvancedMetaEngine {
 public:
-	SupernovaMetaEngine() : AdvancedMetaEngine(Supernova::gameDescriptions, sizeof(ADGameDescription), supernovaGames) {
+	SupernovaMetaEngine() : AdvancedMetaEngine(Supernova::gameDescriptions, sizeof(ADGameDescription), supernovaGames, optionsList) {
 //		_singleId = "supernova";
 	}
 
@@ -136,7 +152,11 @@ bool SupernovaMetaEngine::createInstance(OSystem *syst, Engine **engine, const A
 
 SaveStateList SupernovaMetaEngine::listSaves(const char *target) const {
 	Common::StringArray filenames;
-	Common::String pattern("msn_save.###");
+	Common::String pattern;
+	if (!strncmp(target, "msn1", 4))
+		pattern = Common::String::format("msn_save.###");
+	if (!strncmp(target, "msn2", 4))
+		pattern = Common::String::format("ms2_save.###");
 
 	filenames = g_system->getSavefileManager()->listSavefiles(pattern);
 
@@ -148,7 +168,8 @@ SaveStateList SupernovaMetaEngine::listSaves(const char *target) const {
 			Common::InSaveFile *savefile = g_system->getSavefileManager()->openForLoading(*file);
 			if (savefile) {
 				uint saveHeader = savefile->readUint32LE();
-				if (saveHeader == SAVEGAME_HEADER) {
+				if ((saveHeader == SAVEGAME_HEADER && !strncmp(target, "msn1", 4)) ||
+					(saveHeader == SAVEGAME_HEADER2 && !strncmp(target, "msn2", 4))) {
 					byte saveVersion = savefile->readByte();
 					if (saveVersion <= SAVEGAME_VERSION) {
 						int saveFileDescSize = savefile->readSint16LE();
@@ -168,17 +189,26 @@ SaveStateList SupernovaMetaEngine::listSaves(const char *target) const {
 }
 
 void SupernovaMetaEngine::removeSaveState(const char *target, int slot) const {
-	Common::String filename = Common::String::format("msn_save.%03d", slot);
+	Common::String filename;
+	if (!strncmp(target, "msn1", 4))
+		filename = Common::String::format("msn_save.%03d", slot);
+	if (!strncmp(target, "msn2", 4))
+		filename = Common::String::format("ms2_save.%03d", slot);
 	g_system->getSavefileManager()->removeSavefile(filename);
 }
 
 SaveStateDescriptor SupernovaMetaEngine::querySaveMetaInfos(const char *target, int slot) const {
-	Common::String fileName = Common::String::format("msn_save.%03d", slot);
+	Common::String fileName;
+	if (!strncmp(target, "msn1", 4))
+		fileName = Common::String::format("msn_save.%03d", slot);
+	if (!strncmp(target, "msn2", 4))
+		fileName = Common::String::format("ms2_save.%03d", slot);
 	Common::InSaveFile *savefile = g_system->getSavefileManager()->openForLoading(fileName);
 
 	if (savefile) {
 		uint saveHeader = savefile->readUint32LE();
-		if (saveHeader != SAVEGAME_HEADER) {
+		if ((!strncmp(target, "msn1", 4) && saveHeader != SAVEGAME_HEADER) || 
+			(!strncmp(target, "msn2", 4) && saveHeader != SAVEGAME_HEADER2)) {
 			delete savefile;
 			return SaveStateDescriptor();
 		}

@@ -256,6 +256,18 @@ Common::String Widget::cleanupHotkey(const Common::String &label) {
 	return res;
 }
 
+void Widget::read(Common::String str) {
+#ifdef USE_TTS
+	if (ConfMan.hasKey("tts_enabled", "scummvm") &&
+			ConfMan.getBool("tts_enabled", "scummvm")) {
+		Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+		if (ttsMan == nullptr)
+			return;
+		ttsMan->say(str);
+	}
+#endif
+}
+
 #pragma mark -
 
 StaticTextWidget::StaticTextWidget(GuiObject *boss, int x, int y, int w, int h, const Common::String &text, Graphics::TextAlign align, const char *tooltip, ThemeEngine::FontStyle font)

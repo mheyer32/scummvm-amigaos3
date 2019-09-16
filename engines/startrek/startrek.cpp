@@ -37,7 +37,7 @@
 #include "engines/util.h"
 #include "video/qt_decoder.h"
 
-#include "startrek/filestream.h"
+#include "startrek/console.h"
 #include "startrek/iwfile.h"
 #include "startrek/lzss.h"
 #include "startrek/room.h"
@@ -70,6 +70,7 @@ StarTrekEngine::StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gam
 	_activeMenu = nullptr;
 	_sound = nullptr;
 	_macResFork = nullptr;
+	_room = nullptr;
 
 	memset(_actionOnWalkCompletionInUse, 0, sizeof(_actionOnWalkCompletionInUse));
 
@@ -95,6 +96,7 @@ StarTrekEngine::StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gam
 
 	_missionToLoad = "DEMON";
 	_roomIndexToLoad = 0;
+	_mapFile = nullptr;
 
 	_showSubtitles = true;
 	Common::fill(_r3List, _r3List + NUM_SPACE_OBJECTS, (R3 *)nullptr);
@@ -107,6 +109,8 @@ StarTrekEngine::StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gam
 StarTrekEngine::~StarTrekEngine() {
 	delete _activeMenu->nextMenu;
 	delete _activeMenu;
+
+	delete _console;
 	delete _gfx;
 	delete _sound;
 	delete _macResFork;
@@ -115,6 +119,7 @@ StarTrekEngine::~StarTrekEngine() {
 Common::Error StarTrekEngine::run() {
 	_gfx = new Graphics(this);
 	_sound = new Sound(this);
+	_console = new Console(this);
 
 	if (getPlatform() == Common::kPlatformMacintosh) {
 		_macResFork = new Common::MacResManager();
@@ -123,8 +128,7 @@ Common::Error StarTrekEngine::run() {
 		assert(_macResFork->hasDataFork() && _macResFork->hasResFork());
 	}
 
-	const ::Graphics::PixelFormat format = ::Graphics::PixelFormat::createFormatCLUT8();
-	initGraphics(SCREEN_WIDTH, SCREEN_HEIGHT, &format);
+	initGraphics(SCREEN_WIDTH, SCREEN_HEIGHT);
 	initializeEventsAndMouse();
 
 	bool shouldPlayIntro = true;
@@ -395,7 +399,7 @@ void StarTrekEngine::stopPlayingSpeech() {
  *   - This is supposed to read from a "patches" folder which overrides files in the
  *     packed blob.
  */
-SharedPtr<FileStream> StarTrekEngine::loadFile(Common::String filename, int fileIndex) {
+Common::MemoryReadStreamEndian *StarTrekEngine::loadFile(Common::String filename, int fileIndex) {
 	filename.toUppercase();
 
 	Common::String basename, extension;
@@ -430,7 +434,7 @@ SharedPtr<FileStream> StarTrekEngine::loadFile(Common::String filename, int file
 		byte *data = (byte *)malloc(size);
 		file->read(data, size);
 		delete file;
-		return SharedPtr<FileStream>(new FileStream(data, size, bigEndian));
+		return new Common::MemoryReadStreamEndian(data, size, bigEndian);
 	}
 
 	Common::SeekableReadStream *indexFile = 0;
@@ -560,10 +564,10 @@ SharedPtr<FileStream> StarTrekEngine::loadFile(Common::String filename, int file
 	stream->read(data, size);
 	delete stream;
 
-	return SharedPtr<FileStream>(new FileStream(data, size, bigEndian));
+	return new Common::MemoryReadStreamEndian(data, size, bigEndian);
 }
 
-SharedPtr<FileStream> StarTrekEngine::loadFileWithParams(Common::String filename, bool unk1, bool unk2, bool unk3) {
+Common::MemoryReadStreamEndian *StarTrekEngine::loadFileWithParams(Common::String filename, bool unk1, bool unk2, bool unk3) {
 	return loadFile(filename);
 }
 
@@ -619,15 +623,29 @@ uint16 StarTrekEngine::getRandomWord() {
 }
 
 Common::String StarTrekEngine::getLoadedText(int textIndex) {
-	SharedPtr<FileStream> txtFile = loadFile(_txtFilename + ".txt");
+	Common::MemoryReadStreamEndian *txtFile = loadFile(_txtFilename + ".txt");
 
-	byte *data = txtFile->_data;
-	while (textIndex != 0) {
-		while (*(data++) != '\0');
-		textIndex--;
+	Common::String str;
+	byte cur;
+	int curIndex = 0;
+
+	while (!txtFile->eos()) {
+		do {
+			cur = txtFile->readByte();
+			str += cur;
+		} while (cur != '\0');
+
+		if (curIndex == textIndex) {
+			delete txtFile;
+			return str;
+		}
+
+		curIndex++;
+		str = "";
 	}
-
-	return (char *)data;
+	
+	delete txtFile;
+	return "";
 }
 
 } // End of namespace StarTrek

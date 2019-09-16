@@ -168,6 +168,17 @@ struct SoundIds {
 	};
 };
 
+struct LocalizedFilenames {
+	enum {
+		kDialogs = 0,
+		kAllDocs,
+		kLinksDocs,
+		kCredits,
+		kLeb001,
+		kMax
+	};
+};
+
 struct PlaceState {
 	typedef void (CryOmni3DEngine_Versailles::*InitFunc)();
 	typedef bool (CryOmni3DEngine_Versailles::*FilterEventFunc)(uint *event);
@@ -217,6 +228,10 @@ public:
 	CryOmni3DEngine_Versailles(OSystem *syst, const CryOmni3DGameDescription *gamedesc);
 	virtual ~CryOmni3DEngine_Versailles();
 
+	bool hasFeature(EngineFeature f) const override;
+	virtual Common::Error loadGameState(int slot) override;
+	virtual Common::Error saveGameState(int slot, const Common::String &desc) override;
+
 	Common::String prepareFileName(const Common::String &baseName, const char *extension) const {
 		const char *const extensions[] = { extension, nullptr };
 		return prepareFileName(baseName, extensions);
@@ -231,18 +246,17 @@ public:
 	virtual bool hasPlaceDocumentation() override;
 	virtual bool displayPlaceDocumentation() override;
 	virtual uint displayOptions() override;
-	virtual bool shouldAbort() override { return g_engine->shouldQuit() || _abortCommand != kAbortNoAbort; }
+	virtual bool shouldAbort() override;
 
 private:
 	void setupFonts();
 	void setupSprites();
 	void loadCursorsPalette();
 	void calculateTransparentMapping();
-	void setupMessages();
 	void setupObjects();
 	void setupDialogVariables();
 	void setupImgScripts();
-	void setupPaintingsTitles();
+	void loadStaticData();
 
 	void syncOmni3DSettings();
 	void syncSoundSettings();
@@ -336,6 +350,7 @@ private:
 	void musicStop();
 	void musicSetQuiet(bool quiet);
 
+	Common::StringArray _localizedFilenames;
 	Common::StringArray _messages;
 	static const uint kSpritesMapTable[];
 	static const uint kSpritesMapTableSize;
@@ -505,11 +520,11 @@ private:
 	IMG_CB(44161e);
 	IMG_CB(44161f);
 	static const uint kEpigraphMaxLetters = 32;
-	static const char *kEpigraphContent;
-	static const char *kEpigraphPassword;
+	Common::String _epigraphContent;
+	Common::String _epigraphPassword;
 	bool handleEpigraph(ZonFixedImage *fimg);
 	void drawEpigraphLetters(Graphics::ManagedSurface &surface,
-	                         const Graphics::Surface(&bmpLetters)[26], const Common::String &letters);
+	                         const Graphics::Surface(&bmpLetters)[28], const Common::String &letters);
 	IMG_CB(45130);
 	IMG_CB(45270);
 	IMG_CB(45270b);
@@ -527,13 +542,13 @@ private:
 	IMG_CB(88003d);
 	IMG_CB(88003e);
 	IMG_CB(88003f);
+	Common::String _bombPassword;
 	static const uint kBombPasswordSmallLength = 40;
 	static const uint kBombPasswordMaxLength = 60;
 	static const uint16 kBombLettersPos[2][kBombPasswordMaxLength][2];
-	static const char *kBombPassword;
 	bool handleBomb(ZonFixedImage *fimg);
-	void drawBombLetters(Graphics::ManagedSurface &surface, const Graphics::Surface(&bmpLetters)[26],
-	                     const uint kBombPasswordLength,
+	void drawBombLetters(Graphics::ManagedSurface &surface, const Graphics::Surface(&bmpLetters)[28],
+	                     const uint bombPasswordLength,
 	                     const unsigned char (&bombPossibilites)[kBombPasswordMaxLength][5],
 	                     const unsigned char (&bombCurrentLetters)[kBombPasswordMaxLength]);
 	IMG_CB(88004);

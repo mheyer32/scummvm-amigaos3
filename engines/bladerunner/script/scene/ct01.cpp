@@ -73,15 +73,23 @@ void SceneScriptCT01::InitializeScene() {
 			if ( Global_Variable_Query(kVariableChapter) < 4
 			    && Actor_Query_Which_Set_In(kActorGordo) != kSetCT01_CT12
 			    && Random_Query(1, 2) == 1
-			){
+			) {
 				// enhancement: don't always play
 				Scene_Loop_Start_Special(kSceneLoopModeLoseControl, kCT01LoopInshot, false);
 			}
 			// Pause generic walkers outside special loop
 			// so that they're always paused when McCoy enters (less chance to collide with him)
+			// We use the previously unused kVariableGenericWalkerConfig
+			// The flag kFlagGenericWalkerWaiting will not do, because it can be reset
+			// if a walker is already moving (goal == 1).
 			// There's also another flag called kFlagUnpauseGenWalkers
 			// but the usage of that flag seems more obscure and dubious for this purpose
-			Game_Flag_Set(kFlagGenericWalkerWaiting);
+			// Furthermore, kFlagUnpauseGenWalkers seems to be a code remnant, since the
+			// walkers tracks are never pause in that occasion (or any other)
+			Actor_Set_Goal_Number(kActorGenwalkerA, kGoalGenwalkerDefault);
+			Actor_Set_Goal_Number(kActorGenwalkerB, kGoalGenwalkerDefault);
+			Actor_Set_Goal_Number(kActorGenwalkerC, kGoalGenwalkerDefault);
+			Global_Variable_Set(kVariableGenericWalkerConfig, -1);
 		}
 		Setup_Scene_Information(-530.0f, -6.5f, 241.0f, 506);
 		Game_Flag_Set(kFlagArrivedFromSpinner1);
@@ -504,10 +512,10 @@ void SceneScriptCT01::PlayerWalkedIn() {
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -330.0f, -6.5f, 221.0f, 0, false, false, false);
 		if (_vm->_cutContent) {
 			// unpause generic walkers here, less chance to collide with McCOy while he enters the scene
-			if( Game_Flag_Query(kFlagArrivedFromSpinner1)
-				&& Game_Flag_Query(kFlagGenericWalkerWaiting)
+			if (Game_Flag_Query(kFlagArrivedFromSpinner1)
+				&& Global_Variable_Query(kVariableGenericWalkerConfig) < 0
 			) {
-				Game_Flag_Reset(kFlagGenericWalkerWaiting);
+				Global_Variable_Set(kVariableGenericWalkerConfig, 2);
 			}
 		}
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -314.0f, -6.5f, 326.0f, 0, false, false, false);
@@ -526,8 +534,8 @@ void SceneScriptCT01::PlayerWalkedIn() {
 void SceneScriptCT01::PlayerWalkedOut() {
 	Ambient_Sounds_Remove_All_Non_Looping_Sounds(true);
 	if (Game_Flag_Query(kFlagCT01toCT12)) {
-		Ambient_Sounds_Remove_Looping_Sound(kSfxCTAMBL1, true);
-		Ambient_Sounds_Remove_Looping_Sound(kSfxCTAMBR1, true);
+		Ambient_Sounds_Remove_Looping_Sound(kSfxCTAMBL1, 1);
+		Ambient_Sounds_Remove_Looping_Sound(kSfxCTAMBR1, 1);
 	} else {
 		Ambient_Sounds_Remove_All_Looping_Sounds(1);
 	}

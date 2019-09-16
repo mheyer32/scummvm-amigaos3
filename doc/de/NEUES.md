@@ -5,11 +5,24 @@ Programmcodes finden Sie auf Englisch unter:
 #### 2.1.0 (??.??.2019)
 
  Neue Spiele:
-   - Might and Magic IV - Clouds of Xeen.
-   - Might and Magic V - Darkside of Xeen.
-   - Might and Magic - World of Xeen.
-   - Might and Magic - World of Xeen 2 CD Talkie (mit Sprachausgabe).
-   - Might and Magic - Swords of Xeen.
+   - Unterstützung für Blade Runner hinzugefügt.
+   - Unterstützung für Hoyle Bridge hinzugefügt.
+   - Unterstützung für Hoyle Children's Collection hinzugefügt.
+   - Unterstützung für Hoyle Classic Games hinzugefügt.
+   - Unterstützung für Hoyle Solitaire hinzugefügt.
+   - Unterstützung für Hyperspace Delivery Boy! hinzugefügt.
+   - Unterstützung für Might and Magic IV - Clouds of Xeen hinzugefügt.
+   - Unterstützung für Might and Magic V - Darkside of Xeen hinzugefügt.
+   - Unterstützung für Might and Magic - World of Xeen hinzugefügt.
+   - Unterstützung für Might and Magic - World of Xeen 2 CD Talkie (mit Sprachausgabe) hinzugefügt.
+   - Unterstützung für Might and Magic - Swords of Xeen hinzugefügt.
+   - Unterstützung für Mission Supernova hinzugefügt.
+   - Unterstützung für Quest for Glory: Shadows of Darkness hinzugefügt.
+   - Unterstützung für The Prince and the Coward hinzugefügt.
+   - Unterstützung für Versailles 1685 hinzugefügt.
+
+ Neue Portierungen:
+   - Portierung auf Nintendo Switch hinzugefügt.
 
  Allgemein:
    - Verbesserte Performance der grafischen Benutzeroberfläche.
@@ -18,6 +31,12 @@ Programmcodes finden Sie auf Englisch unter:
    - Fehlerhafte Steuerung des Mauszeigers korrigiert, wenn dieser über die Tastatur
      gesteuert wird.
    - Code der Roland MT-32-Emulation auf Munt 2.3.0 aktualisiert.
+   - Unbekannte Spiele-Versionen können nun einfacher gemeldet werden.
+
+ ADL:
+   - Verbesserung der Farbtreue.
+   - TV-Emulationsmodus hinzugefügt.
+   - Unterstützung für das WOZ-Dateiformat hinzugefügt.
 
  Drascula:
    - Fehler beim Laden eines in Kapitel 1 gespeicherten Spielstands korrigiert.
@@ -56,6 +75,7 @@ Programmcodes finden Sie auf Englisch unter:
      neu erstellen, damit diese Fehlerkorrektur auch bei komprimierten Audiodateien greift.
    - Fehler in der deutschen Version von SPY Fox 3: Operation Ozone korrigiert. Das Spiel kann
      nun komplett durchgespielt werden.
+   - Sound-Treiber für die Amiga-Versionen von Monkey Island 2 und Indiana Jones and the Fate of Atlantis hinzugefügt.
 
  Sherlock:
    - Absturz in der spanischen Version behoben, der auftritt, wenn mit der Dame im Geschäft des 
@@ -94,6 +114,15 @@ Programmcodes finden Sie auf Englisch unter:
 
  ZVISION:
    - Grafikfehler in Zork: Grand Inquisitor behoben.
+   - Benötigte Schriftarten werden nun zusammen mit ScummVM ausgeliefert.
+
+ iOS-Portierung:
+   - Drei-Finger-Wischgeste hinzugefügt, um Pfeiltasten zu simulieren.
+   - Zoom-Gesten hinzugefügt, um die virtuelle Tastatur ein- und auszublenden.
+   - Zusätzliche Tastensymbole, die nicht auf der Tastatur vorhanden sind, werden oberhalb der Tastatur eingeblendet.
+
+ macOS-Portierung:
+   - Anstelle des ScummVM-Dateibrowsers kommt nun der Betriebssystem-Dateibrowser zum Einsatz.
 
  PS Vita-Portierung:
    - Unterstützung für Touch-Steuerung hinzugefügt.
@@ -103,10 +132,19 @@ Programmcodes finden Sie auf Englisch unter:
    - Bewegung des Mauszeigers ist nun gleichmäßiger.
    - Einstellungsmöglichkeit für Mauszeiger-Geschwindigkeit und Joystick-Deadzone hinzugefügt.
 
- SDL-Portierung:
+ SDL-Portierungen (einschließlich Windows, Linux und macOS):
    - Unterstützung für Gamecontroller hinzugefügt.
+   - Spiele können nun via Drag-and-Drop zu ScummVM hinzugefügt werden.
+
+ Windows-Portierung:
+   - Anstelle des ScummVM-Dateibrowsers kommt nun der Betriebssystem-Dateibrowser zum Einsatz.
+
+ RISC OS-Portierung:
+   - StrongHelp-Handbuch hinzugefügt.
+   - Fehler können nun über !Reporter gemeldet werden.
 
 #### 2.0.0 (17.12.2017)
+
  Neue Spiele:
    - Unterstützung für Full Pipe hinzugefügt.
    - Unterstützung für Hi-Res Adventure #3: Cranston Manor hinzugefügt.

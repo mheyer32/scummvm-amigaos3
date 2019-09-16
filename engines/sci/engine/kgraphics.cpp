@@ -396,9 +396,9 @@ reg_t kTextSize(EngineState *s, int argc, reg_t *argv) {
 }
 
 reg_t kWait(EngineState *s, int argc, reg_t *argv) {
-	int sleep_time = argv[0].toUint16();
+	uint16 ticks = argv[0].toUint16();
 
-	const int delta = s->wait(sleep_time);
+	const uint16 delta = s->wait(ticks);
 
 	if (g_sci->_guestAdditions->kWaitHook()) {
 		return NULL_REG;
@@ -565,8 +565,13 @@ reg_t kDrawPic(EngineState *s, int argc, reg_t *argv) {
 		if (flags & K_DRAWPIC_FLAGS_ANIMATIONBLACKOUT)
 			animationBlackoutFlag = true;
 		animationNr = flags & 0xFF;
-		if (flags & K_DRAWPIC_FLAGS_MIRRORED)
-			mirroredFlag = true;
+		// Mac interpreters ignored the mirrored flag and didn't mirror pics.
+		//  KQ6 PC room 390 drew pic 390 mirrored so Mac added pic 395, which
+		//  is a mirror of 390, but the script continued to pass this flag.
+		if (g_sci->getPlatform() != Common::kPlatformMacintosh) {
+			if (flags & K_DRAWPIC_FLAGS_MIRRORED)
+				mirroredFlag = true;
+		}
 	}
 	if (argc >= 3) {
 		if (!argv[2].isNull())

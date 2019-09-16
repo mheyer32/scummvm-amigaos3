@@ -74,6 +74,10 @@ GuiManager::GuiManager() : _redrawStatus(kRedrawDisabled), _stateIsSaved(false),
 	TransMan.setLanguage(ConfMan.get("gui_language").c_str());
 #endif // USE_TRANSLATION
 
+#ifdef USE_TTS
+	initTextToSpeech();
+#endif // USE_TTS
+
 	ConfMan.registerDefault("gui_theme", "scummremastered");
 	Common::String themefile(ConfMan.get("gui_theme"));
 
@@ -618,5 +622,34 @@ void GuiManager::setLastMousePos(int16 x, int16 y) {
 	_lastMousePosition.y = y;
 	_lastMousePosition.time = _system->getMillis(true);
 }
+
+#ifdef USE_TTS
+void GuiManager::initTextToSpeech() {
+	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+	if (ttsMan == nullptr)
+		return;
+#ifdef USE_TRANSLATION
+	Common::String currentLanguage = TransMan.getCurrentLanguage();
+	if (currentLanguage == "C")
+		currentLanguage = "en";
+	else
+		currentLanguage.setChar('\0', 2);
+	ttsMan->setLanguage(currentLanguage);
+#endif
+	int volume = (ConfMan.getInt("speech_volume", "scummvm") * 100) / 256;
+	if (ConfMan.hasKey("mute", "scummvm") && ConfMan.getBool("mute", "scummvm"))
+		volume = 0;
+	ttsMan->setVolume(volume);
+
+	unsigned voice;
+	if(ConfMan.hasKey("tts_voice"))
+		voice = ConfMan.getInt("tts_voice", "scummvm");
+	else
+		voice = 0;
+	if (voice >= ttsMan->getVoicesArray().size())
+		voice = 0;
+	ttsMan->setVoice(voice);
+}
+#endif
 
 } // End of namespace GUI

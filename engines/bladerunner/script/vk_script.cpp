@@ -483,7 +483,7 @@ void VKScript::SCRIPT_VK_DLL_McCoy_Asks_Question(int actorId, int questionId) {
 
 	if ( _vm->_debugger->_playFullVk ) {
 		if (++_questionCounter >= 40) {
-			switch(actorId) {
+			switch (actorId) {
 			case kActorLucy:
 				//debug("Last Lucy Question!");
 				if (Game_Flag_Query(kFlagLucyIsReplicant)) {
@@ -1343,6 +1343,9 @@ void VKScript::askGrigorian(int questionId) {
 		VK_Eye_Animates(2);
 		VK_Play_Speech_Line(kActorGrigorian, 1110, 0.5f);
 		VK_Play_Speech_Line(kActorMcCoy, 8210, 0.5f);
+		if (_vm->_cutContent) {
+			VK_Play_Speech_Line(kActorMcCoy, 8215, 0.5f);
+		}
 		break;
 	case 7750:                          // High 09
 		VK_Eye_Animates(2);
@@ -1945,7 +1948,7 @@ void VKScript::askRunciter(int questionId) {
 			VK_Play_Speech_Line(kActorMcCoy, 7660, 0.5f);
 			VK_Play_Speech_Line(kActorMcCoy, 7665, 0.5f);
 			VK_Eye_Animates(1);
-			Delay(1500);
+			Delay(1500u);
 			VK_Play_Speech_Line(kActorMcCoy, 8395, 0.5f);    // M: You don't have anything to say?
 			VK_Subject_Reacts(12, 8, 1, 0);
 			VK_Play_Speech_Line(kActorRunciter, 1400, 0.5f); // R: What's the point
@@ -2309,7 +2312,7 @@ void VKScript::askBulletBob(int questionId) {
 	case 7470:                          // Low 15
 		VK_Subject_Reacts(50, -4, 0, -5);
 		if (_vm->_cutContent) {
-			Delay(2000);
+			Delay(2000u);
 			VK_Play_Speech_Line(kActorMcCoy, 8270, 0.5f);
 		}
 		VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);

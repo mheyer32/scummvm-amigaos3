@@ -48,12 +48,12 @@ void ZonFixedImage::run(const CallbackFunctor *callback) {
 
 	_callback = callback;
 
-	g_system->showMouse(true);
+	_engine.showMouse(true);
 	while (!_exit) {
 		(*_callback)(this);
 	}
 	_engine.waitMouseRelease();
-	g_system->showMouse(false);
+	_engine.showMouse(false);
 
 	// Deselect object
 	_inventory.setSelectedObject(nullptr);
@@ -97,10 +97,10 @@ void ZonFixedImage::load(const Common::String &image, const char *zone) {
 	// WORKAROUND: Wait for release after displaying the fixed image to avoid handling events due to mouse being pressed
 	// There is this bug in game
 	// Don't display cursor to prevent displaying an invalid cursor
-	g_system->showMouse(false);
+	_engine.showMouse(false);
 	g_system->updateScreen();
 	_engine.waitMouseRelease();
-	g_system->showMouse(true);
+	_engine.showMouse(true);
 }
 
 void ZonFixedImage::display() const {
@@ -125,8 +125,8 @@ void ZonFixedImage::loadZones(const Common::String &image) {
 	int32 zonesNumber = zonFile.size() / 26;
 	_zones.reserve(zonesNumber);
 
-	_highLeftId = -1;
-	_highRightId = -1;
+	_highLeftId = Common::Array<CryOmni3D::ZonFixedImage::Zone>::size_type(-1);
+	_highRightId = Common::Array<CryOmni3D::ZonFixedImage::Zone>::size_type(-1);
 
 	int leftSeen = 0x7fffffff; // MAX_INT
 	int rightSeen = 0;
@@ -173,7 +173,7 @@ Common::Point ZonFixedImage::getZoneCenter(uint zoneId) const {
 }
 
 void ZonFixedImage::manage() {
-	_currentZone = -1;
+	_currentZone = uint(-1);
 	_zoneLow = false;
 	_zoneHigh = false;
 	_zoneHighLeft = false;
@@ -188,10 +188,15 @@ void ZonFixedImage::manage() {
 	_usedObject = nullptr;
 	_key.reset();
 
+	// As the game lets load/save from main menu displayed by cliking from the toolbar,
+	// it's safe to enable GMM Load/Save there
+	_engine.setCanLoadSave(true);
+
 	// Force poll events even when we must refresh the cursor
 	if (!_engine.pollEvents() && !_refreshCursor) {
 		g_system->updateScreen();
 		g_system->delayMillis(10);
+		_engine.setCanLoadSave(false);
 		return;
 	}
 	_refreshCursor = false;
@@ -202,9 +207,11 @@ void ZonFixedImage::manage() {
 
 	if (_key == Common::KEYCODE_ESCAPE) {
 		_exit = true;
+		_engine.setCanLoadSave(false);
 		return;
 	} else if (_engine.shouldAbort()) {
 		_exit = true;
+		_engine.setCanLoadSave(false);
 		return;
 	}
 
@@ -221,6 +228,7 @@ void ZonFixedImage::manage() {
 		}
 		// Return without any event to redo the loop and force refresh
 		_refreshCursor = true;
+		_engine.setCanLoadSave(false);
 		return;
 	}
 
@@ -234,7 +242,7 @@ void ZonFixedImage::manage() {
 	if (zoneIt != _zones.end()) {
 		_currentZone = zoneIt - _zones.begin();
 	} else {
-		_currentZone = -1;
+		_currentZone = uint(-1);
 	}
 
 	if (_zonesMode == kZonesMode_Standard) {
@@ -268,6 +276,8 @@ void ZonFixedImage::manage() {
 
 	g_system->updateScreen();
 	g_system->delayMillis(10);
+
+	_engine.setCanLoadSave(false);
 }
 
 void ZonFixedImage::handleMouseZones(const Common::Array<Zone>::const_iterator &currentZone) {

@@ -135,6 +135,9 @@ bool SceneScriptTB06::ClickedOnItem(int itemId, bool a2) {
 			Actor_Voice_Over(2380, kActorVoiceOver);
 			Actor_Voice_Over(2390, kActorVoiceOver);
 			Actor_Voice_Over(2400, kActorVoiceOver);
+			if (_vm->_cutContent) {
+				Actor_Says_With_Pause(kActorMcCoy, 8516, 0.70f, kAnimationModeTalk); // Any idea if they were real dogs? (gets no answer)
+			}
 			return true;
 		}
 	}
@@ -178,14 +181,14 @@ void SceneScriptTB06::PlayerWalkedIn() {
 		Actor_Says(kActorMcCoy, 5290, kAnimationModeTalk);
 		Loop_Actor_Walk_To_XYZ(kActorMcCoy, -10.0f, 149.0f, -631.0f, 0, false, false, false);
 
-		bool talkWithPhotographer = false;
 #if BLADERUNNER_ORIGINAL_BUGS
-		talkWithPhotographer = true;
+		bool talkWithPhotographer = true;
 #else
 		// It's possible for McCoy to go to AR01 (so the kActorPhotographer will go away from TB06)
 		// without ever going into this scene (TB06)
 		// so later on in the Act, if McCoy visits this scene the Photographer would be gone
 		// but the dialogue would play as if he was there. This fixes that bug.
+		bool talkWithPhotographer = false;
 		if (Actor_Query_Is_In_Current_Set(kActorPhotographer)) {
 			talkWithPhotographer = true;
 		}

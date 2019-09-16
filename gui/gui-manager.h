@@ -107,6 +107,7 @@ public:
 	 * only be deleted when that dialog is the top level dialog.
 	 */
 	void addToTrash(GuiObject*, Dialog* parent = 0);
+	void initTextToSpeech();
 
 	bool _launched;
 

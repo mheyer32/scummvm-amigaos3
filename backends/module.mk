@@ -23,6 +23,7 @@ ifdef USE_CLOUD
 
 ifdef USE_LIBCURL
 MODULE_OBJS += \
+	cloud/basestorage.o \
 	cloud/cloudicon.o \
 	cloud/cloudmanager.o \
 	cloud/iso8601.o \
@@ -156,15 +157,6 @@ MODULE_OBJS += \
 endif
 endif
 
-# Connection::isLimited
-ifeq ($(BACKEND),android)
-MODULE_OBJS += \
-	networking/connection/islimited-android.o
-else
-MODULE_OBJS += \
-	networking/connection/islimited-default.o
-endif
-
 ifdef POSIX
 MODULE_OBJS += \
 	fs/posix/posix-fs.o \
@@ -174,6 +166,14 @@ MODULE_OBJS += \
 	plugins/posix/posix-provider.o \
 	saves/posix/posix-saves.o \
 	taskbar/unity/unity-taskbar.o
+
+ifdef USE_SPEECH_DISPATCHER
+ifdef USE_TTS
+MODULE_OBJS += \
+	text-to-speech/linux/linux-text-to-speech.o
+endif
+endif
+
 endif
 
 ifdef MACOSX
@@ -184,6 +184,12 @@ MODULE_OBJS += \
 	midi/coremidi.o \
 	updates/macosx/macosx-updates.o \
 	taskbar/macosx/macosx-taskbar.o
+
+ifdef USE_TTS
+MODULE_OBJS += \
+	text-to-speech/macosx/macosx-text-to-speech.o
+endif
+
 endif
 
 ifdef WIN32
@@ -197,6 +203,12 @@ MODULE_OBJS += \
 	saves/windows/windows-saves.o \
 	updates/win32/win32-updates.o \
 	taskbar/win32/win32-taskbar.o
+
+ifdef USE_TTS
+MODULE_OBJS += \
+	text-to-speech/windows/windows-text-to-speech.o
+endif
+
 endif
 
 ifeq ($(BACKEND),android)
@@ -317,7 +329,6 @@ MODULE_OBJS += \
 	fs/psp/psp-fs-factory.o \
 	fs/psp/psp-stream.o \
 	plugins/psp/psp-provider.o \
-	saves/psp/psp-saves.o \
 	timer/psp/timer.o
 endif
 

@@ -37,12 +37,39 @@
 #include "graphics/thumbnail.h"
 
 #include "adl/adl.h"
-#include "adl/display.h"
+#include "adl/display_a2.h"
 #include "adl/detection.h"
 #include "adl/graphics.h"
 #include "adl/sound.h"
 
 namespace Adl {
+
+class ScriptEnv_6502 : public ScriptEnv {
+public:
+	ScriptEnv_6502(const Command &cmd, byte room, byte verb, byte noun) :
+			ScriptEnv(cmd, room, verb, noun),
+			_remCond(cmd.numCond),
+			_remAct(cmd.numAct) { }
+
+private:
+	kOpType getOpType() const {
+		if (_remCond > 0)
+			return kOpTypeCond;
+		if (_remAct > 0)
+			return kOpTypeAct;
+		return kOpTypeDone;
+	}
+
+	void next(uint numArgs) {
+		_ip += numArgs + 1;
+		if (_remCond > 0)
+			--_remCond;
+		else if (_remAct > 0)
+			--_remAct;
+	}
+
+	byte _remCond, _remAct;
+};
 
 AdlEngine::~AdlEngine() {
 	delete _display;
@@ -182,7 +209,7 @@ Common::String AdlEngine::inputString(byte prompt) const {
 			Common::String native;
 
 			for (uint i = 0; i < line.size(); ++i)
-				native += APPLECHAR(line[i]);
+				native += _display->asciiToNative(line[i]);
 
 			_display->printString(native);
 			// Set pause flag to activate regular behaviour of delay and inputKey
@@ -214,7 +241,7 @@ Common::String AdlEngine::inputString(byte prompt) const {
 			case Common::KEYCODE_BACKSPACE | 0x80:
 				if (!s.empty()) {
 					_display->moveCursorBackward();
-					_display->setCharAtCursor(APPLECHAR(' '));
+					_display->setCharAtCursor(_display->asciiToNative(' '));
 					s.deleteLastChar();
 				}
 				break;
@@ -233,7 +260,7 @@ byte AdlEngine::inputKey(bool showCursor) const {
 
 	// If debug script is active, we fake a return press for the text overflow handling
 	if (_inputScript && !_scriptPaused)
-		return APPLECHAR('\r');
+		return _display->asciiToNative('\r');
 
 	if (showCursor)
 		_display->showCursor(true);
@@ -257,9 +284,9 @@ byte AdlEngine::inputKey(bool showCursor) const {
 
 		// If debug script was activated in the meantime, abort input
 		if (_inputScript && !_scriptPaused)
-			return APPLECHAR('\r');
+			return _display->asciiToNative('\r');
 
-		_display->updateTextScreen();
+		_display->renderText();
 		g_system->delayMillis(16);
 	}
 
@@ -404,8 +431,8 @@ bool AdlEngine::isInputValid(const Commands &commands, byte verb, byte noun, boo
 
 	is_any = false;
 	for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
-		ScriptEnv env(*cmd, _state.room, verb, noun);
-		if (matchCommand(env)) {
+		Common::ScopedPtr<ScriptEnv> env(createScriptEnv(*cmd, _state.room, verb, noun));
+		if (matchCommand(*env)) {
 			if (cmd->verb == IDI_ANY || cmd->noun == IDI_ANY)
 				is_any = true;
 			return true;
@@ -703,10 +730,9 @@ void AdlEngine::gameLoop() {
 }
 
 Common::Error AdlEngine::run() {
-	initGraphics(DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2);
-
+	_display = Display_A2_create();
 	_console = new Console(this);
-	_display = new Display();
+	_display->init();
 
 	setupOpcodeTables();
 
@@ -724,7 +750,7 @@ Common::Error AdlEngine::run() {
 		_display->printAsciiString(_strings.lineFeeds);
 	}
 
-	_display->setMode(DISPLAY_MODE_MIXED);
+	_display->setMode(Display::kModeMixed);
 
 	while (!(_isQuitting || shouldQuit()))
 		gameLoop();
@@ -938,7 +964,7 @@ Common::Error AdlEngine::saveGameState(int slot, const Common::String &desc) {
 	uint32 playTime = getTotalPlayTime();
 	outFile->writeUint32BE(playTime);
 
-	_display->saveThumbnail(*outFile);
+	Graphics::saveThumbnail(*outFile);
 	saveState(*outFile);
 	outFile->finalize();
 
@@ -962,15 +988,15 @@ bool AdlEngine::canSaveGameStateCurrently() {
 	// "SAVE GAME". This prevents saving via the GMM in situations where
 	// it wouldn't otherwise be possible to do so.
 	for (cmd = _roomData.commands.begin(); cmd != _roomData.commands.end(); ++cmd) {
-		ScriptEnv env(*cmd, _state.room, _saveVerb, _saveNoun);
-		if (matchCommand(env))
-			return env.op() == IDO_ACT_SAVE;
+		Common::ScopedPtr<ScriptEnv> env(createScriptEnv(*cmd, _state.room, _saveVerb, _saveNoun));
+		if (matchCommand(*env))
+			return env->op() == IDO_ACT_SAVE;
 	}
 
 	for (cmd = _roomCommands.begin(); cmd != _roomCommands.end(); ++cmd) {
-		ScriptEnv env(*cmd, _state.room, _saveVerb, _saveNoun);
-		if (matchCommand(env))
-			return env.op() == IDO_ACT_SAVE;
+		Common::ScopedPtr<ScriptEnv> env(createScriptEnv(*cmd, _state.room, _saveVerb, _saveNoun));
+		if (matchCommand(*env))
+			return env->op() == IDO_ACT_SAVE;
 	}
 
 	return false;
@@ -992,14 +1018,14 @@ byte AdlEngine::convertKey(uint16 ascii) const {
 
 Common::String AdlEngine::getLine() {
 	while (1) {
-		Common::String line = inputString(APPLECHAR('?'));
+		Common::String line = inputString(_display->asciiToNative('?'));
 
 		if (shouldQuit() || _isRestoring)
 			return Common::String();
 
 		if ((byte)line[0] == ('\r' | 0x80)) {
 			_textMode = !_textMode;
-			_display->setMode(_textMode ? DISPLAY_MODE_TEXT : DISPLAY_MODE_MIXED);
+			_display->setMode(_textMode ? Display::kModeText : Display::kModeMixed);
 			continue;
 		}
 
@@ -1011,9 +1037,10 @@ Common::String AdlEngine::getLine() {
 
 Common::String AdlEngine::getWord(const Common::String &line, uint &index) const {
 	Common::String str;
+	const char spaceChar = _display->asciiToNative(' ');
 
 	for (uint i = 0; i < 8; ++i)
-		str += APPLECHAR(' ');
+		str += spaceChar;
 
 	int copied = 0;
 
@@ -1021,7 +1048,7 @@ Common::String AdlEngine::getWord(const Common::String &line, uint &index) const
 	while (1) {
 		if (index == line.size())
 			return str;
-		if (line[index] != APPLECHAR(' '))
+		if (line[index] != spaceChar)
 			break;
 		++index;
 	}
@@ -1033,7 +1060,7 @@ Common::String AdlEngine::getWord(const Common::String &line, uint &index) const
 
 		index++;
 
-		if (index == line.size() || line[index] == APPLECHAR(' '))
+		if (index == line.size() || line[index] == spaceChar)
 			return str;
 	}
 }
@@ -1250,10 +1277,10 @@ int AdlEngine::o_restart(ScriptEnv &e) {
 	_display->printString(_strings.playAgain);
 	Common::String input = inputString();
 
-	if (input.size() == 0 || input[0] != APPLECHAR('N')) {
+	if (input.size() == 0 || input[0] != _display->asciiToNative('N')) {
 		_isRestarting = true;
-		_display->clear(0x00);
-		_display->updateHiResScreen();
+		_graphics->clearScreen();
+		_display->renderGraphics();
 		_display->printString(_strings.pressReturn);
 		initState();
 		_display->printAsciiString(_strings.lineFeeds);
@@ -1346,7 +1373,7 @@ bool AdlEngine::matchCommand(ScriptEnv &env) const {
 		(void)op_debug("\t&& SAID(%s, %s)", verbStr(env.getCommand().verb).c_str(), nounStr(env.getCommand().noun).c_str());
 	}
 
-	for (uint i = 0; i < env.getCondCount(); ++i) {
+	while (env.getOpType() == ScriptEnv::kOpTypeCond) {
 		byte op = env.op();
 
 		if (op >= _condOpcodes.size() || !_condOpcodes[op] || !_condOpcodes[op]->isValid())
@@ -1360,7 +1387,7 @@ bool AdlEngine::matchCommand(ScriptEnv &env) const {
 			return false;
 		}
 
-		env.skip(numArgs + 1);
+		env.next(numArgs);
 	}
 
 	return true;
@@ -1370,7 +1397,7 @@ void AdlEngine::doActions(ScriptEnv &env) {
 	if (DebugMan.isDebugChannelEnabled(kDebugChannelScript))
 		(void)op_debug("THEN");
 
-	for (uint i = 0; i < env.getActCount(); ++i) {
+	while (env.getOpType() == ScriptEnv::kOpTypeAct) {
 		byte op = env.op();
 
 		if (op >= _actOpcodes.size() || !_actOpcodes[op] || !_actOpcodes[op]->isValid())
@@ -1384,7 +1411,7 @@ void AdlEngine::doActions(ScriptEnv &env) {
 			return;
 		}
 
-		env.skip(numArgs + 1);
+		env.next(numArgs);
 	}
 
 	if (DebugMan.isDebugChannelEnabled(kDebugChannelScript))
@@ -1395,9 +1422,9 @@ bool AdlEngine::doOneCommand(const Commands &commands, byte verb, byte noun) {
 	Commands::const_iterator cmd;
 
 	for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
-		ScriptEnv env(*cmd, _state.room, verb, noun);
-		if (matchCommand(env)) {
-			doActions(env);
+		Common::ScopedPtr<ScriptEnv> env(createScriptEnv(*cmd, _state.room, verb, noun));
+		if (matchCommand(*env)) {
+			doActions(*env);
 			return true;
 		}
 
@@ -1414,9 +1441,9 @@ void AdlEngine::doAllCommands(const Commands &commands, byte verb, byte noun) {
 	Commands::const_iterator cmd;
 
 	for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
-		ScriptEnv env(*cmd, _state.room, verb, noun);
-		if (matchCommand(env)) {
-			doActions(env);
+		Common::ScopedPtr<ScriptEnv> env(createScriptEnv(*cmd, _state.room, verb, noun));
+		if (matchCommand(*env)) {
+			doActions(*env);
 			// The original long jumps on restart, so we need to abort here
 			if (_isRestarting)
 				return;
@@ -1427,6 +1454,10 @@ void AdlEngine::doAllCommands(const Commands &commands, byte verb, byte noun) {
 			return;
 		}
 	}
+}
+
+ScriptEnv *AdlEngine::createScriptEnv(const Command &cmd, byte room, byte verb, byte noun) {
+	return new ScriptEnv_6502(cmd, room, verb, noun);
 }
 
 Common::String AdlEngine::toAscii(const Common::String &str) {

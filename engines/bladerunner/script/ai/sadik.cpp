@@ -46,7 +46,7 @@ void AIScriptSadik::Initialize() {
 
 	Actor_Put_In_Set(kActorSadik, kSetFreeSlotA);
 	Actor_Set_At_Waypoint(kActorSadik, 33, 0);
-	Actor_Set_Goal_Number(kActorSadik, kGoalSadikDefaut);
+	Actor_Set_Goal_Number(kActorSadik, kGoalSadikDefault);
 }
 
 bool AIScriptSadik::Update() {
@@ -264,7 +264,7 @@ int AIScriptSadik::GetFriendlinessModifierIfGetsClue(int otherActorId, int clueI
 
 bool AIScriptSadik::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	switch (newGoalNumber) {
-	case kGoalSadikDefaut:
+	case kGoalSadikDefault:
 		AI_Movement_Track_Flush(kActorSadik);
 		AI_Movement_Track_Append(kActorSadik, 33, 0);
 		AI_Movement_Track_Repeat(kActorSadik);
@@ -325,7 +325,7 @@ bool AIScriptSadik::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 	case kGoalSadikUG18Wait:
 		Actor_Put_In_Set(kActorSadik, kSetUG18);
 		Actor_Set_At_XYZ(kActorSadik, 111.89f, 0.0f, 408.42f, 0);
-		Actor_Change_Animation_Mode(kActorSadik, 4);
+		Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatIdle);
 		return true;
 
 	case kGoalSadikUG18Move:
@@ -580,7 +580,7 @@ bool AIScriptSadik::UpdateAnimation(int *animation, int *frame) {
 			_animationFrame = 0;
 			_animationState = 7;
 			*animation = 312;
-			Actor_Change_Animation_Mode(kActorSadik, 4);
+			Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatIdle);
 		}
 		break;
 
@@ -591,7 +591,7 @@ bool AIScriptSadik::UpdateAnimation(int *animation, int *frame) {
 			_animationFrame = 0;
 			_animationState = 7;
 			*animation = 312;
-			Actor_Change_Animation_Mode(kActorSadik, 4);
+			Actor_Change_Animation_Mode(kActorSadik, kAnimationModeCombatIdle);
 		}
 		break;
 
@@ -602,7 +602,7 @@ bool AIScriptSadik::UpdateAnimation(int *animation, int *frame) {
 			*animation = 328;
 			_animationFrame = 0;
 			_animationState = 0;
-			Actor_Change_Animation_Mode(kActorSadik, 0);
+			Actor_Change_Animation_Mode(kActorSadik, kAnimationModeIdle);
 		}
 		break;
 

@@ -27,12 +27,19 @@
 
 #include "cryomni3d/versailles/engine.h"
 
-#define DEBUG_SAVE
-
 namespace CryOmni3D {
 namespace Versailles {
 
-#define SAVE_DESCRIPTION_LEN 20
+Common::Error CryOmni3DEngine_Versailles::loadGameState(int slot) {
+	_loadedSave = slot + 1;
+	_abortCommand = kAbortLoadGame;
+	return Common::kNoError;
+}
+
+Common::Error CryOmni3DEngine_Versailles::saveGameState(int slot, const Common::String &desc) {
+	saveGame(_isVisiting, slot + 1, desc);
+	return Common::kNoError;
+}
 
 Common::String CryOmni3DEngine_Versailles::getSaveFileName(bool visit, uint saveNum) const {
 	return Common::String::format("%s%s.%04u", _targetName.c_str(), visit ? "_visit" : "", saveNum);
@@ -47,13 +54,11 @@ bool CryOmni3DEngine_Versailles::canVisit() const {
 }
 
 void CryOmni3DEngine_Versailles::getSavesList(bool visit, Common::StringArray &saveNames) {
-	Common::SaveFileManager *saveMan = g_system->getSavefileManager();
-
-	char saveName[SAVE_DESCRIPTION_LEN + 1];
-	saveName[SAVE_DESCRIPTION_LEN] = '\0';
+	char saveName[kSaveDescriptionLen + 1];
+	saveName[kSaveDescriptionLen] = '\0';
 	Common::String pattern = Common::String::format("%s%s.????", _targetName.c_str(),
 	                         visit ? "_visit" : "");
-	Common::StringArray filenames = saveMan->listSavefiles(pattern);
+	Common::StringArray filenames = _saveFileMan->listSavefiles(pattern);
 	sort(filenames.begin(), filenames.end());   // Sort (hopefully ensuring we are sorted numerically..)
 
 	saveNames.clear();
@@ -72,7 +77,7 @@ void CryOmni3DEngine_Versailles::getSavesList(bool visit, Common::StringArray &s
 			if (!visitFile.open("game0001.sav", visitsSearchSet)) {
 				error("Can't load visit file");
 			}
-			visitFile.read(saveName, SAVE_DESCRIPTION_LEN);
+			visitFile.read(saveName, kSaveDescriptionLen);
 			saveNames.push_back(saveName);
 		} else {
 			warning("visiting mode but no bootstrap");
@@ -94,13 +99,9 @@ void CryOmni3DEngine_Versailles::getSavesList(bool visit, Common::StringArray &s
 			}
 
 			num++;
-#ifdef DEBUG_SAVE
-			Common::InSaveFile *in = _saveFileMan->openRawFile(*file);
-#else
 			Common::InSaveFile *in = _saveFileMan->openForLoading(*file);
-#endif
 			if (in) {
-				if (in->read(saveName, SAVE_DESCRIPTION_LEN) == SAVE_DESCRIPTION_LEN) {
+				if (in->read(saveName, kSaveDescriptionLen) == kSaveDescriptionLen) {
 					saveNames.push_back(saveName);
 				}
 				delete in;
@@ -123,13 +124,7 @@ void CryOmni3DEngine_Versailles::saveGame(bool visit, uint saveNum,
 
 	Common::OutSaveFile *out;
 
-	if (!(out = _saveFileMan->openForSaving(saveFileName,
-#ifdef DEBUG_SAVE
-	                                        false
-#else
-	                                        true
-#endif
-	                                       ))) {
+	if (!(out = _saveFileMan->openForSaving(saveFileName))) {
 		return;
 	}
 
@@ -137,9 +132,10 @@ void CryOmni3DEngine_Versailles::saveGame(bool visit, uint saveNum,
 	syncCountdown();
 
 	// Write save name
-	char saveNameC[SAVE_DESCRIPTION_LEN];
+	char saveNameC[kSaveDescriptionLen];
 	memset(saveNameC, 0, sizeof(saveNameC));
-	strncpy(saveNameC, saveName.c_str(), sizeof(saveNameC));
+	// Silence -Wstringop-truncation using parentheses, we don't have to have a null-terminated string here
+	(strncpy(saveNameC, saveName.c_str(), sizeof(saveNameC)));
 	out->write(saveNameC, sizeof(saveNameC));
 
 	// dummy values
@@ -159,7 +155,7 @@ void CryOmni3DEngine_Versailles::saveGame(bool visit, uint saveNum,
 	// Inventory
 	assert(_inventory.size() == 50);
 	for (Inventory::const_iterator it = _inventory.begin(); it != _inventory.end(); it++) {
-		uint objId = -1;
+		uint objId = uint(-1);
 		if (*it != nullptr) {
 			// Inventory contains pointers to objects stored in _objects
 			objId = *it - _objects.begin();
@@ -216,12 +212,7 @@ bool CryOmni3DEngine_Versailles::loadGame(bool visit, uint saveNum) {
 		in = visitFile;
 	} else {
 		Common::String saveFileName = getSaveFileName(visit, saveNum);
-
-#ifdef DEBUG_SAVE
-		in = _saveFileMan->openRawFile(saveFileName);
-#else
 		in = _saveFileMan->openForLoading(saveFileName);
-#endif
 	}
 
 	if (!in || in->size() != 1260) {
@@ -231,7 +222,7 @@ bool CryOmni3DEngine_Versailles::loadGame(bool visit, uint saveNum) {
 	musicStop();
 
 	// Load save name but don't use it
-	char saveNameC[SAVE_DESCRIPTION_LEN];
+	char saveNameC[kSaveDescriptionLen];
 	in->read(saveNameC, sizeof(saveNameC));
 
 	// dummy values
@@ -254,9 +245,9 @@ bool CryOmni3DEngine_Versailles::loadGame(bool visit, uint saveNum) {
 	for (Inventory::iterator it = _inventory.begin(); it != _inventory.end(); it++) {
 		uint objId = in->readUint32BE();
 		if (objId >= _objects.size()) {
-			objId = -1;
+			objId = uint(-1);
 		}
-		if (objId != -1u) {
+		if (objId != uint(-1)) {
 			*it = _objects.begin() + objId;
 		} else {
 			*it = nullptr;
