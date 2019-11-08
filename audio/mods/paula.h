@@ -69,7 +69,7 @@ public:
 	};
 
 	Paula(bool stereo = false, int rate = 44100, uint interruptFreq = 0,
-	      FilterMode filterMode = kFilterModeA1200);
+		  FilterMode filterMode = kFilterModeNone);
 	~Paula();
 
 	bool playing() const { return _playing; }
