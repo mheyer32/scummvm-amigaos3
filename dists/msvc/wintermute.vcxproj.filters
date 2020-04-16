@@ -2,55 +2,55 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="ad">
-			<UniqueIdentifier>0B250D46-7D06-4716-B8C4-9C5DE7C52679</UniqueIdentifier>
+			<UniqueIdentifier>9D42EBE7-C9F7-4306-ABC5-80B59945391C</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base">
-			<UniqueIdentifier>B9554F42-4087-4F8D-8156-B36DB26B2DB6</UniqueIdentifier>
+			<UniqueIdentifier>62BEB52C-84A2-4A8D-B2FB-E4EBA676C344</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\file">
-			<UniqueIdentifier>C1EC0138-37AB-4814-98E8-EFC1BFB02973</UniqueIdentifier>
+			<UniqueIdentifier>B8AF2D83-A840-4AD3-870B-8AA050C3BCB3</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\font">
-			<UniqueIdentifier>5054ED2C-7D5D-48C7-8048-180AF5A45B13</UniqueIdentifier>
+			<UniqueIdentifier>8373DF08-16AA-4649-A77C-354EF2F993AB</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\gfx">
-			<UniqueIdentifier>22A42E02-73E9-46EB-8D35-60B0A9729930</UniqueIdentifier>
+			<UniqueIdentifier>AAC02F53-02BA-4809-85B2-A9177767CBFA</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\gfx\osystem">
-			<UniqueIdentifier>50C1FE2C-344B-4663-97D4-FD739B4D10DF</UniqueIdentifier>
+			<UniqueIdentifier>DAAB04F0-579A-4BFE-9771-4E0B6BE1B616</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\particles">
-			<UniqueIdentifier>974DD4C2-24C8-47EA-AE4E-524A6356A1EA</UniqueIdentifier>
+			<UniqueIdentifier>A2E66AA4-A192-4E68-8558-80BCBF4CB79B</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\scriptables">
-			<UniqueIdentifier>5726DE92-BE45-4D70-9EF8-31AA9921D611</UniqueIdentifier>
+			<UniqueIdentifier>F8BB8D50-57C8-406F-BA9E-7AA68032BC24</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\scriptables\debuggable">
-			<UniqueIdentifier>27AB37F1-08FA-4393-91C6-7A4155070021</UniqueIdentifier>
+			<UniqueIdentifier>1A27C9BC-B978-4600-91A6-BC92F3752EEC</UniqueIdentifier>
 		</Filter>
 		<Filter Include="base\sound">
-			<UniqueIdentifier>961A6821-4C0C-4F3A-8961-CA190FDE4426</UniqueIdentifier>
+			<UniqueIdentifier>32BB3E89-858E-49BF-AE75-66AFA824D3C2</UniqueIdentifier>
 		</Filter>
 		<Filter Include="debugger">
-			<UniqueIdentifier>76B1E30C-D47E-42DB-8212-B0B3B79FE4DB</UniqueIdentifier>
+			<UniqueIdentifier>4C9E8007-17A7-47E8-8EC4-7B433AAA306D</UniqueIdentifier>
 		</Filter>
 		<Filter Include="debugger\listing_providers">
-			<UniqueIdentifier>F2CB94CE-0232-41EA-909C-45328F5FB566</UniqueIdentifier>
+			<UniqueIdentifier>676FF7EC-FDF1-4D2D-A815-DC1139B1D486</UniqueIdentifier>
 		</Filter>
 		<Filter Include="math">
-			<UniqueIdentifier>82CE44A4-6555-4244-98ED-D7B3B0696C85</UniqueIdentifier>
+			<UniqueIdentifier>50558D68-FC94-424C-99CD-8F9479C002E0</UniqueIdentifier>
 		</Filter>
 		<Filter Include="system">
-			<UniqueIdentifier>94117300-DFE0-4AD3-A1F2-9621E4CDF5BC</UniqueIdentifier>
+			<UniqueIdentifier>30F9CE2F-EC7D-4D55-923A-66CCEB3B533D</UniqueIdentifier>
 		</Filter>
 		<Filter Include="ui">
-			<UniqueIdentifier>37439ADA-54AD-492A-B60E-52F520690A4E</UniqueIdentifier>
+			<UniqueIdentifier>91E1A58F-76F7-4CD0-866C-66412E69225F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="utils">
-			<UniqueIdentifier>CC6EC959-0BE3-4D0C-8C2B-93F4D60490DD</UniqueIdentifier>
+			<UniqueIdentifier>63F18F51-6FEC-4602-A70E-CF144A2451DC</UniqueIdentifier>
 		</Filter>
 		<Filter Include="video">
-			<UniqueIdentifier>524BB0A6-AF42-47AC-B1D4-7066C32A71BE</UniqueIdentifier>
+			<UniqueIdentifier>06F76C7C-EF49-4EB7-B6B4-F8E51E1C4582</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -147,6 +147,9 @@
 		<ClCompile Include="..\..\engines\wintermute\base\file\base_save_thumb_file.cpp">
 			<Filter>base\file</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\base\file\base_savefile_manager_file.cpp">
+			<Filter>base\file</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\base\font\base_font.cpp">
 			<Filter>base\font</Filter>
 		</ClCompile>
@@ -202,6 +205,9 @@
 			<Filter>base\scriptables</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_date.cpp">
+			<Filter>base\scriptables</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_directory.cpp">
 			<Filter>base\scriptables</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_file.cpp">
@@ -526,6 +532,9 @@
 		<ClInclude Include="..\..\engines\wintermute\base\file\base_save_thumb_file.h">
 			<Filter>base\file</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\base\file\base_savefile_manager_file.h">
+			<Filter>base\file</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\base\file\dcpackage.h">
 			<Filter>base\file</Filter>
 		</ClInclude>
@@ -587,6 +596,9 @@
 			<Filter>base\scriptables</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_date.h">
+			<Filter>base\scriptables</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_directory.h">
 			<Filter>base\scriptables</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_file.h">

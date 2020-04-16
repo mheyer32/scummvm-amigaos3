@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{708753EB-4124-4899-AF8F-3598A075988E}</ProjectGuid>
+		<ProjectGuid>{369727D5-4DC5-4681-AF53-AB428D36CF2A}</ProjectGuid>
 		<RootNamespace>scumm</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -145,12 +145,12 @@
 		<ClCompile Include="..\..\engines\scumm\he\sound_he.cpp" />
 		<ClCompile Include="..\..\engines\scumm\he\sprite_he.cpp" />
 		<ClCompile Include="..\..\engines\scumm\he\wiz_he.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\scumm\imuse\imuse.cpp" />
 		<ClCompile Include="..\..\engines\scumm\imuse\imuse_part.cpp" />
 		<ClCompile Include="..\..\engines\scumm\imuse\imuse_player.cpp" />
 		<ClCompile Include="..\..\engines\scumm\imuse\instrument.cpp" />
-		<ClCompile Include="..\..\engines\scumm\imuse\mac_m68k.cpp" />
-		<ClCompile Include="..\..\engines\scumm\imuse\pcspk.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\scumm\imuse\sysex_samnmax.cpp" />
 		<ClCompile Include="..\..\engines\scumm\imuse\sysex_scumm.cpp" />
 		<ClCompile Include="..\..\engines\scumm\imuse_digi\dimuse.cpp" />
@@ -168,6 +168,7 @@
 		<ClCompile Include="..\..\engines\scumm\insane\insane_scenes.cpp" />
 		<ClCompile Include="..\..\engines\scumm\players\player_ad.cpp" />
 		<ClCompile Include="..\..\engines\scumm\players\player_apple2.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\scumm\players\player_mac.cpp" />
 		<ClCompile Include="..\..\engines\scumm\players\player_mod.cpp" />
 		<ClCompile Include="..\..\engines\scumm\players\player_nes.cpp" />
@@ -260,11 +261,11 @@
 		<ClInclude Include="..\..\engines\scumm\he\sound_he.h" />
 		<ClInclude Include="..\..\engines\scumm\he\sprite_he.h" />
 		<ClInclude Include="..\..\engines\scumm\he\wiz_he.h" />
+(??)
 		<ClInclude Include="..\..\engines\scumm\imuse\imuse.h" />
 		<ClInclude Include="..\..\engines\scumm\imuse\imuse_internal.h" />
 		<ClInclude Include="..\..\engines\scumm\imuse\instrument.h" />
-		<ClInclude Include="..\..\engines\scumm\imuse\mac_m68k.h" />
-		<ClInclude Include="..\..\engines\scumm\imuse\pcspk.h" />
+(??)
 		<ClInclude Include="..\..\engines\scumm\imuse\sysex.h" />
 		<ClInclude Include="..\..\engines\scumm\imuse_digi\dimuse.h" />
 		<ClInclude Include="..\..\engines\scumm\imuse_digi\dimuse_bndmgr.h" />
@@ -275,6 +276,7 @@
 		<ClInclude Include="..\..\engines\scumm\insane\insane.h" />
 		<ClInclude Include="..\..\engines\scumm\players\player_ad.h" />
 		<ClInclude Include="..\..\engines\scumm\players\player_apple2.h" />
+(??)
 		<ClInclude Include="..\..\engines\scumm\players\player_mac.h" />
 		<ClInclude Include="..\..\engines\scumm\players\player_mod.h" />
 		<ClInclude Include="..\..\engines\scumm\players\player_nes.h" />
@@ -317,7 +319,7 @@
 		<ClInclude Include="..\..\engines\scumm\nut_renderer.h" />
 		<ClInclude Include="..\..\engines\scumm\object.h" />
 		<ClInclude Include="..\..\engines\scumm\resource.h" />
-		<ClInclude Include="..\..\engines\scumm\saveload.h" />
+(??)
 		<ClInclude Include="..\..\engines\scumm\script.h" />
 		<ClInclude Include="..\..\engines\scumm\scumm-md5.h" />
 		<ClInclude Include="..\..\engines\scumm\scumm.h" />

@@ -2,28 +2,31 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="he">
-			<UniqueIdentifier>E2E59F88-6535-4710-8D6C-81104CD8B33B</UniqueIdentifier>
+			<UniqueIdentifier>48A04D61-F39A-48A0-B5FD-EDE657759F87</UniqueIdentifier>
 		</Filter>
 		<Filter Include="he\logic">
-			<UniqueIdentifier>7F7C5AB6-E202-4DCC-B345-34E55C6939A0</UniqueIdentifier>
+			<UniqueIdentifier>839D9CEE-1545-4A50-AAAA-B71F7781D3BF</UniqueIdentifier>
 		</Filter>
 		<Filter Include="he\moonbase">
-			<UniqueIdentifier>D1B7C0C6-A151-4B62-8273-7A1DAA82778D</UniqueIdentifier>
+			<UniqueIdentifier>22212216-BBAB-4772-A9A5-5A021CF9899F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="imuse">
-			<UniqueIdentifier>981D8058-B8AA-476D-85A8-A7364643E364</UniqueIdentifier>
+			<UniqueIdentifier>97278FAD-6CB9-4D17-A5B6-36DD380B9D5A</UniqueIdentifier>
+		</Filter>
+		<Filter Include="imuse\drivers">
+			<UniqueIdentifier>2CBF71E8-6C29-4B16-8FB5-18EBAFA28C48</UniqueIdentifier>
 		</Filter>
 		<Filter Include="imuse_digi">
-			<UniqueIdentifier>0AEF2A9B-ACBC-40D8-A782-F0F666E5215F</UniqueIdentifier>
+			<UniqueIdentifier>C91CF537-D6F4-4E3D-AB85-1BE490B93FBD</UniqueIdentifier>
 		</Filter>
 		<Filter Include="insane">
-			<UniqueIdentifier>7B1E90CB-CB78-4A20-B9B3-6D36E20DA787</UniqueIdentifier>
+			<UniqueIdentifier>79B0A6E5-DA02-4CAA-B816-9768B825B183</UniqueIdentifier>
 		</Filter>
 		<Filter Include="players">
-			<UniqueIdentifier>1C4EC968-28B1-44C9-A37D-67071A12237C</UniqueIdentifier>
+			<UniqueIdentifier>41A8BA19-9E0A-474B-9072-30212C70DEA6</UniqueIdentifier>
 		</Filter>
 		<Filter Include="smush">
-			<UniqueIdentifier>54F2F62A-214B-404E-967B-0B6569454041</UniqueIdentifier>
+			<UniqueIdentifier>22868DFC-888B-4842-A141-AA5B665DDFA8</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -132,6 +135,18 @@
 		<ClCompile Include="..\..\engines\scumm\he\wiz_he.cpp">
 			<Filter>he</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\imuse\drivers\amiga.cpp">
+			<Filter>imuse\drivers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\imuse\drivers\fmtowns.cpp">
+			<Filter>imuse\drivers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\imuse\drivers\mac_m68k.cpp">
+			<Filter>imuse\drivers</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\imuse\drivers\pcspk.cpp">
+			<Filter>imuse\drivers</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\imuse\imuse.cpp">
 			<Filter>imuse</Filter>
 		</ClCompile>
@@ -142,12 +157,6 @@
 			<Filter>imuse</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\imuse\instrument.cpp">
-			<Filter>imuse</Filter>
-		</ClCompile>
-		<ClCompile Include="..\..\engines\scumm\imuse\mac_m68k.cpp">
-			<Filter>imuse</Filter>
-		</ClCompile>
-		<ClCompile Include="..\..\engines\scumm\imuse\pcspk.cpp">
 			<Filter>imuse</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\imuse\sysex_samnmax.cpp">
@@ -199,6 +208,9 @@
 			<Filter>players</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\players\player_apple2.cpp">
+			<Filter>players</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\scumm\players\player_he.cpp">
 			<Filter>players</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\scumm\players\player_mac.cpp">
@@ -320,6 +332,9 @@
 		<ClCompile Include="..\..\engines\scumm\verbs.cpp" />
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="..\..\engines\scumm\he\logic_he.h">
+			<Filter>he</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\he\moonbase\ai_defenseunit.h">
 			<Filter>he\moonbase</Filter>
 		</ClInclude>
@@ -368,9 +383,6 @@
 		<ClInclude Include="..\..\engines\scumm\he\intern_he.h">
 			<Filter>he</Filter>
 		</ClInclude>
-		<ClInclude Include="..\..\engines\scumm\he\logic_he.h">
-			<Filter>he</Filter>
-		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\he\resource_he.h">
 			<Filter>he</Filter>
 		</ClInclude>
@@ -383,6 +395,18 @@
 		<ClInclude Include="..\..\engines\scumm\he\wiz_he.h">
 			<Filter>he</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\imuse\drivers\amiga.h">
+			<Filter>imuse\drivers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\imuse\drivers\fmtowns.h">
+			<Filter>imuse\drivers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\imuse\drivers\mac_m68k.h">
+			<Filter>imuse\drivers</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\imuse\drivers\pcspk.h">
+			<Filter>imuse\drivers</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\imuse\imuse.h">
 			<Filter>imuse</Filter>
 		</ClInclude>
@@ -390,12 +414,6 @@
 			<Filter>imuse</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\imuse\instrument.h">
-			<Filter>imuse</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\engines\scumm\imuse\mac_m68k.h">
-			<Filter>imuse</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\engines\scumm\imuse\pcspk.h">
 			<Filter>imuse</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\imuse\sysex.h">
@@ -426,6 +444,9 @@
 			<Filter>players</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\players\player_apple2.h">
+			<Filter>players</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\scumm\players\player_he.h">
 			<Filter>players</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\scumm\players\player_mac.h">
@@ -512,7 +533,6 @@
 		<ClInclude Include="..\..\engines\scumm\nut_renderer.h" />
 		<ClInclude Include="..\..\engines\scumm\object.h" />
 		<ClInclude Include="..\..\engines\scumm\resource.h" />
-		<ClInclude Include="..\..\engines\scumm\saveload.h" />
 		<ClInclude Include="..\..\engines\scumm\script.h" />
 		<ClInclude Include="..\..\engines\scumm\scumm-md5.h" />
 		<ClInclude Include="..\..\engines\scumm\scumm.h" />

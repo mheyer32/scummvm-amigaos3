@@ -605,11 +605,11 @@ void GfxScreen::bitsRestoreDisplayScreen(Common::Rect rect, byte *&memoryPtr) {
 	}
 }
 
-void GfxScreen::setVerticalShakePos(uint16 shakePos) {
+void GfxScreen::setShakePos(uint16 shakeXOffset, uint16 shakeYOffset) {
 	if (!_upscaledHires)
-		g_system->setShakePos(shakePos);
+		g_system->setShakePos(shakeXOffset, shakeYOffset);
 	else
-		g_system->setShakePos(_upscaledHeightMapping[shakePos]);
+		g_system->setShakePos(_upscaledWidthMapping[shakeXOffset], _upscaledHeightMapping[shakeYOffset]);
 }
 
 void REGPARM GfxScreen::putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const {
@@ -810,14 +810,23 @@ byte REGPARM GfxScreen::getPixelGeneric(const byte* screen, int16 x, int16 y) co
 
 void GfxScreen::kernelShakeScreen(uint16 shakeCount, uint16 directions) {
 	while (shakeCount--) {
-		if (directions & kShakeVertical)
-			setVerticalShakePos(10);
-		// TODO: horizontal shakes
+
+		uint16 shakeXOffset = 0;
+		if (directions & kShakeHorizontal) {
+			shakeXOffset = 10;
+		}
+
+		uint16 shakeYOffset = 0;
+		if (directions & kShakeVertical) {
+			shakeYOffset = 10;
+		}
+
+		setShakePos(shakeXOffset, shakeYOffset);
+
 		g_system->updateScreen();
 		g_sci->getEngineState()->sleep(3);
 
-		if (directions & kShakeVertical)
-			setVerticalShakePos(0);
+		setShakePos(0, 0);
 
 		g_system->updateScreen();
 		g_sci->getEngineState()->sleep(3);

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{A8A3181E-6D98-4F6F-9A80-714E4B486316}</ProjectGuid>
+		<ProjectGuid>{2394F4B6-02CB-425C-AC52-FEDB007C42DD}</ProjectGuid>
 		<RootNamespace>titanic</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

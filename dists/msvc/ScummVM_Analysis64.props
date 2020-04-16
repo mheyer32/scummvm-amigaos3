@@ -6,12 +6,12 @@
 	<PropertyGroup>
 		<_PropertySheetDisplayName>ScummVM_Analysis64</_PropertySheetDisplayName>
 		<LinkIncremental>true</LinkIncremental>
+		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
 	<ItemDefinitionGroup>
 		<ClCompile>
 			<Optimization>Disabled</Optimization>
 			<PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-			<MinimalRebuild>true</MinimalRebuild>
 			<BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 			<FunctionLevelLinking>true</FunctionLevelLinking>

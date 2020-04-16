@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{CBED0944-0C94-4291-AE78-857388DD0693}</ProjectGuid>
+		<ProjectGuid>{7DC22981-E446-4470-96DD-42262D6AFD95}</ProjectGuid>
 		<RootNamespace>fullpipe</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

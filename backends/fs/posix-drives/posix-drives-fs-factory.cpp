@@ -20,22 +20,31 @@
  *
  */
 
-#ifndef GUI_3DS_H
-#define GUI_3DS_H
+#if defined(POSIX)
 
-#include "gui/message.h"
+#define FORBIDDEN_SYMBOL_ALLOW_ALL
 
-class StatusMessageDialog : public GUI::MessageDialog {
-public:
-	StatusMessageDialog(const Common::String &message, uint32 duration);
+#include "backends/fs/posix-drives/posix-drives-fs-factory.h"
+#include "backends/fs/posix-drives/posix-drives-fs.h"
 
-	void handleTickle();
+#include <unistd.h>
 
-protected:
-	virtual void close();
-	
-	uint32 _timer;
-	static StatusMessageDialog* _opened;
-};
+void DrivesPOSIXFilesystemFactory::addDrive(const Common::String &name) {
+	_drives.push_back(Common::normalizePath(name, '/'));
+}
 
-#endif // GUI_3DS_H
+AbstractFSNode *DrivesPOSIXFilesystemFactory::makeRootFileNode() const {
+	return new DrivePOSIXFilesystemNode(_drives);
+}
+
+AbstractFSNode *DrivesPOSIXFilesystemFactory::makeCurrentDirectoryFileNode() const {
+	char buf[MAXPATHLEN];
+	return getcwd(buf, MAXPATHLEN) ? new DrivePOSIXFilesystemNode(buf, _drives) : nullptr;
+}
+
+AbstractFSNode *DrivesPOSIXFilesystemFactory::makeFileNodePath(const Common::String &path) const {
+	assert(!path.empty());
+	return new DrivePOSIXFilesystemNode(path, _drives);
+}
+
+#endif

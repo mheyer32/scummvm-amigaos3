@@ -759,7 +759,7 @@ void OptionsDialog::apply() {
 }
 
 void OptionsDialog::close() {
-	if (getResult())
+	if (getResult() > 0)
 		apply();
 
 	Dialog::close();
@@ -2158,9 +2158,7 @@ void GlobalOptionsDialog::apply() {
 		if (newLang == "C")
 			ttsMan->setLanguage("en");
 		else {
-			Common::String guiLang = newLang;
-			guiLang.setChar('\0', 2);
-			ttsMan->setLanguage(guiLang);
+			ttsMan->setLanguage(newLang);
 		}
 		_ttsVoiceSelectionPopUp->setSelectedTag(0);
 	}

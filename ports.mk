@@ -81,8 +81,13 @@ ScummVMDockTilePlugin64.o:
 ScummVMDockTilePlugin64: ScummVMDockTilePlugin64.o
 	$(CXX) -mmacosx-version-min=10.6 -arch x86_64 -bundle -framework Foundation -framework AppKit -fobjc-link-runtime ScummVMDockTilePlugin64.o -o ScummVMDockTilePlugin64
 
+ifdef MACOSX_64_BITS_ONLY
+ScummVMDockTilePlugin: ScummVMDockTilePlugin64
+	cp ScummVMDockTilePlugin64 ScummVMDockTilePlugin
+else
 ScummVMDockTilePlugin: ScummVMDockTilePlugin32 ScummVMDockTilePlugin64
 	lipo -create ScummVMDockTilePlugin32 ScummVMDockTilePlugin64 -output ScummVMDockTilePlugin
+endif
 
 scummvm.docktileplugin: ScummVMDockTilePlugin
 	mkdir -p scummvm.docktileplugin/Contents
@@ -95,11 +100,7 @@ endif
 
 bundle_name = ScummVM.app
 
-ifdef USE_DOCKTILEPLUGIN
-bundle: scummvm-static scummvm.docktileplugin
-else
-bundle: scummvm-static
-endif
+bundle-pack:
 	mkdir -p $(bundle_name)/Contents/MacOS
 	mkdir -p $(bundle_name)/Contents/Resources
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
@@ -110,7 +111,11 @@ ifdef USE_SPARKLE
 	rm -rf $(bundle_name)/Contents/Frameworks/Sparkle.framework
 	cp -R $(SPARKLEPATH)/Sparkle.framework $(bundle_name)/Contents/Frameworks/
 endif
-	cp $(srcdir)/icons/scummvm.icns $(bundle_name)/Contents/Resources/
+ifdef MACOSX_USE_LEGACY_ICONS
+	cp $(srcdir)/icons/scummvm_legacy.icns $(bundle_name)/Contents/Resources/scummvm.icns
+else
+	cp $(srcdir)/icons/scummvm.icns $(bundle_name)/Contents/Resources/scummvm.icns
+endif
 	cp $(DIST_FILES_DOCS) $(bundle_name)/Contents/Resources/
 	cp $(DIST_FILES_THEMES) $(bundle_name)/Contents/Resources/
 ifdef DIST_FILES_NETWORKING
@@ -135,6 +140,12 @@ endif
 ifdef USE_DOCKTILEPLUGIN
 	mkdir -p $(bundle_name)/Contents/PlugIns
 	cp -r scummvm.docktileplugin $(bundle_name)/Contents/PlugIns/
+endif
+
+ifdef USE_DOCKTILEPLUGIN
+bundle: scummvm-static scummvm.docktileplugin bundle-pack
+else
+bundle: scummvm-static bundle-pack
 endif
 
 iphonebundle: iphone
@@ -482,7 +493,7 @@ endif
 	@echo Creating Code::Blocks project files...
 	@cd $(srcdir)/dists/codeblocks && ../../devtools/create_project/create_project ../.. --codeblocks >/dev/null && git add -f engines/plugins_table.h *.workspace *.cbp
 	@echo Creating MSVC project files...
-	@cd $(srcdir)/dists/msvc && ../../devtools/create_project/create_project ../.. --msvc >/dev/null && git add -f engines/plugins_table.h *.sln *.vcxproj *.vcxproj.filters *.props
+	@cd $(srcdir)/dists/msvc && ../../devtools/create_project/create_project ../.. --msvc-version 12 --msvc >/dev/null && git add -f engines/plugins_table.h *.sln *.vcxproj *.vcxproj.filters *.props
 	@echo
 	@echo All is done.
 	@echo Now run

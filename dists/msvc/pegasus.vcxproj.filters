@@ -2,43 +2,43 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="ai">
-			<UniqueIdentifier>3E4732B3-D845-4EF3-A68D-8A06D52C24DF</UniqueIdentifier>
+			<UniqueIdentifier>65EFDCEF-8CD4-4C73-818A-AD75AF534375</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items">
-			<UniqueIdentifier>1009F6B5-25E4-47DC-A324-7F5F557F8681</UniqueIdentifier>
+			<UniqueIdentifier>434C028D-A49D-4DA9-9097-52BB547FFEB9</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items\biochips">
-			<UniqueIdentifier>8024B15D-3005-4AAF-8CF6-1A831E1C2DEB</UniqueIdentifier>
+			<UniqueIdentifier>70DCAAFC-B147-40B3-921F-2982726DF8B5</UniqueIdentifier>
 		</Filter>
 		<Filter Include="items\inventory">
-			<UniqueIdentifier>19F29FCC-DBE4-49AA-A43D-A4D374CA95F0</UniqueIdentifier>
+			<UniqueIdentifier>B9FA445E-9991-492A-AA5B-E67EDAE6394B</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood">
-			<UniqueIdentifier>B4C7E182-B9AC-4FFE-A1B8-B6EEDF232DAC</UniqueIdentifier>
+			<UniqueIdentifier>C4E34976-2CB9-4BFE-9855-824CC27B037C</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\caldoria">
-			<UniqueIdentifier>889ED96E-F863-498A-A21F-3B3DBBBB48C6</UniqueIdentifier>
+			<UniqueIdentifier>7647DB11-D9E4-4C04-8123-831C0BBC68CF</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\mars">
-			<UniqueIdentifier>39D0B863-748F-4C5C-BD8D-93225CB9FB40</UniqueIdentifier>
+			<UniqueIdentifier>A0B147CC-6C72-4C46-874F-938BCA960942</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad">
-			<UniqueIdentifier>599103D4-1245-400E-9068-05D088FE7FCD</UniqueIdentifier>
+			<UniqueIdentifier>DEE454B9-CA90-4D0C-B442-29BFFE9290A0</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad\alpha">
-			<UniqueIdentifier>CD7843D3-0024-4A67-8697-7D656950A620</UniqueIdentifier>
+			<UniqueIdentifier>45D76EB1-4B3B-4813-8B8C-9F5624A89903</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\norad\delta">
-			<UniqueIdentifier>8EFD6A67-1DAA-4301-95BD-220584EE6638</UniqueIdentifier>
+			<UniqueIdentifier>8DEEBC59-7F7B-4535-BD8F-F4BD22855E67</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\prehistoric">
-			<UniqueIdentifier>4ACAF9C9-10B3-40B2-8E1E-DDB4EDE75214</UniqueIdentifier>
+			<UniqueIdentifier>5ECC1AA9-0814-4D93-A15D-EAC50685C994</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\tsa">
-			<UniqueIdentifier>9F57D255-2398-44CA-A137-BBB4DE82CB0A</UniqueIdentifier>
+			<UniqueIdentifier>7487EDF4-0354-4AC1-A320-7F06A6DE6E05</UniqueIdentifier>
 		</Filter>
 		<Filter Include="neighborhood\wsc">
-			<UniqueIdentifier>7285AD10-2511-413D-A4EE-B24664DBDE5C</UniqueIdentifier>
+			<UniqueIdentifier>AB88AFB4-9C6E-493E-8B35-05D2BACE6830</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -108,6 +108,8 @@
 		<ClCompile Include="..\..\engines\pegasus\items\itemlist.cpp">
 			<Filter>items</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\pegasus\menu.cpp" />
+		<ClCompile Include="..\..\engines\pegasus\movie.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\neighborhood\caldoria\caldoria.cpp">
 			<Filter>neighborhood\caldoria</Filter>
 		</ClCompile>
@@ -256,8 +258,6 @@
 		<ClCompile Include="..\..\engines\pegasus\input.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\interaction.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\interface.cpp" />
-		<ClCompile Include="..\..\engines\pegasus\menu.cpp" />
-		<ClCompile Include="..\..\engines\pegasus\movie.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\notification.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\pegasus.cpp" />
 		<ClCompile Include="..\..\engines\pegasus\sound.cpp" />
@@ -278,6 +278,9 @@
 		</ClInclude>
 		<ClInclude Include="..\..\engines\pegasus\ai\ai_rule.h">
 			<Filter>ai</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\pegasus\items\autodragger.h">
+			<Filter>items</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\pegasus\items\biochips\aichip.h">
 			<Filter>items\biochips</Filter>
@@ -314,9 +317,6 @@
 		</ClInclude>
 		<ClInclude Include="..\..\engines\pegasus\items\inventory\keycard.h">
 			<Filter>items\inventory</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\engines\pegasus\items\autodragger.h">
-			<Filter>items</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\pegasus\items\inventory.h">
 			<Filter>items</Filter>

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{5161B0A6-7982-4462-911F-C786A8DCA6BC}</ProjectGuid>
+		<ProjectGuid>{B9217299-066E-421D-86EF-F9139E0710C5}</ProjectGuid>
 		<RootNamespace>wintermute</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -141,6 +141,7 @@
 		<ClCompile Include="..\..\engines\wintermute\base\file\base_file_entry.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\file\base_package.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\file\base_save_thumb_file.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\wintermute\base\font\base_font.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\font\base_font_bitmap.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\font\base_font_storage.cpp" />
@@ -160,6 +161,7 @@
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_engine.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_array.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_date.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_file.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_math.cpp" />
 		<ClCompile Include="..\..\engines\wintermute\base\scriptables\script_ext_mem_buffer.cpp" />
@@ -272,6 +274,7 @@
 		<ClInclude Include="..\..\engines\wintermute\base\file\base_file_entry.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\file\base_package.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\file\base_save_thumb_file.h" />
+(??)
 		<ClInclude Include="..\..\engines\wintermute\base\file\dcpackage.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\font\base_font.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\font\base_font_bitmap.h" />
@@ -293,6 +296,7 @@
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_engine.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_array.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_date.h" />
+(??)
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_file.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_math.h" />
 		<ClInclude Include="..\..\engines\wintermute\base\scriptables\script_ext_mem_buffer.h" />

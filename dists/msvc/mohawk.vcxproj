@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{BD0C78EF-A3C9-4B7D-A433-A7E9345DB556}</ProjectGuid>
+		<ProjectGuid>{1C9291F4-77EF-42B2-BBB1-B216B12B4758}</ProjectGuid>
 		<RootNamespace>mohawk</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -117,6 +117,7 @@
 		<ClCompile Include="..\..\engines\mohawk\myst_stacks\intro.cpp" />
 		<ClCompile Include="..\..\engines\mohawk\myst_stacks\makingof.cpp" />
 		<ClCompile Include="..\..\engines\mohawk\myst_stacks\mechanical.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\mohawk\myst_stacks\myst.cpp">
 			<ObjectFileName>$(IntDir)myst_stacks_%(Filename).obj</ObjectFileName>
 		</ClCompile>
@@ -149,6 +150,7 @@
 			<ObjectFileName>$(IntDir)%(Filename).obj</ObjectFileName>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\mohawk\myst_areas.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\mohawk\myst_graphics.cpp" />
 		<ClCompile Include="..\..\engines\mohawk\myst_scripts.cpp" />
 		<ClCompile Include="..\..\engines\mohawk\myst_sound.cpp" />
@@ -177,6 +179,7 @@
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\intro.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\makingof.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\mechanical.h" />
+(??)
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\myst.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\preview.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_stacks\selenitic.h" />
@@ -205,6 +208,7 @@
 		<ClInclude Include="..\..\engines\mohawk\mohawk.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_areas.h" />
+(??)
 		<ClInclude Include="..\..\engines\mohawk\myst_graphics.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_scripts.h" />
 		<ClInclude Include="..\..\engines\mohawk\myst_sound.h" />

@@ -20,27 +20,35 @@
  *
  */
 
-#include "backends/platform/3ds/gui.h"
-#include "common/system.h"
+#ifndef POSIX_DRIVES_FILESYSTEM_FACTORY_H
+#define POSIX_DRIVES_FILESYSTEM_FACTORY_H
 
-StatusMessageDialog* StatusMessageDialog::_opened = 0;
+#include "backends/fs/fs-factory.h"
 
-StatusMessageDialog::StatusMessageDialog(const Common::String &message, uint32 duration)
-	: MessageDialog(message, 0, 0) {
-	_timer = g_system->getMillis() + duration;
-	if (_opened)
-		_opened->close();
-	_opened = this;
-}
+/**
+ * A FilesystemFactory implementation for filesystems with a special
+ * top-level directory with hard-coded entries but that otherwise
+ * implement the POSIX APIs.
+ *
+ * For used with paths like these:
+ * - 'sdcard:/games/scummvm.ini'
+ * - 'hdd1:/usr/bin'
+ */
+class DrivesPOSIXFilesystemFactory : public FilesystemFactory {
+public:
+	/**
+	 * Add a drive to the top-level directory
+	 */
+	void addDrive(const Common::String &name);
 
-void StatusMessageDialog::handleTickle() {
-	MessageDialog::handleTickle();
-	if (g_system->getMillis() > _timer)
-		close();
-}
+protected:
+	// FilesystemFactory API
+	AbstractFSNode *makeRootFileNode() const override;
+	AbstractFSNode *makeCurrentDirectoryFileNode() const override;
+	AbstractFSNode *makeFileNodePath(const Common::String &path) const override;
 
-void StatusMessageDialog::close() {
-    GUI::Dialog::close();
-	if (_opened)
-		_opened = 0;
-}
+private:
+	Common::Array<Common::String> _drives;
+};
+
+#endif

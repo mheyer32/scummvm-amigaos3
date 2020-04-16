@@ -151,7 +151,7 @@ public:
 	}
 };
 
-#ifdef ENABLE_SCI32_MAC
+#ifdef ENABLE_SCI32
 // SCI32 Mac decided to add an extra byte (currently unknown in meaning) between
 // the talker and the string...
 class MessageReaderV4_MacSCI32 : public MessageReader {
@@ -211,8 +211,6 @@ bool MessageState::getRecord(CursorStack &stack, bool recurse, MessageRecord &re
 	case 4:
 #ifdef ENABLE_SCI32
 	case 5: // v5 seems to be compatible with v4
-#endif
-#ifdef ENABLE_SCI32_MAC
 		// SCI32 Mac is different than SCI32 DOS/Win here
 		if (g_sci->getPlatform() == Common::kPlatformMacintosh && getSciVersion() >= SCI_VERSION_2_1_EARLY)
 			reader = new MessageReaderV4_MacSCI32(*res);
@@ -438,7 +436,7 @@ bool MessageState::stringStage(Common::String &outstr, const Common::String &inS
 
 		// For Russian we allow all upper characters
 		if (g_sci->getLanguage() == Common::RU_RUS) {
-			if ((inStr[i] >= 'a') || ((inStr[i] >= '0') && (inStr[i] <= '9') && (getSciVersion() <= SCI_VERSION_1_1)))
+			if (((byte)inStr[i] >= 'a') || ((inStr[i] >= '0') && (inStr[i] <= '9') && (getSciVersion() < SCI_VERSION_2)))
 				return false;
 		}
 

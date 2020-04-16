@@ -24,6 +24,8 @@
 #include "backends/platform/3ds/osystem.h"
 #include "backends/platform/3ds/shader_shbin.h"
 #include "common/rect.h"
+#include "graphics/fontman.h"
+#include "gui/gui-manager.h"
 #include "options-dialog.h"
 #include "config.h"
 
@@ -86,6 +88,7 @@ void OSystem_3DS::destroyGraphics() {
 	_gameTopTexture.free();
 	_gameBottomTexture.free();
 	_overlay.free();
+	_activityIcon.free();
 
 	shaderProgramFree(&_program);
 	DVLB_Free(_dvlb);
@@ -144,10 +147,18 @@ int OSystem_3DS::getGraphicsMode() const {
 void OSystem_3DS::initSize(uint width, uint height,
                                    const Graphics::PixelFormat *format) {
 	debug("3ds initsize w:%d h:%d", width, height);
+	int oldScreen = config.screen;
+	loadConfig();
+	if (config.screen != oldScreen) {
+		_screenChangeId++;
+	}
+
 	_gameWidth = width;
 	_gameHeight = height;
 	_gameTopTexture.create(width, height, _pfGameTexture);
 	_overlay.create(getOverlayWidth(), getOverlayHeight(), _pfGameTexture);
+	_magCenterX = _magWidth / 2;
+	_magCenterY = _magHeight / 2;
 
 	if (format) {
 		debug("pixelformat: %d %d %d %d %d", format->bytesPerPixel, format->rBits(), format->gBits(), format->bBits(), format->aBits());
@@ -195,6 +206,8 @@ void OSystem_3DS::updateSize() {
 	}
 	_gameTopTexture.setPosition(_gameTopX, _gameTopY);
 	_gameBottomTexture.setPosition(_gameBottomX, _gameBottomY);
+	_gameTopTexture.setOffset(0, 0);
+	_gameBottomTexture.setOffset(0, 0);
 	if (_overlayVisible)
 		_cursorTexture.setScale(1.f, 1.f);
 	else if (config.screen == kScreenTop)
@@ -219,6 +232,16 @@ void OSystem_3DS::beginGFXTransaction() {
 }
 OSystem::TransactionError OSystem_3DS::endGFXTransaction() {
 	return OSystem::kTransactionSuccess;
+}
+
+void OSystem_3DS::setPalette(const byte *colors, uint start, uint num) {
+	if (_overlayVisible) {
+		return 1.0;
+	} else if (config.screen == kScreenTop) {
+		return _gameTopTexture.getScaleX();
+	} else {
+		return _gameBottomTexture.getScaleX();
+	}
 }
 
 void OSystem_3DS::setPalette(const byte *colors, uint start, uint num) {
@@ -265,13 +288,29 @@ void OSystem_3DS::unlockScreen() {
 }
 
 void OSystem_3DS::updateScreen() {
-
 	if (sleeping || exiting)
 		return;
 
 // 	updateFocus();
+	updateMagnify();
 
-	C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+	if (_osdMessage.getPixels() && _osdMessageEndTime <= getMillis(true)) {
+		_osdMessage.free();
+	}
+
+	C3D_FrameBegin(0);
+		_gameTopTexture.transfer();
+		if (_overlayVisible) {
+			_overlay.transfer();
+		}
+		if (_cursorVisible && config.showCursor) {
+			_cursorTexture.transfer();
+		}
+		_osdMessage.transfer();
+		_activityIcon.transfer();
+	C3D_FrameEnd(0);
+
+	C3D_FrameBegin(0);
 		// Render top screen
 		C3D_RenderTargetClear(_renderTargetTop, C3D_CLEAR_ALL, 0x00000000, 0);
 		C3D_FrameDrawOn(_renderTargetTop);
@@ -279,10 +318,19 @@ void OSystem_3DS::updateScreen() {
 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionTop);
 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _gameTopTexture.getMatrix());
 			_gameTopTexture.render();
-			_gameTopTexture.render();
 			if (_overlayVisible && config.screen == kScreenTop) {
 				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _overlay.getMatrix());
 				_overlay.render();
+			}
+			if (_cursorVisible && config.showCursor && config.screen == kScreenTop) {
+				_activityIcon.setPosition(400 - _activityIcon.actualWidth, 0);
+				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _activityIcon.getMatrix());
+				_activityIcon.render();
+			}
+			if (_osdMessage.getPixels() && config.screen == kScreenTop) {
+				_osdMessage.setPosition((400 - _osdMessage.actualWidth) / 2, (240 - _osdMessage.actualHeight) / 2);
+				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _osdMessage.getMatrix());
+				_osdMessage.render();
 			}
 			if (_cursorVisible && config.showCursor && config.screen == kScreenTop) {
 				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _cursorTexture.getMatrix());
@@ -297,10 +345,19 @@ void OSystem_3DS::updateScreen() {
 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionBottom);
 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _gameBottomTexture.getMatrix());
 			_gameTopTexture.render();
-			_gameTopTexture.render();
 			if (_overlayVisible) {
 				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _overlay.getMatrix());
 				_overlay.render();
+			}
+			if (_cursorVisible && config.showCursor) {
+				_activityIcon.setPosition(320 - _activityIcon.actualWidth, 0);
+				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _activityIcon.getMatrix());
+				_activityIcon.render();
+			}
+			if (_osdMessage.getPixels()) {
+				_osdMessage.setPosition((320 - _osdMessage.actualWidth) / 2, (240 - _osdMessage.actualHeight) / 2);
+				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _osdMessage.getMatrix());
+				_osdMessage.render();
 			}
 			if (_cursorVisible && config.showCursor) {
 				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _cursorTexture.getMatrix());
@@ -312,9 +369,14 @@ void OSystem_3DS::updateScreen() {
 
 void OSystem_3DS::setShakePos(int shakeOffset) {
 	// TODO: implement this in overlay, top screen, and mouse too
-	_screenShakeOffset = shakeOffset;
-	_gameTopTexture.setPosition(_gameTopX, _gameTopY + _gameTopTexture.getScaleY() * shakeOffset);
-	_gameBottomTexture.setPosition(_gameBottomX, _gameBottomY + _gameBottomTexture.getScaleY() * shakeOffset);
+	_screenShakeXOffset = shakeXOffset;
+	_screenShakeYOffset = shakeYOffset;
+	int topX = _gameTopX + (_gameTopTexture.getScaleX() * shakeXOffset);
+	int topY = _gameTopY + (_gameTopTexture.getScaleY() * shakeYOffset);
+	_gameTopTexture.setPosition(topX, topY);
+	int bottomX = _gameBottomX + (_gameBottomTexture.getScaleX() * shakeXOffset);
+	int bottomY = _gameBottomY + (_gameBottomTexture.getScaleY() * shakeYOffset);
+	_gameBottomTexture.setPosition(bottomX, bottomY);
 }
 
 void OSystem_3DS::setFocusRectangle(const Common::Rect &rect) {
@@ -395,15 +457,37 @@ void OSystem_3DS::updateFocus() {
 }
 
 void OSystem_3DS::showOverlay() {
+	if (_magnifyMode == MODE_MAGON && config.screen != kScreenBoth) {
+		// Only allow to magnify when both screens are enabled
+		_magnifyMode = MODE_MAGOFF;
+	}
+
+	// TODO: When exiting GUI, prevent cursor's position within GUI from changing
+	// position of magnification viewport. Possible solution: save in-game cursor
+	// coordinates separately from GUI cursor coordinates?
+	if (_magnifyMode == MODE_MAGON) {
+		if (!g_gui.isActive()) {
+			_magX = (_cursorX < _magCenterX) ?
+				0 : ((_cursorX < (_gameWidth - _magCenterX)) ?
+				_cursorX - _magCenterX : _gameWidth - _magWidth);
+			_magY = (_cursorY < _magCenterY) ?
+				0 : ((_cursorY < _gameHeight - _magCenterY) ?
+				_cursorY - _magCenterY : _gameHeight - _magHeight);
+		}
+		_gameTopTexture.setScale(1.f,1.f);
+		_gameTopTexture.setPosition(0,0);
+		_gameTopTexture.setOffset(_magX, _magY);
+	}
+}
+
+void OSystem_3DS::showOverlay() {
 	_overlayVisible = true;
 	updateSize();
-	updateScreen();
 }
 
 void OSystem_3DS::hideOverlay() {
 	_overlayVisible = false;
 	updateSize();
-	updateScreen();
 }
 
 Graphics::PixelFormat OSystem_3DS::getOverlayFormat() const {
@@ -415,8 +499,11 @@ void OSystem_3DS::clearOverlay() {
 }
 
 void OSystem_3DS::grabOverlay(void *buf, int pitch) {
+	byte *dst = (byte *)buf;
+
 	for (int y = 0; y < getOverlayHeight(); ++y) {
-		memcpy(buf, _overlay.getBasePtr(0, y), pitch);
+		memcpy(dst, _overlay.getBasePtr(0, y), getOverlayWidth() * _pfGameTexture.bytesPerPixel);
+		dst += pitch;
 	}
 }
 
@@ -424,6 +511,73 @@ void OSystem_3DS::copyRectToOverlay(const void *buf, int pitch, int x,
                                             int y, int w, int h) {
 	_overlay.copyRectToSurface(buf, pitch, x, y, w, h);
 	_overlay.markDirty();
+}
+
+int16 OSystem_3DS::getOverlayHeight() {
+	// The font we are going to use:
+	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kLocalizedFont);
+	if (!font) {
+		warning("No available font to render OSD messages");
+		return;
+	}
+
+	// Split the message into separate lines.
+	Common::Array<Common::String> lines;
+	const char *ptr;
+	for (ptr = msg; *ptr; ++ptr) {
+		if (*ptr == '\n') {
+			lines.push_back(Common::String(msg, ptr - msg));
+			msg = ptr + 1;
+		}
+	}
+	lines.push_back(Common::String(msg, ptr - msg));
+
+	// Determine a rect which would contain the message string (clipped to the
+	// screen dimensions).
+	const int vOffset = 6;
+	const int lineSpacing = 1;
+	const int lineHeight = font->getFontHeight() + 2 * lineSpacing;
+	int width = 0;
+	int height = lineHeight * lines.size() + 2 * vOffset;
+	uint i;
+	for (i = 0; i < lines.size(); i++) {
+		width = MAX(width, font->getStringWidth(lines[i]) + 14);
+	}
+
+	// Clip the rect
+	if (width > getOverlayWidth())
+		width = getOverlayWidth();
+	if (height > getOverlayHeight())
+		height = getOverlayHeight();
+
+	_osdMessage.create(width, height, _pfGameTexture);
+	_osdMessage.fillRect(Common::Rect(width, height), _pfGameTexture.ARGBToColor(200, 0, 0, 0));
+
+	// Render the message, centered, and in white
+	for (i = 0; i < lines.size(); i++) {
+		font->drawString(&_osdMessage, lines[i],
+		                 0, 0 + i * lineHeight + vOffset + lineSpacing, width,
+		                 _pfGameTexture.RGBToColor(255, 255, 255),
+		                 Graphics::kTextAlignCenter);
+	}
+
+	_osdMessageEndTime = getMillis(true) + kOSDMessageDuration;
+}
+
+void OSystem_3DS::displayActivityIconOnOSD(const Graphics::Surface *icon) {
+	if (!icon) {
+		_activityIcon.free();
+	} else {
+		if (!_activityIcon.getPixels() || icon->w != _activityIcon.w || icon->h != _activityIcon.h) {
+			_activityIcon.create(icon->w, icon->h, _pfGameTexture);
+		}
+
+		Graphics::Surface *converted = icon->convertTo(_pfGameTexture);
+		_activityIcon.copyRectToSurface(*converted, 0, 0, Common::Rect(converted->w, converted->h));
+		_activityIcon.markDirty();
+		converted->free();
+		delete converted;
+	}
 }
 
 int16 OSystem_3DS::getOverlayHeight() {
@@ -443,19 +597,18 @@ bool OSystem_3DS::showMouse(bool visible) {
 void OSystem_3DS::warpMouse(int x, int y) {
 	_cursorX = x;
 	_cursorY = y;
-	warning("x:%d y:%d", x, y);
+
 	// TODO: adjust for _cursorScalable ?
-	int offsetx = 0;
-	int offsety = 0;
 	x -= _cursorHotspotX;
 	y -= _cursorHotspotY;
+
+	int offsetx = 0;
+	int offsety = 0;
 	if (!_overlayVisible) {
-		offsetx += config.screen == kScreenTop ? _gameTopX : _gameBottomX;
-		offsety += config.screen == kScreenTop ? _gameTopY : _gameBottomY;
+		offsetx = config.screen == kScreenTop ? _gameTopTexture.getPosX() : _gameBottomTexture.getPosX();
+		offsety = config.screen == kScreenTop ? _gameTopTexture.getPosY() : _gameBottomTexture.getPosY();
 	}
-	float scalex = config.screen == kScreenTop ? (float)_gameTopTexture.actualWidth / _gameWidth : 1.f;
-	float scaley = config.screen == kScreenTop ? (float)_gameTopTexture.actualHeight / _gameHeight : 1.f;
-	_cursorTexture.setPosition(scalex * x + offsetx,
+
 							   scaley * y + offsety);
 }
 
@@ -480,7 +633,7 @@ void OSystem_3DS::setMouseCursor(const void *buf, uint w, uint h,
 	}
 
 	if ( w != 0 && h != 0 ) {
-	_cursor.copyRectToSurface(buf, w, 0, 0, w, h);
+		_cursor.copyRectToSurface(buf, w, 0, 0, w, h);
 	}
 
 	flushCursor();
@@ -496,6 +649,29 @@ void OSystem_3DS::setCursorPalette(const byte *colors, uint start, uint num) {
 }
 
 void OSystem_3DS::flushCursor() {
+template<typename SrcColor>
+void applyKeyColor(Graphics::Surface *src, Graphics::Surface *dst, const SrcColor keyColor) {
+	assert(dst->format.bytesPerPixel == 4);
+	assert((dst->w >= src->w) && (dst->h >= src->h));
+
+	for (uint y = 0; y < src->h; ++y) {
+		SrcColor *srcPtr = (SrcColor *)src->getBasePtr(0, y);
+		uint32 *dstPtr = (uint32 *)dst->getBasePtr(0, y);
+
+		for (uint x = 0; x < src->w; ++x) {
+			const SrcColor color = *srcPtr++;
+
+			if (color == keyColor) {
+				*dstPtr = 0;
+			}
+
+			dstPtr++;
+		}
+	}
+}
+} // End of anonymous namespace
+
+void OSystem_3DS::flushCursor() {
 	if (_cursor.getPixels()) {
 		Graphics::Surface *converted = _cursor.convertTo(_pfGameTexture, _cursorPaletteEnabled ? _cursorPalette : _palette);
 		_cursorTexture.copyRectToSurface(*converted, 0, 0, Common::Rect(converted->w, converted->h));
@@ -504,17 +680,11 @@ void OSystem_3DS::flushCursor() {
 		delete converted;
 
 		if (_pfCursor.bytesPerPixel == 1) {
-			uint* dest = (uint*) _cursorTexture.getPixels();
-			byte* src = (byte*) _cursor.getPixels();
+			applyKeyColor<byte>(&_cursor, &_cursorTexture, _cursorKeyColor);
 			for (int y = 0; y < _cursor.h; ++y) {
+			applyKeyColor<uint16>(&_cursor, &_cursorTexture, _cursorKeyColor);
 				for (int x = 0; x < _cursor.w; ++x) {
 					if (*src++ == _cursorKeyColor)
-						*dest++ = 0;
-					else
-						dest++;
-				}
-				dest += _cursorTexture.w - _cursorTexture.actualWidth;
-			}
 		}
 	}
 }

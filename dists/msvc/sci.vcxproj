@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{2AE08C67-BF23-45D7-9414-854417D9975F}</ProjectGuid>
+		<ProjectGuid>{A35C67FB-A649-474F-A8B8-A6AF611CAFE9}</ProjectGuid>
 		<RootNamespace>sci</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -154,6 +154,7 @@
 		<ClCompile Include="..\..\engines\sci\engine\file.cpp" />
 		<ClCompile Include="..\..\engines\sci\engine\gc.cpp" />
 		<ClCompile Include="..\..\engines\sci\engine\guest_additions.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\sci\engine\kernel.cpp" />
 		<ClCompile Include="..\..\engines\sci\engine\kevent.cpp" />
 		<ClCompile Include="..\..\engines\sci\engine\kfile.cpp" />
@@ -226,6 +227,7 @@
 		<ClCompile Include="..\..\engines\sci\sound\drivers\fb01.cpp" />
 		<ClCompile Include="..\..\engines\sci\sound\drivers\fmtowns.cpp" />
 		<ClCompile Include="..\..\engines\sci\sound\drivers\midi.cpp" />
+(??)
 		<ClCompile Include="..\..\engines\sci\sound\drivers\pcjr.cpp" />
 		<ClCompile Include="..\..\engines\sci\sound\audio.cpp" />
 		<ClCompile Include="..\..\engines\sci\sound\audio32.cpp" />
@@ -249,6 +251,7 @@
 		<ClInclude Include="..\..\engines\sci\engine\file.h" />
 		<ClInclude Include="..\..\engines\sci\engine\gc.h" />
 		<ClInclude Include="..\..\engines\sci\engine\guest_additions.h" />
+(??)
 		<ClInclude Include="..\..\engines\sci\engine\kernel.h" />
 		<ClInclude Include="..\..\engines\sci\engine\kernel_tables.h" />
 		<ClInclude Include="..\..\engines\sci\engine\message.h" />

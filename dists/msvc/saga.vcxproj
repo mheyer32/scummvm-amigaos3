@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{A433401E-D5C2-4476-9A93-634A4776BEF5}</ProjectGuid>
+		<ProjectGuid>{8817083C-494B-4131-A73F-3B559797AF8C}</ProjectGuid>
 		<RootNamespace>saga</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

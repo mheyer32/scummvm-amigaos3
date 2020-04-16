@@ -83,6 +83,7 @@
 #include "common/events.h"
 #include "common/savefile.h"
 #include "common/system.h"
+#include "common/debug.h"
 #include "common/debug-channels.h"
 #include "common/translation.h"
 #include "gui/message.h"
@@ -111,9 +112,11 @@ BladeRunnerEngine::BladeRunnerEngine(OSystem *syst, const ADGameDescription *des
 
 	_subtitlesEnabled = false;
 
-	_sitcomMode       = false;
-	_shortyMode       = false;
-	_cutContent       = Common::String(desc->gameId).contains("bladerunner-final");
+	_sitcomMode                   = false;
+	_shortyMode                   = false;
+	_noDelayMillisFramelimiter    = false;
+	_framesPerSecondMax           = false;
+	_cutContent                   = Common::String(desc->gameId).contains("bladerunner-final");
 
 	_playerLosesControlCounter = 0;
 
@@ -325,7 +328,17 @@ Common::Error BladeRunnerEngine::run() {
 		return Common::Error(Common::kNoGameDataFoundError, missingFileStr);
 	}
 
-	_screenPixelFormat = g_system->getSupportedFormats().front();
+	Common::List<Graphics::PixelFormat> tmpSupportedFormatsList = g_system->getSupportedFormats();
+	if (!tmpSupportedFormatsList.empty()) {
+		_screenPixelFormat = tmpSupportedFormatsList.front();
+	} else {
+		// Workaround for reported issue whereby in the AndroidSDL port
+		// some devices would crash with a segmentation fault due to an empty supported formats list.
+		// TODO: A better fix for getSupportedFormats() - maybe figure why in only some device it might return an empty list
+		//
+		// Use this as a fallback format - Should be a format supported by Android port
+		_screenPixelFormat = Graphics::PixelFormat(2, 5, 5, 5, 1, 11, 6, 1, 0);
+	}
 	debug("Using pixel format: %s", _screenPixelFormat.toString().c_str());
 	initGraphics(640, 480, &_screenPixelFormat);
 
@@ -453,8 +466,24 @@ bool BladeRunnerEngine::checkFiles(Common::Array<Common::String> &missingFiles) 
 }
 
 bool BladeRunnerEngine::startup(bool hasSavegames) {
-	// These are static objects in original game
+		// Assign default values to the ScummVM configuration manager, in case settings are missing
+	ConfMan.registerDefault("subtitles", "true");
+	ConfMan.registerDefault("sfx_volume", 192);
+	ConfMan.registerDefault("music_volume", 192);
+	ConfMan.registerDefault("speech_volume", 192);
+	ConfMan.registerDefault("mute", "false");
+	ConfMan.registerDefault("speech_mute", "false");
+	ConfMan.registerDefault("sitcom", "false");
+	ConfMan.registerDefault("shorty", "false");
+	ConfMan.registerDefault("nodelaymillisfl", "false");
+	ConfMan.registerDefault("frames_per_secondfl", "false");
 
+	_sitcomMode                = ConfMan.getBool("sitcom");
+	_shortyMode                = ConfMan.getBool("shorty");
+	_noDelayMillisFramelimiter = ConfMan.getBool("nodelaymillisfl");
+	_framesPerSecondMax        = ConfMan.getBool("frames_per_secondfl");
+
+	// These are static objects in original game
 	_screenEffects = new ScreenEffects(this, 0x8000);
 
 	_endCredits = new EndCredits(this);
@@ -482,7 +511,8 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	_time = new Time(this);
 
-	_framelimiter = new Framelimiter(this);
+	debug("_framesPerSecondMax:: %s", _framesPerSecondMax? "true" : "false");
+	_framelimiter = new Framelimiter(this, _framesPerSecondMax? 120 : 60);
 
 	// Try to load the SUBTITLES.MIX first, before Startup.MIX
 	// allows overriding any identically named resources (such as the original font files and as a bonus also the TRE files for the UI and dialogue menu)
@@ -548,20 +578,9 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	_ambientSounds = new AmbientSounds(this);
 
-	// Assign default values to the ScummVM configuration manager, in case settings are missing
-	ConfMan.registerDefault("subtitles", "true");
-	ConfMan.registerDefault("sfx_volume", 192);
-	ConfMan.registerDefault("music_volume", 192);
-	ConfMan.registerDefault("speech_volume", 192);
-	ConfMan.registerDefault("mute", "false");
-	ConfMan.registerDefault("speech_mute", "false");
-
-	// get value from the ScummVM configuration manager
-	syncSoundSettings();
-
-	_sitcomMode = ConfMan.getBool("sitcom");
-	_shortyMode = ConfMan.getBool("shorty");
 	// BLADE.INI was read here, but it was replaced by ScummVM configuration
+	//
+	syncSoundSettings();
 
 	_chapters = new Chapters(this);
 	if (!_chapters)
@@ -626,7 +645,7 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 	_russianCP1251 = ((uint8)_textOptions->getText(0)[0]) == 209;
 
 	_dialogueMenu = new DialogueMenu(this);
-	if (!_dialogueMenu->loadText("DLGMENU"))
+	if (!_dialogueMenu->loadResources())
 		return false;
 
 	_suspectsDatabase = new SuspectsDatabase(this, _gameInfo->getSuspectCount());
@@ -641,11 +660,8 @@ bool BladeRunnerEngine::startup(bool hasSavegames) {
 
 	_mainFont = Font::load(this, "KIA6PT.FON", 1, false);
 
-	for (int i = 0; i != 43; ++i) {
-		Shape *shape = new Shape(this);
-		shape->open("SHAPES.SHP", i);
-		_shapes.push_back(shape);
-	}
+	_shapes = new Shapes(this);
+	_shapes->load("SHAPES.SHP");
 
 	_esper = new ESPER(this);
 
@@ -743,10 +759,8 @@ void BladeRunnerEngine::shutdown() {
 	delete _esper;
 	_esper = nullptr;
 
-	for (uint i = 0; i != _shapes.size(); ++i) {
-		delete _shapes[i];
-	}
-	_shapes.clear();
+	delete _shapes;
+	_shapes = nullptr;
 
 	delete _mainFont;
 	_mainFont = nullptr;
@@ -2029,7 +2043,12 @@ bool BladeRunnerEngine::saveGame(Common::WriteStream &stream, Graphics::Surface 
 	SaveFileWriteStream s(memoryStream);
 
 	thumbnail.convertToInPlace(gameDataPixelFormat());
-	s.write(thumbnail.getPixels(), SaveFileManager::kThumbnailSize);
+
+	uint16* thumbnailData = (uint16*)thumbnail.getPixels();
+	for (uint i = 0; i < SaveFileManager::kThumbnailSize / 2; ++i) {
+		s.writeUint16LE(thumbnailData[i]);
+	}
+
 	s.writeFloat(1.0f);
 	_settings->save(s);
 	_scene->save(s);
@@ -2112,8 +2131,9 @@ bool BladeRunnerEngine::loadGame(Common::SeekableReadStream &stream) {
 
 	_gameIsLoading = true;
 	_settings->setLoadingGame();
+
 	s.skip(SaveFileManager::kThumbnailSize); // skip the thumbnail
-	s.skip(4);// always float 1.0, but never used
+	s.skip(4);// always float 1.0, but never used, assuming it's the game version
 	_settings->load(s);
 	_scene->load(s);
 	_scene->_exits->load(s);

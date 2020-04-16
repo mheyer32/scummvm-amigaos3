@@ -501,7 +501,9 @@ void aiPlayerDraw(AIEntity *e, int mx, int my) {
 }
 
 void aiGemAttackInit(AIEntity *e) {
-	int xv[5] = {9, 0, 0, -1, 1}, yv[5] = {9, -1, 1, 0, 0};
+	static const int xv[5] = {9, 0, 0, -1, 1};
+	static const int yv[5] = {9, -1, 1, 0, 0};
+
 	e->moveSpeed = kPlayerMoveSpeed << 1;
 	g_hdb->_ai->setEntityGoal(e, e->tileX + xv[e->dir], e->tileY + yv[e->dir]);
 	e->state = STATE_MOVEDOWN;		// so it will draw & animate
@@ -1444,15 +1446,14 @@ void aiMagicEggInit2(AIEntity *e) {
 
 void aiMagicEggUse(AIEntity *e) {
 	if (!scumm_strnicmp(e->luaFuncAction, "ai_", 3) || !scumm_strnicmp(e->luaFuncAction, "item_", 5)) {
-		int	i = 0;
 		AIEntity *spawned = NULL;
-		while (aiEntList[i].type != END_AI_TYPES) {
+		for (int i = 0; aiEntList[i].type != END_AI_TYPES; ++i) {
 			if (!scumm_stricmp(aiEntList[i].luaName, e->luaFuncAction)) {
 				spawned = g_hdb->_ai->spawn(aiEntList[i].type, e->dir, e->tileX, e->tileY, NULL, NULL, NULL, DIR_NONE, e->level, 0, 0, 1);
 				break;
 			}
-			i++;
 		}
+
 		if (spawned) {
 			g_hdb->_ai->addAnimateTarget(e->tileX * kTileWidth,
 			e->tileY * kTileHeight, 0, 3, ANIM_NORMAL, false, false, GROUP_EXPLOSION_BOOM_SIT);

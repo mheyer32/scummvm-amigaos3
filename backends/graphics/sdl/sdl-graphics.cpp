@@ -25,6 +25,7 @@
 #include "backends/platform/sdl/sdl.h"
 #include "backends/events/sdl/sdl-events.h"
 #include "common/config-manager.h"
+#include "common/fs.h"
 #include "common/textconsole.h"
 #include "graphics/scaler/aspect.h"
 #ifdef USE_OSD
@@ -230,7 +231,7 @@ void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
 	}
 }
 
-void SdlGraphicsManager::handleResizeImpl(const int width, const int height) {
+void SdlGraphicsManager::handleResizeImpl(const int width, const int height, const int xdpi, const int ydpi) {
 	_eventSource->resetKeyboardEmulation(width - 1, height - 1);
 	_forceRedraw = true;
 }
@@ -279,19 +280,16 @@ void SdlGraphicsManager::saveScreenshot() {
 		screenshotsPath = sdl_g_system->getScreenshotsPath();
 
 	for (int n = 0;; n++) {
-		SDL_RWops *file;
-
 #ifdef USE_PNG
 		filename = Common::String::format("scummvm%05d.png", n);
 #else
 		filename = Common::String::format("scummvm%05d.bmp", n);
 #endif
 
-		file = SDL_RWFromFile((screenshotsPath + filename).c_str(), "r");
-
-		if (!file)
+		Common::FSNode file = Common::FSNode(screenshotsPath + filename);
+		if (!file.exists()) {
 			break;
-		SDL_RWclose(file);
+		}
 	}
 
 	if (saveScreenshot(screenshotsPath + filename)) {

@@ -6,6 +6,7 @@
 	<PropertyGroup>
 		<_PropertySheetDisplayName>ScummVM_Release64</_PropertySheetDisplayName>
 		<LinkIncremental>false</LinkIncremental>
+		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
 	<ItemDefinitionGroup>
 		<ClCompile>

@@ -284,6 +284,7 @@ void MohawkEngine_Myst::playFlybyMovie(MystStack stack) {
 
 	// Play Flyby Entry Movie on Masterpiece Edition.
 	const char *flyby = nullptr;
+	bool looping = true;
 
 	switch (stack) {
 		case kSeleniticStack:
@@ -295,8 +296,10 @@ void MohawkEngine_Myst::playFlybyMovie(MystStack stack) {
 			// Myst Flyby Movie not used in Original Masterpiece Edition Engine
 			// We play it when first arriving on Myst, and if the user has chosen so.
 		case kMystStack:
-			if (ConfMan.getBool("playmystflyby"))
+			if (ConfMan.getBool("playmystflyby")) {
 				flyby = "myst flyby";
+				looping = false;
+			}
 			break;
 		case kMechanicalStack:
 			flyby = "mech age flyby";
@@ -321,7 +324,36 @@ void MohawkEngine_Myst::playFlybyMovie(MystStack stack) {
 	}
 
 	video->center();
-	waitUntilMovieEnds(video);
+	playSkippableMovie(video, looping);
+}
+
+void MohawkEngine_Myst::playSkippableMovie(const VideoEntryPtr &video, bool looping) {
+	_waitingOnBlockingOperation = true;
+
+	video->setLooping(true);
+
+	_cursor->setCursor(_mainCursor);
+
+	while ((looping || !video->endOfVideo()) && !shouldQuit()) {
+		doFrame();
+
+		// Allow skipping
+		if (_escapePressed) {
+			_escapePressed = false;
+			break;
+		}
+
+		if (_mouseClicked) {
+			_mouseClicked = false;
+			break;
+		}
+	}
+
+	_cursor->setCursor(0);
+
+	// Ensure it's removed
+	_video->removeEntry(video);
+	_waitingOnBlockingOperation = false;
 }
 
 void MohawkEngine_Myst::waitUntilMovieEnds(const VideoEntryPtr &video) {
@@ -365,6 +397,9 @@ Common::Error MohawkEngine_Myst::run() {
 	if (!_mixer->isReady()) {
 		return Common::kAudioDeviceInitFailed;
 	}
+
+	ConfMan.registerDefault("zip_mode", false);
+	ConfMan.registerDefault("transition_mode", false);
 
 	_gfx = new MystGraphics(this);
 	_video = new VideoManager(this);
@@ -578,6 +613,14 @@ void MohawkEngine_Myst::runOptionsDialog() {
 		stack = _stack;
 	}
 
+	if (isGameStarted()) {
+		_optionsDialog->setZipMode(_gameState->_globals.zipMode);
+		_optionsDialog->setTransitions(_gameState->_globals.transitions);
+	} else {
+		_optionsDialog->setZipMode(ConfMan.getBool("zip_mode"));
+		_optionsDialog->setTransitions(ConfMan.getBool("transition_mode"));
+	}
+
 	_optionsDialog->setCanDropPage(actionsAllowed && _gameState->_globals.heldPage != kNoPage);
 	_optionsDialog->setCanShowMap(actionsAllowed && stack->getMap());
 	_optionsDialog->setCanReturnToMenu(actionsAllowed && stack->getStackId() != kDemoStack);
@@ -613,6 +656,16 @@ void MohawkEngine_Myst::runOptionsDialog() {
 			// because it unloads the previous age, removing data needed by the
 			// rest of the script. Instead we just quit without showing the credits.
 			quitGame();
+		}
+		break;
+	case MystOptionsDialog::kActionSaveSettings:
+		if (isGameStarted()) {
+			_gameState->_globals.zipMode = _optionsDialog->getZipMode();
+			_gameState->_globals.transitions = _optionsDialog->getTransitions();
+		} else {
+			ConfMan.setBool("zip_mode", _optionsDialog->getZipMode());
+			ConfMan.setBool("transition_mode", _optionsDialog->getTransitions());
+			ConfMan.flushToDisk();
 		}
 		break;
 	default:
@@ -1106,6 +1159,10 @@ void MohawkEngine_Myst::goToMainMenu() {
 	_card->enter();
 
 	_gfx->copyBackBufferToScreen(Common::Rect(544, 333));
+}
+
+bool MohawkEngine_Myst::isGameStarted() const {
+	return _prevStack || (_stack->getStackId() != kMenuStack);
 }
 
 void MohawkEngine_Myst::resumeFromMainMenu() {

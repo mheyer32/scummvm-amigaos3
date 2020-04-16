@@ -2,28 +2,28 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="demos">
-			<UniqueIdentifier>087F58A0-9023-4CB9-A0E9-D0665C389CA4</UniqueIdentifier>
+			<UniqueIdentifier>CC9F24AE-B4F4-44D2-B40C-BDC9395ED295</UniqueIdentifier>
 		</Filter>
 		<Filter Include="detection">
-			<UniqueIdentifier>3C27145C-186E-4B5D-B879-0A73B90FAF3E</UniqueIdentifier>
+			<UniqueIdentifier>46D66FFA-76A5-4545-A9EB-18C4BD8DF78A</UniqueIdentifier>
 		</Filter>
 		<Filter Include="minigames">
-			<UniqueIdentifier>07CAFAC3-5D3A-44F1-ABCB-5F4931793304</UniqueIdentifier>
+			<UniqueIdentifier>2E1C39E2-122E-4508-BB74-D174D2A50A1A</UniqueIdentifier>
 		</Filter>
 		<Filter Include="minigames\geisha">
-			<UniqueIdentifier>1993DDF7-456D-4236-9B3E-945675D387E8</UniqueIdentifier>
+			<UniqueIdentifier>7C7A15F3-212A-490C-9752-D0D5E0C8600F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="pregob">
-			<UniqueIdentifier>864FF423-9FBA-4861-9390-48E233492859</UniqueIdentifier>
+			<UniqueIdentifier>E599F1F7-C8A7-4004-9CD2-79EE78840AF5</UniqueIdentifier>
 		</Filter>
 		<Filter Include="pregob\onceupon">
-			<UniqueIdentifier>07BAE67B-C77A-4EB2-9A50-DDA6727B00B1</UniqueIdentifier>
+			<UniqueIdentifier>FE1FE921-4A24-4D62-B7FD-3858C79867AD</UniqueIdentifier>
 		</Filter>
 		<Filter Include="save">
-			<UniqueIdentifier>E457FD85-B2C7-4B56-8AC7-A0AAACD5E82A</UniqueIdentifier>
+			<UniqueIdentifier>3359A6FC-01A7-421E-BA7B-0DF30117EA01</UniqueIdentifier>
 		</Filter>
 		<Filter Include="sound">
-			<UniqueIdentifier>7FE82827-4317-4BC6-BEBC-CCA91409EE78</UniqueIdentifier>
+			<UniqueIdentifier>37D52282-F94F-4472-8E1E-CA17B732C5EA</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -255,6 +255,9 @@
 		<ClCompile Include="..\..\engines\gob\videoplayer.cpp" />
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="..\..\engines\gob\cheater.h" />
+		<ClInclude Include="..\..\engines\gob\cmpfile.h" />
+		<ClInclude Include="..\..\engines\gob\console.h" />
 		<ClInclude Include="..\..\engines\gob\demos\batplayer.h">
 			<Filter>demos</Filter>
 		</ClInclude>
@@ -441,9 +444,6 @@
 		<ClInclude Include="..\..\engines\gob\anifile.h" />
 		<ClInclude Include="..\..\engines\gob\aniobject.h" />
 		<ClInclude Include="..\..\engines\gob\backbuffer.h" />
-		<ClInclude Include="..\..\engines\gob\cheater.h" />
-		<ClInclude Include="..\..\engines\gob\cmpfile.h" />
-		<ClInclude Include="..\..\engines\gob\console.h" />
 		<ClInclude Include="..\..\engines\gob\databases.h" />
 		<ClInclude Include="..\..\engines\gob\dataio.h" />
 		<ClInclude Include="..\..\engines\gob\dbase.h" />

@@ -1,5 +1,7 @@
 package org.scummvm.scummvm;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -24,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.List;
 
 public class ScummVMActivity extends Activity {
 
@@ -31,6 +34,11 @@ public class ScummVMActivity extends Activity {
 	private static boolean _hoverAvailable;
 
 	private ClipboardManager _clipboard;
+
+	/**
+	* Id to identify an external storage read request.
+	*/
+	private static final int MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE = 100; // is an app-defined int constant. The callback method gets the result of the request.
 
 	static {
 		try {
@@ -52,6 +60,7 @@ public class ScummVMActivity extends Activity {
 		}
 	};
 
+
 	private class MyScummVM extends ScummVM {
 		public MyScummVM(SurfaceHolder holder) {
 			super(ScummVMActivity.this.getAssets(), holder);
@@ -67,9 +76,15 @@ public class ScummVMActivity extends Activity {
 		}
 
 		@Override
-		protected void displayMessageOnOSD(String msg) {
-			Log.i(LOG_TAG, "OSD: " + msg);
-			Toast.makeText(ScummVMActivity.this, msg, Toast.LENGTH_LONG).show();
+		protected void displayMessageOnOSD(final String msg) {
+			if (msg != null) {
+				Log.i(LOG_TAG, "MessageOnOSD: " + msg + " " + getCurrentCharset());
+				runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(ScummVMActivity.this, msg, Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
 		}
 
 		@Override
@@ -155,12 +170,25 @@ public class ScummVMActivity extends Activity {
 			return new String[0];
 		}
 
+		@Override
+		protected String[] getAllStorageLocations() {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+			    && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+			) {
+				requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE);
+			} else {
+				return _externalStorage.getAllStorageLocations().toArray(new String[0]);
+			}
+			return new String[0]; // an array of zero length
+		}
+
 	}
 
 	private MyScummVM _scummvm;
 	private ScummVMEvents _events;
 	private MouseHelper _mouseHelper;
 	private Thread _scummvm_thread;
+	private ExternalStorage _externalStorage;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -170,6 +198,12 @@ public class ScummVMActivity extends Activity {
 
 		setContentView(R.layout.main);
 		takeKeyEvents(true);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+			&& checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+		) {
+			requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE);
+		}
 
 		// This is a common enough error that we should warn about it
 		// explicitly.
@@ -203,7 +237,7 @@ public class ScummVMActivity extends Activity {
 		saveDir.mkdirs();
 		if (!saveDir.isDirectory()) {
 			// If it doesn't work, resort to the internal app path.
-			savePath = getDir("saves", MODE_WORLD_READABLE).getPath();
+			savePath = getDir("saves", Context.MODE_PRIVATE).getPath();
 		}
 
 		_clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
@@ -298,6 +332,28 @@ public class ScummVMActivity extends Activity {
 			_scummvm = null;
 		}
 	}
+
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		switch (requestCode) {
+		case MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE:
+			// If request is cancelled, the result arrays are empty.
+			if (grantResults.length > 0
+			   && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+				// permission was granted
+				Log.i(ScummVM.LOG_TAG, "Read External Storage permission was granted at Runtime");
+			} else {
+				// permission denied! We won't be able to make use of functionality depending on this permission.
+				Toast.makeText(this, "Until permission is granted, some storage locations may be inaccessible!", Toast.LENGTH_SHORT)
+				              .show();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
 
 	@Override
 	public boolean onTrackballEvent(MotionEvent e) {

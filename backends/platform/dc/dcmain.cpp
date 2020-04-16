@@ -42,7 +42,7 @@ const char *gGameName;
 OSystem_Dreamcast::OSystem_Dreamcast()
   : _devpoll(0), screen(NULL), mouse(NULL), overlay(NULL), _softkbd(this),
     _ms_buf(NULL), _mixer(NULL),
-    _current_shake_pos(0), _aspect_stretch(false), _softkbd_on(false),
+    _current_shake_x_pos(0), _current_shake_y_pos(0), _aspect_stretch(false), _softkbd_on(false),
     _softkbd_motion(0), _enable_cursor_palette(false), _screenFormat(0)
 {
   memset(screen_tx, 0, sizeof(screen_tx));
@@ -58,7 +58,7 @@ void OSystem_Dreamcast::initBackend()
   _timerManager = new DefaultTimerManager();
 
   uint sampleRate = initSound();
-  _mixer = new Audio::MixerImpl(this, sampleRate);
+  _mixer = new Audio::MixerImpl(sampleRate);
   _mixer->setReady(true);
 
   _audiocdManager = new DCCDManager();

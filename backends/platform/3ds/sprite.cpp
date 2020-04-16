@@ -21,19 +21,8 @@
  */
 
 #include "backends/platform/3ds/sprite.h"
+#include "common/algorithm.h"
 #include "common/util.h"
-
-static uint nextHigher2(uint v) {
-	if (v == 0)
-		return 1;
-	v--;
-	v |= v >> 1;
-	v |= v >> 2;
-	v |= v >> 4;
-	v |= v >> 8;
-	v |= v >> 16;
-	return ++v;
-}
 
 Sprite::Sprite()
 	: dirtyPixels(true)
@@ -42,6 +31,8 @@ Sprite::Sprite()
 	, actualHeight(0)
 	, posX(0)
 	, posY(0)
+	, offsetX(0)
+	, offsetY(0)
 	, scaleX(1.f)
 	, scaleY(1.f)
 {
@@ -60,8 +51,8 @@ void Sprite::create(uint16 width, uint16 height, const Graphics::PixelFormat &f)
 	actualWidth = width;
 	actualHeight = height;
 	format = f;
-	w = MAX(nextHigher2(width), 64u);
-	h = MAX(nextHigher2(height), 64u);
+	w = MAX<uint16>(Common::nextHigher2(width), 64u);
+	h = MAX<uint16>(Common::nextHigher2(height), 64u);
 	pitch = w * format.bytesPerPixel;
 	dirtyPixels = true;
 
@@ -85,7 +76,6 @@ void Sprite::create(uint16 width, uint16 height, const Graphics::PixelFormat &f)
 	memcpy(vertices, tmp, sizeof(vertex) * 4);
 }
 
-
 void Sprite::free() {
 	linearFree(vertices);
 	linearFree(pixels);
@@ -100,13 +90,15 @@ void Sprite::convertToInPlace(const Graphics::PixelFormat &dstFormat, const byte
 	//
 }
 
-void Sprite::render() {
-	if (dirtyPixels) {
+void Sprite::transfer() {
+	if (pixels && dirtyPixels) {
 		dirtyPixels = false;
 		GSPGPU_FlushDataCache(pixels, w * h * format.bytesPerPixel);
 		C3D_SyncDisplayTransfer((u32*)pixels, GX_BUFFER_DIM(w, h), (u32*)texture.data, GX_BUFFER_DIM(w, h), TEXTURE_TRANSFER_FLAGS);
-// 		gspWaitForPPF();
 	}
+}
+
+void Sprite::render() {
 	C3D_TexBind(0, &texture);
 
 	C3D_BufInfo *bufInfo = C3D_GetBufInfo();
@@ -121,14 +113,24 @@ void Sprite::clear(uint32 color) {
 }
 
 void Sprite::setScale (float x, float y) {
-	scaleX = x;
-	scaleY = y;
-	dirtyMatrix = true;
+	if (x != scaleX || y != scaleY) {
+		scaleX = x;
+		scaleY = y;
+		dirtyMatrix = true;
+	}
 }
 
 void Sprite::setPosition(int x, int y) {
-	posX = x;
-	posY = y;
+	if (x != posX || y != posY) {
+		posX = x;
+		posY = y;
+		dirtyMatrix = true;
+	}
+}
+
+void Sprite::setOffset(uint16 x, uint16 y) {
+	offsetX = x;
+	offsetY = y;
 	dirtyMatrix = true;
 }
 
@@ -137,7 +139,7 @@ C3D_Mtx* Sprite::getMatrix() {
 		dirtyMatrix = false;
 		Mtx_Identity(&modelview);
 		Mtx_Scale(&modelview, scaleX, scaleY, 1.f);
-		Mtx_Translate(&modelview, posX, posY, 0, true);
+		Mtx_Translate(&modelview, posX - offsetX, posY - offsetY, 0, true);
 	}
 	return &modelview;
 }

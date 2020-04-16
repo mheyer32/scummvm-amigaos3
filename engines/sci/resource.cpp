@@ -481,7 +481,7 @@ void MacResourceForkResourceSource::decompressResource(Common::SeekableReadStrea
 	bool canBeCompressed = !(g_sci && g_sci->getGameId() == GID_KQ6) && isCompressableResource(resource->_id.getType());
 	uint32 uncompressedSize = 0;
 
-#ifdef ENABLE_SCI32_MAC
+#ifdef ENABLE_SCI32
 	// GK2 Mac is crazy. In its Patches resource fork, picture 2315 is not
 	// compressed and it is hardcoded in the executable to say that it's
 	// not compressed. Why didn't they just add four zeroes to the end of
@@ -640,7 +640,8 @@ int ResourceManager::addAppropriateSources() {
 	} else if (Common::MacResManager::exists("Data1")) {
 		// Mac SCI1.1+ file naming scheme
 		Common::StringArray files;
-		Common::MacResManager::listFiles(files, "Data?");
+		Common::MacResManager::listFiles(files, "Data#");
+		Common::MacResManager::listFiles(files, "Data##");
 
 		for (Common::StringArray::const_iterator x = files.begin(); x != files.end(); ++x) {
 			addSource(new MacResourceForkResourceSource(*x, atoi(x->c_str() + 4)));
@@ -990,6 +991,11 @@ void ResourceManager::init() {
 	if ((_mapVersion == kResVersionUnknown) && (_volVersion != kResVersionUnknown)) {
 		warning("Map version not detected, but volume version has been detected. Setting map version to volume version");
 		_mapVersion = _volVersion;
+	}
+
+	if ((_volVersion == kResVersionSci3) && (_mapVersion < kResVersionSci2)) {
+		warning("Detected volume version is too high for detected map version. Setting volume version to map version");
+		_volVersion = _mapVersion;
 	}
 
 	debugC(1, kDebugLevelResMan, "resMan: Detected resource map version %d: %s", _mapVersion, versionDescription(_mapVersion));

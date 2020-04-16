@@ -278,7 +278,7 @@ void GameManager::processInput(Common::KeyState &state) {
 		_vm->setTextSpeed();
 		break;
 	case Common::KEYCODE_F5:
-		// load/save
+		_vm->openMainMenuDialog();
 		break;
 	case Common::KEYCODE_x:
 		if (state.flags & Common::KBD_ALT) {
@@ -804,9 +804,9 @@ void GameManager::saveTime() {
 
 void GameManager::screenShake() {
 	for (int i = 0; i < 12; ++i) {
-		_vm->_system->setShakePos(8);
+		_vm->_system->setShakePos(0, 8);
 		wait(1);
-		_vm->_system->setShakePos(0);
+		_vm->_system->setShakePos(0, 0);
 		wait(1);
 	}
 }

@@ -46,14 +46,18 @@ public:
 	void create(uint16 width, uint16 height, const Graphics::PixelFormat &format);
 	void free();
 	void convertToInPlace(const Graphics::PixelFormat &dstFormat, const byte *palette = 0);
+	void transfer();
 	void render();
 	void clear(uint32 color = 0);
 	void markDirty(){ dirtyPixels = true; }
 	
 	void setPosition(int x, int y);
+	void setOffset(uint16 x, uint16 y);
 	void setScale(float x, float y);
-	float getScaleX(){ return scaleX; }
-	float getScaleY(){ return scaleY; }
+	float getScaleX() const { return scaleX; }
+	float getScaleY() const { return scaleY; }
+	int getPosX() const { return posX; }
+	int getPosY() const { return posY; }
 	C3D_Mtx* getMatrix();
 	
 	uint16 actualWidth;
@@ -67,6 +71,8 @@ private:
 	vertex* vertices;
 	int posX;
 	int posY;
+	uint16 offsetX;
+	uint16 offsetY;
 	float scaleX;
 	float scaleY;
 };

@@ -46,11 +46,12 @@
 #include "common/error.h"
 #include "common/textconsole.h"
 #include "common/translation.h"
+#include "common/encoding.h"
 #include "engines/engine.h"
 
 #include "backends/platform/android/android.h"
 #include "backends/platform/android/asset-archive.h"
-#include "backends/platform/android/jni.h"
+#include "backends/platform/android/jni-android.h"
 
 __attribute__ ((visibility("default")))
 jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
@@ -86,6 +87,7 @@ jmethodID JNI::_MID_setWindowCaption = 0;
 jmethodID JNI::_MID_showVirtualKeyboard = 0;
 jmethodID JNI::_MID_showKeyboardControl = 0;
 jmethodID JNI::_MID_getSysArchives = 0;
+jmethodID JNI::_MID_getAllStorageLocations = 0;
 jmethodID JNI::_MID_initSurface = 0;
 jmethodID JNI::_MID_deinitSurface = 0;
 
@@ -224,8 +226,23 @@ void JNI::getDPI(float *values) {
 }
 
 void JNI::displayMessageOnOSD(const char *msg) {
+	// called from common/osd_message_queue, method: OSDMessageQueue::pollEvent()
 	JNIEnv *env = JNI::getEnv();
-	jstring java_msg = env->NewStringUTF(msg);
+	Common::String fromEncoding = "ISO-8859-1";
+#ifdef USE_TRANSLATION
+	if (TransMan.getCurrentCharset() != "ASCII") {
+		fromEncoding = TransMan.getCurrentCharset();
+	}
+#endif
+	Common::Encoding converter("UTF-8", fromEncoding.c_str());
+
+	const char *utf8Msg = converter.convert(msg, converter.stringLength(msg, fromEncoding) );
+	if (utf8Msg == nullptr) {
+		// Show a placeholder indicative of the translation error instead of silent failing
+		utf8Msg = "?";
+		LOGE("Failed to convert message to UTF-8 for OSD!");
+	}
+	jstring java_msg = env->NewStringUTF(utf8Msg);
 
 	env->CallVoidMethod(_jobj, _MID_displayMessageOnOSD, java_msg);
 
@@ -531,6 +548,7 @@ void JNI::create(JNIEnv *env, jobject self, jobject asset_manager,
 	FIND_METHOD(, showVirtualKeyboard, "(Z)V");
 	FIND_METHOD(, showKeyboardControl, "(Z)V");
 	FIND_METHOD(, getSysArchives, "()[Ljava/lang/String;");
+	FIND_METHOD(, getAllStorageLocations, "()[Ljava/lang/String;");
 	FIND_METHOD(, initSurface, "()Ljavax/microedition/khronos/egl/EGLSurface;");
 	FIND_METHOD(, deinitSurface, "()V");
 
@@ -562,9 +580,13 @@ void JNI::destroy(JNIEnv *env, jobject self) {
 	delete _asset_archive;
 	_asset_archive = 0;
 
-	delete _system;
+	// _system is a pointer of OSystem_Android <--- ModularBackend <--- BaseBacked <--- Common::OSystem
+	// It's better to call destroy() rather than just delete here
+	// to avoid mutex issues if a Common::String is used after this point
+	_system->destroy();
+
 	g_system = 0;
-	_system = 0;
+	_system  = 0;
 
 	sem_destroy(&pause_sem);
 
@@ -687,10 +709,45 @@ void JNI::setPause(JNIEnv *env, jobject self, jboolean value) {
 jstring JNI::getCurrentCharset(JNIEnv *env, jobject self) {
 #ifdef USE_TRANSLATION
 	if (TransMan.getCurrentCharset() != "ASCII") {
+//		LOGD("getCurrentCharset: %s", TransMan.getCurrentCharset().c_str());
 		return env->NewStringUTF(TransMan.getCurrentCharset().c_str());
 	}
 #endif
 	return env->NewStringUTF("ISO-8859-1");
 }
+
+Common::Array<Common::String> JNI::getAllStorageLocations() {
+	Common::Array<Common::String> *res = new Common::Array<Common::String>();
+
+	JNIEnv *env = JNI::getEnv();
+
+	jobjectArray array =
+		(jobjectArray)env->CallObjectMethod(_jobj, _MID_getAllStorageLocations);
+
+	if (env->ExceptionCheck()) {
+		LOGE("Error finding system archive path");
+
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+
+		return *res;
+	}
+
+	jsize size = env->GetArrayLength(array);
+	for (jsize i = 0; i < size; ++i) {
+		jstring path_obj = (jstring)env->GetObjectArrayElement(array, i);
+		const char *path = env->GetStringUTFChars(path_obj, 0);
+
+		if (path != 0) {
+			res->push_back(path);
+			env->ReleaseStringUTFChars(path_obj, path);
+		}
+
+		env->DeleteLocalRef(path_obj);
+	}
+
+	return *res;
+}
+
 
 #endif

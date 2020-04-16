@@ -238,11 +238,11 @@ void OSystem_PSP::updateScreen() {
 	_pendingUpdate = !_displayManager.renderAll();	// if we didn't update, we have a pending update
 }
 
-void OSystem_PSP::setShakePos(int shakeOffset) {
+void OSystem_PSP::setShakePos(int shakeXOffset, int shakeYOffset) {
 	DEBUG_ENTER_FUNC();
 	_displayManager.waitUntilRenderFinished();
 	_pendingUpdate = false;
-	_screen.setShakePos(shakeOffset);
+	_screen.setShakePos(shakeXOffset, shakeYOffset);
 }
 
 void OSystem_PSP::showOverlay() {
@@ -419,7 +419,7 @@ void OSystem_PSP::setupMixer(void) {
 		return;
 	}
 	samplesPerSec = _audio.getFrequency();	// may have been changed by audio system
-	_mixer = new Audio::MixerImpl(this, samplesPerSec);
+	_mixer = new Audio::MixerImpl(samplesPerSec);
 	assert(_mixer);
 	_mixer->setReady(true);
 	_audio.unpause();

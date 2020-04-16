@@ -20,23 +20,18 @@
  *
  */
 
-#include "common/scummsys.h"
+#if defined(DYNAMIC_MODULES) && defined(__3DS__)
 
-#if defined(ANDROIDSDL)
+#ifndef BACKENDS_PLUGINS_3DS_PROVIDER_H
+#define BACKENDS_PLUGINS_3DS_PROVIDER_H
 
-#include "backends/graphics/androidsdl/androidsdl-graphics.h"
-#include "backends/events/androidsdl/androidsdl-events.h"
-#include "common/mutex.h"
-#include "common/textconsole.h"
-#include "graphics/font.h"
-#include "graphics/fontman.h"
-#include "graphics/scaler.h"
-#include "graphics/scaler/aspect.h"
-#include "graphics/scaler/downscaler.h"
-#include "graphics/surface.h"
+#include "backends/plugins/elf/elf-provider.h"
 
-AndroidSdlGraphicsManager::AndroidSdlGraphicsManager(SdlEventSource *sdlEventSource, SdlWindow *window)
- : SurfaceSdlGraphicsManager(sdlEventSource, window) {
-}
+class StatusMessageDialog : public GUI::MessageDialog {
+public:
+	Plugin *createPlugin(const Common::FSNode &node) const;
+};
 
-#endif
+#endif // BACKENDS_PLUGINS_3DS_PROVIDER_H
+
+#endif // defined(DYNAMIC_MODULES) && defined(__3DS__)

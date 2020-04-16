@@ -20,20 +20,29 @@
  *
  */
 
-/*
- * OpenPandora: Options, custom code and hardware stuff.
- *
- */
+#ifndef _PORTDEFS_H_
+#define _PORTDEFS_H_
 
-#ifndef OP_OPTIONS_H
-#define OP_OPTIONS_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <assert.h>
+#include <new>
 
-namespace OP {
+#define _USE_MATH_DEFINES
+#include <math.h>
 
-extern int tapmodeLevel;
+// This is defined in snprintf.c
+#ifdef __cplusplus
+extern "C" {
+#endif
+int rpl_vsnprintf(char *text, size_t maxlen, const char *fmt, va_list ap);
+#ifdef __cplusplus
+}
+#endif
 
-extern void ToggleTapMode();
+#define vsnprintf rpl_vsnprintf
 
-} /* namespace OP */
-
-#endif //OP_OPTIONS_H
+#endif // _PORTDEFS_H_

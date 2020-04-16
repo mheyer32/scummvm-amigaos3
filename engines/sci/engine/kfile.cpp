@@ -570,7 +570,7 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 	if (handle >= kVirtualFileHandleStart) {
 #ifdef ENABLE_SCI32
 		// it's a virtual handle? ignore it
-		return getSciVersion() >= SCI_VERSION_2 ? TRUE_REG : SIGNAL_REG;
+		return TRUE_REG;
 #else
 		return SIGNAL_REG;
 #endif
@@ -582,7 +582,7 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 		if (getSciVersion() <= SCI_VERSION_0_LATE)
 			return s->r_acc;	// SCI0 semantics: no value returned
 #ifdef ENABLE_SCI32
-		return getSciVersion() >= SCI_VERSION_2 ? TRUE_REG : SIGNAL_REG;
+		return TRUE_REG;
 #else
 		return SIGNAL_REG;
 #endif
@@ -597,18 +597,15 @@ reg_t kFileIOReadRaw(EngineState *s, int argc, reg_t *argv) {
 	uint16 handle = argv[0].toUint16();
 	uint16 size = argv[2].toUint16();
 	int bytesRead = 0;
-	char *buf = new char[size];
+	byte *buf = new byte[size];
 	debugC(kDebugLevelFile, "kFileIO(readRaw): %d, %d", handle, size);
 
 	FileHandle *f = getFileFromHandle(s, handle);
 	if (f)
 		bytesRead = f->_in->read(buf, size);
 
-	// TODO: What happens if less bytes are read than what has
-	// been requested? (i.e. if bytesRead is non-zero, but still
-	// less than size)
 	if (bytesRead > 0)
-		s->_segMan->memcpy(argv[1], (const byte*)buf, size);
+		s->_segMan->memcpy(argv[1], buf, bytesRead);
 
 	delete[] buf;
 	return make_reg(0, bytesRead);
@@ -639,19 +636,10 @@ reg_t kFileIOWriteRaw(EngineState *s, int argc, reg_t *argv) {
 
 	delete[] buf;
 
-#ifdef ENABLE_SCI32
-	if (getSciVersion() >= SCI_VERSION_2) {
-		if (!success) {
-			return SIGNAL_REG;
-		}
-
+	if (success) {
 		return make_reg(0, bytesWritten);
 	}
-#endif
-
-	if (success)
-		return NULL_REG;
-	return make_reg(0, 6); // DOS - invalid handle
+	return getSciVersion() >= SCI_VERSION_2 ? SIGNAL_REG : NULL_REG;
 }
 
 reg_t kFileIOUnlink(EngineState *s, int argc, reg_t *argv) {
@@ -705,15 +693,7 @@ reg_t kFileIOUnlink(EngineState *s, int argc, reg_t *argv) {
 
 	debugC(kDebugLevelFile, "kFileIO(unlink): %s", name.c_str());
 
-#ifdef ENABLE_SCI32
-	if (getSciVersion() >= SCI_VERSION_2) {
-		return make_reg(0, result);
-	}
-#endif
-
-	if (result)
-		return NULL_REG;
-	return make_reg(0, 2); // DOS - file not found error code
+	return make_reg(0, result);
 }
 
 reg_t kFileIOReadString(EngineState *s, int argc, reg_t *argv) {
@@ -768,15 +748,11 @@ reg_t kFileIOWriteString(EngineState *s, int argc, reg_t *argv) {
 	FileHandle *f = getFileFromHandle(s, handle);
 
 	if (f && f->_out) {
-		f->_out->write(str.c_str(), str.size());
-		if (getSciVersion() <= SCI_VERSION_0_LATE)
-			return s->r_acc;	// SCI0 semantics: no value returned
-		return NULL_REG;
+		uint32 bytesWritten = f->_out->write(str.c_str(), str.size());
+		return make_reg(0, bytesWritten);
 	}
 
-	if (getSciVersion() <= SCI_VERSION_0_LATE)
-		return s->r_acc;	// SCI0 semantics: no value returned
-	return make_reg(0, 6); // DOS - invalid handle
+	return getSciVersion() >= SCI_VERSION_2 ? SIGNAL_REG : NULL_REG;
 }
 
 reg_t kFileIOSeek(EngineState *s, int argc, reg_t *argv) {
@@ -937,9 +913,32 @@ reg_t kFileIORename(EngineState *s, int argc, reg_t *argv) {
 	oldName = g_sci->wrapFilename(oldName);
 	newName = g_sci->wrapFilename(newName);
 
+	// Phantasmagoria 1 files are small and interoperable with the
+	//  original interpreter so they aren't compressed, see file_open().
+	bool isCompressed = (g_sci->getGameId() != GID_PHANTASMAGORIA);
+
 	// SCI1.1 returns 0 on success and a DOS error code on fail. SCI32
 	// returns -1 on fail. We just return -1 for all versions.
-	if (g_sci->getSaveFileManager()->renameSavefile(oldName, newName))
+	if (g_sci->getSaveFileManager()->renameSavefile(oldName, newName, isCompressed))
+		return NULL_REG;
+	else
+		return SIGNAL_REG;
+}
+
+reg_t kFileIOCopy(EngineState *s, int argc, reg_t *argv) {
+	Common::String oldName = s->_segMan->getString(argv[0]);
+	Common::String newName = s->_segMan->getString(argv[1]);
+
+	oldName = g_sci->wrapFilename(oldName);
+	newName = g_sci->wrapFilename(newName);
+
+	// Phantasmagoria 1 files are small and interoperable with the
+	//  original interpreter so they aren't compressed, see file_open().
+	bool isCompressed = (g_sci->getGameId() != GID_PHANTASMAGORIA);
+
+	// SCI1.1 returns 0 on success and a DOS error code on fail. SCI32
+	// returns -1 on fail. We just return -1 for all versions.
+	if (g_sci->getSaveFileManager()->copySavefile(oldName, newName, isCompressed))
 		return NULL_REG;
 	else
 		return SIGNAL_REG;
@@ -956,9 +955,11 @@ reg_t kFileIOReadByte(EngineState *s, int argc, reg_t *argv) {
 
 reg_t kFileIOWriteByte(EngineState *s, int argc, reg_t *argv) {
 	FileHandle *f = getFileFromHandle(s, argv[0].toUint16());
-	if (f)
+	if (f) {
 		f->_out->writeByte(argv[1].toUint16() & 0xff);
-	return s->r_acc;
+		return make_reg(0, 1); // bytesWritten
+	}
+	return SIGNAL_REG;
 }
 
 reg_t kFileIOReadWord(EngineState *s, int argc, reg_t *argv) {
@@ -985,12 +986,12 @@ reg_t kFileIOWriteWord(EngineState *s, int argc, reg_t *argv) {
 	const uint16 handle = argv[0].toUint16();
 
 	if (handle == kVirtualFileHandleSci32Save) {
-		return s->r_acc;
+		return make_reg(0, 2); // bytesWritten
 	}
 
 	FileHandle *f = getFileFromHandle(s, handle);
 	if (!f) {
-		return s->r_acc;
+		return SIGNAL_REG;
 	}
 
 	if (f->_name == "-scummvm-save-") {
@@ -1003,7 +1004,7 @@ reg_t kFileIOWriteWord(EngineState *s, int argc, reg_t *argv) {
 		f->_out->writeUint16LE(argv[1].toUint16());
 	}
 
-	return s->r_acc;
+	return make_reg(0, 2); // bytesWritten
 }
 
 reg_t kFileIOGetCWD(EngineState *s, int argc, reg_t *argv) {

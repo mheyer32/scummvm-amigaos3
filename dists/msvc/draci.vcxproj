@@ -31,11 +31,11 @@
 		</ProjectConfiguration>
 		<ProjectConfiguration Include="Release|x64">
 			<Configuration>Release</Configuration>
-			<Platform>x64</Platform>
+			<Platform>x64</Platform>s
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{DDBC658F-D68E-4129-9F07-A50295B2E45D}</ProjectGuid>
+		<ProjectGuid>{07183530-D301-48F2-B185-CD536328A8E7}</ProjectGuid>
 		<RootNamespace>draci</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

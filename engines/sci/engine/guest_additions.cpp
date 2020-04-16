@@ -114,6 +114,9 @@ bool GuestAdditions::shouldSyncAudioToScummVM() const {
 			return true;
 		} else if (gameId == GID_GK2 && objName == "soundSlider") {
 			return true;
+		} else if (gameId == GID_HOYLE5 && objName == "volumeSliderF") {
+			// Hoyle5 has a second control panel with a different slider name
+			return true;
 		} else if (gameId == GID_KQ7 && (objName == "volumeUp" ||
 										 objName == "volumeDown")) {
 			return true;
@@ -165,7 +168,7 @@ void GuestAdditions::writeVarHook(const int type, const int index, const reg_t v
 				syncGK1StartupVolumeFromScummVM(index, value);
 			} else if (g_sci->getGameId() == GID_HOYLE5 && index == kGlobalVarHoyle5MusicVolume) {
 				syncHoyle5VolumeFromScummVM((ConfMan.getInt("music_volume") + 1) * kHoyle5VolumeMax / Audio::Mixer::kMaxMixerVolume);
-			} else if (g_sci->getGameId() == GID_HOYLE5 && index == kkGlobalVarHoyle5ResponseTime && value.getOffset() == 0) {
+			} else if (g_sci->getGameId() == GID_HOYLE5 && index == kGlobalVarHoyle5ResponseTime && value.getOffset() == 0) {
 				// WORKAROUND: Global 899 contains the response time value,
 				// which may have values between 1 and 15. There is a script
 				// bug when loading values from game.opt, where this variable
@@ -744,6 +747,14 @@ bool GuestAdditions::restoreFromLauncher() const {
 		// or, when trying to load an invalid save game, makes the dialog
 		// telling the user that the game is invalid impossible to read
 		if (strcmp(_segMan->getObjectName(_state->variables[VAR_GLOBAL][kGlobalVarCurrentRoom]), "speedRoom") == 0) {
+			return false;
+		}
+
+		// Delayed restore should not happen in LSL6 hires until the room number is set.
+		//  LSL6:restore tests room numbers to determine if restoring is allowed, but the
+		//  Mac version adds a call to kGetEvent in LSL6:init before the initial call to
+		//  LSL6:newRoom. If the room number isn't set yet then restoring isn't allowed.
+		if (g_sci->getGameId() == GID_LSL6HIRES && _state->variables[VAR_GLOBAL][kGlobalVarCurrentRoomNo] == NULL_REG) {
 			return false;
 		}
 
@@ -1411,17 +1422,22 @@ void GuestAdditions::syncGK2UI() const {
 }
 
 void GuestAdditions::syncHoyle5UI(const int16 musicVolume) const {
-	const reg_t sliderId = _segMan->findObjectByName("volumeSlider");
-	if (!sliderId.isNull()) {
-		const int16 yPosition = 167 - musicVolume * 145 / 10;
-		writeSelectorValue(_segMan, sliderId, SELECTOR(y), yPosition);
+	// Hoyle5 has two control panels with different slider names
+	const reg_t sliders[] = { _segMan->findObjectByName("volumeSlider"),
+							  _segMan->findObjectByName("volumeSliderF") };
+	for (int i = 0; i < ARRAYSIZE(sliders); ++i) {
+		const reg_t sliderId = sliders[i];
+		if (!sliderId.isNull()) {
+			const int16 yPosition = 167 - musicVolume * 145 / 10;
+			writeSelectorValue(_segMan, sliderId, SELECTOR(y), yPosition);
 
-		// There does not seem to be any good way to learn whether the
-		// volume slider is visible (and thus eligible for
-		// kUpdateScreenItem)
-		const reg_t planeId = readSelector(_segMan, sliderId, SELECTOR(plane));
-		if (g_sci->_gfxFrameout->getPlanes().findByObject(planeId) != nullptr) {
-			g_sci->_gfxFrameout->kernelUpdateScreenItem(sliderId);
+			// There does not seem to be any good way to learn whether the
+			// volume slider is visible (and thus eligible for
+			// kUpdateScreenItem)
+			const reg_t planeId = readSelector(_segMan, sliderId, SELECTOR(plane));
+			if (g_sci->_gfxFrameout->getPlanes().findByObject(planeId) != nullptr) {
+				g_sci->_gfxFrameout->kernelUpdateScreenItem(sliderId);
+			}
 		}
 	}
 }

@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{402F9F1C-290E-4DD8-9590-D5341832D09F}</ProjectGuid>
+		<ProjectGuid>{F62FEB2C-6667-498C-BD4D-BB5E852943F6}</ProjectGuid>
 		<RootNamespace>sword25</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -160,38 +160,6 @@
 		<ClCompile Include="..\..\engines\sword25\script\luascript.cpp" />
 		<ClCompile Include="..\..\engines\sword25\sfx\soundengine.cpp" />
 		<ClCompile Include="..\..\engines\sword25\sfx\soundengine_script.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lapi.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lauxlib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lbaselib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lcode.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ldblib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ldebug.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ldo.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lfunc.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lgc.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\linit.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\liolib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\llex.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lmathlib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lmem.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\loadlib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lobject.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lopcodes.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\loslib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lparser.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lstate.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lstring.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lstrlib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ltable.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ltablib.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\ltm.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lvm.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\lzio.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua\scummvm_file.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\double_serialization.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua_persist.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua_persistence_util.cpp" />
-		<ClCompile Include="..\..\engines\sword25\util\lua_unpersist.cpp" />
 		<ClCompile Include="..\..\engines\sword25\console.cpp" />
 		<ClCompile Include="..\..\engines\sword25\detection.cpp" />
 		<ClCompile Include="..\..\engines\sword25\sword25.cpp" />
@@ -252,32 +220,6 @@
 		<ClInclude Include="..\..\engines\sword25\script\luascript.h" />
 		<ClInclude Include="..\..\engines\sword25\script\script.h" />
 		<ClInclude Include="..\..\engines\sword25\sfx\soundengine.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lapi.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lauxlib.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lcode.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\ldebug.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\ldo.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lfunc.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lgc.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\llex.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\llimits.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lmem.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lobject.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lopcodes.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lparser.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lstate.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lstring.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\ltable.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\ltm.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lua.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\luaconf.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lualib.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lvm.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\lzio.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua\scummvm_file.h" />
-		<ClInclude Include="..\..\engines\sword25\util\double_serialization.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua_persistence.h" />
-		<ClInclude Include="..\..\engines\sword25\util\lua_persistence_util.h" />
 		<ClInclude Include="..\..\engines\sword25\console.h" />
 		<ClInclude Include="..\..\engines\sword25\detection_tables.h" />
 		<ClInclude Include="..\..\engines\sword25\sword25.h" />

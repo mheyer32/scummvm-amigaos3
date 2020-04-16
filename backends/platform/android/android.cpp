@@ -55,12 +55,13 @@
 #include "common/events.h"
 #include "common/config-manager.h"
 
+#include "backends/audiocd/default/default-audiocd.h"
 #include "backends/keymapper/keymapper.h"
 #include "backends/mutex/pthread/pthread-mutex.h"
 #include "backends/saves/default/default-saves.h"
 #include "backends/timer/default/default-timer.h"
 
-#include "backends/platform/android/jni.h"
+#include "backends/platform/android/jni-android.h"
 #include "backends/platform/android/android.h"
 #include "backends/platform/android/graphics.h"
 
@@ -101,7 +102,8 @@ OSystem_Android::OSystem_Android(int audio_sample_rate, int audio_buffer_size) :
 	_dpad_scale(4),
 	_fingersDown(0),
 	_trackball_scale(2),
-	_joystick_scale(10) {
+	_joystick_scale(10),
+	_swap_menu_and_back(false) {
 
 	_fsFactory = new POSIXFilesystemFactory();
 
@@ -117,7 +119,18 @@ OSystem_Android::OSystem_Android(int audio_sample_rate, int audio_buffer_size) :
 
 OSystem_Android::~OSystem_Android() {
 	ENTER();
-
+	// _audiocdManager should be deleted before _mixer!
+	// It is normally deleted in proper order in the OSystem destructor.
+	// However, currently _mixer is deleted here (OSystem_Android)
+	// and in the ModularBackend destructor,
+	// hence unless _audiocdManager is deleted here first,
+	// it will cause a crash for the Android app (arm64 v8a) upon exit
+	// -- when the audio cd manager was actually used eg. audio cd test of the testbed
+	// FIXME: A more proper fix would probably be to:
+	//        - delete _mixer in the base class (OSystem) after _audiocdManager (this is already the current behavior)
+	//	      - remove its deletion from OSystem_Android and ModularBackend (this is what needs to be fixed).
+	delete _audiocdManager;
+	_audiocdManager = 0;
 	delete _mixer;
 	_mixer = 0;
 	delete _fsFactory;
@@ -126,6 +139,9 @@ OSystem_Android::~OSystem_Android() {
 	_timerManager = 0;
 
 	deleteMutex(_event_queue_lock);
+
+	delete _savefileManager;
+	_savefileManager = 0;
 }
 
 void *OSystem_Android::timerThreadFunc(void *arg) {
@@ -292,6 +308,7 @@ void OSystem_Android::initBackend() {
 	ConfMan.registerDefault("aspect_ratio", true);
 	ConfMan.registerDefault("touchpad_mouse_mode", true);
 	ConfMan.registerDefault("onscreen_control", true);
+	ConfMan.registerDefault("swap_menu_and_back", false);
 
 	ConfMan.setInt("autosave_period", 0);
 	ConfMan.setBool("FM_high_quality", false);
@@ -310,6 +327,11 @@ void OSystem_Android::initBackend() {
 	else
 		ConfMan.setBool("onscreen_control", true);
 
+	if (ConfMan.hasKey("swap_menu_and_back_buttons"))
+		_swap_menu_and_back = ConfMan.getBool("swap_menu_and_back_buttons");
+	else
+		ConfMan.setBool("swap_menu_and_back_buttons", false);
+
 	// must happen before creating TimerManager to avoid race in
 	// creating EventManager
 	setupKeymapper();
@@ -325,7 +347,7 @@ void OSystem_Android::initBackend() {
 
 	gettimeofday(&_startTime, 0);
 
-	_mixer = new Audio::MixerImpl(this, _audio_sample_rate);
+	_mixer = new Audio::MixerImpl(_audio_sample_rate);
 	_mixer->setReady(true);
 
 	_timer_thread_exit = false;
@@ -350,6 +372,7 @@ bool OSystem_Android::hasFeature(Feature f) {
 			f == kFeatureOpenUrl ||
 			f == kFeatureTouchpadMode ||
 			f == kFeatureOnScreenControl ||
+			f == kFeatureSwapMenuAndBackButtons ||
 			f == kFeatureClipboardSupport) {
 		return true;
 	}
@@ -372,6 +395,10 @@ void OSystem_Android::setFeatureState(Feature f, bool enable) {
 		ConfMan.setBool("onscreen_control", enable);
 		JNI::showKeyboardControl(enable);
 		break;
+	case kFeatureSwapMenuAndBackButtons:
+		ConfMan.setBool("swap_menu_and_back_buttons", enable);
+		_swap_menu_and_back = enable;
+		break;
 	default:
 		ModularBackend::setFeatureState(f, enable);
 		break;
@@ -386,6 +413,8 @@ bool OSystem_Android::getFeatureState(Feature f) {
 		return ConfMan.getBool("touchpad_mouse_mode");
 	case kFeatureOnScreenControl:
 		return ConfMan.getBool("onscreen_control");
+	case kFeatureSwapMenuAndBackButtons:
+		return ConfMan.getBool("swap_menu_and_back_buttons");
 	default:
 		return ModularBackend::getFeatureState(f);
 	}

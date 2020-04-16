@@ -54,7 +54,7 @@ CryOmni3DEngine_Versailles::CryOmni3DEngine_Versailles(OSystem *syst,
 	_currentPlace(nullptr), _currentWarpImage(nullptr), _fixedImage(nullptr),
 	_transitionAnimateWarp(true), _forceRedrawWarp(false), _forcePaletteUpdate(false),
 	_fadedPalette(false), _loadedSave(uint(-1)), _dialogsMan(this,
-	        getFeatures() & GF_VERSAILLES_AUDIOPADDING),
+	        getFeatures() & GF_VERSAILLES_AUDIOPADDING_YES),
 	_musicVolumeFactor(1.), _musicCurrentFile(nullptr),
 	_countingDown(false), _countdownNextEvent(0) {
 }
@@ -165,7 +165,9 @@ Common::Error CryOmni3DEngine_Versailles::run() {
 	initDocPeopleRecord();
 	_docManager.init(&_sprites, &_fontManager, &_messages, this,
 	                 _localizedFilenames[LocalizedFilenames::kAllDocs],
-	                 _localizedFilenames[LocalizedFilenames::kLinksDocs]);
+	                 getFeatures() & GF_VERSAILLES_LINK_LOCALIZED ?
+	                 _localizedFilenames[LocalizedFilenames::kLinksDocs] :
+	                 "lien_doc.txt");
 
 	_countdownSurface.create(40, 15, Graphics::PixelFormat::createFormatCLUT8());
 
@@ -308,7 +310,9 @@ void CryOmni3DEngine_Versailles::setupFonts() {
 	// Explainations below are based on original binaries, debug is not used in this engine
 	// Fonts loaded are not always the same: FR Mac and EN DOS don't use the same font for debug doc/unused
 	// The important is that the loaded one is present in all versions
-	if (getFeatures() & GF_VERSAILLES_NUMERICFONTS) {
+	uint8 fontsSet = getFeatures() & GF_VERSAILLES_FONTS_MASK;
+	switch (fontsSet) {
+	case GF_VERSAILLES_FONTS_NUMERIC:
 		fonts.push_back("font01.CRF"); // 0: Doc titles
 		fonts.push_back("font02.CRF"); // 1: Menu and T0 in credits
 		fonts.push_back("font03.CRF"); // 2: T1 and T3 in credits
@@ -320,7 +324,8 @@ void CryOmni3DEngine_Versailles::setupFonts() {
 		fonts.push_back("font09.CRF"); // 8: unused
 		fonts.push_back("font10.CRF"); // 9: Warp messages texts
 		fonts.push_back("font11.CRF"); // 10: debug
-	} else {
+		break;
+	case GF_VERSAILLES_FONTS_SET_A:
 		fonts.push_back("garamB18.CRF"); // 0: Doc titles
 		fonts.push_back("garamB22.CRF"); // 1: Menu and T0 in credits
 		//fonts.push_back("geneva15.CRF");
@@ -350,6 +355,35 @@ void CryOmni3DEngine_Versailles::setupFonts() {
 
 		// This file isn't even loaded by MacOS executable
 		//fonts.push_back("garamB20.CRF");
+		break;
+	case GF_VERSAILLES_FONTS_SET_B:
+		fonts.push_back("garamB18.CRF"); // 0: Doc titles
+		fonts.push_back("garamB22.CRF"); // 1: Menu and T0 in credits
+		fonts.push_back("geneva14.CRF"); // 2: T1 and T3 in credits
+		fonts.push_back("geneva13.CRF"); // 3: Menu title, options messages boxes buttons
+		fonts.push_back("geneva12.CRF"); // 4: T2 in credits, text in docs
+		fonts.push_back("geneva10.CRF"); // 5: objects description in toolbar, options messages boxes text, T4 in credits
+		fonts.push_back("geneva9.CRF");  // 6: T5 in credits, doc subtitle
+		fonts.push_back("helvet16.CRF"); // 7: dialogs texts
+		fonts.push_back("helvet12.CRF"); // 8: debug doc
+		fonts.push_back("fruitL18.CRF"); // 9: Warp messages texts
+		fonts.push_back("MPW12.CRF");    // 10: debug
+		break;
+	case GF_VERSAILLES_FONTS_SET_C:
+		fonts.push_back("garamB18.CRF"); // 0: Doc titles
+		fonts.push_back("garamB22.CRF"); // 1: Menu and T0 in credits
+		fonts.push_back("geneva14.CRF"); // 2: T1 and T3 in credits
+		fonts.push_back("geneva13.CRF"); // 3: Menu title, options messages boxes buttons
+		fonts.push_back("helvet12.CRF"); // 4: T2 in credits, text in docs
+		fonts.push_back("geneva10.CRF"); // 5: objects description in toolbar, options messages boxes text, T4 in credits
+		fonts.push_back("geneva9.CRF");  // 6: T5 in credits, doc subtitle
+		fonts.push_back("helvet16.CRF"); // 7: dialogs texts
+		fonts.push_back("helvet12.CRF"); // 8: debug doc
+		fonts.push_back("fruitL18.CRF"); // 9: Warp messages texts
+		fonts.push_back("MPW12.CRF");    // 10: debug
+		break;
+	default:
+		error("Font set invalid");
 	}
 
 	_fontManager.loadFonts(fonts);
@@ -636,7 +670,7 @@ void CryOmni3DEngine_Versailles::playTransitionEndLevel(int level) {
 	bool cursorWasVisible = showMouse(false);
 
 	if (level == -2) {
-		if (getLanguage() == Common::DE_DEU) {
+		if (getLanguage() == Common::DE_DEU && Common::File::exists("RAVENSBG.HLZ")) {
 			// Display one more copyright
 			if (displayHLZ("RAVENSBG", 5000)) {
 				clearKeys();

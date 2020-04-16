@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{E6283195-3AC7-42AB-8AF6-1DDA4DBA3437}</ProjectGuid>
+		<ProjectGuid>{905C2C75-D7E3-4E1C-BB0B-9FFE1AFE7830}</ProjectGuid>
 		<RootNamespace>made</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -128,6 +128,7 @@
 	<ItemGroup>
 		<ClInclude Include="..\..\engines\made\console.h" />
 		<ClInclude Include="..\..\engines\made\database.h" />
+(??)
 		<ClInclude Include="..\..\engines\made\graphics.h" />
 		<ClInclude Include="..\..\engines\made\made.h" />
 		<ClInclude Include="..\..\engines\made\music.h" />

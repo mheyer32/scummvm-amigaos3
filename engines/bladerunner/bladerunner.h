@@ -91,7 +91,7 @@ class SceneObjects;
 class SceneScript;
 class Scores;
 class Settings;
-class Shape;
+class Shapes;
 class SliceAnimations;
 class SliceRenderer;
 class Spinner;
@@ -99,7 +99,6 @@ class Subtitles;
 class SuspectsDatabase;
 class TextResource;
 class Time;
-class KIAShapes;
 class Vector3;
 class View;
 class VK;
@@ -180,7 +179,7 @@ public:
 	TextResource       *_textVK;
 	TextResource       *_textOptions;
 
-	Common::Array<Shape*> _shapes;
+	Shapes *_shapes;
 
 	Actor *_actors[kActorCount];
 	Actor *_playerActor;
@@ -215,6 +214,8 @@ public:
 	bool _subtitlesEnabled;  // tracks the state of whether subtitles are enabled or disabled from ScummVM GUI option or KIA checkbox (the states are synched)
 	bool _sitcomMode;
 	bool _shortyMode;
+	bool _noDelayMillisFramelimiter;
+	bool _framesPerSecondMax;
 	bool _cutContent;
 
 	int _walkSoundId;

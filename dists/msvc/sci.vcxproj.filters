@@ -2,25 +2,25 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="engine">
-			<UniqueIdentifier>9AFAECF7-A7D1-4EAF-B251-07090BBA069B</UniqueIdentifier>
+			<UniqueIdentifier>5657265A-AB50-4D8F-B19D-96187C051E28</UniqueIdentifier>
 		</Filter>
 		<Filter Include="graphics">
-			<UniqueIdentifier>E3AB4A26-55E1-4EC5-99C1-C89A1280CAD5</UniqueIdentifier>
+			<UniqueIdentifier>8ECDDD2C-3C27-4A09-9C70-DB183F454896</UniqueIdentifier>
 		</Filter>
 		<Filter Include="parser">
-			<UniqueIdentifier>36AC6D4A-83DE-4CA0-AC28-5A8096E42ED0</UniqueIdentifier>
+			<UniqueIdentifier>9C6FF048-BF0F-4831-AC70-4A2976685205</UniqueIdentifier>
 		</Filter>
 		<Filter Include="sound">
-			<UniqueIdentifier>41F28F48-7670-49C0-BDBF-3AE2D3217B3F</UniqueIdentifier>
+			<UniqueIdentifier>36303173-579C-4CB4-8D59-CC4D9E16E33B</UniqueIdentifier>
 		</Filter>
 		<Filter Include="sound\decoders">
-			<UniqueIdentifier>749EE040-5EA5-4F9E-8CC7-BC24F81D9D79</UniqueIdentifier>
+			<UniqueIdentifier>85D58446-E45E-4892-8EC2-BB452B0F4A62</UniqueIdentifier>
 		</Filter>
 		<Filter Include="sound\drivers">
-			<UniqueIdentifier>6D725E23-4FCF-4666-8EF1-C0CCF05AB0EF</UniqueIdentifier>
+			<UniqueIdentifier>407CD597-1953-4D27-AC1A-744C315987B7</UniqueIdentifier>
 		</Filter>
 		<Filter Include="video">
-			<UniqueIdentifier>C424A84A-7C73-467B-8EC2-D3E9832A0696</UniqueIdentifier>
+			<UniqueIdentifier>2F0DFD15-6B77-473A-BA64-806674CBC9B4</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -34,6 +34,9 @@
 			<Filter>engine</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\sci\engine\guest_additions.cpp">
+			<Filter>engine</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\engines\sci\engine\hoyle5poker.cpp">
 			<Filter>engine</Filter>
 		</ClCompile>
 		<ClCompile Include="..\..\engines\sci\engine\kernel.cpp">
@@ -252,6 +255,9 @@
 		<ClCompile Include="..\..\engines\sci\sound\drivers\midi.cpp">
 			<Filter>sound\drivers</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\sci\sound\drivers\pc9801.cpp">
+			<Filter>sound\drivers</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\engines\sci\sound\drivers\pcjr.cpp">
 			<Filter>sound\drivers</Filter>
 		</ClCompile>
@@ -299,6 +305,9 @@
 			<Filter>engine</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\sci\engine\guest_additions.h">
+			<Filter>engine</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\sci\engine\hoyle5poker.h">
 			<Filter>engine</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\sci\engine\kernel.h">
@@ -451,6 +460,8 @@
 		<ClInclude Include="..\..\engines\sci\parser\vocabulary.h">
 			<Filter>parser</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\engines\sci\resource.h" />
+		<ClInclude Include="..\..\engines\sci\resource_intern.h" />
 		<ClInclude Include="..\..\engines\sci\sound\decoders\sol.h">
 			<Filter>sound\decoders</Filter>
 		</ClInclude>
@@ -492,8 +503,6 @@
 		<ClInclude Include="..\..\engines\sci\decompressor.h" />
 		<ClInclude Include="..\..\engines\sci\detection_tables.h" />
 		<ClInclude Include="..\..\engines\sci\event.h" />
-		<ClInclude Include="..\..\engines\sci\resource.h" />
-		<ClInclude Include="..\..\engines\sci\resource_intern.h" />
 		<ClInclude Include="..\..\engines\sci\sci.h" />
 		<ClInclude Include="..\..\engines\sci\util.h" />
 	</ItemGroup>

@@ -162,6 +162,7 @@ SciEngine::SciEngine(OSystem *syst, const ADGameDescription *desc, SciGameId gam
 	SearchMan.addSubDirectoryMatching(gameDataDir, "Sound Folder"); // Mac audio files
 	SearchMan.addSubDirectoryMatching(gameDataDir, "Voices Folder", 0, 2, true); // Mac audio36 files (recursive for Torin)
 	SearchMan.addSubDirectoryMatching(gameDataDir, "Voices"); // Mac audio36 files
+	SearchMan.addSubDirectoryMatching(gameDataDir, "Voices/AUD#"); // LSL6 Mac audio36 files
 	SearchMan.addSubDirectoryMatching(gameDataDir, "VMD Folder"); // Mac VMD files
 
 	// Add the patches directory, except for KQ6CD; The patches folder in some versions of KQ6CD
@@ -817,6 +818,15 @@ int SciEngine::inQfGImportRoom() const {
 		return 4;
 	}
 	return 0;
+}
+
+void SciEngine::showQfgImportMessageBox() const {
+	showScummVMDialog(_("Characters saved inside ScummVM are shown "
+			"automatically. Character files saved in the original "
+			"interpreter need to be put inside ScummVM's saved games "
+			"directory and a prefix needs to be added depending on which "
+			"game it was saved in: 'qfg1-' for Quest for Glory 1, 'qfg2-' "
+			"for Quest for Glory 2. Example: 'qfg2-thief.sav'."));
 }
 
 void SciEngine::sleep(uint32 msecs) {

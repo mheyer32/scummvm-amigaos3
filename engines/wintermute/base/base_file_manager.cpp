@@ -234,7 +234,17 @@ bool BaseFileManager::registerPackages() {
 					}
 				// Chinese
 				} else if (fileName == "chinese.dcp" || fileName == "xlanguage_nz.dcp" || fileName == "chinese_language_pack.dcp") {
+					if (_language != Common::ZH_ANY) {
+						continue;
+					}
+				// Simplified Chinese
+				} else if (fileName == "xlanguage_zh_s.dcp") {
 					if (_language != Common::ZH_CNA) {
+						continue;
+					}
+				// Traditional Chinese
+				} else if (fileName == "xlanguage_zh_t.dcp") {
+					if (_language != Common::ZH_TWN) {
 						continue;
 					}
 				// Czech

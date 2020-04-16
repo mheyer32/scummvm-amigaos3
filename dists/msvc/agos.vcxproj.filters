@@ -2,17 +2,16 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="drivers">
-			<UniqueIdentifier>9F380C39-EC69-4BB7-8814-69127DA0B2F5</UniqueIdentifier>
+			<UniqueIdentifier>6A65C4E3-716C-4231-963C-4865C6C32E22</UniqueIdentifier>
 		</Filter>
 		<Filter Include="drivers\accolade">
-			<UniqueIdentifier>D91FE1BF-6905-4B93-BB04-59CDB08B7169</UniqueIdentifier>
+			<UniqueIdentifier>8CADEEC9-FB6C-4F6E-A05E-AE8D892ED1F3</UniqueIdentifier>
 		</Filter>
 		<Filter Include="drivers\simon1">
-			<UniqueIdentifier>72A56587-FB25-49D3-B6F7-8D065031217B</UniqueIdentifier>
+			<UniqueIdentifier>9496D806-039B-475A-977F-C09F44EEC1D0</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
-		<ClCompile Include="..\..\engines\agos\charset.cpp" />
 		<ClCompile Include="..\..\engines\agos\contain.cpp" />
 		<ClCompile Include="..\..\engines\agos\cursor.cpp" />
 		<ClCompile Include="..\..\engines\agos\drivers\accolade\adlib.cpp">
@@ -30,6 +29,7 @@
 		<ClCompile Include="..\..\engines\agos\agos.cpp" />
 		<ClCompile Include="..\..\engines\agos\animation.cpp" />
 		<ClCompile Include="..\..\engines\agos\charset-fontdata.cpp" />
+		<ClCompile Include="..\..\engines\agos\charset.cpp" />
 		<ClCompile Include="..\..\engines\agos\debug.cpp" />
 		<ClCompile Include="..\..\engines\agos\debugger.cpp" />
 		<ClCompile Include="..\..\engines\agos\detection.cpp" />
@@ -78,7 +78,13 @@
 		<ClCompile Include="..\..\engines\agos\zones.cpp" />
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="..\..\engines\agos\drivers\accolade\adlib.h">
+			<Filter>drivers\accolade</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\engines\agos\drivers\accolade\mididriver.h">
+			<Filter>drivers\accolade</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\engines\agos\drivers\accolade\mt32.h">
 			<Filter>drivers\accolade</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\engines\agos\drivers\simon1\adlib.h">

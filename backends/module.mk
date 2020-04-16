@@ -161,6 +161,8 @@ ifdef POSIX
 MODULE_OBJS += \
 	fs/posix/posix-fs.o \
 	fs/posix/posix-fs-factory.o \
+	fs/posix-drives/posix-drives-fs.o \
+	fs/posix-drives/posix-drives-fs-factory.o \
 	fs/chroot/chroot-fs-factory.o \
 	fs/chroot/chroot-fs.o \
 	plugins/posix/posix-provider.o \
@@ -218,8 +220,7 @@ endif
 
 ifeq ($(BACKEND),androidsdl)
 MODULE_OBJS += \
-	events/androidsdl/androidsdl-events.o \
-	graphics/androidsdl/androidsdl-graphics.o
+	events/androidsdl/androidsdl-events.o
 endif
 
 ifdef AMIGAOS
@@ -270,6 +271,11 @@ endif
 ifeq ($(BACKEND),tizen)
 MODULE_OBJS += \
 	timer/tizen/timer.o
+endif
+
+ifeq ($(BACKEND),3ds)
+MODULE_OBJS += \
+	plugins/3ds/3ds-provider.o
 endif
 
 ifeq ($(BACKEND),ds)

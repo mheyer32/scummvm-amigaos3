@@ -157,7 +157,7 @@ private:
 	void bitsSaveScreen(Common::Rect rect, byte *screen, uint16 screenWidth, byte *&memoryPtr);
 	void bitsSaveDisplayScreen(Common::Rect rect, byte *&memoryPtr);
 
-	void setVerticalShakePos(uint16 shakePos);
+	void setShakePos(uint16 shakeXOffset, uint16 shakeYOffset);
 
 	void  REGPARM putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
 	void  REGPARM putPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;

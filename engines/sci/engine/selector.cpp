@@ -169,6 +169,7 @@ void Kernel::mapSelectors() {
 	FIND_SELECTOR(setStep);
 	FIND_SELECTOR(setMotion);
 	FIND_SELECTOR(cycleSpeed);
+	FIND_SELECTOR(owner);
 
 #ifdef ENABLE_SCI32
 	FIND_SELECTOR(data);
@@ -236,6 +237,7 @@ void Kernel::mapSelectors() {
 	FIND_SELECTOR(dispose);
 	FIND_SELECTOR(masterVolume);
 	FIND_SELECTOR(setCel);
+	FIND_SELECTOR(value);
 #endif
 }
 

@@ -1843,7 +1843,7 @@ drawTabAlg(int x1, int y1, int w, int h, int r, PixelType color, VectorRenderer:
 	PixelType *ptr_fill = (PixelType *)Base::_activeSurface->getBasePtr(x1, y1);
 
 	int real_radius = r;
-	int short_h = h - r + 2;
+	int short_h = h - r;
 	int long_h = h;
 
 	if (fill_m == kFillDisabled) {
@@ -1948,7 +1948,7 @@ drawTabAlgClip(int x1, int y1, int w, int h, int r, PixelType color, VectorRende
 	int fill_x = x1, fill_y = y1;
 
 	int real_radius = r;
-	int short_h = h - r + 2;
+	int short_h = h - r;
 	int long_h = h;
 
 	if (fill_m == kFillDisabled) {
@@ -2065,7 +2065,7 @@ drawTabShadow(int x1, int y1, int w, int h, int r) {
 		PixelType *ptr_tr = (PixelType *)Base::_activeSurface->getBasePtr(xstart + width - r, ystart + r);
 		PixelType *ptr_fill = (PixelType *)Base::_activeSurface->getBasePtr(xstart, ystart);
 
-		int short_h = height - (2 * r) + 2;
+		int short_h = height - (2 * r);
 		PixelType color = _format.RGBToColor(0, 0, 0);
 
 		BE_RESET();
@@ -2129,7 +2129,7 @@ drawTabShadowClip(int x1, int y1, int w, int h, int r) {
 		int tl_x = xstart + r, tl_y = ystart + r;
 		int fill_x = xstart, fill_y = ystart;
 
-		int short_h = height - (2 * r) + 2;
+		int short_h = height - (2 * r);
 		PixelType color = _format.RGBToColor(0, 0, 0);
 
 		BE_RESET();
@@ -3081,9 +3081,6 @@ drawBorderRoundedSquareAlg(int x1, int y1, int r, int w, int h, PixelType color,
 		while (x++ < (y - 2)) {
 			BE_ALGORITHM();
 
-			if (x < _clippingArea.left || x > _clippingArea.right) continue;
-			if (y < _clippingArea.top || y > _clippingArea.bottom) continue;
-
 			BE_DRAWCIRCLE_BCOLOR_TR_CW(ptr_tr, x, y, px, py, (uint8)(alpha_r + (alphaStep_tr * x)));
 			BE_DRAWCIRCLE_BCOLOR_BR_CW(ptr_br, x, y, px, py, (uint8)(alpha_b + (alphaStep_br * x)));
 			BE_DRAWCIRCLE_BCOLOR_BL_CW(ptr_bl, x, y, px, py, (uint8)(alpha_l + (alphaStep_bl * x)));
@@ -3868,7 +3865,7 @@ drawTabAlg(int x1, int y1, int w, int h, int r, PixelType color, VectorRenderer:
 			}
 		}
 
-		int short_h = h - r + 2;
+		int short_h = h - r;
 
 		ptr_fill += pitch * real_radius;
 		while (short_h--) {
@@ -3899,7 +3896,7 @@ drawTabAlg(int x1, int y1, int w, int h, int r, PixelType color, VectorRenderer:
 		color1 = color2 = color;
 
 		int long_h = h;
-		int short_h = h - real_radius + 2;
+		int short_h = h - real_radius;
 		x = real_radius;
 		y = 0;
 		T = 0;

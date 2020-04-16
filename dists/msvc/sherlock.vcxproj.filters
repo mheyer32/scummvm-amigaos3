@@ -2,19 +2,19 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="scalpel">
-			<UniqueIdentifier>6759EC6D-8E7D-42CD-B927-8A4C4F53C54B</UniqueIdentifier>
+			<UniqueIdentifier>069AC1A4-A41A-4035-8C21-57B9913761B4</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\3do">
-			<UniqueIdentifier>936EED78-234D-4815-A4B4-91A03326C3A7</UniqueIdentifier>
+			<UniqueIdentifier>BDEFB247-7B5C-491E-9D35-7A05925AAD99</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\drivers">
-			<UniqueIdentifier>69CD464F-641F-44AE-8ABC-3656489378F3</UniqueIdentifier>
+			<UniqueIdentifier>F4703F9A-8A30-4018-9229-D2E46034991F</UniqueIdentifier>
 		</Filter>
 		<Filter Include="scalpel\tsage">
-			<UniqueIdentifier>59541ABF-2474-4A40-8BA6-BF166A58C813</UniqueIdentifier>
+			<UniqueIdentifier>254C66A0-A8EF-4F47-A63B-4CB895FA528B</UniqueIdentifier>
 		</Filter>
 		<Filter Include="tattoo">
-			<UniqueIdentifier>BDDA41AC-4183-495B-BA23-9D64A8991CCA</UniqueIdentifier>
+			<UniqueIdentifier>6C9127F7-C2F8-4115-A2E3-F9831993A33E</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -78,6 +78,8 @@
 		<ClCompile Include="..\..\engines\sherlock\scalpel\tsage\resources.cpp">
 			<Filter>scalpel\tsage</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\engines\sherlock\sound.cpp" />
+		<ClCompile Include="..\..\engines\sherlock\surface.cpp" />
 		<ClCompile Include="..\..\engines\sherlock\tattoo\tattoo.cpp">
 			<Filter>tattoo</Filter>
 		</ClCompile>
@@ -174,8 +176,6 @@
 		<ClCompile Include="..\..\engines\sherlock\scene.cpp" />
 		<ClCompile Include="..\..\engines\sherlock\screen.cpp" />
 		<ClCompile Include="..\..\engines\sherlock\sherlock.cpp" />
-		<ClCompile Include="..\..\engines\sherlock\sound.cpp" />
-		<ClCompile Include="..\..\engines\sherlock\surface.cpp" />
 		<ClCompile Include="..\..\engines\sherlock\talk.cpp" />
 		<ClCompile Include="..\..\engines\sherlock\user_interface.cpp" />
 	</ItemGroup>
@@ -237,6 +237,7 @@
 		<ClInclude Include="..\..\engines\sherlock\scalpel\tsage\resources.h">
 			<Filter>scalpel\tsage</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\engines\sherlock\surface.h" />
 		<ClInclude Include="..\..\engines\sherlock\tattoo\tattoo.h">
 			<Filter>tattoo</Filter>
 		</ClInclude>
@@ -334,7 +335,6 @@
 		<ClInclude Include="..\..\engines\sherlock\screen.h" />
 		<ClInclude Include="..\..\engines\sherlock\sherlock.h" />
 		<ClInclude Include="..\..\engines\sherlock\sound.h" />
-		<ClInclude Include="..\..\engines\sherlock\surface.h" />
 		<ClInclude Include="..\..\engines\sherlock\talk.h" />
 		<ClInclude Include="..\..\engines\sherlock\user_interface.h" />
 	</ItemGroup>

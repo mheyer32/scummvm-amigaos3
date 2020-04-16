@@ -42,7 +42,7 @@
 #include "backends/platform/android/android.h"
 #include "backends/platform/android/graphics.h"
 #include "backends/platform/android/events.h"
-#include "backends/platform/android/jni.h"
+#include "backends/platform/android/jni-android.h"
 
 // floating point. use sparingly
 template<class T>
@@ -97,25 +97,28 @@ void OSystem_Android::pushEvent(int type, int arg1, int arg2, int arg3,
 
 		switch (arg2) {
 
-		// special case. we'll only get it's up event
+		// special case. we'll only get its key-up event
 		case JKEYCODE_BACK:
-			e.kbd.keycode = Common::KEYCODE_ESCAPE;
-			e.kbd.ascii = Common::ASCII_ESCAPE;
-
-			lockMutex(_event_queue_lock);
-			e.type = Common::EVENT_KEYDOWN;
-			_event_queue.push(e);
-			e.type = Common::EVENT_KEYUP;
-			_event_queue.push(e);
-			unlockMutex(_event_queue_lock);
-
+			if (_swap_menu_and_back) {
+				e.type = Common::EVENT_MAINMENU;
+				pushEvent(e);
+			} else {
+				e.kbd.keycode = Common::KEYCODE_ESCAPE;
+				e.kbd.ascii = Common::ASCII_ESCAPE;
+				pushKeyPressEvent(e);
+			}
 			return;
 
-		// special case. we'll only get it's up event
+		// special case. we'll only get its key-up event
 		case JKEYCODE_MENU:
-			e.type = Common::EVENT_MAINMENU;
-
-			pushEvent(e);
+			if (_swap_menu_and_back) {
+				e.kbd.keycode = Common::KEYCODE_ESCAPE;
+				e.kbd.ascii = Common::ASCII_ESCAPE;
+				pushKeyPressEvent(e);
+			} else {
+				e.type = Common::EVENT_MAINMENU;
+				pushEvent(e);
+			}
 
 			return;
 
@@ -236,15 +239,15 @@ void OSystem_Android::pushEvent(int type, int arg1, int arg2, int arg3,
 			break;
 		}
 
-		if (arg4 & JMETA_SHIFT)
+		if (arg4 & JMETA_SHIFT_MASK)
 			e.kbd.flags |= Common::KBD_SHIFT;
 		// JMETA_ALT is Fn on physical keyboards!
 		// when mapping this to ALT - as we know it from PC keyboards - all
 		// Fn combos will be broken (like Fn+q, which needs to end as 1 and
 		// not ALT+1). Do not want.
-		//if (arg4 & JMETA_ALT)
+		//if (arg4 & JMETA_ALT_MASK)
 		//	e.kbd.flags |= Common::KBD_ALT;
-		if (arg4 & (JMETA_SYM | JMETA_CTRL))
+		if (arg4 & (JMETA_SYM_ON | JMETA_CTRL_MASK))
 			e.kbd.flags |= Common::KBD_CTRL;
 
 		pushEvent(e);
@@ -278,7 +281,7 @@ void OSystem_Android::pushEvent(int type, int arg1, int arg2, int arg3,
 
 				// the longer the button held, the faster the pointer is
 				// TODO put these values in some option dlg?
-				int f = CLIP(arg4, 1, 8) * _dpad_scale * 100 / s;
+				int f = CLIP(arg5, 1, 8) * _dpad_scale * 100 / s;
 
 				if (arg2 == JKEYCODE_DPAD_UP || arg2 == JKEYCODE_DPAD_LEFT)
 					*c -= f;
@@ -727,6 +730,15 @@ bool OSystem_Android::pollEvent(Common::Event &event) {
 
 void OSystem_Android::pushEvent(const Common::Event &event) {
 	lockMutex(_event_queue_lock);
+	_event_queue.push(event);
+	unlockMutex(_event_queue_lock);
+}
+
+void OSystem_Android::pushKeyPressEvent(Common::Event &event) {
+	lockMutex(_event_queue_lock);
+	event.type = Common::EVENT_KEYDOWN;
+	_event_queue.push(event);
+	event.type = Common::EVENT_KEYUP;
 	_event_queue.push(event);
 	unlockMutex(_event_queue_lock);
 }

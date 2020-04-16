@@ -185,7 +185,7 @@ protected:
 		return _videoMode.scaleFactor;
 	}
 
-	virtual void handleResizeImpl(const int width, const int height) override;
+	virtual void handleResizeImpl(const int width, const int height, const int xdpi, const int ydpi) override;
 
 	virtual int getGraphicsModeScale(int mode) const override;
 	virtual ScalerProc *getGraphicsScalerProc(int mode) const;
@@ -387,7 +387,8 @@ protected:
 
 	// Shake mode
 	// This is always set to 0 when building with SDL2.
-	int _currentShakePos;
+	int _currentShakeXOffset;
+	int _currentShakeYOffset;
 
 	// Palette data
 	SDL_Color *_currentPalette;

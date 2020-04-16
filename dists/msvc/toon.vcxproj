@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{462C6D34-9BBE-497E-A087-D68770B60E8F}</ProjectGuid>
+		<ProjectGuid>{693BC5FC-2E4D-4CAF-84CC-E92D842E7BD1}</ProjectGuid>
 		<RootNamespace>toon</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

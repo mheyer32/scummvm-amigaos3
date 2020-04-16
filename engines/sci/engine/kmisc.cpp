@@ -546,7 +546,7 @@ reg_t kMacPlatform(EngineState *s, int argc, reg_t *argv) {
 		// In SCI1, its usage is still unknown
 		// In SCI1.1, it's NOP
 		// In SCI32, it's used for remapping cursor ID's
-#ifdef ENABLE_SCI32_MAC
+#ifdef ENABLE_SCI32
 		if (getSciVersion() >= SCI_VERSION_2_1_EARLY) // Set Mac cursor remap
 			g_sci->_gfxCursor32->setMacCursorRemapList(argc - 1, argv + 1);
 		else
@@ -662,13 +662,15 @@ reg_t kPlatform32(EngineState *s, int argc, reg_t *argv) {
 		case Common::kPlatformWindows:
 			return make_reg(0, kSciPlatformWindows);
 		case Common::kPlatformMacintosh:
-#ifdef ENABLE_SCI32_MAC
 			// For Mac versions, kPlatform(0) with other args has more functionality
-			if (argc > 1)
+			if (argc > 1) {
 				return kMacPlatform(s, argc - 1, argv + 1);
-			else
-#endif
-				return make_reg(0, kSciPlatformMacintosh);
+			} else {
+				// SCI32 Mac claims to be DOS. GK1 depends on this in order to play its
+				//  view-based slideshow movies. It appears that Sierra opted to change
+				//  this return value instead of updating the game scripts for Mac.
+				return make_reg(0, kSciPlatformDOS);
+			}
 		default:
 			error("Unknown platform %d", g_sci->getPlatform());
 		}

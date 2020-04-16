@@ -2,10 +2,11 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<Filter Include="mpal">
-			<UniqueIdentifier>80FCD5D4-513E-4B3A-B7FA-32FD0A491073</UniqueIdentifier>
+			<UniqueIdentifier>0CA08B0F-0969-423D-BA29-0251BD0A85E5</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
+		<ClCompile Include="..\..\engines\tony\loc.cpp" />
 		<ClCompile Include="..\..\engines\tony\mpal\expr.cpp">
 			<Filter>mpal</Filter>
 		</ClCompile>
@@ -34,7 +35,6 @@
 		<ClCompile Include="..\..\engines\tony\globals.cpp" />
 		<ClCompile Include="..\..\engines\tony\input.cpp" />
 		<ClCompile Include="..\..\engines\tony\inventory.cpp" />
-		<ClCompile Include="..\..\engines\tony\loc.cpp" />
 		<ClCompile Include="..\..\engines\tony\sound.cpp" />
 		<ClCompile Include="..\..\engines\tony\tony.cpp" />
 		<ClCompile Include="..\..\engines\tony\tonychar.cpp" />

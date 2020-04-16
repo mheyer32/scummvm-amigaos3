@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{3E68D753-5938-4507-9250-13406DD70E37}</ProjectGuid>
+		<ProjectGuid>{0E93BDE7-FDA1-4617-BEF3-5484E0A983EF}</ProjectGuid>
 		<RootNamespace>scummvm</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -116,7 +116,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analysis|Win32'">
@@ -126,7 +126,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LLVM|Win32'">
@@ -136,7 +136,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -145,7 +145,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -155,7 +155,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analysis|x64'">
@@ -165,7 +165,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LLVM|x64'">
@@ -175,7 +175,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,7 +184,7 @@
 		</ClCompile>
 		<Link>
 			<OutputFile>$(OutDir)scummvm.exe</OutputFile>
-			<AdditionalDependencies>zlib.lib;libmad.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;iphlpapi.lib;sdl2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>zlib.lib;libmad.lib;libogg_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libFLAC_static.lib;win_utf8_io_static.lib;libpng16.lib;libtheora_static.lib;freetype.lib;jpeg-static.lib;libfluidsynth.lib;libcurl.lib;SDL_net.lib;ws2_32.lib;wldap32.lib;crypt32.lib;normaliz.lib;iphlpapi.lib;winmm.lib;sapi.lib;sdl2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemGroup>
@@ -215,9 +215,9 @@
 		<ClCompile Include="..\..\audio\mods\rjp1.cpp" />
 		<ClCompile Include="..\..\audio\mods\soundfx.cpp" />
 		<ClCompile Include="..\..\audio\mods\tfmx.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\pc98_audio.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_audio.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_euphony.cpp" />
-		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_midi.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_driver.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_fmsynth.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_plugins.cpp" />
@@ -229,6 +229,7 @@
 			<ObjectFileName>$(IntDir)audio_softsynth_mt32_%(Filename).obj</ObjectFileName>
 		</ClCompile>
 		<ClCompile Include="..\..\audio\softsynth\mt32\FileStream.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\LA32FloatWaveGenerator.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\LA32Ramp.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\LA32WaveGenerator.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\MidiStreamParser.cpp" />
@@ -237,6 +238,7 @@
 		<ClCompile Include="..\..\audio\softsynth\mt32\PartialManager.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\Poly.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\ROMInfo.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\mt32\SampleRateConverter.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\Synth.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\TVA.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\mt32\TVF.cpp" />
@@ -245,6 +247,7 @@
 		<ClCompile Include="..\..\audio\softsynth\opl\dbopl.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\opl\dosbox.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\opl\mame.cpp" />
+		<ClCompile Include="..\..\audio\softsynth\opl\nuked.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\appleiigs.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\cms.cpp" />
 		<ClCompile Include="..\..\audio\softsynth\eas.cpp" />
@@ -297,6 +300,7 @@
 		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivestorage.cpp" />
 		<ClCompile Include="..\..\backends\cloud\onedrive\onedrivetokenrefresher.cpp" />
 		<ClCompile Include="..\..\backends\cloud\onedrive\onedriveuploadrequest.cpp" />
+		<ClCompile Include="..\..\backends\cloud\basestorage.cpp" />
 		<ClCompile Include="..\..\backends\cloud\cloudicon.cpp" />
 		<ClCompile Include="..\..\backends\cloud\cloudmanager.cpp" />
 		<ClCompile Include="..\..\backends\cloud\downloadrequest.cpp" />
@@ -305,6 +309,7 @@
 		<ClCompile Include="..\..\backends\cloud\savessyncrequest.cpp" />
 		<ClCompile Include="..\..\backends\cloud\storage.cpp" />
 		<ClCompile Include="..\..\backends\cloud\storagefile.cpp" />
+		<ClCompile Include="..\..\backends\dialogs\win32\win32-dialogs.cpp" />
 		<ClCompile Include="..\..\backends\events\default\default-events.cpp" />
 		<ClCompile Include="..\..\backends\events\sdl\sdl-events.cpp" />
 		<ClCompile Include="..\..\backends\fs\windows\windows-fs-factory.cpp" />
@@ -340,7 +345,6 @@
 		<ClCompile Include="..\..\backends\midi\windows.cpp" />
 		<ClCompile Include="..\..\backends\mixer\sdl\sdl-mixer.cpp" />
 		<ClCompile Include="..\..\backends\mutex\sdl\sdl-mutex.cpp" />
-		<ClCompile Include="..\..\backends\networking\connection\islimited-default.cpp" />
 		<ClCompile Include="..\..\backends\networking\curl\connectionmanager.cpp" />
 		<ClCompile Include="..\..\backends\networking\curl\curljsonrequest.cpp" />
 		<ClCompile Include="..\..\backends\networking\curl\curlrequest.cpp" />
@@ -364,6 +368,7 @@
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32-main.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32-window.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\win32\win32.cpp" />
+		<ClCompile Include="..\..\backends\platform\sdl\win32\win32_wrapper.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\sdl-window.cpp" />
 		<ClCompile Include="..\..\backends\platform\sdl\sdl.cpp" />
 		<ClCompile Include="..\..\backends\plugins\sdl\sdl-provider.cpp" />
@@ -372,6 +377,7 @@
 		<ClCompile Include="..\..\backends\saves\windows\windows-saves.cpp" />
 		<ClCompile Include="..\..\backends\saves\savefile.cpp" />
 		<ClCompile Include="..\..\backends\taskbar\win32\win32-taskbar.cpp" />
+		<ClCompile Include="..\..\backends\text-to-speech\windows\windows-text-to-speech.cpp" />
 		<ClCompile Include="..\..\backends\timer\default\default-timer.cpp" />
 		<ClCompile Include="..\..\backends\timer\sdl\sdl-timer.cpp" />
 		<ClCompile Include="..\..\backends\updates\win32\win32-updates.cpp" />
@@ -381,6 +387,38 @@
 		<ClCompile Include="..\..\base\main.cpp" />
 		<ClCompile Include="..\..\base\plugins.cpp" />
 		<ClCompile Include="..\..\base\version.cpp" />
+		<ClCompile Include="..\..\common\lua\double_serialization.cpp" />
+		<ClCompile Include="..\..\common\lua\lapi.cpp" />
+		<ClCompile Include="..\..\common\lua\lauxlib.cpp" />
+		<ClCompile Include="..\..\common\lua\lbaselib.cpp" />
+		<ClCompile Include="..\..\common\lua\lcode.cpp" />
+		<ClCompile Include="..\..\common\lua\ldblib.cpp" />
+		<ClCompile Include="..\..\common\lua\ldebug.cpp" />
+		<ClCompile Include="..\..\common\lua\ldo.cpp" />
+		<ClCompile Include="..\..\common\lua\lfunc.cpp" />
+		<ClCompile Include="..\..\common\lua\lgc.cpp" />
+		<ClCompile Include="..\..\common\lua\linit.cpp" />
+		<ClCompile Include="..\..\common\lua\liolib.cpp" />
+		<ClCompile Include="..\..\common\lua\llex.cpp" />
+		<ClCompile Include="..\..\common\lua\lmathlib.cpp" />
+		<ClCompile Include="..\..\common\lua\lmem.cpp" />
+		<ClCompile Include="..\..\common\lua\loadlib.cpp" />
+		<ClCompile Include="..\..\common\lua\lobject.cpp" />
+		<ClCompile Include="..\..\common\lua\lopcodes.cpp" />
+		<ClCompile Include="..\..\common\lua\loslib.cpp" />
+		<ClCompile Include="..\..\common\lua\lparser.cpp" />
+		<ClCompile Include="..\..\common\lua\lstate.cpp" />
+		<ClCompile Include="..\..\common\lua\lstring.cpp" />
+		<ClCompile Include="..\..\common\lua\lstrlib.cpp" />
+		<ClCompile Include="..\..\common\lua\ltable.cpp" />
+		<ClCompile Include="..\..\common\lua\ltablib.cpp" />
+		<ClCompile Include="..\..\common\lua\ltm.cpp" />
+		<ClCompile Include="..\..\common\lua\lua_persist.cpp" />
+		<ClCompile Include="..\..\common\lua\lua_persistence_util.cpp" />
+		<ClCompile Include="..\..\common\lua\lua_unpersist.cpp" />
+		<ClCompile Include="..\..\common\lua\lvm.cpp" />
+		<ClCompile Include="..\..\common\lua\lzio.cpp" />
+		<ClCompile Include="..\..\common\lua\scummvm_file.cpp" />
 		<ClCompile Include="..\..\common\EventDispatcher.cpp" />
 		<ClCompile Include="..\..\common\EventMapper.cpp" />
 		<ClCompile Include="..\..\common\archive.cpp" />
@@ -392,6 +430,7 @@
 		<ClCompile Include="..\..\common\debug.cpp">
 			<ObjectFileName>$(IntDir)common_%(Filename).obj</ObjectFileName>
 		</ClCompile>
+		<ClCompile Include="..\..\common\encoding.cpp" />
 		<ClCompile Include="..\..\common\error.cpp">
 			<ObjectFileName>$(IntDir)common_%(Filename).obj</ObjectFileName>
 		</ClCompile>
@@ -402,7 +441,6 @@
 		<ClCompile Include="..\..\common\fs.cpp" />
 		<ClCompile Include="..\..\common\gui_options.cpp" />
 		<ClCompile Include="..\..\common\hashmap.cpp" />
-		<ClCompile Include="..\..\common\huffman.cpp" />
 		<ClCompile Include="..\..\common\iff_container.cpp" />
 		<ClCompile Include="..\..\common\ini-file.cpp" />
 		<ClCompile Include="..\..\common\installshield_cab.cpp" />
@@ -426,6 +464,7 @@
 		<ClCompile Include="..\..\common\str.cpp" />
 		<ClCompile Include="..\..\common\stream.cpp" />
 		<ClCompile Include="..\..\common\system.cpp" />
+		<ClCompile Include="..\..\common\text-to-speech.cpp" />
 		<ClCompile Include="..\..\common\textconsole.cpp" />
 		<ClCompile Include="..\..\common\tokenizer.cpp" />
 		<ClCompile Include="..\..\common\translation.cpp" />
@@ -473,6 +512,7 @@
 		<ClCompile Include="..\..\graphics\cursorman.cpp" />
 		<ClCompile Include="..\..\graphics\font.cpp" />
 		<ClCompile Include="..\..\graphics\fontman.cpp" />
+		<ClCompile Include="..\..\graphics\larryScale.cpp" />
 		<ClCompile Include="..\..\graphics\maccursor.cpp" />
 		<ClCompile Include="..\..\graphics\managed_surface.cpp" />
 		<ClCompile Include="..\..\graphics\nine_patch.cpp" />
@@ -527,8 +567,8 @@
 		<ClCompile Include="..\..\gui\remotebrowser.cpp" />
 		<ClCompile Include="..\..\gui\saveload-dialog.cpp" />
 		<ClCompile Include="..\..\gui\saveload.cpp" />
-		<ClCompile Include="..\..\gui\storagewizarddialog.cpp" />
 		<ClCompile Include="..\..\gui\themebrowser.cpp" />
+		<ClCompile Include="..\..\gui\unknown-game-dialog.cpp" />
 		<ClCompile Include="..\..\gui\widget.cpp" />
 		<ClCompile Include="..\..\image\codecs\indeo\indeo.cpp" />
 		<ClCompile Include="..\..\image\codecs\indeo\indeo_dsp.cpp" />
@@ -599,9 +639,9 @@
 		<ClInclude Include="..\..\audio\mods\rjp1.h" />
 		<ClInclude Include="..\..\audio\mods\soundfx.h" />
 		<ClInclude Include="..\..\audio\mods\tfmx.h" />
+		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\pc98_audio.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_audio.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_euphony.h" />
-		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_midi.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_driver.h" />
 		<ClInclude Include="..\..\audio\softsynth\fmtowns_pc98\towns_pc98_fmsynth.h" />
 		<ClInclude Include="..\..\audio\softsynth\mt32\c_interface\c_interface.h" />
@@ -640,6 +680,7 @@
 		<ClInclude Include="..\..\audio\softsynth\opl\dbopl.h" />
 		<ClInclude Include="..\..\audio\softsynth\opl\dosbox.h" />
 		<ClInclude Include="..\..\audio\softsynth\opl\mame.h" />
+		<ClInclude Include="..\..\audio\softsynth\opl\nuked.h" />
 		<ClInclude Include="..\..\audio\softsynth\cms.h" />
 		<ClInclude Include="..\..\audio\softsynth\emumidi.h" />
 		<ClInclude Include="..\..\audio\softsynth\pcspk.h" />
@@ -686,6 +727,7 @@
 		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivestorage.h" />
 		<ClInclude Include="..\..\backends\cloud\onedrive\onedrivetokenrefresher.h" />
 		<ClInclude Include="..\..\backends\cloud\onedrive\onedriveuploadrequest.h" />
+		<ClInclude Include="..\..\backends\cloud\basestorage.h" />
 		<ClInclude Include="..\..\backends\cloud\cloudicon.h" />
 		<ClInclude Include="..\..\backends\cloud\cloudicon_data.h" />
 		<ClInclude Include="..\..\backends\cloud\cloudicon_disabled_data.h" />
@@ -697,6 +739,8 @@
 		<ClInclude Include="..\..\backends\cloud\storage.h" />
 		<ClInclude Include="..\..\backends\cloud\storagefile.h" />
 		<ClInclude Include="..\..\backends\cloud\storageinfo.h" />
+		<ClInclude Include="..\..\backends\dialogs\win32\mingw-compat.h" />
+		<ClInclude Include="..\..\backends\dialogs\win32\win32-dialogs.h" />
 		<ClInclude Include="..\..\backends\events\default\default-events.h" />
 		<ClInclude Include="..\..\backends\events\sdl\sdl-events.h" />
 		<ClInclude Include="..\..\backends\fs\windows\windows-fs-factory.h" />
@@ -726,7 +770,6 @@
 		<ClInclude Include="..\..\backends\mixer\sdl\sdl-mixer.h" />
 		<ClInclude Include="..\..\backends\mutex\sdl\sdl-mutex.h" />
 		<ClInclude Include="..\..\backends\mutex\mutex.h" />
-		<ClInclude Include="..\..\backends\networking\connection\islimited.h" />
 		<ClInclude Include="..\..\backends\networking\curl\connectionmanager.h" />
 		<ClInclude Include="..\..\backends\networking\curl\curljsonrequest.h" />
 		<ClInclude Include="..\..\backends\networking\curl\curlrequest.h" />
@@ -748,8 +791,10 @@
 		<ClInclude Include="..\..\backends\networking\sdl_net\localwebserver.h" />
 		<ClInclude Include="..\..\backends\networking\sdl_net\reader.h" />
 		<ClInclude Include="..\..\backends\networking\sdl_net\uploadfileclienthandler.h" />
+		<ClInclude Include="..\..\backends\platform\sdl\win32\codepage.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\win32\win32-window.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\win32\win32.h" />
+		<ClInclude Include="..\..\backends\platform\sdl\win32\win32_wrapper.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\sdl-sys.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\sdl-window.h" />
 		<ClInclude Include="..\..\backends\platform\sdl\sdl.h" />
@@ -760,16 +805,44 @@
 		<ClInclude Include="..\..\backends\saves\windows\windows-saves.h" />
 		<ClInclude Include="..\..\backends\taskbar\win32\mingw-compat.h" />
 		<ClInclude Include="..\..\backends\taskbar\win32\win32-taskbar.h" />
+		<ClInclude Include="..\..\backends\text-to-speech\windows\windows-text-to-speech.h" />
 		<ClInclude Include="..\..\backends\timer\default\default-timer.h" />
 		<ClInclude Include="..\..\backends\timer\sdl\sdl-timer.h" />
 		<ClInclude Include="..\..\backends\updates\win32\win32-updates.h" />
 		<ClInclude Include="..\..\backends\base-backend.h" />
 		<ClInclude Include="..\..\backends\modular-backend.h" />
 		<ClInclude Include="..\..\base\commandLine.h" />
+		<ClInclude Include="..\..\base\internal_plugins.h" />
 		<ClInclude Include="..\..\base\internal_version.h" />
 		<ClInclude Include="..\..\base\main.h" />
 		<ClInclude Include="..\..\base\plugins.h" />
 		<ClInclude Include="..\..\base\version.h" />
+		<ClInclude Include="..\..\common\lua\double_serialization.h" />
+		<ClInclude Include="..\..\common\lua\lapi.h" />
+		<ClInclude Include="..\..\common\lua\lauxlib.h" />
+		<ClInclude Include="..\..\common\lua\lcode.h" />
+		<ClInclude Include="..\..\common\lua\ldebug.h" />
+		<ClInclude Include="..\..\common\lua\ldo.h" />
+		<ClInclude Include="..\..\common\lua\lfunc.h" />
+		<ClInclude Include="..\..\common\lua\lgc.h" />
+		<ClInclude Include="..\..\common\lua\llex.h" />
+		<ClInclude Include="..\..\common\lua\llimits.h" />
+		<ClInclude Include="..\..\common\lua\lmem.h" />
+		<ClInclude Include="..\..\common\lua\lobject.h" />
+		<ClInclude Include="..\..\common\lua\lopcodes.h" />
+		<ClInclude Include="..\..\common\lua\lparser.h" />
+		<ClInclude Include="..\..\common\lua\lstate.h" />
+		<ClInclude Include="..\..\common\lua\lstring.h" />
+		<ClInclude Include="..\..\common\lua\ltable.h" />
+		<ClInclude Include="..\..\common\lua\ltm.h" />
+		<ClInclude Include="..\..\common\lua\lua.h" />
+		<ClInclude Include="..\..\common\lua\lua_persistence.h" />
+		<ClInclude Include="..\..\common\lua\lua_persistence_util.h" />
+		<ClInclude Include="..\..\common\lua\luaconf.h" />
+		<ClInclude Include="..\..\common\lua\lualib.h" />
+		<ClInclude Include="..\..\common\lua\lvm.h" />
+		<ClInclude Include="..\..\common\lua\lzio.h" />
+		<ClInclude Include="..\..\common\lua\scummvm_file.h" />
 		<ClInclude Include="..\..\common\algorithm.h" />
 		<ClInclude Include="..\..\common\archive.h" />
 		<ClInclude Include="..\..\common\array.h" />
@@ -784,6 +857,8 @@
 		<ClInclude Include="..\..\common\dct.h" />
 		<ClInclude Include="..\..\common\debug-channels.h" />
 		<ClInclude Include="..\..\common\debug.h" />
+		<ClInclude Include="..\..\common\dialogs.h" />
+		<ClInclude Include="..\..\common\encoding.h" />
 		<ClInclude Include="..\..\common\endian.h" />
 		<ClInclude Include="..\..\common\error.h" />
 		<ClInclude Include="..\..\common\events.h" />
@@ -801,6 +876,7 @@
 		<ClInclude Include="..\..\common\iff_container.h" />
 		<ClInclude Include="..\..\common\ini-file.h" />
 		<ClInclude Include="..\..\common\installshield_cab.h" />
+		<ClInclude Include="..\..\common\inttypes.h" />
 		<ClInclude Include="..\..\common\json.h" />
 		<ClInclude Include="..\..\common\keyboard.h" />
 		<ClInclude Include="..\..\common\language.h" />
@@ -841,6 +917,7 @@
 		<ClInclude Include="..\..\common\substream.h" />
 		<ClInclude Include="..\..\common\system.h" />
 		<ClInclude Include="..\..\common\taskbar.h" />
+		<ClInclude Include="..\..\common\text-to-speech.h" />
 		<ClInclude Include="..\..\common\textconsole.h" />
 		<ClInclude Include="..\..\common\timer.h" />
 		<ClInclude Include="..\..\common\tokenizer.h" />
@@ -891,6 +968,7 @@
 		<ClInclude Include="..\..\graphics\cursorman.h" />
 		<ClInclude Include="..\..\graphics\font.h" />
 		<ClInclude Include="..\..\graphics\fontman.h" />
+		<ClInclude Include="..\..\graphics\larryScale.h" />
 		<ClInclude Include="..\..\graphics\maccursor.h" />
 		<ClInclude Include="..\..\graphics\managed_surface.h" />
 		<ClInclude Include="..\..\graphics\mode.h" />
@@ -957,8 +1035,8 @@
 		<ClInclude Include="..\..\gui\remotebrowser.h" />
 		<ClInclude Include="..\..\gui\saveload-dialog.h" />
 		<ClInclude Include="..\..\gui\saveload.h" />
-		<ClInclude Include="..\..\gui\storagewizarddialog.h" />
 		<ClInclude Include="..\..\gui\themebrowser.h" />
+		<ClInclude Include="..\..\gui\unknown-game-dialog.h" />
 		<ClInclude Include="..\..\gui\widget.h" />
 		<ClInclude Include="..\..\image\codecs\indeo\get_bits.h" />
 		<ClInclude Include="..\..\image\codecs\indeo\indeo.h" />
@@ -1025,9 +1103,8 @@
 		<None Include="..\..\COPYING.BSD" />
 		<None Include="..\..\COPYING.FREEFONT" />
 		<None Include="..\..\COPYING.LGPL" />
+		<None Include="..\..\COPYING.OFL" />
 		<None Include="..\..\COPYRIGHT" />
-		<None Include="..\..\NEWS" />
-		<None Include="..\..\README" />
 		<None Include="..\..\TODO" />
 	</ItemGroup>
 	<ItemGroup>
@@ -1059,157 +1136,178 @@
 	</ItemGroup>
 	<ItemGroup>
 	<ProjectReference Include="access.vcxproj">
-		<Project>{E1010B7B-FA51-466F-8473-E8EDEB618A31}</Project>
+		<Project>{6064AD37-DF8F-4F88-BE70-8922B0A23FE6}</Project>
 	</ProjectReference>
 	<ProjectReference Include="adl.vcxproj">
-		<Project>{2188F076-5C3D-411E-8C37-49618BDF94DC}</Project>
+		<Project>{3A66BD87-2DA5-4A5D-B8B5-9F86EC70B04D}</Project>
 	</ProjectReference>
 	<ProjectReference Include="agi.vcxproj">
-		<Project>{2D6899C7-871C-4C5C-957E-8DC529AA3D52}</Project>
+		<Project>{D45F85B5-EF16-4F2F-86C8-51376C901FA6}</Project>
 	</ProjectReference>
 	<ProjectReference Include="agos.vcxproj">
-		<Project>{C01B212C-D5C1-4F34-87E9-83B2E5BFE992}</Project>
+		<Project>{F7DD2E25-8339-427D-AF23-04DC93B52B69}</Project>
 	</ProjectReference>
 	<ProjectReference Include="bbvs.vcxproj">
-		<Project>{6F6CD663-4113-4756-A96E-F3C2B92C590D}</Project>
+		<Project>{16B01F07-C75F-464E-A887-869519A63C11}</Project>
+	</ProjectReference>
+	<ProjectReference Include="bladerunner.vcxproj">
+		<Project>{856B3709-A5BA-4695-9D8B-7272429EDB59}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cge.vcxproj">
-		<Project>{AFDA8DB7-B836-4851-B62B-8482DD5FD506}</Project>
+		<Project>{4FFB6018-5B96-4684-9FED-1A3895574A1B}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cge2.vcxproj">
-		<Project>{2B3C46B6-489C-4385-8DD9-3CC765A06C9C}</Project>
+		<Project>{C3822569-3DAB-4E1B-B872-8E7B116AD461}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cine.vcxproj">
-		<Project>{8F1FE0C9-9B34-44F9-88AA-A9952C0A2A93}</Project>
+		<Project>{673579C3-CCE0-48EB-8E63-2565BA70807E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="composer.vcxproj">
-		<Project>{25D916B1-8C92-47BF-B462-927E3EAAC129}</Project>
+		<Project>{F2A5E730-52E7-4C8A-9ADB-066B46DBCDAE}</Project>
 	</ProjectReference>
 	<ProjectReference Include="cruise.vcxproj">
-		<Project>{63811326-8CAE-4BC6-B2A5-F6BED39C8CD4}</Project>
+		<Project>{114772DD-28BA-4AF7-9FF0-5DD961DD5954}</Project>
+	</ProjectReference>
+	<ProjectReference Include="cryomni3d.vcxproj">
+		<Project>{834285D6-2BD2-4285-AE69-F1F545BFA556}</Project>
 	</ProjectReference>
 	<ProjectReference Include="draci.vcxproj">
-		<Project>{DDBC658F-D68E-4129-9F07-A50295B2E45D}</Project>
+		<Project>{07183530-D301-48F2-B185-CD536328A8E7}</Project>
 	</ProjectReference>
 	<ProjectReference Include="drascula.vcxproj">
-		<Project>{7CCB89EE-0176-41FD-A1B3-21006188785F}</Project>
+		<Project>{6B2FBE96-0322-4DB2-8B0F-A8D0CF4F28D7}</Project>
 	</ProjectReference>
 	<ProjectReference Include="dreamweb.vcxproj">
-		<Project>{C1359DE9-785D-44EC-849F-4F70E0849D93}</Project>
+		<Project>{675D083B-5E30-4F51-B6FD-A41B274E0392}</Project>
 	</ProjectReference>
 	<ProjectReference Include="fullpipe.vcxproj">
-		<Project>{CBED0944-0C94-4291-AE78-857388DD0693}</Project>
+		<Project>{7DC22981-E446-4470-96DD-42262D6AFD95}</Project>
 	</ProjectReference>
 	<ProjectReference Include="gnap.vcxproj">
-		<Project>{6068523C-4F53-411D-8932-3A8EABCDE587}</Project>
+		<Project>{C807D128-3801-49EE-801F-0A276D0EB9EB}</Project>
 	</ProjectReference>
 	<ProjectReference Include="gob.vcxproj">
-		<Project>{1B2CA342-0D5F-49C1-A257-47EE6BA3EA19}</Project>
+		<Project>{D0E26DB6-2AA2-4880-806A-A7AED5A5449E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="groovie.vcxproj">
-		<Project>{989C17EC-9BCD-4136-89D0-44CF43A4CB7B}</Project>
+		<Project>{AD16C7E5-1741-4418-A0DF-3FCEEDF8BABF}</Project>
+	</ProjectReference>
+	<ProjectReference Include="hdb.vcxproj">
+		<Project>{DC297608-CB9E-494C-8A31-FADFD73F7F85}</Project>
 	</ProjectReference>
 	<ProjectReference Include="hopkins.vcxproj">
-		<Project>{24FED036-359C-4D45-B87E-963742542C4C}</Project>
+		<Project>{55476B6D-8941-45EA-A1C5-B90FBF74CE9C}</Project>
 	</ProjectReference>
 	<ProjectReference Include="hugo.vcxproj">
-		<Project>{2F2A51B7-827B-4286-A081-77C20C3B0FAE}</Project>
+		<Project>{9D46A569-E52F-46EF-A0B2-D038F251BE49}</Project>
+	</ProjectReference>
+	<ProjectReference Include="illusions.vcxproj">
+		<Project>{992BB723-6C3E-4F8E-84C8-9DC33E6D61DC}</Project>
 	</ProjectReference>
 	<ProjectReference Include="kyra.vcxproj">
-		<Project>{E7EA1521-EC71-4C5E-8CF3-A517E8A2D2BC}</Project>
+		<Project>{B3074699-36FD-4A97-B15C-D0A4AD90ED47}</Project>
 	</ProjectReference>
 	<ProjectReference Include="lab.vcxproj">
-		<Project>{2A201E99-C5C9-403E-9DC2-C223A12BBCC0}</Project>
+		<Project>{BBA56B29-E37A-47E7-8456-AC82C30E5F78}</Project>
 	</ProjectReference>
 	<ProjectReference Include="lure.vcxproj">
-		<Project>{AFB9C221-E1F4-4922-9ACA-AB9FE3BC4E86}</Project>
+		<Project>{16A6134D-A59D-4457-BAB6-FBA847E9F003}</Project>
 	</ProjectReference>
 	<ProjectReference Include="made.vcxproj">
-		<Project>{E6283195-3AC7-42AB-8AF6-1DDA4DBA3437}</Project>
+		<Project>{905C2C75-D7E3-4E1C-BB0B-9FFE1AFE7830}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mads.vcxproj">
-		<Project>{D3D29385-579F-4F3F-8613-DE7AC9595BC0}</Project>
+		<Project>{A68B7D4C-2A63-4325-9A9F-CD618ABF651B}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mohawk.vcxproj">
-		<Project>{BD0C78EF-A3C9-4B7D-A433-A7E9345DB556}</Project>
+		<Project>{1C9291F4-77EF-42B2-BBB1-B216B12B4758}</Project>
 	</ProjectReference>
 	<ProjectReference Include="mortevielle.vcxproj">
-		<Project>{AFB7F413-CF4C-42D8-B723-01BDF55D75C7}</Project>
+		<Project>{B6C4A4E1-2948-4743-A7D5-A572950C8EB2}</Project>
 	</ProjectReference>
 	<ProjectReference Include="neverhood.vcxproj">
-		<Project>{B94403B6-7FD0-4597-B248-1823924207F6}</Project>
+		<Project>{9E21A817-11BA-490D-AC7C-241EA86B765F}</Project>
 	</ProjectReference>
 	<ProjectReference Include="parallaction.vcxproj">
-		<Project>{BDD79E5F-6E99-48BA-B590-D89005D23550}</Project>
+		<Project>{311B425A-6349-4E4C-A045-BFB5514F69F0}</Project>
 	</ProjectReference>
 	<ProjectReference Include="pegasus.vcxproj">
-		<Project>{E2ABD6B9-9778-4B32-88ED-27B3DDA81167}</Project>
+		<Project>{70120982-CCD2-403A-90B4-59F821D05952}</Project>
 	</ProjectReference>
 	<ProjectReference Include="plumbers.vcxproj">
-		<Project>{B820433E-18C0-4459-86FE-B44D3CAFC920}</Project>
+		<Project>{EC9BAD51-E54D-4D06-925E-BCE4AD27D61E}</Project>
+	</ProjectReference>
+	<ProjectReference Include="prince.vcxproj">
+		<Project>{39DFA107-B332-4204-A79C-FD096D585C5A}</Project>
 	</ProjectReference>
 	<ProjectReference Include="queen.vcxproj">
-		<Project>{4766E976-236B-4611-9019-C0D0BAAB90DE}</Project>
+		<Project>{F30BABDA-584A-40EA-A89E-D056C5A77500}</Project>
 	</ProjectReference>
 	<ProjectReference Include="saga.vcxproj">
-		<Project>{A433401E-D5C2-4476-9A93-634A4776BEF5}</Project>
+		<Project>{8817083C-494B-4131-A73F-3B559797AF8C}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sci.vcxproj">
-		<Project>{2AE08C67-BF23-45D7-9414-854417D9975F}</Project>
+		<Project>{A35C67FB-A649-474F-A8B8-A6AF611CAFE9}</Project>
 	</ProjectReference>
 	<ProjectReference Include="scumm.vcxproj">
-		<Project>{708753EB-4124-4899-AF8F-3598A075988E}</Project>
+		<Project>{369727D5-4DC5-4681-AF53-AB428D36CF2A}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sherlock.vcxproj">
-		<Project>{7F534128-13B5-44D7-868F-133B4A730B1F}</Project>
+		<Project>{33B8277D-0468-4FEB-A8EA-424083F2CD27}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sky.vcxproj">
-		<Project>{A6D1734F-14AD-4A4B-B6A5-4D8A23BCA0D7}</Project>
+		<Project>{4F3624F6-800C-4669-85EC-192809C9123D}</Project>
+	</ProjectReference>
+	<ProjectReference Include="supernova.vcxproj">
+		<Project>{833ABB87-A26B-444B-97B6-8CDBA95A04F9}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword1.vcxproj">
-		<Project>{20BA830A-CA36-4F23-84A7-C0BBF0E4F5B1}</Project>
+		<Project>{9028F012-3537-4BFB-A595-242F60376DE3}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword2.vcxproj">
-		<Project>{8980A386-5126-43B2-9CDD-8B637626B9BA}</Project>
+		<Project>{71296C14-95E1-40EC-98EC-C94348CD3DD9}</Project>
 	</ProjectReference>
 	<ProjectReference Include="sword25.vcxproj">
-		<Project>{402F9F1C-290E-4DD8-9590-D5341832D09F}</Project>
+		<Project>{F62FEB2C-6667-498C-BD4D-BB5E852943F6}</Project>
 	</ProjectReference>
 	<ProjectReference Include="teenagent.vcxproj">
-		<Project>{5285704E-9FCF-4AAC-A6C9-7CDBED5C08BF}</Project>
+		<Project>{53B00CE8-926C-462C-9AA0-6FA26EAD7C66}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tinsel.vcxproj">
-		<Project>{C9935981-E07E-483D-992D-B37DBFA449E6}</Project>
+		<Project>{DC689344-D0BC-40CF-8B8D-2E90B772870B}</Project>
 	</ProjectReference>
 	<ProjectReference Include="titanic.vcxproj">
-		<Project>{A8A3181E-6D98-4F6F-9A80-714E4B486316}</Project>
+		<Project>{2394F4B6-02CB-425C-AC52-FEDB007C42DD}</Project>
 	</ProjectReference>
 	<ProjectReference Include="toltecs.vcxproj">
-		<Project>{BC537CA9-4465-4658-9B3C-55F1CA0889A1}</Project>
+		<Project>{E5D522B6-93F2-469E-81B5-2F3929B7444D}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tony.vcxproj">
-		<Project>{EEA4B7B1-9BFC-4FFE-AACD-7AA83BF845F9}</Project>
+		<Project>{4D39044F-06E6-4B73-B9AB-4F3A2892180E}</Project>
 	</ProjectReference>
 	<ProjectReference Include="toon.vcxproj">
-		<Project>{462C6D34-9BBE-497E-A087-D68770B60E8F}</Project>
+		<Project>{693BC5FC-2E4D-4CAF-84CC-E92D842E7BD1}</Project>
 	</ProjectReference>
 	<ProjectReference Include="touche.vcxproj">
-		<Project>{60249A8A-8022-4EE2-8F94-7B13528548EF}</Project>
+		<Project>{687F216F-66CD-42A0-B932-DBA2C5F3B12F}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tsage.vcxproj">
-		<Project>{2109883B-6679-4BD4-859E-01B6E5AF8B6E}</Project>
+		<Project>{30772D5E-C5C9-4FC9-96F8-F71C2873EE91}</Project>
 	</ProjectReference>
 	<ProjectReference Include="tucker.vcxproj">
-		<Project>{863DCCB9-4CEB-4E04-BA54-1A9927BB56B6}</Project>
+		<Project>{F211015A-DEE3-4B59-97D7-FBDCCCAD0CFC}</Project>
 	</ProjectReference>
 	<ProjectReference Include="voyeur.vcxproj">
-		<Project>{842B3194-EAED-48FD-95A0-2252C5BFCF7C}</Project>
+		<Project>{263A5CEB-056B-469B-A5AE-B88D23A72017}</Project>
 	</ProjectReference>
 	<ProjectReference Include="wintermute.vcxproj">
-		<Project>{5161B0A6-7982-4462-911F-C786A8DCA6BC}</Project>
+		<Project>{B9217299-066E-421D-86EF-F9139E0710C5}</Project>
+	</ProjectReference>
+	<ProjectReference Include="xeen.vcxproj">
+		<Project>{416CB146-D869-423E-999C-CC3D45EC54FE}</Project>
 	</ProjectReference>
 	<ProjectReference Include="zvision.vcxproj">
-		<Project>{9FC03C65-B928-46CC-B360-670D62F424DB}</Project>
+		<Project>{0FC69815-358C-427C-BC2D-901B34A0E076}</Project>
 	</ProjectReference>
 	</ItemGroup>
 	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

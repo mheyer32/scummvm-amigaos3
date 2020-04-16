@@ -122,6 +122,11 @@ protected:
 
 	int inputSceneChange(int x, int y, int unk1, int unk2);
 
+	// special case
+	void processKeyboardSfx(int inputFlag);
+
+	static const int16 _keyboardSounds[190];
+
 	// gfx/animation specific
 	bool _inventorySaved;
 	void backUpPage0();
@@ -637,7 +642,7 @@ protected:
 	int _cdaTrackTableFinaleSize;
 	const char *const *_ingameSoundList;
 	int _ingameSoundListSize;
-	const uint16 *_ingameSoundIndex;
+	const int16 *_ingameSoundIndex;
 	int _ingameSoundIndexSize;
 	const uint16 *_ingameTalkObjIndex;
 	int _ingameTalkObjIndexSize;

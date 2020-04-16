@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{AFB7F413-CF4C-42D8-B723-01BDF55D75C7}</ProjectGuid>
+		<ProjectGuid>{B6C4A4E1-2948-4743-A7D5-A572950C8EB2}</ProjectGuid>
 		<RootNamespace>mortevielle</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

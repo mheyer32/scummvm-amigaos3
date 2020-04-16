@@ -60,6 +60,24 @@ static const ADExtraGuiOptionsMap optionsList[] = {
 			false
 		}
 	},
+	{
+		GAMEOPTION_FRAMELIMITER_NODELAYMILLIS,
+		{
+			_s("Frame limiter high performance mode"),
+			_s("This mode may result in high CPU usage! It avoids use of delayMillis() function."),
+			"nodelaymillisfl",
+			false
+		}
+	},
+	{
+		GAMEOPTION_FRAMELIMITER_FPS,
+		{
+			_s("Max frames per second limit"),
+			_s("This mode targets a maximum of 120 fps. When disabled, the game targets 60 fps"),
+			"frames_per_secondfl",
+			false
+		}
+	},
 	AD_EXTRA_GUI_OPTIONS_TERMINATOR
 };
 

@@ -16,6 +16,7 @@ import javax.microedition.khronos.egl.EGLSurface;
 
 import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public abstract class ScummVM implements SurfaceHolder.Callback, Runnable {
 	final protected static String LOG_TAG = "ScummVM";
@@ -62,6 +63,7 @@ public abstract class ScummVM implements SurfaceHolder.Callback, Runnable {
 	abstract protected void showVirtualKeyboard(boolean enable);
 	abstract protected void showKeyboardControl(boolean enable);
 	abstract protected String[] getSysArchives();
+	abstract protected String[] getAllStorageLocations();
 
 	public ScummVM(AssetManager asset_manager, SurfaceHolder holder) {
 		_asset_manager = asset_manager;
@@ -141,11 +143,10 @@ public abstract class ScummVM implements SurfaceHolder.Callback, Runnable {
 
 		int res = main(_args);
 
-		destroy();
-
 		deinitEGL();
 		deinitAudio();
 
+		destroy();
 		// On exit, tear everything down for a fresh restart next time.
 		System.exit(res);
 	}

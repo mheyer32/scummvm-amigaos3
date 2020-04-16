@@ -28,9 +28,9 @@
 #if defined(USE_TTS) && defined(WIN32)
 #include <basetyps.h>
 #include <windows.h>
-#include <Servprov.h>
+#include <servprov.h>
+
 #include <sapi.h>
-#include "backends/text-to-speech/windows/sphelper-scummvm.h"
 #include "backends/platform/sdl/win32/win32_wrapper.h"
 
 #include "backends/text-to-speech/windows/windows-text-to-speech.h"
@@ -67,16 +67,30 @@ void WindowsTextToSpeechManager::init() {
 		return;
 
 	// init audio
-	CSpStreamFormat format;
-	format.AssignFormat(SPSF_11kHz8BitMono);
-	ISpObjectToken *pToken;
-	HRESULT hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOOUT, &pToken);
+	ISpObjectTokenCategory *pTokenCategory;
+	HRESULT hr = CoCreateInstance(CLSID_SpObjectTokenCategory, NULL, CLSCTX_ALL, IID_ISpObjectTokenCategory, (void **)&pTokenCategory);
+	if (SUCCEEDED(hr)) {
+		hr = pTokenCategory->SetId(SPCAT_AUDIOOUT, TRUE);
+		if (SUCCEEDED(hr)) {
+			WCHAR *tokenId;
+			hr = pTokenCategory->GetDefaultTokenId(&tokenId);
+			if (SUCCEEDED(hr)) {
+				ISpObjectToken *pToken;
+				hr = CoCreateInstance(CLSID_SpObjectToken, NULL, CLSCTX_ALL, IID_ISpObjectToken, (void **)&pToken);
+				if (SUCCEEDED(hr)) {
+					hr = pToken->SetId(NULL, tokenId, FALSE);
+					if (SUCCEEDED(hr)) {
+						hr = pToken->CreateInstance(NULL, CLSCTX_ALL, IID_ISpAudio, (void **)&_audio);
+					}
+				}
+				CoTaskMemFree(tokenId);
+			}
+		}
+	}
 	if (FAILED(hr)) {
 		warning("Could not initialize TTS audio");
 		return;
 	}
-	pToken->CreateInstance(NULL, CLSCTX_ALL, IID_ISpAudio, (void **)&_audio);
-	_audio->SetFormat(format.FormatId(), format.WaveFormatExPtr());
 
 	// init voice
 	hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void **)&_voice);
@@ -327,9 +341,7 @@ void WindowsTextToSpeechManager::setVolume(unsigned volume) {
 }
 
 void WindowsTextToSpeechManager::setLanguage(Common::String language) {
-	if (language == "C")
-		language = "en";
-	_ttsState->_language = language;
+	Common::TextToSpeechManager::setLanguage(language);
 	updateVoices();
 	setVoice(0);
 }
@@ -339,18 +351,22 @@ void WindowsTextToSpeechManager::createVoice(void *cpVoiceToken) {
 
 	// description
 	WCHAR *descW;
-	SpGetDescription(voiceToken, &descW);
-	char *buffer = Win32::unicodeToAnsi(descW);
-	Common::String desc = buffer;
+	char *buffer;
+	Common::String desc;
+	HRESULT hr = voiceToken->GetStringValue(NULL, &descW);
+	if (SUCCEEDED(hr)) {
+		buffer = Win32::unicodeToAnsi(descW);
+		desc = buffer;
+		delete[] buffer;
+		CoTaskMemFree(descW);
+	}
+
 	if (desc == "Sample TTS Voice") {
 		// This is really bad voice, it is basicaly unusable
-		free(buffer);
 		return;
 	}
-	free(buffer);
 
 	// voice attributes
-	HRESULT hr = S_OK;
 	ISpDataKey *key = nullptr;
 	hr = voiceToken->OpenKey(L"Attributes", &key);
 
@@ -370,7 +386,7 @@ void WindowsTextToSpeechManager::createVoice(void *cpVoiceToken) {
 	}
 	buffer = Win32::unicodeToAnsi(data);
 	Common::String language = lcidToLocale(buffer);
-	free(buffer);
+	delete[] buffer;
 	CoTaskMemFree(data);
 
 	// only get the voices for the current language
@@ -388,7 +404,7 @@ void WindowsTextToSpeechManager::createVoice(void *cpVoiceToken) {
 	}
 	buffer = Win32::unicodeToAnsi(data);
 	Common::TTSVoice::Gender gender = !strcmp(buffer, "Male") ? Common::TTSVoice::MALE : Common::TTSVoice::FEMALE;
-	free(buffer);
+	delete[] buffer;
 	CoTaskMemFree(data);
 
 	// age
@@ -400,7 +416,7 @@ void WindowsTextToSpeechManager::createVoice(void *cpVoiceToken) {
 	}
 	buffer = Win32::unicodeToAnsi(data);
 	Common::TTSVoice::Age age = !strcmp(buffer, "Adult") ? Common::TTSVoice::ADULT : Common::TTSVoice::UNKNOWN_AGE;
-	free(buffer);
+	delete[] buffer;
 	CoTaskMemFree(data);
 
 	_ttsState->_availableVoices.push_back(Common::TTSVoice(gender, age, (void *) voiceToken, desc));
@@ -432,12 +448,19 @@ Common::String WindowsTextToSpeechManager::lcidToLocale(Common::String lcid) {
 
 void WindowsTextToSpeechManager::updateVoices() {
 	_ttsState->_availableVoices.clear();
-	HRESULT hr = S_OK;
 	ISpObjectToken *cpVoiceToken = nullptr;
 	IEnumSpObjectTokens *cpEnum = nullptr;
 	unsigned long ulCount = 0;
 
-	hr = SpEnumTokens(SPCAT_VOICES, NULL, NULL, &cpEnum);
+	ISpObjectTokenCategory *cpCategory;
+	HRESULT hr = CoCreateInstance(CLSID_SpObjectTokenCategory, NULL, CLSCTX_ALL, IID_ISpObjectTokenCategory, (void**)&cpCategory);
+	if (SUCCEEDED(hr)) {
+		hr = cpCategory->SetId(SPCAT_VOICES, FALSE);
+		if (SUCCEEDED(hr)) {
+			hr = cpCategory->EnumTokens(NULL, NULL, &cpEnum);
+		}
+	}
+
 	if (SUCCEEDED(hr)) {
 		hr = cpEnum->GetCount(&ulCount);
 	}
@@ -460,7 +483,7 @@ void WindowsTextToSpeechManager::updateVoices() {
 
 	if (_ttsState->_availableVoices.empty()) {
 		_speechState = NO_VOICE;
-		warning("No voice is available");
+		warning("No voice is available for language: %s", _ttsState->_language.c_str());
 	} else if (_speechState == NO_VOICE)
 		_speechState = READY;
 }

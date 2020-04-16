@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{E2ABD6B9-9778-4B32-88ED-27B3DDA81167}</ProjectGuid>
+		<ProjectGuid>{70120982-CCD2-403A-90B4-59F821D05952}</ProjectGuid>
 		<RootNamespace>pegasus</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

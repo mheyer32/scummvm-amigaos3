@@ -22,7 +22,7 @@
 
 #ifdef ENABLE_EOB
 
-#include "kyra/resource/resource.h"
+#include "kyra/kyra_v1.h"
 #include "kyra/sound/drivers/audiomaster2.h"
 
 #include "audio/mods/paula.h"
@@ -662,7 +662,7 @@ void SoundResourceINST::loadSamples(Common::ReadStream *stream, uint32 size) {
 		instr->open();
 		_samplesResource = instr;
 	} else {
-		// This will come up quite often in EOB II. But never with intruments that are actually used. No need to bother the user with a warning here.
+		// This will come up quite often in EOB II. But never with instruments that are actually used. No need to bother the user with a warning here.
 		debugC(9, kDebugLevelSound, "SoundResourceINST::loadInstrument(): Samples resource '%s' not found for '%s'.", data, _name.c_str());
 		_samplesResource = 0;
 	}
@@ -891,6 +891,8 @@ void AudioMaster2ResourceManager::loadResourceFile(Common::SeekableReadStream *d
 void AudioMaster2ResourceManager::initResource(SoundResource *resource) {
 	if (!resource)
 		return;
+
+	Common::StackLock lock(_mutex);
 
 	SoundResource *res = retrieveFromChain(resource->getName());
 	// The driver does not replace resources with the same name, but disposes the new resource instead.
@@ -1198,11 +1200,10 @@ AudioMaster2Internal::AudioMaster2Internal(Audio::Mixer *mixer) : Paula(true, mi
 }
 
 AudioMaster2Internal::~AudioMaster2Internal() {
-	Common::StackLock lock(_mutex);
-
 	stopPaula();
-
 	_mixer->stopHandle(_soundHandle);
+
+	Common::StackLock lock(_mutex);
 
 	delete _res;
 	delete _io;
@@ -1284,7 +1285,7 @@ void AudioMaster2Internal::fadeOut(int delay) {
 }
 
 bool AudioMaster2Internal::isFading() {
-	return _io->isFading();
+	return _ready ? _io->isFading() : false;
 }
 
 void AudioMaster2Internal::setMusicVolume(int volume) {
@@ -1313,17 +1314,17 @@ void AudioMaster2Internal::resetCounter() {
 }
 
 int AudioMaster2Internal::getPlayDuration() {
-	return _durationCounter;
+	return _ready ? _durationCounter : 0;
 }
 
 void AudioMaster2Internal::sync(SoundResource *res) {
 	if (!_ready || !res)
 		return;
 
+	Common::StackLock lock(_mutex);
+
 	if (res->getType() != 1)
 		return;
-
-	Common::StackLock lock(_mutex);
 
 	SoundResourceSMUS *smus = static_cast<SoundResourceSMUS*>(res);
 	_io->_tempo = smus->getTempo();

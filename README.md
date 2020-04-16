@@ -177,7 +177,7 @@ its name to ScummVM ('VM' meaning Virtual Machine).
 
 Over time support for a lot of non-SCUMM games has been added, and
 ScummVM now also supports many of Sierra's AGI and SCI games (such as
-King's Quest 1-6, Space Quest 1-5, ...), Discworld 1 and 2, Simon the
+King's Quest 1-7, Space Quest 1-6, ...), Discworld 1 and 2, Simon the
 Sorcerer 1 and 2, Beneath A Steel Sky, Lure of the Temptress, Broken
 Sword I and II, Flight of the Amazon Queen, Gobliiins 1-3, The Legend of
 Kyrandia series, many of Humongous Entertainment's children's SCUMM
@@ -415,6 +415,7 @@ supported games can be found here:
 | Quest for Glory 1                          | \[qfg1vga\]          |
 | Quest for Glory 2                          | \[qfg2\]             |
 | Quest for Glory 3                          | \[qfg3\]             |
+| Quest for Glory 4                          | \[qfg4\]             |
 | RAMA                                       | \[rama\]             |
 | Slater & Charlie Go Camping                | \[slater\]           |
 | Shivers                                    | \[shivers\]          |
@@ -2581,6 +2582,12 @@ previous default location of `~/.scummvmrc` will be kept.
 
 `~/Library/Preferences/ScummVM Preferences` (here, `~` refers to your
 home directory)
+
+**iOS:**
+
+
+For sandboxed version: `/Preferences`
+Otherwise: `/var/mobile/Library/ScummVM/Preferences`
 
 **Others:**
 

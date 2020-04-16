@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{C01B212C-D5C1-4F34-87E9-83B2E5BFE992}</ProjectGuid>
+		<ProjectGuid>{F7DD2E25-8339-427D-AF23-04DC93B52B69}</ProjectGuid>
 		<RootNamespace>agos</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -212,7 +212,9 @@
 		<ClCompile Include="..\..\engines\agos\zones.cpp" />
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="..\..\engines\agos\drivers\accolade\adlib.h" />
 		<ClInclude Include="..\..\engines\agos\drivers\accolade\mididriver.h" />
+		<ClInclude Include="..\..\engines\agos\drivers\accolade\mt32.h" />
 		<ClInclude Include="..\..\engines\agos\drivers\simon1\adlib.h" />
 		<ClInclude Include="..\..\engines\agos\agos.h" />
 		<ClInclude Include="..\..\engines\agos\animation.h" />

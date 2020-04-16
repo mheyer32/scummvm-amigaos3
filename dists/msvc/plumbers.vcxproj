@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{B820433E-18C0-4459-86FE-B44D3CAFC920}</ProjectGuid>
+		<ProjectGuid>{EC9BAD51-E54D-4D06-925E-BCE4AD27D61E}</ProjectGuid>
 		<RootNamespace>plumbers</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>

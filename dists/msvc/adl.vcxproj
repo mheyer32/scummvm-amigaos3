@@ -35,7 +35,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{2188F076-5C3D-411E-8C37-49618BDF94DC}</ProjectGuid>
+		<ProjectGuid>{3A66BD87-2DA5-4A5D-B8B5-9F86EC70B04D}</ProjectGuid>
 		<RootNamespace>adl</RootNamespace>
 		<Keyword>Win32Proj</Keyword>
 		<VCTargetsPath Condition="'$(VCTargetsPath12)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath12)</VCTargetsPath>
@@ -119,7 +119,7 @@
 		<ClCompile Include="..\..\engines\adl\detection.cpp" />
 		<ClCompile Include="..\..\engines\adl\disk.cpp" />
 		<ClCompile Include="..\..\engines\adl\display.cpp" />
-		<ClCompile Include="..\..\engines\adl\graphics.cpp" />
+		<ClCompile Include="..\..\engines\adl\display_a2.cpp" />
 		<ClCompile Include="..\..\engines\adl\hires1.cpp" />
 		<ClCompile Include="..\..\engines\adl\hires2.cpp" />
 		<ClCompile Include="..\..\engines\adl\hires4.cpp" />
@@ -137,6 +137,7 @@
 		<ClInclude Include="..\..\engines\adl\detection.h" />
 		<ClInclude Include="..\..\engines\adl\disk.h" />
 		<ClInclude Include="..\..\engines\adl\display.h" />
+		<ClInclude Include="..\..\engines\adl\display_a2.h" />
 		<ClInclude Include="..\..\engines\adl\graphics.h" />
 		<ClInclude Include="..\..\engines\adl\sound.h" />
 	</ItemGroup>
