@@ -1539,7 +1539,7 @@ case $_host in
 	_host_os=3ds
 	_host_cpu=arm
 	_host_alias=arm-none-eabi
-	;;
+
 	test "x$prefix" = xNONE && prefix=romfs:
 
 	datarootdir='${prefix}'

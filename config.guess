@@ -1336,7 +1336,7 @@ EOF
 	    unknown) UNAME_PROCESSOR=powerpc ;;
 	esac
 	if command -v xcode-select > /dev/null 2> /dev/null && \
-	if test "$UNAME_PROCESSOR" = unknown ; then
+		! xcode-select --print-path > /dev/null 2> /dev/null ; then
 	    # Avoid executing cc if there is no toolchain installed as
 	    # cc will be a stub that puts up a graphical alert
 	    # prompting the user to install developer tools.
