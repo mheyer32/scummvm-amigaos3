@@ -108,7 +108,7 @@ public:
 	virtual void unlockScreen() { _screenDirty = true; }
 	virtual void fillScreen(uint32 col);
 	virtual void updateScreen();
-	virtual void setShakePos(int shakeOffset);
+	virtual void setShakePos(int shakeXOffset, int shakeYOffset);
 
 	virtual void setFocusRectangle(const Common::Rect &rect) {}
 	virtual void clearFocusRectangle() {}

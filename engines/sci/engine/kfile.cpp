@@ -639,7 +639,11 @@ reg_t kFileIOWriteRaw(EngineState *s, int argc, reg_t *argv) {
 	if (success) {
 		return make_reg(0, bytesWritten);
 	}
+#ifdef ENABLE_SCI32
 	return getSciVersion() >= SCI_VERSION_2 ? SIGNAL_REG : NULL_REG;
+#else
+	return NULL_REG;
+#endif
 }
 
 reg_t kFileIOUnlink(EngineState *s, int argc, reg_t *argv) {
@@ -752,7 +756,11 @@ reg_t kFileIOWriteString(EngineState *s, int argc, reg_t *argv) {
 		return make_reg(0, bytesWritten);
 	}
 
+#ifdef ENABLE_SCI32
 	return getSciVersion() >= SCI_VERSION_2 ? SIGNAL_REG : NULL_REG;
+#else
+	return NULL_REG;
+#endif
 }
 
 reg_t kFileIOSeek(EngineState *s, int argc, reg_t *argv) {

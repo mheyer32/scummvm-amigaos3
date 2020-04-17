@@ -524,12 +524,12 @@ void OSystem_AmigaOS3::updateScreen() {
 	}
 }
 
-void OSystem_AmigaOS3::setShakePos(int shakeOffset) {
+void OSystem_AmigaOS3::setShakePos(int shakeXOffset, int shakeYOffset) {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
 
-	_newShakePos = shakeOffset;
+	_newShakePos = shakeYOffset;
 }
 
 #pragma mark -

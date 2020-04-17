@@ -992,11 +992,12 @@ void ResourceManager::init() {
 		warning("Map version not detected, but volume version has been detected. Setting map version to volume version");
 		_mapVersion = _volVersion;
 	}
-
+#ifdef ENABLE_SCI32
 	if ((_volVersion == kResVersionSci3) && (_mapVersion < kResVersionSci2)) {
 		warning("Detected volume version is too high for detected map version. Setting volume version to map version");
 		_volVersion = _mapVersion;
 	}
+#endif
 
 	debugC(1, kDebugLevelResMan, "resMan: Detected resource map version %d: %s", _mapVersion, versionDescription(_mapVersion));
 	debugC(1, kDebugLevelResMan, "resMan: Detected volume version %d: %s", _volVersion, versionDescription(_volVersion));
