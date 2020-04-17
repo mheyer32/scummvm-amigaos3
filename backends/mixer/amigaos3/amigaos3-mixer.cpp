@@ -233,7 +233,7 @@ void AmigaOS3MixerManager::init(int priority) {
 
 	// Create the mixer instance and start the sound processing.
 	assert(!g_mixer);
-	g_mixer = new Audio::MixerImpl(g_system, _mixingFrequency);
+	g_mixer = new Audio::MixerImpl(_mixingFrequency);
 	assert(g_mixer);
 	g_mixer->setReady(true);
 
