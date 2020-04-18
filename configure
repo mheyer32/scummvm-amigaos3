@@ -2243,7 +2243,7 @@ if test "$_debug_build" != no; then
 	debug_mode=-g
 	test "$_host_os" = amigaos && debug_mode=-gstabs
 	append_var CXXFLAGS "$debug_mode"
-	echo_n -- "$debug_mode"
+	append_var LDFLAGS "$debug_mode"
 	echo_n -- "$debug_mode"
 
 	echo "int main() { return 0; }" > $TMPC
