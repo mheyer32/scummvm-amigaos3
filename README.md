@@ -13,21 +13,27 @@ sound playback - lots of room for improvement.
 
 ## How to build
 
-This source will build with Stefan 'Bebbo' Franke's GCC 6.4.1 toolchain at: https://github.com/bebbo/amiga-gcc
+This source will build with Stefan 'Bebbo' Franke's GCC 6.5.0b toolchain at: https://github.com/bebbo/amiga-gcc
 
 The binary directory of the toolchain is expected to be in the search path.
 
 1) Configure
-./configure --host=m68k-amigaos --disable-all-engines --enable-engine=scumm,scumm-7-8 --disable-mt32emu --enable-release --disable-hq-scalers --with-amiga-prefix=/media/sf_Amiga/ScummVM
+`./configure --host=m68k-amigaos --disable-all-engines --disable-hq-scalers --enable-c++11 --disable-lua --disable-nuked-opl --disable-mt32emu --enable-release --enable-optimizations --with-amiga-prefix=/media/sf_Amiga/ScummVM --enable-engine=sci,scumm,tinsel`
 
 This only enables the SCUMM based engines. Other engines like SCI and Tinsel can be added but will increase the binary size.
-'--with-amiga-prefix=/media/sf_Amiga/ScummVM'  points to a directory shared with the Amiga (or Amiga Emulator)
+`--with-amiga-prefix=/media/sf_Amiga/ScummVM`  points to a directory shared with the Amiga (or Amiga Emulator)
 All required binaries will be installed there along with a stripped version of the executable
 
 Some engine code makes use of dynamic_cast<>, which requires RTTI to be available. Edit the 'configure' script and find the
 amigaos3 relevant section and disable the line
-	append_var CXXFLAGS "-fno-rtti"
+`append_var CXXFLAGS "-fno-rtti"`
 there.
+
+The settings for the AmigaOS compilation enable Link Time Optimization (LTO). This allows the linker to perform certain optimizations and shrinks the resulting executable a bit in size.
+However, it makes the linking process very slow, leading to long turnaround times during debugging.
+In order to disable LTO, find this line in the 'configure' script:
+`_machine_flags="-noixemul -m68030 -flto -fno-threadsafe-statics"`
+and remove `-flto`
 
 2) Run
 make amigaos3dist -j8
