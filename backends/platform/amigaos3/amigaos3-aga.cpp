@@ -349,19 +349,25 @@ uint32 OSystem_AmigaOS3::getMillis(bool skipRecord) {
 }
 
 void OSystem_AmigaOS3::delayMillis(uint msecs) {
-	if (msecs) {
-		if (msecs < 1000) {
-			TimerIOReq->tr_time.tv_secs = 0;
-			TimerIOReq->tr_time.tv_micro = msecs * 1000;
-		} else {
-			TimerIOReq->tr_time.tv_secs = msecs / 1000;
-			TimerIOReq->tr_time.tv_micro = (msecs % 1000) * 1000;
-		}
-		TimerIOReq->tr_node.io_Command = TR_ADDREQUEST;
+// Temporary workaround, using the same IO request from multiple threads
+//  could be dangerous.
+//
+//	if (msecs) {
+//		if (msecs < 1000) {
+//			TimerIOReq->tr_time.tv_secs = 0;
+//			TimerIOReq->tr_time.tv_micro = msecs * 1000;
+//		} else {
+//			TimerIOReq->tr_time.tv_secs = msecs / 1000;
+//			TimerIOReq->tr_time.tv_micro = (msecs % 1000) * 1000;
+//		}
+//		TimerIOReq->tr_node.io_Command = TR_ADDREQUEST;
 
-		DoIO(&TimerIOReq->tr_node);
-		WaitIO(&TimerIOReq->tr_node);
-	}
+//		DoIO(&TimerIOReq->tr_node);
+//		WaitIO(&TimerIOReq->tr_node);
+//	}
+
+	// 1 Tick is 50Hz, 20ms
+	Delay(msecs / 20);
 }
 
 void OSystem_AmigaOS3::getTimeAndDate(TimeDate &td) const {
