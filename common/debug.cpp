@@ -133,7 +133,7 @@ bool debugChannelSet(int level, uint32 debugChannels) {
 }
 
 
-#ifndef DISABLE_TEXT_CONSOLE
+#if !defined(DISABLE_TEXT_CONSOLE) && !(defined(__amigaos3__) && defined(NDEBUG))
 
 static void debugHelper(const char *s, va_list va, bool caret = true) {
 	Common::String buf = Common::String::vformat(s, va);

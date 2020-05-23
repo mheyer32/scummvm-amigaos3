@@ -27,14 +27,14 @@
 
 #if defined(DISABLE_TEXT_CONSOLE) || (defined(__amigaos3__) && defined(NDEBUG))
 
-inline void debug(const char *s, ...) {}
-inline void debug(int level, const char *s, ...) {}
-inline void debugN(const char *s, ...) {}
-inline void debugN(int level, const char *s, ...) {}
-inline void debugC(int level, uint32 debugChannels, const char *s, ...) {}
-inline void debugC(uint32 debugChannels, const char *s, ...) {}
-inline void debugCN(int level, uint32 debugChannels, const char *s, ...) {}
-inline void debugCN(uint32 debugChannels, const char *s, ...) {}
+static inline void debug(const char *s, ...) {}
+static inline void debug(int level, const char *s, ...) {}
+static inline void debugN(const char *s, ...) {}
+static inline void debugN(int level, const char *s, ...) {}
+static inline void debugC(int level, uint32 debugChannels, const char *s, ...) {}
+static inline void debugC(uint32 debugChannels, const char *s, ...) {}
+static inline void debugCN(int level, uint32 debugChannels, const char *s, ...) {}
+static inline void debugCN(uint32 debugChannels, const char *s, ...) {}
 #else
 
 /**
