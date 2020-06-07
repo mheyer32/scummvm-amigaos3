@@ -163,13 +163,6 @@ void Screen_EoB::clearCurDimOvl(int pageNum) {
 	clearOverlayRect(pageNum, _curDim->sx << 3, _curDim->sy, _curDim->w << 3, _curDim->h);
 }
 
-void Screen_EoB::clearCurDimOvl(int pageNum) {
-	if (pageNum > 1 || !_useOverlays)
-		return;
-	addDirtyRect(_curDim->sx << 3, _curDim->sy, _curDim->w << 3, _curDim->h);
-	clearOverlayRect(pageNum, _curDim->sx << 3, _curDim->sy, _curDim->w << 3, _curDim->h);
-}
-
 void Screen_EoB::setMouseCursor(int x, int y, const byte *shape) {
 	setMouseCursor(x, y, shape, 0);
 }

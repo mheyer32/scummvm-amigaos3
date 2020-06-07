@@ -818,7 +818,10 @@ bool SciEngine::hasMacIconBar() const {
 
 bool SciEngine::hasMacSaveRestoreDialogs() const {
     return _gameDescription->platform == Common::kPlatformMacintosh &&
-			(getSciVersion() <= SCI_VERSION_2_1_EARLY ||
+            (
+#ifdef ENABLE_SCI32
+               getSciVersion() <= SCI_VERSION_2_1_EARLY ||
+#endif
 			 getGameId() == GID_GK2 ||
 			 getGameId() == GID_SQ6 ||
 			 getGameId() == GID_LIGHTHOUSE);
@@ -867,15 +870,6 @@ int SciEngine::inQfGImportRoom() const {
 		return 4;
 	}
 	return 0;
-}
-
-void SciEngine::showQfgImportMessageBox() const {
-	showScummVMDialog(_("Characters saved inside ScummVM are shown "
-			"automatically. Character files saved in the original "
-			"interpreter need to be put inside ScummVM's saved games "
-			"directory and a prefix needs to be added depending on which "
-			"game it was saved in: 'qfg1-' for Quest for Glory 1, 'qfg2-' "
-			"for Quest for Glory 2. Example: 'qfg2-thief.sav'."));
 }
 
 void SciEngine::showQfgImportMessageBox() const {

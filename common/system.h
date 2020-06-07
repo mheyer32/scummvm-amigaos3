@@ -546,10 +546,7 @@ public:
 	 * The list is terminated by an all-zero entry.
 	 * @return a list of supported graphics modes
 	 */
-	virtual const GraphicsMode *getSupportedGraphicsModes() const {
-		static const GraphicsMode noGraphicsModes[] = {{"NONE", "Normal", 0}, {nullptr, nullptr, 0 }};
-		return noGraphicsModes;
-    }
+	virtual const GraphicsMode *getSupportedGraphicsModes() const;
 
 	/**
 	 * Return the ID of the 'default' graphics mode. What exactly this means
@@ -645,10 +642,7 @@ public:
 	 * The list is terminated by an all-zero entry.
 	 * @return a list of supported shaders
 	 */
-	virtual const GraphicsMode *getSupportedShaders() const {
-		static const OSystem::GraphicsMode no_shader[2] = {{"NONE", "Normal (no shader)", 0}, {nullptr, nullptr, 0}};
-		return no_shader;
-	}
+	virtual const GraphicsMode *getSupportedShaders() const;
 
 	/**
 	 * Return the ID of the 'default' shader mode. What exactly this means
@@ -694,10 +688,7 @@ public:
 	 * The list is terminated by an all-zero entry.
 	 * @return a list of supported stretch modes
 	 */
-	virtual const GraphicsMode *getSupportedStretchModes() const {
-		static const GraphicsMode noStretchModes[] = {{"NONE", "Normal", 0}, {nullptr, nullptr, 0 }};
-		return noStretchModes;
-	}
+	virtual const GraphicsMode *getSupportedStretchModes() const;
 
 	/**
 	 * Return the ID of the 'default' stretch mode. What exactly this means

@@ -978,13 +978,12 @@ void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, Selector s
 	{
 		index >>= 1;
 
-			if (index >= var_container->getVarCount()) {
-				// TODO: error, warning, debug?
-				return;
-			}
-
-			selector = var_container->getVarSelector(index);
+		if (index >= var_container->getVarCount()) {
+			// TODO: error, warning, debug?
+			return;
 		}
+
+		selector = var_container->getVarSelector(index);
 	}
 
 	if (g_sci->checkSelectorBreakpoint(breakpointType, objp, selector)) {

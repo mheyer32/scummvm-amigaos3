@@ -31,9 +31,7 @@ uint16 REGPARM (*READ_SCI11ENDIAN_UINT16)(const void *ptr) = NULL;
 uint32 REGPARM (*READ_SCI11ENDIAN_UINT32)(const void *ptr) = NULL;
 void REGPARM (*WRITE_SCI11ENDIAN_UINT16)(void *ptr, uint16 val) = NULL;
 uint16 REGPARM (*READ_SCI32ENDIAN_UINT16)(const void *ptr) = NULL;
-#ifdef ENABLE_SCI32
 void REGPARM (*WRITE_SCI11ENDIAN_UINT32)(void *ptr, uint32 val) = NULL;
-#endif
 
 namespace {
 uint16 REGPARM SCI_READ_LE_UINT16(const void *ptr) {

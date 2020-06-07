@@ -127,11 +127,6 @@ protected:
 
 	static const int16 _keyboardSounds[190];
 
-	// special case
-	void processKeyboardSfx(int inputFlag);
-
-	static const int16 _keyboardSounds[190];
-
 	// gfx/animation specific
 	bool _inventorySaved;
 	void backUpPage0();

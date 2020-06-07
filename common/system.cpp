@@ -121,6 +121,11 @@ void OSystem::initBackend() {
 	_backendInitialized = true;
 }
 
+const OSystem::GraphicsMode* OSystem::getSupportedGraphicsModes() const {
+	static const GraphicsMode noGraphicsModes[] = {{"NONE", "Normal", 0}, {nullptr, nullptr, 0 }};
+	return noGraphicsModes;
+}
+
 void OSystem::destroy() {
 	_backendInitialized = false;
 	Common::String::releaseMemoryPoolMutex();

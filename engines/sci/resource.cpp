@@ -192,7 +192,7 @@ ResourceType ResourceManager::convertResType(byte type) {
 		forceSci0 = true;
 	}
 
-	if ((_mapVersion <= kResVersionSci11Mac2 && !_isSci2Mac) || forceSci0) {
+	if ((_mapVersion <= kResVersionSci11Mac && !_isSci2Mac) || forceSci0) {
 		// SCI0 - SCI2
 		if (type < ARRAYSIZE(s_resTypeMapSci0))
 			return s_resTypeMapSci0[type];
@@ -1014,10 +1014,12 @@ void ResourceManager::init() {
 	}
 #endif
 
+#ifdef ENABLE_SCI32
 	if ((_volVersion == kResVersionSci3) && (_mapVersion < kResVersionSci2)) {
 		warning("Detected volume version is too high for detected map version. Setting volume version to map version");
 		_volVersion = _mapVersion;
 	}
+#endif
 
 	debugC(1, kDebugLevelResMan, "resMan: Detected resource map version %d: %s", _mapVersion, versionDescription(_mapVersion));
 	debugC(1, kDebugLevelResMan, "resMan: Detected volume version %d: %s", _volVersion, versionDescription(_volVersion));

@@ -234,6 +234,24 @@ MODULE_OBJS += \
 	midi/camd.o
 endif
 
+ifdef MORPHOS
+MODULE_OBJS += \
+	fs/morphos/morphos-fs.o \
+	fs/morphos/morphos-fs-factory.o \
+	midi/camd.o
+endif
+
+ifdef AMIGAOS3
+MODULE_OBJS += \
+	events/amigaos3/amigaos3-events.o \
+	fs/amigaos3/amigaos3-fs-node.o \
+	fs/amigaos3/amigaos3-fs-factory.o \
+	fs/amigaos3/amigaos3-fs-file.o \
+	mixer/amigaos3/amigaos3-mixer.o \
+	midi/amigaos3/amigaos3-camd.o \
+	timer/amigaos3/amigaos3-timer.o
+endif
+
 ifdef RISCOS
 MODULE_OBJS += \
 	events/riscossdl/riscossdl-events.o \

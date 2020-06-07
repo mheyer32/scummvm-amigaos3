@@ -86,22 +86,23 @@ bool StdioStream::flush() {
 
 StdioStream *StdioStream::makeFromPath(const Common::String &path, bool writeMode) {
 	FILE *handle = fopen(path.c_str(), writeMode ? "wb" : "rb");
-
-#if defined(__amigaos4__) || defined(__amigaos3__) || defined(__MORPHOS__)
-	//
-	// Work around for possibility that someone uses AmigaOS "newlib" build
-	// with SmartFileSystem (blocksize 512 bytes), leading to buffer size
-	// being only 512 bytes. "Clib2" sets the buffer size to 8KB, resulting
-	// smooth movie playback. This forces the buffer to be enough also when
-	// using "newlib" compile on SFS.
-	//
-	if (handle && !writeMode) {
-		setBufferSize(8192);
-	}
-#endif
-
 	if (handle)
-		return new StdioStream(handle);
+	{
+		auto stream = new StdioStream(handle);
+#if defined(__amigaos4__) || defined(__amigaos3__) || defined(__MORPHOS__)
+		//
+		// Work around for possibility that someone uses AmigaOS "newlib" build
+		// with SmartFileSystem (blocksize 512 bytes), leading to buffer size
+		// being only 512 bytes. "Clib2" sets the buffer size to 8KB, resulting
+		// smooth movie playback. This forces the buffer to be enough also when
+		// using "newlib" compile on SFS.
+		//
+		if (handle && !writeMode) {
+			stream->setBufferSize(8192);
+		}
+#endif
+		return stream;
+	}
 	return 0;
 }
 

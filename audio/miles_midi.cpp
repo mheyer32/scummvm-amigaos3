@@ -1175,11 +1175,19 @@ MidiDriver_Miles_Midi *MidiDriver_Miles_MIDI_create(MusicType midiType, const Co
 }
 
 void MidiDriver_Miles_MT32_processXMIDITimbreChunk(MidiDriver_BASE *driver, const byte *timbreListPtr, uint32 timbreListSize) {
+/*
 	MidiDriver_Miles_Midi *driverMT32 = dynamic_cast<MidiDriver_Miles_Midi *>(driver);
 
 	if (driverMT32) {
 		driverMT32->processXMIDITimbreChunk(timbreListPtr, timbreListSize);
 	}
+*/
+
+	/* We can assume that a midi driver that is using MidiDriver_Miles_MT32_processXMIDITimbreChunk
+	 * is actually derived from MidiDriver_Miles_Midi
+	 */
+	MidiDriver_Miles_Midi *driverMT32 = static_cast<MidiDriver_Miles_Midi *>(driver);
+	driverMT32->processXMIDITimbreChunk(timbreListPtr, timbreListSize);
 }
 
 void MidiDriver_Miles_Midi::deinitSource(uint8 source) {
