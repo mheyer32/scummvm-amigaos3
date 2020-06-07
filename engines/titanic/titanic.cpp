@@ -46,7 +46,6 @@
 #include "common/debug-channels.h"
 #include "common/events.h"
 #include "common/scummsys.h"
-#include "common/translation.h"
 #include "engines/util.h"
 #include "graphics/scaler.h"
 #include "graphics/screen.h"
@@ -61,7 +60,6 @@ TitanicEngine::TitanicEngine(OSystem *syst, const TitanicGameDescription *gameDe
 		: _gameDescription(gameDesc), Engine(syst), _randomSource("Titanic") {
 	g_vm = this;
 	g_language = getLanguage();
-	_debugger = nullptr;
 	_events = nullptr;
 	_filesManager = nullptr;
 	_window = nullptr;
@@ -94,7 +92,7 @@ bool TitanicEngine::initialize() {
 		return false;
 	}
 
-	_debugger = new Debugger(this);
+	setDebugger(new Debugger(this));
 
 	CSaveableObject::initClassList();
 	CEnterExitFirstClassState::init();
@@ -128,7 +126,6 @@ bool TitanicEngine::initialize() {
 }
 
 void TitanicEngine::deinitialize() {
-	delete _debugger;
 	delete _events;
 	delete _window;
 	delete _screenManager;
@@ -234,19 +231,15 @@ Common::Error TitanicEngine::loadGameState(int slot) {
 	return Common::kNoError;
 }
 
-Common::Error TitanicEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error TitanicEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	_window->_project->saveGame(slot, desc);
 	return Common::kNoError;
-}
-
-CString TitanicEngine::generateSaveName(int slot) {
-	return CString::format("%s.%03d", _targetName.c_str(), slot);
 }
 
 CString TitanicEngine::getSavegameName(int slot) {
 	// Try and open up the savegame for access
 	Common::InSaveFile *in = g_system->getSavefileManager()->openForLoading(
-		generateSaveName(slot));
+		getSaveStateName(slot));
 
 	if (in) {
 		// Read in the savegame header data
@@ -274,49 +267,6 @@ void TitanicEngine::syncSoundSettings() {
 			pet->syncSoundSettings();
 		}
 	}
-}
-
-
-void TitanicEngine::showScummVMSaveDialog() {
-	if (!canSaveGameStateCurrently())
-		return;
-
-	GUI::SaveLoadChooser *dialog = new GUI::SaveLoadChooser(_("Save game:"), _("Save"), true);
-
-	pauseEngine(true);
-	int slot = dialog->runModalWithCurrentTarget();
-	pauseEngine(false);
-
-	if (slot >= 0) {
-		Common::String desc = dialog->getResultString();
-
-		if (desc.empty()) {
-			// create our own description for the saved game, the user didn't enter it
-			desc = dialog->createDefaultSaveDescription(slot);
-		}
-
-		// Save the game
-		saveGameState(slot, desc);
-	}
-
-	delete dialog;
-}
-
-void TitanicEngine::showScummVMRestoreDialog() {
-	if (!canLoadGameStateCurrently())
-		return;
-
-	GUI::SaveLoadChooser *dialog = new GUI::SaveLoadChooser(_("Restore game:"), _("Restore"), false);
-
-	pauseEngine(true);
-	int slot = dialog->runModalWithCurrentTarget();
-	pauseEngine(false);
-
-	if (slot >= 0) {
-		loadGameState(slot);
-	}
-
-	delete dialog;
 }
 
 } // End of namespace Titanic

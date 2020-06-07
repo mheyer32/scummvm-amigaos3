@@ -42,7 +42,7 @@ HopkinsEngine::HopkinsEngine(OSystem *syst, const HopkinsGameDescription *gameDe
 	_animMan = new AnimationManager(this);
 	_computer = new ComputerManager(this);
 	_dialog = new DialogsManager(this);
-	_debug = new Debugger(this);
+	setDebugger(new Debugger(this));
 	_events = new EventsManager(this);
 	_fileIO = new FileManager(this);
 	_fontMan = new FontManager(this);
@@ -72,14 +72,9 @@ HopkinsEngine::~HopkinsEngine() {
 	delete _fontMan;
 	delete _fileIO;
 	delete _events;
-	delete _debug;
 	delete _dialog;
 	delete _computer;
 	delete _animMan;
-}
-
-Common::String HopkinsEngine::generateSaveName(int slot) {
-	return Common::String::format("%s.%03d", _targetName.c_str(), slot);
 }
 
 /**
@@ -107,7 +102,7 @@ Common::Error HopkinsEngine::loadGameState(int slot) {
 /**
  * Save the game to the given slot index, and with the given name
  */
-Common::Error HopkinsEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error HopkinsEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	return _saveLoad->saveGame(slot, desc);
 }
 
@@ -220,6 +215,8 @@ bool HopkinsEngine::runWin95Demo() {
 						break;
 					case LANG_SP:
 						_graphicsMan->loadImage("fondes");
+						break;
+					default:
 						break;
 					}
 				}
@@ -437,6 +434,9 @@ bool HopkinsEngine::runWin95Demo() {
 			_globals->_eventMode = EVENTMODE_DEFAULT;
 			_globals->_exitId = 300;
 			break;
+
+		default:
+			break;
 		}
 	}
 	return true;
@@ -536,6 +536,8 @@ bool HopkinsEngine::runLinuxDemo() {
 						break;
 					case LANG_SP:
 						_graphicsMan->loadImage("fondes");
+						break;
+					default:
 						break;
 					}
 				}
@@ -755,6 +757,9 @@ bool HopkinsEngine::runLinuxDemo() {
 			_globals->_eventMode = EVENTMODE_DEFAULT;
 			_globals->_exitId = 300;
 			break;
+
+		default:
+			break;
 		}
 	}
 	return true;
@@ -888,6 +893,8 @@ bool HopkinsEngine::runFull() {
 						break;
 					case LANG_SP:
 						_graphicsMan->loadImage("fondes");
+						break;
+					default:
 						break;
 					}
 				}
@@ -1563,6 +1570,9 @@ bool HopkinsEngine::runFull() {
 			_globals->_characterType = CHARACTER_HOPKINS;
 			_globals->_eventMode = EVENTMODE_DEFAULT;
 			_graphicsMan->_lineNbr = SCREEN_WIDTH;
+			break;
+
+		default:
 			break;
 		}
 	}
@@ -2734,6 +2744,8 @@ void HopkinsEngine::handleOceanMouseEvents() {
 		}
 		_globals->_oceanDirection = DIR_DOWN;
 		_globals->_exitId = 4;
+		break;
+	default:
 		break;
 	}
 }

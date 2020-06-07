@@ -305,9 +305,9 @@ static SCNHANDLE g_hWinParts = 0;	// Window members and cursors' graphic data
 static SCNHANDLE g_flagFilm = 0;	// Window members and cursors' graphic data
 static SCNHANDLE g_configStrings[20];
 
-static INV_OBJECT *g_invObjects = NULL;	// Inventory objects' data
+static INV_OBJECT *g_invObjects = nullptr;	// Inventory objects' data
 static int g_numObjects = 0;				// Number of inventory objects
-static SCNHANDLE *g_invFilms = NULL;
+static SCNHANDLE *g_invFilms = nullptr;
 static bool g_bNoLanguage = false;
 static DIRECTION g_initialDirection;
 
@@ -481,7 +481,7 @@ static int g_numScenes;
 
 static int g_numEntries;
 
-static PHOPPER g_pChosenScene = NULL;
+static PHOPPER g_pChosenScene = nullptr;
 
 static int g_lastChosenScene;
 static bool g_bRemember;
@@ -1120,7 +1120,7 @@ static void PrimeSceneHopper() {
  */
 static void FreeSceneHopper() {
 	free(g_pHopper);
-	g_pHopper = NULL;
+	g_pHopper = nullptr;
 }
 
 static void FirstScene(int first) {
@@ -1217,8 +1217,8 @@ static void HopAction() {
 static void DumpIconArray() {
 	for (int i = 0; i < MAX_ICONS; i++) {
 		if (g_iconArray[i] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[i]);
-			g_iconArray[i] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[i]);
+			g_iconArray[i] = nullptr;
 		}
 	}
 }
@@ -1229,8 +1229,8 @@ static void DumpIconArray() {
 static void DumpDobjArray() {
 	for (int i = 0; i < MAX_WCOMP; i++) {
 		if (g_DobjArray[i] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_DobjArray[i]);
-			g_DobjArray[i] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_DobjArray[i]);
+			g_DobjArray[i] = nullptr;
 		}
 	}
 }
@@ -1241,8 +1241,8 @@ static void DumpDobjArray() {
 static void DumpObjArray() {
 	for (int i = 0; i < MAX_WCOMP; i++) {
 		if (g_objArray[i] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_objArray[i]);
-			g_objArray[i] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_objArray[i]);
+			g_objArray[i] = nullptr;
 		}
 	}
 }
@@ -1481,7 +1481,7 @@ static void FirstFile(int first) {
 
 	if (first == 0 && i < MAX_SAVED_FILES && cd.box == saveBox) {
 		// Blank first entry for new save
-		cd.box[0].boxText = NULL;
+		cd.box[0].boxText = nullptr;
 		cd.modifier = j = 1;
 	} else {
 		cd.modifier = j = 0;
@@ -1517,16 +1517,16 @@ static void InvLoadGame() {
 		rGame = cd.selBox;
 		cd.selBox = NOBOX;
 		if (g_iconArray[HL3] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
-			g_iconArray[HL3] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+			g_iconArray[HL3] = nullptr;
 		}
 		if (g_iconArray[HL2] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
-			g_iconArray[HL2] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
+			g_iconArray[HL2] = nullptr;
 		}
 		if (g_iconArray[HL1] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
-			g_iconArray[HL1] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+			g_iconArray[HL1] = nullptr;
 		}
 		RestoreGame(rGame+cd.extraBase);
 	}
@@ -1556,7 +1556,7 @@ static bool UpdateString(const Common::KeyState &kbd) {
 		g_sedit[cpos] = CURSOR_CHAR;
 		return true;
 //	} else if (isalnum(c) || c == ',' || c == '.' || c == '\'' || (c == ' ' && cpos != 0)) {
-	} else if (IsCharImage(GetTagFontHandle(), kbd.ascii) || (kbd.ascii == ' ' && cpos != 0)) {
+	} else if (IsCharImage(_vm->_font->GetTagFontHandle(), kbd.ascii) || (kbd.ascii == ' ' && cpos != 0)) {
 		if (cpos == SG_DESC_LEN)
 			return false;
 		g_sedit[cpos] = kbd.ascii;
@@ -1593,22 +1593,22 @@ static bool InvKeyIn(const Common::KeyState &kbd) {
 			* and replace it with freshly edited text.
 			*/
 			if (g_iconArray[HL3] != NULL) {
-				MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
-				g_iconArray[HL3] = NULL;
+				MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+				g_iconArray[HL3] = nullptr;
 			}
 			g_iconArray[HL3] = ObjectTextOut(
-				GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
+				_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
 				g_InvD[g_ino].inventoryX + cd.box[cd.selBox].xpos + 2,
 				g_InvD[g_ino].inventoryY + cd.box[cd.selBox].ypos + TYOFF,
-				GetTagFontHandle(), 0);
+				_vm->_font->GetTagFontHandle(), 0);
 			if (MultiRightmost(g_iconArray[HL3]) > MAX_NAME_RIGHT) {
-				MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+				MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
 				UpdateString(Common::KeyState(Common::KEYCODE_BACKSPACE));
 				g_iconArray[HL3] = ObjectTextOut(
-					GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
+					_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
 					g_InvD[g_ino].inventoryX + cd.box[cd.selBox].xpos + 2,
 					g_InvD[g_ino].inventoryY + cd.box[cd.selBox].ypos + TYOFF,
-					GetTagFontHandle(), 0);
+					_vm->_font->GetTagFontHandle(), 0);
 			}
 			MultiSetZPosition(g_iconArray[HL3], Z_INV_ITEXT + 2);
 		}
@@ -1636,20 +1636,20 @@ static void Select(int i, bool force) {
 
 	// Clear previous selected highlight and text
 	if (g_iconArray[HL2] != NULL) {
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
-		g_iconArray[HL2] = NULL;
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
+		g_iconArray[HL2] = nullptr;
 	}
 	if (g_iconArray[HL3] != NULL) {
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
-		g_iconArray[HL3] = NULL;
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+		g_iconArray[HL3] = nullptr;
 	}
 
 	// New highlight box
 	switch (cd.box[i].boxType) {
 	case RGROUP:
-		g_iconArray[HL2] = RectangleObject(BgPal(),
+		g_iconArray[HL2] = RectangleObject(_vm->_bg->BgPal(),
 			(TinselV2 ? HighlightColor() : COL_HILIGHT), cd.box[i].w, cd.box[i].h);
-		MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
+		MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
 		MultiSetAniXY(g_iconArray[HL2],
 		g_InvD[g_ino].inventoryX + cd.box[i].xpos,
 		g_InvD[g_ino].inventoryY + cd.box[i].ypos);
@@ -1679,14 +1679,14 @@ static void Select(int i, bool force) {
 #endif
 
 			g_iconArray[HL3] = ObjectTextOut(
-				GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
+				_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
 				g_InvD[g_ino].inventoryX + cd.box[i].xpos + 2,
 #ifdef JAPAN
 				g_InvD[g_ino].inventoryY + cd.box[i].ypos + 2,
 #else
 				g_InvD[g_ino].inventoryY + cd.box[i].ypos + TYOFF,
 #endif
-				GetTagFontHandle(), 0);
+				_vm->_font->GetTagFontHandle(), 0);
 			MultiSetZPosition(g_iconArray[HL3], Z_INV_ITEXT + 2);
 		} else {
 			MultiSetZPosition(g_iconArray[HL2], Z_INV_ICONS + 1);
@@ -1697,8 +1697,8 @@ static void Select(int i, bool force) {
 		break;
 
 	case FRGROUP:
-		g_iconArray[HL2] = RectangleObject(BgPal(), COL_HILIGHT, cd.box[i].w+6, cd.box[i].h+6);
-		MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
+		g_iconArray[HL2] = RectangleObject(_vm->_bg->BgPal(), COL_HILIGHT, cd.box[i].w+6, cd.box[i].h+6);
+		MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL2]);
 		MultiSetAniXY(g_iconArray[HL2],
 		g_InvD[g_ino].inventoryX + cd.box[i].xpos - 2,
 		g_InvD[g_ino].inventoryY + cd.box[i].ypos - 2);
@@ -2276,24 +2276,24 @@ static void InvBoxes(bool InBody, int curX, int curY) {
 		// unhigh-light box (if one was)
 		cd.pointBox = NOBOX;
 		if (g_iconArray[HL1] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
-			g_iconArray[HL1] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+			g_iconArray[HL1] = nullptr;
 		}
 	} else if (index != cd.pointBox) {
 		cd.pointBox = index;
 		// A new box is pointed to - high-light it
 		if (g_iconArray[HL1] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
-			g_iconArray[HL1] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+			g_iconArray[HL1] = nullptr;
 		}
 		if ((cd.box[cd.pointBox].boxType == ARSBUT && cd.selBox != NOBOX) ||
 ///* I don't agree */ cd.box[cd.pointBox].boxType == RGROUP ||
 		    cd.box[cd.pointBox].boxType == AATBUT ||
 		    cd.box[cd.pointBox].boxType == AABUT) {
-			g_iconArray[HL1] = RectangleObject(BgPal(),
+			g_iconArray[HL1] = RectangleObject(_vm->_bg->BgPal(),
 				(TinselV2 ? HighlightColor() : COL_HILIGHT),
 				cd.box[cd.pointBox].w, cd.box[cd.pointBox].h);
-			MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+			MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 			MultiSetAniXY(g_iconArray[HL1],
 				g_InvD[g_ino].inventoryX + cd.box[cd.pointBox].xpos,
 				g_InvD[g_ino].inventoryY + cd.box[cd.pointBox].ypos);
@@ -2347,7 +2347,7 @@ static void ButtonPress(CORO_PARAM, CONFBOX *box) {
 	// Replace highlight image with normal image
 	pfilm = (const FILM *)LockMem(g_hWinParts);
 	if (g_iconArray[HL1] != NULL)
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 	pfilm = (const FILM *)LockMem(g_hWinParts);
 	g_iconArray[HL1] = AddObject(&pfilm->reels[box->bi+NORMGRAPH], -1);
 	MultiSetAniXY(g_iconArray[HL1], g_InvD[g_ino].inventoryX + box->xpos, g_InvD[g_ino].inventoryY + box->ypos);
@@ -2360,7 +2360,7 @@ static void ButtonPress(CORO_PARAM, CONFBOX *box) {
 
 	// Replace normal image with depresses image
 	pfilm = (const FILM *)LockMem(g_hWinParts);
-	MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+	MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 	g_iconArray[HL1] = AddObject(&pfilm->reels[box->bi+DOWNGRAPH], -1);
 	MultiSetAniXY(g_iconArray[HL1], g_InvD[g_ino].inventoryX + box->xpos, g_InvD[g_ino].inventoryY + box->ypos);
 	MultiSetZPosition(g_iconArray[HL1], Z_INV_ICONS+1);
@@ -2372,7 +2372,7 @@ static void ButtonPress(CORO_PARAM, CONFBOX *box) {
 
 	// Replace depressed image with normal image
 	pfilm = (const FILM *)LockMem(g_hWinParts);
-	MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+	MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 	g_iconArray[HL1] = AddObject(&pfilm->reels[box->bi+NORMGRAPH], -1);
 	MultiSetAniXY(g_iconArray[HL1], g_InvD[g_ino].inventoryX + box->xpos, g_InvD[g_ino].inventoryY + box->ypos);
 	MultiSetZPosition(g_iconArray[HL1], Z_INV_ICONS+1);
@@ -2395,8 +2395,8 @@ static void ButtonToggle(CORO_PARAM, CONFBOX *box) {
 
 	// Remove hilight image
 	if (g_iconArray[HL1] != NULL) {
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
-		g_iconArray[HL1] = NULL;
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+		g_iconArray[HL1] = nullptr;
 	}
 
 	// Hold normal image for 1 frame
@@ -2426,7 +2426,7 @@ static void ButtonToggle(CORO_PARAM, CONFBOX *box) {
 	// New state, depressed image
 	pfilm = (const FILM *)LockMem(g_hWinParts);
 	if (g_iconArray[HL1] != NULL)
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 	g_iconArray[HL1] = AddObject(&pfilm->reels[box->bi+DOWNGRAPH], -1);
 	MultiSetAniXY(g_iconArray[HL1], g_InvD[g_ino].inventoryX + box->xpos, g_InvD[g_ino].inventoryY + box->ypos);
 	MultiSetZPosition(g_iconArray[HL1], Z_INV_ICONS+1);
@@ -2437,8 +2437,8 @@ static void ButtonToggle(CORO_PARAM, CONFBOX *box) {
 		return;
 
 	// New state, normal
-	MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
-	g_iconArray[HL1] = NULL;
+	MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+	g_iconArray[HL1] = nullptr;
 
 	// Hold normal image for 1 frame
 	CORO_SLEEP(1);
@@ -2448,7 +2448,7 @@ static void ButtonToggle(CORO_PARAM, CONFBOX *box) {
 	// New state, highlighted
 	pfilm = (const FILM *)LockMem(g_hWinParts);
 	if (g_iconArray[HL1] != NULL)
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[HL1]);
 	g_iconArray[HL1] = AddObject(&pfilm->reels[box->bi+HIGRAPH], -1);
 	MultiSetAniXY(g_iconArray[HL1], g_InvD[g_ino].inventoryX + box->xpos, g_InvD[g_ino].inventoryY + box->ypos);
 	MultiSetZPosition(g_iconArray[HL1], Z_INV_ICONS+1);
@@ -2573,11 +2573,11 @@ static OBJECT *AddInvObject(int num, const FREEL **pfreel, const FILM **pfilm) {
 	pim = GetImageFromFilm(invObj->hIconFilm, 0, pfreel, &pmi, pfilm);
 
 	// Poke in the background palette
-	pim->hImgPal = TO_32(BgPal());
+	pim->hImgPal = TO_32(_vm->_bg->BgPal());
 
 	// Set up the multi-object
 	pPlayObj = MultiInitObject(pmi);
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), pPlayObj);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), pPlayObj);
 
 	return pPlayObj;
 }
@@ -2639,7 +2639,7 @@ static void AddBackground(OBJECT **rect, OBJECT **title, int extraH, int extraV,
 	g_RectObject = *rect = TranslucentObject(width, height);
 
 	// add it to display list and position it
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), *rect);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), *rect);
 	MultiSetAniXY(*rect, g_InvD[g_ino].inventoryX + NM_BG_POS_X,
 		g_InvD[g_ino].inventoryY + NM_BG_POS_Y);
 	MultiSetZPosition(*rect, Z_INV_BRECT);
@@ -2649,17 +2649,17 @@ static void AddBackground(OBJECT **rect, OBJECT **title, int extraH, int extraV,
 
 	// Create text object using title string
 	if (textFrom == FROM_HANDLE) {
-		LoadStringRes(g_InvD[g_ino].hInvTitle, TextBufferAddr(), TBUFSZ);
-		*title = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), TextBufferAddr(), 0,
+		LoadStringRes(g_InvD[g_ino].hInvTitle, _vm->_font->TextBufferAddr(), TBUFSZ);
+		*title = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), _vm->_font->TextBufferAddr(), 0,
 					g_InvD[g_ino].inventoryX + width/2, g_InvD[g_ino].inventoryY + M_TOFF,
-					GetTagFontHandle(), TXT_CENTER);
+					_vm->_font->GetTagFontHandle(), TXT_CENTER);
 		assert(*title); // Inventory title string produced NULL text
 		MultiSetZPosition(*title, Z_INV_HTEXT);
 	} else if (textFrom == FROM_STRING && cd.ixHeading != NO_HEADING) {
-		LoadStringRes(g_configStrings[cd.ixHeading], TextBufferAddr(), TBUFSZ);
-		*title = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), TextBufferAddr(), 0,
+		LoadStringRes(g_configStrings[cd.ixHeading], _vm->_font->TextBufferAddr(), TBUFSZ);
+		*title = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), _vm->_font->TextBufferAddr(), 0,
 					g_InvD[g_ino].inventoryX + width/2, g_InvD[g_ino].inventoryY + M_TOFF,
-					GetTagFontHandle(), TXT_CENTER);
+					_vm->_font->GetTagFontHandle(), TXT_CENTER);
 		assert(*title); // Inventory title string produced NULL text
 		MultiSetZPosition(*title, Z_INV_HTEXT);
 	}
@@ -2680,10 +2680,10 @@ static void AddTitle(POBJECT *title, int extraH) {
 
 	// Create text object using title string
 	if (g_InvD[g_ino].hInvTitle != (SCNHANDLE)NO_HEADING) {
-		LoadStringRes(g_InvD[g_ino].hInvTitle, TextBufferAddr(), TBUFSZ);
-		*title = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), TextBufferAddr(), 0,
+		LoadStringRes(g_InvD[g_ino].hInvTitle, _vm->_font->TextBufferAddr(), TBUFSZ);
+		*title = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), _vm->_font->TextBufferAddr(), 0,
 					g_InvD[g_ino].inventoryX + (width/2)+NM_BG_POS_X, g_InvD[g_ino].inventoryY + NM_TOFF,
-					GetTagFontHandle(), TXT_CENTER, 0);
+			_vm->_font->GetTagFontHandle(), TXT_CENTER, 0);
 		assert(*title);
 		MultiSetZPosition(*title, Z_INV_HTEXT);
 	}
@@ -2702,7 +2702,7 @@ static OBJECT *AddObject(const FREEL *pfreel, int num) {
 	pim = GetImageFromReel(pfreel, &pmi);
 
 	// Poke in the background palette
-	pim->hImgPal = TO_32(BgPal());
+	pim->hImgPal = TO_32(_vm->_bg->BgPal());
 
 	// Horrible bodge involving global variables to save
 	// width and/or height of some window frame components
@@ -2717,7 +2717,7 @@ static OBJECT *AddObject(const FREEL *pfreel, int num) {
 
 	// Set up and insert the multi-object
 	pPlayObj = MultiInitObject(pmi);
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), pPlayObj);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), pPlayObj);
 
 	return pPlayObj;
 }
@@ -2750,9 +2750,9 @@ static void AddBox(int *pi, const int i) {
 			break;
 
 		// Give us a box
-		g_iconArray[*pi] = RectangleObject(BgPal(), TinselV2 ? BoxColor() : COL_BOX,
+		g_iconArray[*pi] = RectangleObject(_vm->_bg->BgPal(), TinselV2 ? BoxColor() : COL_BOX,
 			cd.box[i].w, cd.box[i].h);
-		MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[*pi]);
+		MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_iconArray[*pi]);
 		MultiSetAniXY(g_iconArray[*pi], x, y);
 		MultiSetZPosition(g_iconArray[*pi], Z_INV_BRECT + 1);
 		*pi += 1;
@@ -2762,19 +2762,19 @@ static void AddBox(int *pi, const int i) {
 				(!TinselV2 && (cd.box[i].ixText == USE_POINTER))) {
 			if (cd.box[i].boxText != NULL) {
 				if (cd.box[i].boxType == RGROUP) {
-					g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
+					g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
 #ifdef JAPAN
 							x + 2, y+2, GetTagFontHandle(), 0);
 #else
-							x + 2, y + TYOFF, GetTagFontHandle(), 0);
+							x + 2, y + TYOFF, _vm->_font->GetTagFontHandle(), 0);
 #endif
 				} else {
-					g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
+					g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
 #ifdef JAPAN
 // Note: it never seems to go here!
 							x + cd.box[i].w/2, y+2, GetTagFontHandle(), TXT_CENTER);
 #else
-							x + cd.box[i].w / 2, y + TYOFF, GetTagFontHandle(), TXT_CENTER);
+							x + cd.box[i].w / 2, y + TYOFF, _vm->_font->GetTagFontHandle(), TXT_CENTER);
 #endif
 				}
 
@@ -2784,26 +2784,26 @@ static void AddBox(int *pi, const int i) {
 		} else {
 			if (TinselV2) {
 				if (cd.box[i].textMethod == TM_INDEX)
-					LoadStringRes(SysString(cd.box[i].ixText), TextBufferAddr(), TBUFSZ);
+					LoadStringRes(SysString(cd.box[i].ixText), _vm->_font->TextBufferAddr(), TBUFSZ);
 				else {
 					assert(cd.box[i].textMethod == TM_STRINGNUM);
-					LoadStringRes(cd.box[i].ixText, TextBufferAddr(), TBUFSZ);
+					LoadStringRes(cd.box[i].ixText, _vm->_font->TextBufferAddr(), TBUFSZ);
 				}
 			} else {
-				LoadStringRes(g_configStrings[cd.box[i].ixText], TextBufferAddr(), TBUFSZ);
+				LoadStringRes(g_configStrings[cd.box[i].ixText], _vm->_font->TextBufferAddr(), TBUFSZ);
 				assert(cd.box[i].boxType != RGROUP); // You'll need to add some code!
 			}
 
 			if (TinselV2 && (cd.box[i].boxType == RGROUP))
-				g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), TextBufferAddr(),
-						0, x + 2, y + TYOFF, GetTagFontHandle(), 0, 0);
+				g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), _vm->_font->TextBufferAddr(),
+						0, x + 2, y + TYOFF, _vm->_font->GetTagFontHandle(), 0, 0);
 			else
-				g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-					TextBufferAddr(), 0,
+				g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+					_vm->_font->TextBufferAddr(), 0,
 #ifdef JAPAN
 					x + cd.box[i].w/2, y+2, GetTagFontHandle(), TXT_CENTER);
 #else
-					x + cd.box[i].w / 2, y + TYOFF, GetTagFontHandle(), TXT_CENTER);
+					x + cd.box[i].w / 2, y + TYOFF, _vm->_font->GetTagFontHandle(), TXT_CENTER);
 #endif
 			MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 			*pi += 1;
@@ -2850,13 +2850,13 @@ static void AddBox(int *pi, const int i) {
 		// Stick in the text
 		if (TinselV2) {
 			assert(cd.box[i].textMethod == TM_INDEX);
-			LoadStringRes(SysString(cd.box[i].ixText), TextBufferAddr(), TBUFSZ);
+			LoadStringRes(SysString(cd.box[i].ixText), _vm->_font->TextBufferAddr(), TBUFSZ);
 		} else {
 			assert(cd.box[i].ixText != USE_POINTER);
-			LoadStringRes(g_configStrings[cd.box[i].ixText], TextBufferAddr(), TBUFSZ);
+			LoadStringRes(g_configStrings[cd.box[i].ixText], _vm->_font->TextBufferAddr(), TBUFSZ);
 		}
-		g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-			TextBufferAddr(), 0, x + MDTEXT_XOFF, y + MDTEXT_YOFF, GetTagFontHandle(), TXT_RIGHT);
+		g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+			_vm->_font->TextBufferAddr(), 0, x + MDTEXT_XOFF, y + MDTEXT_YOFF, _vm->_font->GetTagFontHandle(), TXT_RIGHT);
 		MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 		*pi += 1;
 		break;
@@ -2875,20 +2875,20 @@ static void AddBox(int *pi, const int i) {
 		// Stick in the text
 		if (TinselV2) {
 			assert(cd.box[i].textMethod == TM_INDEX);
-			LoadStringRes(SysString(cd.box[i].ixText), TextBufferAddr(), TBUFSZ);
+			LoadStringRes(SysString(cd.box[i].ixText), _vm->_font->TextBufferAddr(), TBUFSZ);
 		} else {
 			assert(cd.box[i].ixText != USE_POINTER);
-			LoadStringRes(g_configStrings[cd.box[i].ixText], TextBufferAddr(), TBUFSZ);
+			LoadStringRes(g_configStrings[cd.box[i].ixText], _vm->_font->TextBufferAddr(), TBUFSZ);
 		}
 
 		if (cd.box[i].boxType == TOGGLE2) {
-			g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-				TextBufferAddr(), 0, x + cd.box[i].w / 2, y + TOG2_YOFF,
-				GetTagFontHandle(), TXT_CENTER, 0);
+			g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+				_vm->_font->TextBufferAddr(), 0, x + cd.box[i].w / 2, y + TOG2_YOFF,
+				_vm->_font->GetTagFontHandle(), TXT_CENTER, 0);
 		} else {
-			g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-				TextBufferAddr(), 0, x + MDTEXT_XOFF, y + MDTEXT_YOFF,
-				GetTagFontHandle(), TXT_RIGHT, 0);
+			g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+				_vm->_font->TextBufferAddr(), 0, x + MDTEXT_XOFF, y + MDTEXT_YOFF,
+				_vm->_font->GetTagFontHandle(), TXT_RIGHT, 0);
 		}
 
 		MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
@@ -2916,13 +2916,13 @@ static void AddBox(int *pi, const int i) {
 		// Stick in the text
 		if (TinselV2) {
 			assert(cd.box[i].textMethod == TM_INDEX);
-			LoadStringRes(SysString(cd.box[i].ixText), TextBufferAddr(), TBUFSZ);
+			LoadStringRes(SysString(cd.box[i].ixText), _vm->_font->TextBufferAddr(), TBUFSZ);
 		} else {
 			assert(cd.box[i].ixText != USE_POINTER);
-			LoadStringRes(g_configStrings[cd.box[i].ixText], TextBufferAddr(), TBUFSZ);
+			LoadStringRes(g_configStrings[cd.box[i].ixText], _vm->_font->TextBufferAddr(), TBUFSZ);
 		}
-		g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-			TextBufferAddr(), 0, x+MDTEXT_XOFF, y+MDTEXT_YOFF, GetTagFontHandle(), TXT_RIGHT);
+		g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+			_vm->_font->TextBufferAddr(), 0, x+MDTEXT_XOFF, y+MDTEXT_YOFF, _vm->_font->GetTagFontHandle(), TXT_RIGHT);
 		MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 		*pi += 1;
 		break;
@@ -2945,10 +2945,10 @@ static void AddBox(int *pi, const int i) {
 
 			// Stick in the text
 			assert(cd.box[i].textMethod == TM_INDEX);
-			LoadStringRes(SysString(cd.box[i].ixText), TextBufferAddr(), TBUFSZ);
-			g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-				TextBufferAddr(), 0, x + cd.box[i].w / 2, y + TOG2_YOFF,
-				GetTagFontHandle(), TXT_CENTER, 0);
+			LoadStringRes(SysString(cd.box[i].ixText), _vm->_font->TextBufferAddr(), TBUFSZ);
+			g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+				_vm->_font->TextBufferAddr(), 0, x + cd.box[i].w / 2, y + TOG2_YOFF,
+				_vm->_font->GetTagFontHandle(), TXT_CENTER, 0);
 			MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 			*pi += 1;
 		}
@@ -2957,9 +2957,9 @@ static void AddBox(int *pi, const int i) {
 		if (LanguageDesc(g_displayedLanguage) == 0)
 			break;
 
-		LoadStringRes(LanguageDesc(g_displayedLanguage), TextBufferAddr(), TBUFSZ);
-		g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), TextBufferAddr(), 0,
-				x + cd.box[i].w / 2, y + ROT_YOFF, GetTagFontHandle(), TXT_CENTER, 0);
+		LoadStringRes(LanguageDesc(g_displayedLanguage), _vm->_font->TextBufferAddr(), TBUFSZ);
+		g_iconArray[*pi] = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS), _vm->_font->TextBufferAddr(), 0,
+				x + cd.box[i].w / 2, y + ROT_YOFF, _vm->_font->GetTagFontHandle(), TXT_CENTER, 0);
 		MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 		*pi += 1;
 
@@ -3131,8 +3131,8 @@ static void ConstructInventory(InventoryType filling) {
 	// Dispose of anything it may be replacing
 	for (int i = 0; i < MAX_WCOMP; i++) {
 		if (retObj[i] != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), retObj[i]);
-			retObj[i] = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), retObj[i]);
+			retObj[i] = nullptr;
 		}
 	}
 
@@ -3312,7 +3312,7 @@ static void ConstructInventory(InventoryType filling) {
 		}
 
 		if (g_ino == INV_CONV) {
-			g_SlideObject = NULL;
+			g_SlideObject = nullptr;
 
 			if (TinselV2) {
 				// !!!!! MAGIC NUMBER ALERT !!!!!
@@ -3411,7 +3411,7 @@ static void AlterCursor(int num) {
 	pim = GetImageFromFilm(g_hWinParts, num, &pfreel);
 
 	// Poke in the background palette
-	pim->hImgPal = TO_32(BgPal());
+	pim->hImgPal = TO_32(_vm->_bg->BgPal());
 
 	SetTempCursor(FROM_32(pfreel->script));
 }
@@ -3509,7 +3509,13 @@ static void InvCursor(InvCursorFN fn, int CurX, int CurY) {
 		case I_BODY:
 			restoreMain = true;
 			break;
+
+		default:
+			break;
 		}
+		break;
+
+	default:
 		break;
 	}
 
@@ -3712,7 +3718,7 @@ extern void HideConversation(bool bHide) {
 					int Loffset, Toffset;
 
 					GetActorMidTop(g_thisConvActor, &x, &y);
-					PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
+					_vm->_bg->PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
 					x -= Loffset;
 					y -= Toffset;
 				} else {
@@ -3767,7 +3773,7 @@ extern void HideConversation(bool bHide) {
 						&& g_thisConvActor) {
 					int Loffset, Toffset;
 
-					PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
+					_vm->_bg->PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
 					y = GetActorBottom(g_thisConvActor) - MultiHighest(g_RectObject) +
 						SysVar(SV_CONV_BELOW_Y);
 					y -= Toffset;
@@ -4456,7 +4462,7 @@ static void SlideMSlider(int x, SSFN fn) {
 		if (g_lX != g_sX) {
 			*cd.box[index].ival = (g_sX - g_mdSlides[i].min)*cd.box[index].w/SLIDE_RANGE;
 			if (cd.box[index].boxFunc == MUSICVOL)
-				SetMidiVolume(*cd.box[index].ival);
+				_vm->_music->SetMidiVolume(*cd.box[index].ival);
 #ifdef MAC_OPTIONS
 			if (cd.box[index].boxFunc == MASTERVOL)
 				SetSystemVolume(*cd.box[index].ival);
@@ -4474,7 +4480,7 @@ static void SlideMSlider(int x, SSFN fn) {
 		MultiSetAniX(g_mdSlides[i].obj, g_mdSlides[i].min+gotoX);
 
 		if (cd.box[index].boxFunc == MUSICVOL)
-			SetMidiVolume(*cd.box[index].ival);
+			_vm->_music->SetMidiVolume(*cd.box[index].ival);
 #ifdef MAC_OPTIONS
 		if (cd.box[index].boxFunc == MASTERVOL)
 			SetSystemVolume(*cd.box[index].ival);
@@ -4488,6 +4494,9 @@ static void SlideMSlider(int x, SSFN fn) {
 		AddBoxes(false);	// Might change position slightly
 		if (g_ino == INV_CONF && cd.box == subtitlesBox)
 			Select(_vm->_config->_language, false);
+		break;
+
+	default:
 		break;
 	}
 }
@@ -4822,6 +4831,9 @@ static void InvDragStart() {
 			g_InvDragging = ID_BRIGHT;
 		}
 		break;
+
+	default:
+		break;
 	}
 }
 
@@ -5050,6 +5062,7 @@ static void MenuAction(int i, bool dbl) {
 static void ConfActionSpecial(int i) {
 	switch (i) {
 	case IB_NONE:
+	default:
 		break;
 	case IB_UP:	// Scroll up
 		if (cd.extraBase > 0) {
@@ -5291,6 +5304,9 @@ static void InvWalkTo(const Common::Point &coOrds) {
 				InvPickup(i);
 		}
 		break;
+
+	default:
+		break;
 	}
 }
 
@@ -5372,6 +5388,9 @@ static void InvAction() {
 			g_ItemsChanged = true;
 		}
 		break;
+
+	default:
+		break;
 	}
 
 }
@@ -5397,6 +5416,9 @@ static void InvLook(const Common::Point &coOrds) {
 		if (g_ino == INV_CONV)
 			ConvAction(INV_CLOSEICON);
 		KillInventory();
+		break;
+
+	default:
 		break;
 	}
 }

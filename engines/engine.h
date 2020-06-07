@@ -31,6 +31,7 @@
 #include "common/singleton.h"
 
 class OSystem;
+class MetaEngine;
 
 namespace Audio {
 class Mixer;
@@ -41,6 +42,8 @@ class EventManager;
 class SaveFileManager;
 class TimerManager;
 class FSNode;
+class SeekableReadStream;
+class WriteStream;
 }
 namespace GUI {
 class Debugger;
@@ -53,6 +56,37 @@ class Dialog;
 void GUIErrorMessage(const Common::String &msg);
 void GUIErrorMessageFormat(const char *fmt, ...) GCC_PRINTF(1, 2);
 
+class Engine;
+
+
+/**
+* Manages pausing by Engine::pauseEngine handing out tokens that
+* each represent one requested level of pause.
+*/
+class PauseToken {
+public:
+	PauseToken();
+	PauseToken(const PauseToken &);
+#if __cplusplus >= 201103L
+	PauseToken(PauseToken &&);
+#endif
+	~PauseToken();
+
+	void operator=(const PauseToken &);
+#if __cplusplus >= 201103L
+	void operator=(PauseToken &&);
+#endif
+	/** Manually releases the PauseToken. Only allowed if the token
+	* currently represents a pause request.
+	*/
+	void clear();
+private:
+	PauseToken(Engine *);
+
+	Engine *_engine;
+
+	friend class Engine;
+};
 
 class Engine {
 public:
@@ -90,12 +124,26 @@ private:
 	int32 _engineStartTime;
 
 	/**
+	 * Autosave interval
+	 */
+	const int _autosaveInterval;
+
+	/**
+	 * The last time an autosave was done
+	 */
+	int _lastAutosaveTime;
+
+	/**
 	 * Save slot selected via global main menu.
 	 * This slot will be loaded after main menu execution (not from inside
 	 * the menu loop, to avoid bugs like #2822778).
 	 */
 	int _saveSlotToLoad;
 
+	/**
+	 * Optional debugger for the engine
+	 */
+	GUI::Debugger *_debugger;
 public:
 
 
@@ -112,11 +160,11 @@ public:
 		kSupportsSubtitleOptions,
 
 		/**
-		 * 'Return to launcher' feature is supported, i.e., EVENT_RTL is handled
+		 * 'Return to launcher' feature is supported, i.e., EVENT_RETURN_TO_LAUNCHER is handled
 		 * either directly, or indirectly (that is, the engine calls and honors
 		 * the result of the Engine::shouldQuit() method appropriately).
 		 */
-		kSupportsRTL,
+		kSupportsReturnToLauncher,
 
 		/**
 		 * Loading savestates during runtime is supported, that is, this engine
@@ -135,12 +183,11 @@ public:
 		kSupportsSavingDuringRuntime,
 
 		/**
-		 * Engine must receive joystick events because the game uses them.
-		 * For engines which have not this feature, joystick events are converted
-		 * to mouse events.
+		 * Changing the game settings during runtime is supported. This enables
+		 * showing the engine options tab in the config dialog accessed through
+		 * the Global Main Menu.
 		 */
-		kSupportsJoystick
-
+		kSupportsChangingOptionsDuringRuntime
 	};
 
 
@@ -176,17 +223,29 @@ public:
 	virtual void errorString(const char *buf_input, char *buf_output, int buf_output_size);
 
 	/**
-	 * Return the engine's debugger instance, if any. Used by error() to
-	 * invoke the debugger when a severe error is reported.
+	 * Return the engine's debugger instance, if any.
 	 */
-	virtual GUI::Debugger *getDebugger() { return 0; }
+	virtual GUI::Debugger *getDebugger() { return _debugger; }
+
+	/**
+	 * Sets the engine's debugger. Once set, the Engine class is responsible for managing
+	 * the debugger, and freeing it on exit
+	 */
+	void setDebugger(GUI::Debugger *debugger) {
+		assert(!_debugger);
+		_debugger = debugger;
+	}
+
+	/**
+	 * Return the engine's debugger instance, or create one if none is present.
+	 * Used by error() to invoke the debugger when a severe error is reported.
+	 */
+	GUI::Debugger *getOrCreateDebugger();
 
 	/**
 	 * Determine whether the engine supports the specified feature.
 	 */
 	virtual bool hasFeature(EngineFeature f) const { return false; }
-
-//	virtual EnginePlugin *getMetaEnginePlugin() const;
 
 	/**
 	 * Notify the engine that the sound settings in the config manager may have
@@ -205,15 +264,12 @@ public:
 	 */
 	virtual void syncSoundSettings();
 
-	/*
-	 * Initialize any engine-specific keymaps.
+	/**
+	 * Notify the engine that the settings editable from the game tab in the
+	 * in-game options dialog may have changed and that they need to be applied
+	 * if necessary.
 	 */
-	virtual void initKeymap() {}
-
-	/*
-	 * Cleanup any engine-specific keymaps.
-	 */
-	virtual void deinitKeymap();
+	virtual void applyGameSettings() {}
 
 	/**
 	 * Flip mute all sound option.
@@ -221,11 +277,25 @@ public:
 	virtual void flipMute();
 
 	/**
+	 * Generates the savegame filename
+	 */
+	virtual Common::String getSaveStateName(int slot) const {
+		return Common::String::format("%s.%03d", _targetName.c_str(), slot);
+	}
+
+	/**
 	 * Load a game state.
 	 * @param slot	the slot from which a savestate should be loaded
 	 * @return returns kNoError on success, else an error code.
 	 */
 	virtual Common::Error loadGameState(int slot);
+
+	/**
+	 * Load a game state.
+	 * @param stream	the stream to load the savestate from
+	 * @return returns kNoError on success, else an error code.
+	 */
+	virtual Common::Error loadGameStream(Common::SeekableReadStream *stream);
 
 	/**
 	 * Sets the game slot for a savegame to be loaded after global
@@ -245,17 +315,35 @@ public:
 	 * Save a game state.
 	 * @param slot	the slot into which the savestate should be stored
 	 * @param desc	a description for the savestate, entered by the user
+	 * @param isAutosave	Expected to be true if an autosave is being created
 	 * @return returns kNoError on success, else an error code.
 	 */
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	virtual Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false);
+
+	/**
+	 * Save a game state.
+	 * @param stream	The write stream to save the savegame data to
+	 * @param isAutosave	Expected to be true if an autosave is being created
+	 * @return returns kNoError on success, else an error code.
+	 */
+	virtual Common::Error saveGameStream(Common::WriteStream *stream, bool isAutosave = false);
 
 	/**
 	 * Indicates whether a game state can be saved.
 	 */
 	virtual bool canSaveGameStateCurrently();
 
-protected:
+	/**
+	 * Shows the ScummVM save dialog, allowing users to save their game
+	 */
+	bool saveGameDialog();
 
+	/**
+	 * Shows the ScummVM Restore dialog, allowing users to load a game
+	 */
+	bool loadGameDialog();
+
+protected:
 	/**
 	 * Actual implementation of pauseEngine by subclasses. See there
 	 * for details.
@@ -279,18 +367,28 @@ public:
 	 */
 	static bool shouldQuit();
 
+	static MetaEngine &getMetaEngine();
+
 	/**
-	 * Pause or resume the engine. This should stop/resume any audio playback
+	 * Pause the engine. This should stop any audio playback
 	 * and other stuff. Called right before the system runs a global dialog
 	 * (like a global pause, main menu, options or 'confirm exit' dialog).
 	 *
-	 * This is a convenience tracker which automatically keeps track on how
-	 * often the engine has been paused, ensuring that after pausing an engine
-	 * e.g. twice, it has to be unpaused twice before actuallying resuming.
-	 *
-	 * @param pause		true to pause the engine, false to resume it
+	 * Returns a PauseToken. Multiple pause tokens may exist. The engine will
+	 * be resumed when all associated pause tokens reach the end of their lives.
 	 */
-	void pauseEngine(bool pause);
+	PauseToken pauseEngine();
+private:
+	/** Resume the engine. This should resume any audio playback and other stuff.
+	*
+	* Only PauseToken is allowed to call this member function. Use the PauseToken
+	* that you got from pauseEngine to resume the engine.
+	*/
+	void resumeEngine();
+
+	friend class PauseToken;
+
+public:
 
 	/**
 	 * Return whether the engine is currently paused or not.
@@ -332,17 +430,40 @@ public:
 	inline Common::SaveFileManager *getSaveFileManager() { return _saveFileMan; }
 
 public:
-
 	/** On some systems, check if the game appears to be run from CD. */
 	void checkCD();
 
-protected:
 
 	/**
-	 * Indicate whether an autosave should be performed.
+	 * Checks for whether it's time to do an autosave, and if so, does it.
 	 */
-	bool shouldPerformAutoSave(int lastSaveTime);
+	void handleAutoSave();
 
+	/**
+	 * Does an autosave immediately if autosaves are turned on
+	 */
+	void saveAutosaveIfEnabled();
+
+	/**
+	 * Indicates whether an autosave can currently be saved.
+	 */
+	virtual bool canSaveAutosaveCurrently() {
+		return canSaveGameStateCurrently();
+	}
+
+	/**
+	 * Returns the slot that should be used for autosaves
+	 * @note	This should match the meta engine getAutosaveSlot() method
+	 */
+	virtual int getAutosaveSlot() const {
+		return 0;
+	}
+
+	bool shouldPerformAutoSave(int lastSaveTime) {
+		// TODO: Remove deprecated method once all engines are refactored
+		// to no longer do autosaves directly themselves
+		return false;
+	}
 };
 
 // Chained games

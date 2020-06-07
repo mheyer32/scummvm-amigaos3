@@ -225,8 +225,11 @@ private:
 	uint32 _waitFlag;
 
 	byte *_string;
+	byte _stringBuf[1024];
 	uint32 _currentString;
 	const char *_mode;
+
+	Flags _flagMap;
 
 	// Helper functions
 	uint32 step(uint32 opcodePC);

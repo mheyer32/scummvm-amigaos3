@@ -23,13 +23,13 @@
 #ifndef TITANIC_TITANIC_H
 #define TITANIC_TITANIC_H
 
-#include "common/random.h" // getRandomNumber and getRandomFloat
-#include "engines/engine.h" // class Engine
-#include "titanic/support/exe_resources.h" // class CExeResources
-#include "titanic/support/movie_manager.h" // class CMovieManager
-#include "titanic/support/string.h" // class StringArray;
-#include "titanic/support/strings.h" // class Strings;
-#include "common/language.h" // Language enum
+#include "common/random.h"
+#include "engines/engine.h"
+#include "titanic/support/exe_resources.h"
+#include "titanic/support/movie_manager.h"
+#include "titanic/support/string.h"
+#include "titanic/support/strings.h"
+#include "common/language.h"
 
 /**
  * This is the namespace of the Titanic engine.
@@ -73,7 +73,6 @@ class CFilesManager;
 class CMainGameWindow;
 class CString;
 class CTrueTalkManager;
-class Debugger;
 class Events;
 class OSScreenManager;
 class CScriptHandler;
@@ -105,11 +104,10 @@ protected:
 	const TitanicGameDescription *_gameDescription;
 
 	// Engine APIs
-	virtual void initializePath(const Common::FSNode &gamePath);
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	void initializePath(const Common::FSNode &gamePath) override;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 public:
-	Debugger *_debugger;
 	Events *_events;
 	CFilesManager *_filesManager;
 	CMovieManager _movieManager;
@@ -130,33 +128,33 @@ public:
 	int _loadSaveSlot;
 public:
 	TitanicEngine(OSystem *syst, const TitanicGameDescription *gameDesc);
-	virtual ~TitanicEngine();
+	~TitanicEngine() override;
 
 
 	/**
 	 * Returns true if a savegame can be loaded
 	 */
-	virtual bool canLoadGameStateCurrently();
+	bool canLoadGameStateCurrently() override;
 
 	/**
 	 * Returns true if the game can be saved
 	 */
-	virtual bool canSaveGameStateCurrently();
+	bool canSaveGameStateCurrently() override;
 
 	/**
 	 * Called by the GMM to load a savegame
 	 */
-	virtual Common::Error loadGameState(int slot);
+	Common::Error loadGameState(int slot) override;
 
 	/**
 	 * Called by the GMM to save the game
 	 */
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 
 	/**
 	 * Handles updates to the sound levels
 	 */
-	virtual void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	/**
 	 * Gets the game features
@@ -181,29 +179,13 @@ public:
 	/**
 	 * Returns a uniform random floating point number in the interval [0.0, 65535.0]
 	 */
-	double getRandomFloat() { return getRandomNumber(0xfffffffe) * 0.00001525855623540901; } // fffffffe=4294967294 and 0.00001525855623540901 ~= 1/65537.0 
-
-	/**
-	 * Support method that generates a savegame name
-	 * @param slot		Slot number
-	 */
-	CString generateSaveName(int slot);
+	double getRandomFloat() { return getRandomNumber(0xfffffffe) * 0.00001525855623540901; } // fffffffe=4294967294 and 0.00001525855623540901 ~= 1/65537.0
 
 	/**
 	 * Checks whether a savegame exists for the given slot,
 	 * and if it exists, returns it's description
 	 */
 	CString getSavegameName(int slot);
-
-	/**
-	 * Shows the ScummVM GMM save dialog
-	 */
-	void showScummVMSaveDialog();
-
-	/**
-	 * Shows the ScummVM GMM load dialog
-	 */
-	void showScummVMRestoreDialog();
 };
 
 extern TitanicEngine *g_vm;

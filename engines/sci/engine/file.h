@@ -40,7 +40,6 @@ enum {
 	kMaxNumSaveGames = 20 ///< Maximum number of savegames
 };
 
-#ifdef ENABLE_SCI32
 enum {
 	kAutoSaveId = 0,  ///< The save game slot number for autosaves
 	kNewGameId = 999, ///< The save game slot number for a "new game" save
@@ -53,7 +52,6 @@ enum {
 	kSaveIdShift = 1,
 	kMaxShiftedSaveId = 99
 };
-#endif
 
 enum {
 	kVirtualFileHandleStart = 32000,
@@ -127,13 +125,13 @@ class MemoryDynamicRWStream : public Common::MemoryWriteStreamDynamic, public Co
 public:
 	MemoryDynamicRWStream(DisposeAfterUse::Flag disposeMemory = DisposeAfterUse::NO) : MemoryWriteStreamDynamic(disposeMemory), _eos(false) { }
 
-	uint32 read(void *dataPtr, uint32 dataSize);
+	uint32 read(void *dataPtr, uint32 dataSize) override;
 
-	bool eos() const { return _eos; }
-	int32 pos() const { return _pos; }
-	int32 size() const { return _size; }
-	void clearErr() { _eos = false; Common::MemoryWriteStreamDynamic::clearErr(); }
-	bool seek(int32 offs, int whence = SEEK_SET) { return Common::MemoryWriteStreamDynamic::seek(offs, whence); }
+	bool eos() const override { return _eos; }
+	int32 pos() const override { return _pos; }
+	int32 size() const override { return _size; }
+	void clearErr() override { _eos = false; Common::MemoryWriteStreamDynamic::clearErr(); }
+	bool seek(int32 offs, int whence = SEEK_SET) override { return Common::MemoryWriteStreamDynamic::seek(offs, whence); }
 
 protected:
 	bool _eos;
@@ -149,9 +147,9 @@ public:
 	SaveFileRewriteStream(const Common::String &fileName,
 	                      Common::SeekableReadStream *inFile,
 	                      kFileOpenMode mode, bool compress);
-	virtual ~SaveFileRewriteStream();
+	~SaveFileRewriteStream() override;
 
-	virtual uint32 write(const void *dataPtr, uint32 dataSize) { _changed = true; return MemoryDynamicRWStream::write(dataPtr, dataSize); }
+	uint32 write(const void *dataPtr, uint32 dataSize) override { _changed = true; return MemoryDynamicRWStream::write(dataPtr, dataSize); }
 
 	void commit(); //< Save back to disk
 
@@ -177,6 +175,9 @@ bool fillSavegameDesc(const Common::String &filename, SavegameDesc &desc);
  * compatible with game scripts' game catalogue readers.
  */
 Common::MemoryReadStream *makeCatalogue(const uint maxNumSaves, const uint gameNameSize, const Common::String &fileNamePattern, const bool ramaFormat);
+
+int shiftSciToScummVMSaveId(int saveId);
+int shiftScummVMToSciSaveId(int saveId);
 #endif
 
 } // End of namespace Sci

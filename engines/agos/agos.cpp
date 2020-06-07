@@ -158,8 +158,6 @@ AGOSEngine::AGOSEngine(OSystem *system, const AGOSGameDescription *gd)
 	_vcGetOutOfCode = 0;
 	_gameOffsetsPtr = 0;
 
-	_debugger = 0;
-
 	_gameFile = 0;
 	_opcode = 0;
 
@@ -633,7 +631,7 @@ Common::Error AGOSEngine::init() {
 
 	setupGame();
 
-	_debugger = new Debugger(this);
+	setDebugger(new Debugger(this));
 	_sound = new Sound(this, gss, _mixer);
 
 	if (ConfMan.hasKey("music_mute") && ConfMan.getBool("music_mute") == 1) {
@@ -974,13 +972,8 @@ AGOSEngine::~AGOSEngine() {
 	delete _dummyWindow;
 	delete[] _windowList;
 
-	delete _debugger;
 	delete _sound;
 	delete _gameFile;
-}
-
-GUI::Debugger *AGOSEngine::getDebugger() {
-	return _debugger;
 }
 
 void AGOSEngine::pauseEngineIntern(bool pauseIt) {
@@ -999,12 +992,12 @@ void AGOSEngine::pauseEngineIntern(bool pauseIt) {
 }
 
 void AGOSEngine::pause() {
-	pauseEngine(true);
+	PauseToken pt = pauseEngine();
 
 	while (_pause && !shouldQuit()) {
 		delay(1);
 		if (_keyPressed.keycode == Common::KEYCODE_PAUSE) {
-			pauseEngine(false);
+			pt.clear();
 			_keyPressed.reset();
 		}
 	}

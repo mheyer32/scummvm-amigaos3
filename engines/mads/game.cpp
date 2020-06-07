@@ -476,7 +476,7 @@ void Game::synchronize(Common::Serializer &s, bool phase1) {
 
 void Game::loadGame(int slotNumber) {
 	_saveFile = g_system->getSavefileManager()->openForLoading(
-		_vm->generateSaveName(slotNumber));
+		_vm->getSaveStateName(slotNumber));
 
 	Common::Serializer s(_saveFile, nullptr);
 
@@ -505,7 +505,7 @@ void Game::loadGame(int slotNumber) {
 
 void Game::saveGame(int slotNumber, const Common::String &saveName) {
 	Common::OutSaveFile *out = g_system->getSavefileManager()->openForSaving(
-		_vm->generateSaveName(slotNumber));
+		_vm->getSaveStateName(slotNumber));
 
 	MADSSavegameHeader header;
 	header._saveName = saveName;
@@ -617,6 +617,9 @@ void Game::syncTimers(SyncType slaveType, int slaveId, SyncType masterType, int 
 	case SYNC_PLAYER:
 		syncTime = _player._priorTimer;
 		break;
+
+	default:
+		break;
 	}
 
 
@@ -635,6 +638,10 @@ void Game::syncTimers(SyncType slaveType, int slaveId, SyncType masterType, int 
 
 	case SYNC_CLOCK:
 		error("syncTimer is trying to force _frameStartTime");
+		break;
+
+	default:
+		break;
 	}
 }
 

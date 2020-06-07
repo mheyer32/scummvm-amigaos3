@@ -118,6 +118,7 @@ int KyraEngine_v1::o1_blockOutWalkableRegion(EMCState *script) {
 
 int KyraEngine_v1::o1_playSoundEffect(EMCState *script) {
 	debugC(3, kDebugLevelScriptFuncs, "KyraEngine_v1::o1_playSoundEffect(%p) (%d)", (const void *)script, stackPos(0));
+	if (!_preventScriptSfx)
 	snd_playSoundEffect(stackPos(0));
 	return 0;
 }

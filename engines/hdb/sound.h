@@ -1456,10 +1456,31 @@ struct SoundCache {
 	SoundCache() : loaded(SNDMEM_NOTCACHED), size(0), name(nullptr), luaName(nullptr), ext(SNDTYPE_NONE), data(nullptr) {}
 };
 
-struct Song {
-	bool playing;
-	SoundType song;
+class Song {
+public:
+	Song() : _playing(false), _song(SONG_NONE),
+		fadingOut(false), fadeOutVol(0), fadeOutRamp(0),
+		fadingIn(false), fadeInVol(0), fadeInRamp(0) {}
+
+	void playSong(SoundType song, bool fadeIn, int ramp);
+	void fadeOut(int ramp);
+	void stop();
+
+	bool isPlaying() const;
+	SoundType getSong() const;
+
+	void setVolume(int volume);
+
+	void update();
+
+private:
+	static Common::String getFileName(SoundType song);
+	Audio::AudioStream* createStream(Common::String fileName);
+
 	Audio::SoundHandle handle;
+
+	bool _playing;
+	SoundType _song;
 
 	bool fadingOut;
 	int fadeOutVol;
@@ -1468,10 +1489,6 @@ struct Song {
 	bool fadingIn;
 	int	fadeInVol;
 	int	fadeInRamp;
-
-	Song() : playing(false), song(SONG_NONE),
-		fadingOut(false), fadeOutVol(0), fadeOutRamp(0),
-		fadingIn(false), fadeInVol(0), fadeInRamp(0) {}
 };
 
 class Sound {

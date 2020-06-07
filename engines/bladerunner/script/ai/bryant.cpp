@@ -95,15 +95,15 @@ void AIScriptBryant::ClickedByPlayer() {
 	Actor_Voice_Over(40, kActorVoiceOver);
 }
 
-void AIScriptBryant::EnteredScene(int sceneId) {
+void AIScriptBryant::EnteredSet(int setId) {
 	// return false;
 }
 
-void AIScriptBryant::OtherAgentEnteredThisScene(int otherActorId) {
+void AIScriptBryant::OtherAgentEnteredThisSet(int otherActorId) {
 	// return false;
 }
 
-void AIScriptBryant::OtherAgentExitedThisScene(int otherActorId) {
+void AIScriptBryant::OtherAgentExitedThisSet(int otherActorId) {
 	// return false;
 }
 
@@ -202,11 +202,16 @@ bool AIScriptBryant::GoalChanged(int currentGoalNumber, int newGoalNumber) {
 			AI_Movement_Track_Append(kActorBryant, 331, 0);
 			AI_Movement_Track_Repeat(kActorBryant);
 			break;
+		default:
+			break;
 		}
 		// fallthrough
 	case 102:
 		AI_Movement_Track_Append(kActorBryant, 39, 0);
 		AI_Movement_Track_Repeat(kActorBryant);
+		break;
+
+	default:
 		break;
 	}
 
@@ -217,7 +222,7 @@ bool AIScriptBryant::UpdateAnimation(int *animation, int *frame) {
 	switch (_animationState) {
 	case 0:
 		*animation = 806;
-		_animationFrame++;
+		++_animationFrame;
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(806)) {
 			_animationFrame = 0;
@@ -225,7 +230,7 @@ bool AIScriptBryant::UpdateAnimation(int *animation, int *frame) {
 		break;
 	case 1:
 		*animation = 805;
-		_animationFrame++;
+		++_animationFrame;
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(805)) {
 			_animationFrame = 0;
@@ -233,7 +238,7 @@ bool AIScriptBryant::UpdateAnimation(int *animation, int *frame) {
 		break;
 	case 2:
 		*animation = 808;
-		_animationFrame++;
+		++_animationFrame;
 
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(808) - 1) {
 			_animationState = 3;
@@ -242,6 +247,8 @@ bool AIScriptBryant::UpdateAnimation(int *animation, int *frame) {
 	case 3:
 		*animation = 808;
 		_animationFrame = Slice_Animation_Query_Number_Of_Frames(808) - 1;
+		break;
+	default:
 		break;
 	}
 
@@ -263,6 +270,8 @@ bool AIScriptBryant::ChangeAnimationMode(int mode) {
 		_animationState = 2;
 		_animationFrame = 0;
 		Actor_Set_Goal_Number(kActorBryant, 0);
+		break;
+	default:
 		break;
 	}
 	return true;

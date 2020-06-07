@@ -115,9 +115,6 @@ void Input::readInput() {
 			_hasKeyPressEvent = true;
 			_keyPressed = e.kbd;
 
-			if (e.kbd.hasFlags(Common::KBD_CTRL) && e.kbd.keycode == Common::KEYCODE_d)
-				_vm->_debugger->attach();
-
 			updateMousePos = false;
 			break;
 
@@ -137,7 +134,7 @@ void Input::readInput() {
 			_mouseButtons = kMouseRightUp;
 			break;
 
-		case Common::EVENT_RTL:
+		case Common::EVENT_RETURN_TO_LAUNCHER:
 		case Common::EVENT_QUIT:
 			return;
 
@@ -151,11 +148,6 @@ void Input::readInput() {
 	if (updateMousePos) {
 		setCursorPos(e.mouse);
 	}
-
-	_vm->_debugger->onFrame();
-
-	return;
-
 }
 
 bool Input::getLastKeyDown(uint16 &ascii) {
@@ -244,6 +236,9 @@ int Input::updateInput() {
 
 	case kInputModeInventory:
 		updateInventoryInput();
+		break;
+
+	default:
 		break;
 	}
 
@@ -453,6 +448,9 @@ void Input::setMouseState(MouseTriState state) {
 
 	case MOUSE_ENABLED_SHOW:
 		CursorMan.showMouse(true);
+		break;
+
+	default:
 		break;
 	}
 }

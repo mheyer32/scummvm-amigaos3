@@ -240,7 +240,7 @@ struct RoomData {
 class AdlEngine : public Engine {
 friend class Console;
 public:
-	virtual ~AdlEngine();
+	~AdlEngine() override;
 
 	bool pollEvent(Common::Event &event) const;
 	void bell(uint count = 1) const;
@@ -249,9 +249,10 @@ protected:
 	AdlEngine(OSystem *syst, const AdlGameDescription *gd);
 
 	// Engine
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	bool canSaveGameStateCurrently();
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	bool canSaveGameStateCurrently() override;
+	virtual Common::String getSaveStateName(int slot) const override;
 
 	Common::String getDiskImageName(byte volume) const { return Adl::getDiskImageName(*_gameDescription, volume); }
 	GameType getGameType() const { return Adl::getGameType(*_gameDescription); }
@@ -445,16 +446,14 @@ private:
 	void setScriptDelay(uint scriptDelay) const { _scriptDelay = scriptDelay; }
 	Common::String getScriptLine() const;
 	// Engine
-	Common::Error run();
-	bool hasFeature(EngineFeature f) const;
-	bool canLoadGameStateCurrently();
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
+	bool canLoadGameStateCurrently() override;
 
 	// Text input
 	byte convertKey(uint16 ascii) const;
 	Common::String getWord(const Common::String &line, uint &index) const;
 
-	Console *_console;
-	GUI::Debugger *getDebugger() { return _console; }
 	byte _saveVerb, _saveNoun, _restoreVerb, _restoreNoun;
 };
 

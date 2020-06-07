@@ -43,15 +43,16 @@ class Text;
 class MusicBase;
 class Sound;
 class SkyCompact;
+class SkyEngine;
 struct Compact;
 struct DataFileHeader;
 struct MegaSet;
 
-#define MAX_SAVE_GAMES 999
-#define MAX_TEXT_LEN 80
-#define PAN_LINE_WIDTH 184
-#define PAN_CHAR_HEIGHT 12
-#define STATUS_WIDTH 146
+#define MAX_SAVE_GAMES  999
+#define MAX_TEXT_LEN     80
+#define PAN_LINE_WIDTH  184
+#define PAN_CHAR_HEIGHT  12
+#define STATUS_WIDTH    146
 #define MPNL_X 60  // Main Panel
 #define MPNL_Y 10
 
@@ -155,8 +156,8 @@ private:
 class TextResource : public ConResource {
 public:
 	TextResource(void *pSpData, uint32 pNSprites, uint32 pCurSprite, uint16 pX, uint16 pY, uint32 pText, uint8 pOnClick, OSystem *system, uint8 *screen);
-	virtual ~TextResource();
-	virtual void drawToScreen(bool doMask);
+	~TextResource() override;
+	void drawToScreen(bool doMask) override;
 	void flushForRedraw();
 private:
 	uint16 _oldX, _oldY;
@@ -180,17 +181,18 @@ private:
 
 class Control {
 public:
-	Control(Common::SaveFileManager *saveFileMan, Screen *screen, Disk *disk, Mouse *mouse, Text *text, MusicBase *music, Logic *logic, Sound *sound, SkyCompact *skyCompact, OSystem *system);
+	Control(SkyEngine *vm, Common::SaveFileManager *saveFileMan, Screen *screen, Disk *disk, Mouse *mouse, Text *text, MusicBase *music, Logic *logic, Sound *sound, SkyCompact *skyCompact, OSystem *system, Common::Keymap *shortcutsKeymap);
 	void doControlPanel();
 	void doLoadSavePanel();
 	void restartGame();
 	void showGameQuitMsg();
-	void doAutoSave();
 	uint16 quickXRestore(uint16 slot);
 	bool loadSaveAllowed();
 
+	SkyEngine *_vm;
+
 	uint16 _selectedGame;
-	uint16 saveGameToFile(bool fromControlPanel, const char *filename = 0);
+	uint16 saveGameToFile(bool fromControlPanel, const char *filename = 0, bool isAutosave = false);
 
 	void loadDescriptions(Common::StringArray &list);
 	void saveDescriptions(const Common::StringArray &list);
@@ -249,7 +251,9 @@ private:
 	OSystem *_system;
 	bool _mouseClicked;
 	Common::KeyState _keyPressed;
+	Common::CustomEventType _action;
 	int _mouseWheel;
+	Common::Keymap *_shortcutsKeymap;
 
 	struct {
 		uint8 *controlPanel;

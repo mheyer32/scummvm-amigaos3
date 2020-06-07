@@ -1,6 +1,56 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm/commits/
 
+#### 2.2.0 (XXXX-XX-XX)
+
+ General:
+   - Autosaves are now supported for all the engines.
+   - Errors are more likely to open the debugger, and be displayed, than just crash ScummVM.
+   - Games are sorted in GUI ignoring the articles.
+   - Now Hebrew is displayed correctly in GUI (requires FriBiDi library).
+
+ Dreamweb:
+   - Added support for Russian fan-translation.
+   - Fixed animation speed.
+
+ Kyra:
+   - Added support for the PC-98 version of Eye of the Beholder I.
+
+ Prince:
+   - Fixed inventory item descriptions display.
+   - Added English translation.
+
+ Queen:
+   - Fixed loading a save game from the launcher.
+
+ SCUMM:
+   - Fixed palette issues leading to incorrect colors in MM NES intro and dark rooms.
+   - Fixed the rendering of the flashlight in MM NES to match the original version.
+   - Replaced the existing NES palette to a more accurate NTSC palette based on Mesen.
+   - Added a new GUI option to switch to an alternative NES palette based on the NES Classic.
+   - Improved colors in Apple //gs Maniac Mansion.
+   - Fixed crash when entering garage in Apple //gs Maniac Mansion.
+
+ Sky:
+   - Fixed syncing of music volume between native settings panel and ScummVM configuration.
+
+ Sword1:
+   - Added support for localized menus in Novy Disk Russian Trilogy release.
+
+ Wintermute:
+   - Added subsystem for tracking achievements, implemented for 10+ games.
+
+ Xeen:
+   - Add missing sprite drawer for enemies hit by Energy Blast.
+   - Fixed freeze due to bad mob data at the top of Witches Tower.
+   - Fix crash loading some savegames directly from the launcher.
+   - Fix curing the well in Nightshadow.
+   - Fix loading of wall items from savegames.
+
+ Linux port:
+   - Added option to use the system file browser instead of the ScummVM file browser.
+
+
 #### 2.1.2 "Fixing Powerful Windows" (2020-03-31)
 
  Windows port:
@@ -11,7 +61,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed application icon on Mac OS X 10.5 and older.
 
 
-#### 2.1.1 ":More Sheep:" (2020-01-31)
+#### 2.1.1 ":More sheep:" (2020-01-31)
 
  General:
    - Fixed crash when switching certain languages in GUI.
@@ -139,7 +189,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 
  General:
    - Improved GUI rendering and overall GUI performance.
-   - Add stretch mode option to control how the display is stretch to the
+   - Added stretch mode option to control how the display is stretched to the
      window or screen area.
    - Fixed incorrect cursor movement when it's controlled using the keyboard.
    - Updated the Roland MT-32 emulation code to Munt 2.3.0.
@@ -237,13 +287,13 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Bud is also no longer able to walk through closed doors.
    - Added mouse wheel support for inventory scrolling.
    - Allow skipping of speech.
-   - Improved savegame handling and add support for autosaves.
+   - Improved savegame handling and added support for autosaves.
 
  ZVISION:
    - Fixed graphical glitch in Zork: Grand Inquisitor.
    - Packaged the required fonts with ScummVM.
 
- iOS port:
+ Android port:
    - Rewrote to make use of the OpenGL Graphics Manager.
    - Added a button to show the virtual keyboard.
    - Implemented clipboard support.
@@ -278,6 +328,7 @@ For a more comprehensive changelog of the latest experimental code, see:
  RISC OS port:
    - Added a StrongHelp manual.
    - Added error reporting using !Reporter.
+
 
 #### 2.0.0 (2017-12-17)
 
@@ -463,7 +514,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Improved behaviour of the file browser.
 
 
-#### 1.9.0 (2016-10-17)
+#### 1.9.0 "Myst-ery U.F.O.s release" (2016-10-17)
 
  New Games:
    - Added support for Myst.
@@ -534,7 +585,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Added support for WinSparkle updater.
 
 
-#### 1.8.1 (2016-05-25)
+#### 1.8.1 "Where Is Your Android?" (2016-05-25)
 
  New ports:
    - Added Nintendo 3DS port.
@@ -618,7 +669,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Improved support for built-in ScummVM documentation.
 
 
-#### 1.8.0 (2016-03-04)
+#### 1.8.0 "Lost with Sherlock" (2016-03-04)
 
  New Games:
    - Added support for Rex Nebular and the Cosmic Gender Bender.
@@ -712,7 +763,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Improved AdLib music support in Discworld 1.
 
 
-#### 1.7.0 (2014-07-21)
+#### 1.7.0 "The Neverrelease" (2014-07-21)
 
  New Games:
    - Added support for Chivalry is Not Dead.
@@ -809,7 +860,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - The BADA port has been merged/updated into Tizen.
 
 
-#### 1.6.0 (2013-05-31)
+#### 1.6.0 "+4 to engines" (2013-05-31)
 
  New Games:
    - Added support for 3 Skulls of the Toltecs.
@@ -891,7 +942,7 @@ For a more comprehensive changelog of the latest experimental code, see:
      (http://www.jameswoodcock.co.uk/category/scummvm-music-enhancement-project/).
 
 
-#### 1.5.0 (2012-07-27)
+#### 1.5.0 "Picnic Basket" (2012-07-27)
 
  New Games:
    - Added support for Backyard Baseball 2003.
@@ -963,7 +1014,7 @@ For a more comprehensive changelog of the latest experimental code, see:
       default location, to the new default location).
 
 
-#### 1.4.1 (2012-01-27)
+#### 1.4.1 "Subwoofer Release" (2012-01-27)
 
  AGOS:
    - Fixed loading videos directly from InstallShield cabinets in the Windows
@@ -992,7 +1043,7 @@ For a more comprehensive changelog of the latest experimental code, see:
      thus some notes sounded wrong.
 
 
-#### 1.4.0 (2011-11-11)
+#### 1.4.0 "10th Anniversary" (2011-11-11)
 
  New Games:
    - Added support for Lands of Lore: The Throne of Chaos.
@@ -1053,7 +1104,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Moved the default saved game location to the SD card.
 
 
-#### 1.3.1 (2011-07-12)
+#### 1.3.1 "All Your Pitches" (2011-07-12)
 
  General:
    - Improved audio device detection and fallback.
@@ -1082,7 +1133,7 @@ For a more comprehensive changelog of the latest experimental code, see:
      (Android, iPhone, etc.).
 
 
-#### 1.3.0 (2011-05-28)
+#### 1.3.0 "Runner" (2011-05-28)
 
  New Games:
    - Added support for Backyard Baseball.
@@ -1228,7 +1279,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed 16bit mouse cursors on HE games.
 
 
-#### 1.2.1 (2010-12-19)
+#### 1.2.1 "Bork Bork Bork" (2010-12-19)
 
  General:
    - Added Hungarian translation.
@@ -1244,7 +1295,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed several NPC movement bugs.
 
 
-#### 1.2.0 (2010-10-15)
+#### 1.2.0 "FaSCInating release" (2010-10-15)
 
  New Games:
    - Added support for Fascination.
@@ -1370,7 +1421,7 @@ For a more comprehensive changelog of the latest experimental code, see:
      the supported devices.
 
 
-#### 1.1.1 (2010-05-02)
+#### 1.1.1 "Better version" (2010-05-02)
 
  New Ports:
    - Added Nintendo 64 port. (Actually added in 1.1.0, but forgot to mention it. oops)
@@ -1415,7 +1466,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Added a new virtual keyboard optimized for rapid D-Pad input.
 
 
-#### 1.1.0 (2010-04-04)
+#### 1.1.0 "Beta quadrant" (2010-04-04)
 
  New Games:
    - Added support for Blue's Art Time Activities.
@@ -1450,7 +1501,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Added support for Kanji rendering in Japanese version of Monkey Island Sega CD.
 
 
-#### 1.0.0 (2009-11-15)
+#### 1.0.0 "Shiny Logo" (2009-11-15)
 
  New Ports:
    - Added MotoEZX and MotoMAGX ports.
@@ -1532,7 +1583,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Improved compatibility with VGA devices.
 
 
-#### 1.0.0rc1 (2009-08-31)
+#### 1.0.0rc1 "Grog XD" (2009-08-31)
 
  New Games:
    - Added support for Discworld.
@@ -1592,7 +1643,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Dropped support for MPEG-2 and FLAC.
 
 
-#### 0.13.1 (2009-04-27)
+#### 0.13.1 "SAGA returns" (2009-04-27)
 
  AGOS:
    - Fixed crash after OmniTV video is played in The Feeble Files.
@@ -1645,7 +1696,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed an issue which could cause random crashes with VGA devices.
 
 
-#### 0.13.0 (2009-02-28)
+#### 0.13.0 "More Guests" (2009-02-28)
 
  General:
    - Added MIDI driver for Atari ST / FreeMint.
@@ -1681,7 +1732,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Implemented radio-chatter effect in The DIG.
 
 
-#### 0.12.0 (2008-08-31)
+#### 0.12.0 "&nbsp;" (2008-08-31)
 
  New Games:
    - Added support for The Legend of Kyrandia: Book Two: Hand of Fate.
@@ -1718,7 +1769,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Added support for mixed AdLib/MIDI mode in Monkey Island 1 (Floppy).
 
 
-#### 0.11.1 (2008-02-29)
+#### 0.11.1 "Fixed exist()nce" (2008-02-29)
 
  SCUMM:
    - Improvements for Digital iMUSE subsystem. This fixes several glitches in
@@ -1751,7 +1802,7 @@ For a more comprehensive changelog of the latest experimental code, see:
      the docks.
 
 
-#### 0.11.0 (2008-01-15)
+#### 0.11.0 "Your Palindrome" (2008-01-15)
 
  New Games:
    - Added support for Elvira: Mistress of the Dark.
@@ -1835,7 +1886,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Various fixes to input code.
 
 
-#### 0.10.0 (2007-06-20)
+#### 0.X.0 "Tic-tac-toe edition" (2007-06-20)
 
  New Games:
    - Added Cinematique evo 1 engine. Currently only Future Wars is supported.
@@ -1923,7 +1974,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Now using PalmOS Porting SDK which enables use of the C standard library.
 
 
-#### 0.9.1 (2006-10-29)
+#### 0.9.1 "PalmOS revived" (2006-10-29)
 
  New Ports:
    - Added Nintendo DS port.
@@ -1981,7 +2032,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Re-add support for 2002 based devices.
 
 
-#### 0.9.0 (2006-06-25)
+#### 0.9.0 "The OmniBrain loves you" (2006-06-25)
 
  New Games:
    - Added kyra engine (for the Kyrandia series). Currently only the first
@@ -2038,7 +2089,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed: PocketPC: Dialogs cut-off/not redrawn.
 
 
-#### 0.8.2 (2006-02-08)
+#### 0.8.2 "Broken Broken Sword 2" (2006-02-08)
 
  General:
    - Fixed OS X bundle building when using GCC 3.3.
@@ -2056,7 +2107,7 @@ For a more comprehensive changelog of the latest experimental code, see:
    - Fixed Smartphone double right click issue.
 
 
-#### 0.8.1 (2006-01-31)
+#### 0.8.1 "Codename: missing" (2006-01-31)
 
  General:
    - Fixed compiling with GCC 2.95.

@@ -102,11 +102,9 @@ void InitSciReadWriteFunctions() {
 	else
 		WRITE_SCI11ENDIAN_UINT16 = SCI_WRITE_LE_UINT16;
 
-#ifdef ENABLE_SCI32
 	if (g_sci->getPlatform() == Common::kPlatformMacintosh && getSciVersion() >= SCI_VERSION_1_1)
 		WRITE_SCI11ENDIAN_UINT32 = SCI_WRITE_BE_UINT32;
 	else
 		WRITE_SCI11ENDIAN_UINT32 = SCI_WRITE_LE_UINT32;
-#endif
 }
 }  // End of namespace Sci

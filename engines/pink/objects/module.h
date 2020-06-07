@@ -44,22 +44,24 @@ class GamePage;
 class Module : public NamedObject {
 public:
 	Module(PinkEngine *game, const Common::String &name);
-	~Module();
+	~Module() override;
 
 	void loadState(Archive &archive);
 	void saveState(Archive &archive);
 
-	void load(Archive &archive);
+	void load(Archive &archive) override;
 	void init(bool isLoadingSave, const Common::String &pageName);
 	void changePage(const Common::String &pageName);
 
 	PinkEngine *getGame() const { return _game; }
 	InventoryMgr *getInventoryMgr() { return &_invMgr; }
+	const InventoryMgr *getInventoryMgr() const { return &_invMgr; }
 
-	bool checkValueOfVariable(Common::String &variable, Common::String &value);
+	bool checkValueOfVariable(const Common::String &variable, const Common::String &value) const;
 	void setVariable(Common::String &variable, Common::String &value) { _variables[variable] = value; }
 
 	GamePage *getPage() { return _page; }
+	const GamePage *getPage() const { return _page; }
 
 	friend class Console;
 

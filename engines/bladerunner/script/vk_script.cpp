@@ -479,6 +479,8 @@ void VKScript::SCRIPT_VK_DLL_McCoy_Asks_Question(int actorId, int questionId) {
 			VK_Play_Speech_Line(kActorMcCoy, 7780, 0.5f);
 		}
 		break;
+	default:
+		break;
 	}
 
 	if ( _vm->_debugger->_playFullVk ) {
@@ -541,6 +543,8 @@ void VKScript::SCRIPT_VK_DLL_Question_Asked(int actorId, int questionId) {
 	case kActorDektora:
 		askDektora(questionId);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -566,6 +570,8 @@ void VKScript::SCRIPT_VK_DLL_Shutdown(int actorId, int humanPercentage, int repl
 		case kActorDektora:
 			Actor_Clue_Acquire(kActorMcCoy, kClueVKDektoraReplicant, true, -1);
 			break;
+		default:
+			break;
 		}
 	} else if (humanPercentage > 79) {
 		VK_Play_Speech_Line(kActorAnsweringMachine, 420, 0.5f);
@@ -585,6 +591,8 @@ void VKScript::SCRIPT_VK_DLL_Shutdown(int actorId, int humanPercentage, int repl
 			break;
 		case kActorDektora:
 			Actor_Clue_Acquire(kActorMcCoy, kClueVKDektoraHuman, true, -1);
+			break;
+		default:
 			break;
 		}
 	}
@@ -1085,6 +1093,8 @@ void VKScript::askLucy(int questionId) {
 			VK_Play_Speech_Line(kActorMcCoy, 8538, 0.5f);
 		}
 		break;
+	default:
+		break;
 	}
 }
 
@@ -1360,6 +1370,8 @@ void VKScript::askGrigorian(int questionId) {
 		VK_Play_Speech_Line(kActorGrigorian, 1160, 0.5f);
 		VK_Subject_Reacts(5, -8, 7, 10);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -1510,8 +1522,20 @@ void VKScript::askDektora(int questionId) {
 		} else {
 			VK_Subject_Reacts(90, 15, -5, 10);
 			VK_Play_Speech_Line(kActorDektora, 1870, 0.5f);
+#if BLADERUNNER_ORIGINAL_BUGS
 			VK_Play_Speech_Line(kActorMcCoy, 8532, 0.5f);
 			VK_Play_Speech_Line(kActorDektora, 1890, 0.5f);
+#else
+			// Quotes 8532 (McCoy) and 1890 (Dektora) are muted in the ESP version
+			// They are completely missing from the ESP version (they don't appear elsewhere).
+			// The quotes here are:
+			// McCoy: "That's not a single word."
+			// Dektora: "All right. Aggressive. Powerful."
+			if (_vm->_language != Common::ES_ESP) {
+				VK_Play_Speech_Line(kActorMcCoy, 8532, 0.5f);
+				VK_Play_Speech_Line(kActorDektora, 1890, 0.5f);
+			}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 		}
 		break;
 	case 7475:                          // Medium 01
@@ -1733,6 +1757,8 @@ void VKScript::askDektora(int questionId) {
 			VK_Play_Speech_Line(kActorDektora, 2640, 0.5f);
 			VK_Subject_Reacts(99, 15, -4, 30);
 		}
+		break;
+	default:
 		break;
 	}
 }
@@ -2015,6 +2041,8 @@ void VKScript::askRunciter(int questionId) {
 			VK_Play_Speech_Line(kActorMcCoy, 8435, 0.5f);    // M: You're ready for the next one?
 			VK_Play_Speech_Line(kActorRunciter, 1590, 0.5f); // R: Let's get this over with
 			break;
+		default:
+			break;
 		}
 	} else {
 		switch (questionId) {
@@ -2192,6 +2220,8 @@ void VKScript::askRunciter(int questionId) {
 			VK_Subject_Reacts(20, 10, 20, 0);
 			VK_Play_Speech_Line(kActorRunciter, 1240, 0.5f);
 			break;
+		default:
+			break;
 		}
 	}
 }
@@ -2315,7 +2345,31 @@ void VKScript::askBulletBob(int questionId) {
 			Delay(2000u);
 			VK_Play_Speech_Line(kActorMcCoy, 8270, 0.5f);
 		}
-		VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);
+		// Quote 1220 is *boop* in ENG and ITA versions
+		// In DEU version it seems largely redundant; it is one word, identical to the first word of quote 1240.
+		// In FRA version it is also one word, similar (but not identical) to how quote 1240 starts.
+		// In ESP version it can complement the following quote 1240
+		if (_vm->_cutContent) {
+			if (_vm->_language == Common::ES_ESP) {
+				// play both 1220, 1240
+				VK_Play_Speech_Line(kActorBulletBob, 1220, 0.5f);
+				VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);
+			} else if (_vm->_language == Common::FR_FRA
+			           || _vm->_language == Common::DE_DEU){
+				// play either 1220 or 1240
+				if (Random_Query(0, 1)) {
+					VK_Play_Speech_Line(kActorBulletBob, 1220, 0.5f);
+				} else {
+					VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);
+				}
+			} else {
+				// play only 1240
+				VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);
+			}
+		} else {
+			// vanilla mode plays only 1240
+			VK_Play_Speech_Line(kActorBulletBob, 1240, 0.5f);
+		}
 		break;
 	case 7475:                          // Medium 01
 		VK_Play_Speech_Line(kActorBulletBob, 1250, 0.5f);
@@ -2541,6 +2595,8 @@ void VKScript::askBulletBob(int questionId) {
 		}
 		VK_Subject_Reacts(30, 7, 7, 10);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -2560,6 +2616,8 @@ void VKScript::askCalibrationQuestion1(int actorId, int notUsed) {
 		break;
 	case kActorDektora:
 		askDektora(7385);
+		break;
+	default:
 		break;
 	}
 }
@@ -2581,6 +2639,8 @@ void VKScript::askCalibrationQuestion2(int actorId, int notUsed) {
 	case kActorDektora:
 		askDektora(7390);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -2600,6 +2660,8 @@ void VKScript::askCalibrationQuestion3(int actorId, int notUsed) {
 		break;
 	case kActorDektora:
 		askDektora(7395);
+		break;
+	default:
 		break;
 	}
 }

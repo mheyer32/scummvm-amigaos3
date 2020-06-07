@@ -33,17 +33,23 @@ namespace Sci {
 class SciEngine;
 struct List;
 
-reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag, bool printBytecode);
+reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag, bool printBytecode, bool printCSyntax);
 bool isJumpOpcode(EngineState *s, reg_t pos, reg_t& jumpOffset);
 
 class Console : public GUI::Debugger {
 public:
 	Console(SciEngine *engine);
-	virtual ~Console();
+	~Console() override;
+
+	/**
+	 * 'Attach' the debugger. This ensures that the next time onFrame()
+	 * is invoked, the debugger will activate and accept user input.
+	 */
+	void attach(const char *entry = nullptr) override;
 
 private:
-	virtual void preEnter();
-	virtual void postEnter();
+	void preEnter() override;
+	void postEnter() override;
 
 	// General
 	bool cmdHelp(int argc, const char **argv);

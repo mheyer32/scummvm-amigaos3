@@ -43,16 +43,16 @@ public:
 
 private:
 	// AdlEngine
-	void setupOpcodeTables();
-	void runIntro();
-	void init();
-	void initGameState();
-	void applyRegionWorkarounds();
-	void applyRoomWorkarounds(byte roomNr);
-	Common::String getLine();
+	void setupOpcodeTables() override;
+	void runIntro() override;
+	void init() override;
+	void initGameState() override;
+	void applyRegionWorkarounds() override;
+	void applyRoomWorkarounds(byte roomNr) override;
+	Common::String getLine() override;
 
 	// AdlEngine_v4
-	bool isInventoryFull();
+	bool isInventoryFull() override;
 
 	void loadSong(Common::ReadStream &stream);
 	void drawLight(uint index, byte color) const;
@@ -371,6 +371,9 @@ void HiRes5Engine::applyRegionWorkarounds() {
 		// to dig with. Probably a remnant of an earlier version
 		// of the script.
 		removeCommand(_roomCommands, 0);
+		break;
+	default:
+		break;
 	}
 }
 

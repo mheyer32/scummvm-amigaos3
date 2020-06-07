@@ -158,7 +158,7 @@ void OSystem_iOS7::initBackend() {
 
 	_timerManager = new DefaultTimerManager();
 
-	gettimeofday(&_startTime, NULL);
+	_startTime = CACurrentMediaTime();
 
 	setupMixer();
 
@@ -174,6 +174,7 @@ bool OSystem_iOS7::hasFeature(Feature f) {
 	case kFeatureVirtualKeyboard:
 	case kFeatureClipboardSupport:
 	case kFeatureOpenUrl:
+	case kFeatureNoQuit:
 		return true;
 
 	default:
@@ -242,7 +243,7 @@ void OSystem_iOS7::suspendLoop() {
 
 uint32 OSystem_iOS7::getMillis(bool skipRecord) {
 	CFTimeInterval timeInSeconds = CACurrentMediaTime();
-	return (uint32) (timeInSeconds * 1000.0);
+	return (uint32) ((timeInSeconds - _startTime) * 1000.0) - _timeSuspended;
 }
 
 void OSystem_iOS7::delayMillis(uint msecs) {
@@ -351,22 +352,6 @@ void OSystem_iOS7::addSysArchivesToSearchSet(Common::SearchSet &s, int priority)
 	}
 }
 
-void OSystem_iOS7::logMessage(LogMessageType::Type type, const char *message) {
-	FILE *output = 0;
-
-	if (type == LogMessageType::kInfo || type == LogMessageType::kDebug)
-		output = stdout;
-	else
-		output = stderr;
-
-	if (type == LogMessageType::kError) {
-		_lastErrorMessage = message;
-	}
-
-	fputs(message, output);
-	fflush(output);
-}
-
 bool iOS7_touchpadModeEnabled() {
 	OSystem_iOS7 *sys = (OSystem_iOS7 *) g_system;
 	return sys && sys->touchpadModeEnabled();
@@ -414,7 +399,4 @@ void iOS7_main(int argc, char **argv) {
 		//*stderr = NULL;
 		fclose(newfp);
 	}
-
-	// prevents hanging on exit
-	exit(0);
 }

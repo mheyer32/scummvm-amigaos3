@@ -62,6 +62,8 @@ void AgiEngine::setVar(int16 varNr, byte newValue) {
 	case VM_VAR_VOLUME:
 		setVolumeViaScripts(newValue);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -112,7 +114,7 @@ void AgiEngine::setVolumeViaScripts(byte newVolume) {
 	if (!_setVolumeBrokenFangame) {
 		// In AGI 15 is mute, 0 is loudest
 		// Some fan games set this incorrectly as 15 for loudest, 0 for mute
-	newVolume = 15 - newVolume; // turn volume around
+		newVolume = 15 - newVolume; // turn volume around
 	}
 
 	int scummVMVolume = newVolume * Audio::Mixer::kMaxMixerVolume / 15;
@@ -211,12 +213,6 @@ void AgiEngine::inGameTimerReset(uint32 newPlayTime) {
 void AgiEngine::inGameTimerResetPassedCycles() {
 	_passedPlayTimeCycles = 0;
 }
-void AgiEngine::inGameTimerPause() {
-	pauseEngine(true);
-}
-void AgiEngine::inGameTimerResume() {
-	pauseEngine(false);
-}
 uint32 AgiEngine::inGameTimerGet() {
 	return getTotalPlayTime();
 }
@@ -294,7 +290,7 @@ void AgiEngine::inGameTimerUpdate() {
 		}
 		if (secondsLeft >= 3600) {
 			curHours += secondsLeft / 3600;
-	secondsLeft = secondsLeft % 3600;
+			secondsLeft = secondsLeft % 3600;
 		}
 		if (secondsLeft >= 60) {
 			curMinutes += secondsLeft / 60;
@@ -316,10 +312,10 @@ void AgiEngine::inGameTimerUpdate() {
 		}
 
 		// directly set them
-	_game.vars[VM_VAR_SECONDS] = curSeconds;
-	_game.vars[VM_VAR_MINUTES] = curMinutes;
-	_game.vars[VM_VAR_HOURS] = curHours;
-	_game.vars[VM_VAR_DAYS] = curDays;
+		_game.vars[VM_VAR_SECONDS] = curSeconds;
+		_game.vars[VM_VAR_MINUTES] = curMinutes;
+		_game.vars[VM_VAR_HOURS] = curHours;
+		_game.vars[VM_VAR_DAYS] = curDays;
 	}
 
 	_lastUsedPlayTimeInSeconds = curPlayTimeSeconds;

@@ -44,10 +44,11 @@ void ActionLoop::deserialize(Archive &archive) {
 		break;
 	default:
 		_style = kForward;
+		break;
 	}
 }
 
-void ActionLoop::toConsole() {
+void ActionLoop::toConsole() const {
 	debugC(6, kPinkDebugLoadingObjects, "\tActionLoop: _name = %s, _fileName = %s, z = %u, _startFrame = %u,"
 				  " _endFrame = %d, _intro = %u, _style = %u",
 		  _name.c_str(), _fileName.c_str(), _z, _startFrame, _stopFrame, _intro, _style);
@@ -94,6 +95,8 @@ void ActionLoop::update() {
 			ActionCEL::setFrame(_startFrame);
 		}
 		decodeNext();
+		break;
+	default:
 		break;
 	}
 }

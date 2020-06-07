@@ -132,9 +132,9 @@ protected:
 	void Set_Subtitle_Text_On_Screen(Common::String displayText);
 #if BLADERUNNER_ORIGINAL_BUGS
 #else
-	void Screen_Effect_Skip(int effectInc);
-	void Screen_Effect_Restore(int effectInc);
-	void Screen_Effect_Restore_All();
+	void Screen_Effect_Skip(int effectInc, bool forceExtraSceneFrameSkip);
+	void Screen_Effect_Restore(int effectInc, bool forceExtraSceneFrameSkip);
+	void Screen_Effect_Restore_All(bool forceExtraSceneFrameSkip);
 #endif // BLADERUNNER_ORIGINAL_BUGS
 	int Animation_Open();
 	int Animation_Close();
@@ -163,7 +163,7 @@ protected:
 	int Global_Variable_Increment(int, int);
 	int Global_Variable_Decrement(int, int);
 	int Random_Query(int min, int max);
-	void Sound_Play(int id, int volume, int panFrom, int panTo, int priority);
+	void Sound_Play(int id, int volume, int panStart, int panEnd, int priority);
 	void Sound_Play_Speech_Line(int actorId, int sentenceId, int volume, int a4, int priority);
 	void Sound_Left_Footstep_Walk(int actorId);
 	void Sound_Right_Footstep_Walk(int actorId);

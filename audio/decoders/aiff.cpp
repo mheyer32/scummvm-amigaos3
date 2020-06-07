@@ -174,11 +174,15 @@ ReturnType *makeGenericAIFFStream(Common::SeekableReadStream *stream, DisposeAft
 			break;
 		}
 
-		stream->seek(pos + length + (length & 1)); // ensure we're also word-aligned
+		uint32 seekPos = pos + length;
+		if (seekPos < (uint32)stream->size()) {
+			seekPos += (length & 1); // ensure we're word-aligned
+		}
+		stream->seek(seekPos);
 	}
 
 	if (!foundCOMM) {
-		warning("makeAIFFStream: Cound not find 'COMM' chunk");
+		warning("makeAIFFStream: Could not find 'COMM' chunk");
 
 		if (!dataStream && disposeAfterUse == DisposeAfterUse::YES)
 			delete stream;
@@ -188,7 +192,7 @@ ReturnType *makeGenericAIFFStream(Common::SeekableReadStream *stream, DisposeAft
 	}
 
 	if (!foundSSND) {
-		warning("makeAIFFStream: Cound not find 'SSND' chunk");
+		warning("makeAIFFStream: Could not find 'SSND' chunk");
 
 		if (disposeAfterUse == DisposeAfterUse::YES)
 			delete stream;

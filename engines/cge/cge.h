@@ -133,15 +133,14 @@ private:
 	void writeSavegameHeader(Common::OutSaveFile *out, SavegameHeader &header);
 	void syncGame(Common::SeekableReadStream *readStream, Common::WriteStream *writeStream, bool tiny);
 	bool savegameExists(int slotNumber);
-	Common::String generateSaveName(int slot);
 public:
 	CGEEngine(OSystem *syst, const ADGameDescription *gameDescription);
-	~CGEEngine();
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual bool canLoadGameStateCurrently();
-	virtual bool canSaveGameStateCurrently();
-	virtual Common::Error loadGameState(int slot);
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	~CGEEngine() override;
+	bool hasFeature(EngineFeature f) const override;
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 
 	static const int _maxSceneArr[5];
 	bool _quitFlag;
@@ -205,10 +204,7 @@ public:
 	BitmapPtr *_miniShpList;
 	int        _startGameSlot;
 
-	virtual Common::Error run();
-	GUI::Debugger *getDebugger() {
-		return _console;
-	}
+	virtual Common::Error run() override;
 
 	void cge_main();
 	void switchScene(int newScene);
@@ -326,7 +322,6 @@ protected:
 	int _recentStep;
 
 private:
-	CGEConsole *_console;
 	void init();
 	void deinit();
 };
@@ -335,7 +330,7 @@ private:
 class Console : public GUI::Debugger {
 public:
 	Console(CGEEngine *vm) {}
-	virtual ~Console() {}
+	~Console() override {}
 };
 
 } // End of namespace CGE

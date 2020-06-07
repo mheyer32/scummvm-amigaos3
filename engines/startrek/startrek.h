@@ -63,8 +63,6 @@ class Room;
 class Console;
 
 typedef String(StarTrekEngine::*TextGetterFunc)(int, uintptr, String *);
-// FIXME: Eventually get rid of Common::SharedPtr and dispose of file streams properly
-typedef Common::SharedPtr<Common::MemoryReadStreamEndian> FileStream;
 
 const int SAVEGAME_DESCRIPTION_LEN = 30;
 
@@ -229,11 +227,11 @@ protected:
 	// startrek.cpp
 public:
 	StarTrekEngine(OSystem *syst, const StarTrekGameDescription *gamedesc);
-	virtual ~StarTrekEngine();
+	~StarTrekEngine() override;
 
 	friend class Console;
 
-	Common::Error run();
+	Common::Error run() override;
 	Common::Error runGameMode(int mode, bool resume);
 
 	// Transporter room
@@ -243,13 +241,9 @@ public:
 	void initBridge(bool b) {}; // TODO
 	void cleanupBridge() {}; // TODO
 
-	// Running the game
-	void playSoundEffectIndex(int index);
-	void playMidiMusicTracks(int startTrack, int loopTrack);
-	void playSpeech(const Common::String &filename);
-	void stopPlayingSpeech();
-
 	Common::MemoryReadStreamEndian *loadFile(Common::String filename, int fileIndex = 0);
+	Common::MemoryReadStreamEndian *loadBitmapFile(Common::String baseName);
+
 	/**
 	 * TODO: Figure out what the extra parameters are, and if they're important.
 	 */
@@ -301,15 +295,6 @@ public:
 	bool checkItemInteractionExists(int action, int activeItem, int passiveItem, int16 arg6);
 	void handleAwayMissionAction();
 
-	/**
-	 * Returns true if the given position is contained in a polygon.
-	 *
-	 * The data passed contains the following words in this order:
-	 *   * Index of polygon (unused here)
-	 *   * Number of vertices in polygon
-	 *   * For each vertex: x and y coordinates.
-	 */
-	bool isPointInPolygon(int16 *data, int16 x, int16 y);
 	void checkTouchedLoadingZone(int16 x, int16 y);
 	/**
 	 * Updates any nonzero away mission timers, and invokes ACTION_TIMER_EXPIRED when any one
@@ -381,7 +366,7 @@ public:
 	 * "renderBanAboveSprites()" redraws sprites above them if necessary.
 	 */
 	void renderBanBelowSprites();
-	void renderBan(byte *pixelDest, FileStream file);
+	void renderBan(byte *screenPixels, byte *bgPixels, int banFileIndex);
 	void renderBanAboveSprites();
 	void removeActorFromScreen(int actorIndex);
 	void actorFunc1();
@@ -407,7 +392,7 @@ public:
 	/**
 	 * Loads a bitmap for the animation frame with the given scale.
 	 */
-	SharedPtr<Bitmap> loadAnimationFrame(const Common::String &filename, Fixed8 scale);
+	Bitmap *loadAnimationFrame(const Common::String &filename, Fixed8 scale);
 
 	/**
 	 * Called when the "get" action is first selected. Returns a selected object.
@@ -436,8 +421,8 @@ public:
 	void showInventoryIcons(bool showItem);
 	void hideInventoryIcons();
 	int showInventoryMenu(int x, int y, bool restoreMouse);
-	void initStarfieldSprite(Sprite *sprite, SharedPtr<Bitmap> bitmap, const Common::Rect &rect);
-	SharedPtr<Bitmap> scaleBitmap(SharedPtr<Bitmap> bitmap, Fixed8 scale);
+	void initStarfieldSprite(Sprite *sprite, Bitmap *bitmap, const Common::Rect &rect);
+	Bitmap *scaleBitmap(Bitmap *bitmap, Fixed8 scale);
 	/**
 	 * This takes a row of an unscaled bitmap, and copies it to a row of a scaled bitmap.
 	 * This was heavily optimized in the original game (manually constructed an unrolled
@@ -492,7 +477,7 @@ public:
 	 * Draw a line of text to a standard bitmap (NOT a "TextBitmap", whose pixel array is
 	 * an array of characters, but an actual standard bitmap).
 	 */
-	void drawTextLineToBitmap(const char *text, int textLen, int x, int y, SharedPtr<Bitmap> bitmap);
+	void drawTextLineToBitmap(const char *text, int textLen, int x, int y, Bitmap *bitmap);
 
 	String centerTextboxHeader(String headerText);
 	void getTextboxHeader(String *headerTextOutput, String speakerText, int choiceIndex);
@@ -531,13 +516,13 @@ public:
 	/**
 	 * Creates a blank textbox in a TextBitmap, and initializes a sprite to use it.
 	 */
-	SharedPtr<TextBitmap> initTextSprite(int *xoffsetPtr, int *yoffsetPtr, byte textColor, int numTextLines, bool withHeader, Sprite *sprite);
+	TextBitmap *initTextSprite(int *xoffsetPtr, int *yoffsetPtr, byte textColor, int numTextLines, bool withHeader, Sprite *sprite);
 	/**
 	 * Draws the "main" text (everything but the header at the top) to a TextBitmap.
 	 */
-	void drawMainText(SharedPtr<TextBitmap> bitmap, int numTextLines, int numTextboxLines, const String &text, bool withHeader);
+	void drawMainText(TextBitmap *bitmap, int numTextLines, int numTextboxLines, const String &text, bool withHeader);
 
-	String readLineFormattedText(TextGetterFunc textGetter, uintptr var, int choiceIndex, SharedPtr<TextBitmap> textBitmap, int numTextboxLines, int *numLines);
+	String readLineFormattedText(TextGetterFunc textGetter, uintptr var, int choiceIndex, TextBitmap *textBitmap, int numTextboxLines, int *numLines);
 
 	/**
 	 * Text getter for showText which reads choices from an array of pointers.
@@ -564,8 +549,6 @@ private:
 	char _textInputBuffer[TEXT_INPUT_BUFFER_SIZE];
 	int16 _textInputCursorPos;
 	char _textInputCursorChar;
-	SharedPtr<Bitmap> _textInputBitmapSkeleton;
-	SharedPtr<Bitmap> _textInputBitmap;
 	Sprite _textInputSprite;
 
 	// menu.cpp
@@ -587,7 +570,7 @@ public:
 	 * Draws or removes the outline on menu buttons when the cursor hovers on them, or leaves
 	 * them.
 	 */
-	void drawMenuButtonOutline(SharedPtr<Bitmap> bitmap, byte color);
+	void drawMenuButtonOutline(Bitmap *bitmap, byte color);
 	void showOptionsMenu(int x, int y);
 	/**
 	 * Show the "action selection" menu, ie. look, talk, etc.
@@ -721,7 +704,7 @@ public:
 
 	// ".BAN" files provide extra miscellaneous animations in the room, ie. flashing
 	// pixels on computer consoles, or fireflies in front of the screen.
-	FileStream _banFiles[MAX_BAN_FILES];
+	Common::MemoryReadStreamEndian *_banFiles[MAX_BAN_FILES];
 	uint16 _banFileOffsets[MAX_BAN_FILES];
 
 	Sprite _inventoryIconSprite;
@@ -780,8 +763,7 @@ public:
 
 	Graphics *_gfx;
 	Sound *_sound;
-	Console *_console;
-	SharedPtr<IWFile> _iwFile;
+	IWFile *_iwFile;
 
 private:
 	Common::RandomSource _randomSource;

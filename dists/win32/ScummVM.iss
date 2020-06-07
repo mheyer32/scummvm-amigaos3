@@ -167,7 +167,7 @@ end;
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
-Name: portuguese; MessagesFile: compiler:Languages\BrazilianPortuguese.isl
+Name: brazilian; MessagesFile: compiler:Languages\BrazilianPortuguese.isl
 Name: catalan; MessagesFile: compiler:Languages\Catalan.isl
 Name: czech; MessagesFile: compiler:Languages\Czech.isl
 Name: danish; MessagesFile: compiler:Languages\Danish.isl
@@ -186,7 +186,7 @@ Name: dutch; MessagesFile: compiler:Languages\Dutch.isl
 Name: finnish; MessagesFile: compiler:Languages\Finnish.isl
 Name: galician; MessagesFile: compiler:Languages\Galician.isl
 Name: greek; MessagesFile: compiler:Languages\Greek.isl
-Name: polish; MessagesFile: compiler:Languages\Polish.isl
+Name: portuguese; MessagesFile: compiler:Languages\Portuguese.isl
 Name: ukrainian; MessagesFile: compiler:Languages\Ukrainian.isl
 Name: hebrew; MessagesFile: compiler:Languages\Hebrew.isl
 
@@ -204,9 +204,9 @@ Name: {group}\ScummVM; Filename: {app}\scummvm.exe; WorkingDir: {app}; Comment: 
 Name: {group}\ScummVM (noconsole); Filename: {app}\scummvm.exe; Parameters: "--no-console"; WorkingDir: {app}; Comment: scummvm; Flags: createonlyiffileexists; IconIndex: 0; Languages: not german
 Name: {group}\ScummVM (ohne Konsolenfenster); Filename: {app}\scummvm.exe; Parameters: "--no-console"; WorkingDir: {app}; Comment: scummvm; Flags: createonlyiffileexists; IconIndex:0; Languages: german
 Name: {group}\Saved Games\Saved Games; Filename: {userappdata}\ScummVM\Saved Games; WorkingDir: {userappdata}\ScummVM\Saved Games; Comment: Saved Games; IconIndex: 0; MinVersion: 0, 1; Languages: not german
-Name: {group}\Spielst√§nde\Spielst√§nde; Filename: {userappdata}\ScummVM\Saved Games; WorkingDir: {userappdata}\ScummVM\Saved Games; Comment: Spielst√§nde; IconIndex: 0; MinVersion: 0, 1; Languages: german
+Name: {group}\Spielst‰nde\Spielst‰nde; Filename: {userappdata}\ScummVM\Saved Games; WorkingDir: {userappdata}\ScummVM\Saved Games; Comment: Spielst‰nde; IconIndex: 0; MinVersion: 0, 1; Languages: german
 Name: {group}\Saved Games\Saved Games (old default); Filename: {app}; WorkingDir: {app}; Comment: Saved Games (old default); IconIndex: 0; MinVersion: 0, 1; Languages: not german
-Name: {group}\Spielst√§nde\Spielst√§nde (alter Standard); Filename: {app}; WorkingDir: {app}; Comment: Spielst√§nde (alter Standard); IconIndex: 0; MinVersion: 0, 1; Languages: german
+Name: {group}\Spielst‰nde\Spielst‰nde (alter Standard); Filename: {app}; WorkingDir: {app}; Comment: Spielst‰nde (alter Standard); IconIndex: 0; MinVersion: 0, 1; Languages: german
 
 ; DOCUMENTATION
 Name: {group}\Authors; Filename: {app}\AUTHORS.txt; WorkingDir: {app}; Comment: AUTHORS; Flags: createonlyiffileexists; Languages: not german

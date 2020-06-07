@@ -286,10 +286,6 @@ void GameManager::processInput(Common::KeyState &state) {
 				_vm->quitGame();
 		}
 		break;
-	case Common::KEYCODE_d:
-		if (state.flags & Common::KBD_CTRL)
-			_vm->_console->attach();
-		break;
 	default:
 		break;
 	}
@@ -417,6 +413,7 @@ void GameManager::processInput() {
 				_inventoryScroll += 2;
 			break;
 		case onNone:
+		default:
 			break;
 		}
 
@@ -502,6 +499,7 @@ void GameManager::processInput() {
 				break;
 			case onObject:
 			case onNone:
+			default:
 				// Fallthrough
 				break;
 			}
@@ -539,6 +537,7 @@ void GameManager::processInput() {
 				_currentInputObject = _currentRoom->getObject(_mouseField);
 				break;
 			case onNone:
+			default:
 				break;
 			}
 		}

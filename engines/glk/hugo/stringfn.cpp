@@ -25,9 +25,6 @@
 namespace Glk {
 namespace Hugo {
 
-
-/* LEFT */
-
 char *StringFunctions::Left(char a[], int l) {
 	static char *temp;
 	int i;
@@ -44,11 +41,12 @@ char *StringFunctions::Left(char a[], int l) {
 
 char *StringFunctions::Ltrim(char a[]) {
 	static char *temp;
+	int len = strlen(a);
 
 	temp = GetTempString();
 	strcpy(temp, a);
 	while (temp[0]==' ' || temp[0]=='\t')
-		strcpy(temp, temp+1);
+		memmove(temp, temp+1, len + 1);
 	return temp;
 }
 
@@ -90,10 +88,10 @@ char *StringFunctions::Rtrim(char a[]) {
 	return temp;
 }
 
-char *StringFunctions::hugo_strcpy(char *s, const char *t)  { 
-	char *r = s; 
-	while ((*s++ = *t++) != 0) ; 
-	return r; 
+char *StringFunctions::hugo_strcpy(char *s, const char *t)  {
+	char *r = s;
+	while ((*s++ = *t++) != 0) ;
+	return r;
 }
 
 char *StringFunctions::GetTempString() {

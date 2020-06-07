@@ -79,23 +79,27 @@ static const char *const g_filesToCheck[NUM_FILES_TO_CHECK] = { // these files h
 
 class SwordMetaEngine : public MetaEngine {
 public:
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "sword1";
+	}
+
+	const char *getName() const override {
 		return "Broken Sword: The Shadow of the Templars";
 	}
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Broken Sword: The Shadow of the Templars (C) Revolution";
 	}
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
+	bool hasFeature(MetaEngineFeature f) const override;
 	PlainGameList getSupportedGames() const override;
 	PlainGameDescriptor findGame(const char *gameId) const override;
 	DetectedGames detectGames(const Common::FSList &fslist) const override;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual void removeSaveState(const char *target, int slot) const;
-	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override;
+	void removeSaveState(const char *target, int slot) const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
 
-	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
+	Common::Error createInstance(OSystem *syst, Engine **engine) const override;
 };
 
 bool SwordMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -111,7 +115,7 @@ bool SwordMetaEngine::hasFeature(MetaEngineFeature f) const {
 
 bool Sword1::SwordEngine::hasFeature(EngineFeature f) const {
 	return
-	    (f == kSupportsRTL) ||
+	    (f == kSupportsReturnToLauncher) ||
 	    (f == kSupportsSavingDuringRuntime) ||
 	    (f == kSupportsLoadingDuringRuntime);
 }
@@ -214,17 +218,17 @@ DetectedGames SwordMetaEngine::detectGames(const Common::FSList &fslist) const {
 
 	DetectedGame game;
 	if (mainFilesFound && pcFilesFound && demoFilesFound)
-		game = DetectedGame(sword1DemoSettings);
+		game = DetectedGame(getEngineId(), sword1DemoSettings);
 	else if (mainFilesFound && pcFilesFound && psxFilesFound)
-		game = DetectedGame(sword1PSXSettings);
+		game = DetectedGame(getEngineId(), sword1PSXSettings);
 	else if (mainFilesFound && pcFilesFound && psxDemoFilesFound)
-		game = DetectedGame(sword1PSXDemoSettings);
+		game = DetectedGame(getEngineId(), sword1PSXDemoSettings);
 	else if (mainFilesFound && pcFilesFound && !psxFilesFound)
-		game = DetectedGame(sword1FullSettings);
+		game = DetectedGame(getEngineId(), sword1FullSettings);
 	else if (mainFilesFound && macFilesFound)
-		game = DetectedGame(sword1MacFullSettings);
+		game = DetectedGame(getEngineId(), sword1MacFullSettings);
 	else if (mainFilesFound && macDemoFilesFound)
-		game = DetectedGame(sword1MacDemoSettings);
+		game = DetectedGame(getEngineId(), sword1MacDemoSettings);
 	else
 		return detectedGames;
 
@@ -362,7 +366,7 @@ bool SwordEngine::canLoadGameStateCurrently() {
 	return (mouseIsActive() && !_control->isPanelShown()); // Disable GMM loading when game panel is shown
 }
 
-Common::Error SwordEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error SwordEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	_control->setSaveDescription(slot, desc.c_str());
 	_control->saveGameToFile(slot);
 	return Common::kNoError;    // TODO: return success/failure

@@ -88,7 +88,7 @@ public:
 	bool _showMouseClickInfo;
 
 	Debugger(BladeRunnerEngine *vm);
-	~Debugger();
+	~Debugger() override;
 
 	bool cmdAnimation(int argc, const char **argv);
 	bool cmdHealth(int argc, const char **argv);
@@ -132,6 +132,8 @@ public:
 	void drawWaypoints();
 	void drawWalkboxes();
 	void drawScreenEffects();
+
+	bool dbgAttemptToLoadChapterSetScene(int chapterId, int setId, int sceneId);
 
 private:
 	Common::Array<DebuggerDrawnObject> _specificDrawnObjectsList;

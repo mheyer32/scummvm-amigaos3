@@ -48,7 +48,7 @@ class Text;
 class ChewyEngine : public Engine {
 public:
 	ChewyEngine(OSystem *syst, const ChewyGameDescription *gameDesc);
-	virtual ~ChewyEngine();
+	~ChewyEngine() override;
 
 	int getGameType() const;
 	uint32 getFeatures() const;
@@ -68,13 +68,12 @@ public:
 
 protected:
 	// Engine APIs
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 
 	void initialize();
 	void shutdown();
 
-	Console *_console;
 	Events *_events;
 
 	uint _curCursor;

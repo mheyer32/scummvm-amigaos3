@@ -187,12 +187,13 @@ void Interface::startup() {
 
 	animate3d();
 	if (_vm->_map->_isOutdoors) {
-		setIndoorsMonsters();
-		setIndoorsObjects();
-	} else {
 		setOutdoorsMonsters();
 		setOutdoorsObjects();
+	} else {
+		setIndoorsMonsters();
+		setIndoorsObjects();
 	}
+
 	draw3d(false);
 
 	if (g_vm->getGameID() == GType_Swords)
@@ -1668,6 +1669,9 @@ void Interface::doCombat() {
 				if (_tillMove)
 					combat.moveMonsters();
 				party._stepped = true;
+				break;
+
+			default:
 				break;
 			}
 

@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE2_MAIN_H
@@ -41,8 +41,8 @@ public:
 
 	System(CGE2Engine *vm);
 
-	virtual void touch(uint16 mask, V2D pos, Common::KeyCode keyCode);
-	void tick();
+	void touch(uint16 mask, V2D pos, Common::KeyCode keyCode) override;
+	void tick() override;
 private:
 	CGE2Engine *_vm;
 };

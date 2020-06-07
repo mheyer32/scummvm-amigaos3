@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE2_CGE2_H
@@ -143,11 +143,9 @@ private:
 	uint32 _lastFrame, _lastTick;
 	void tick();
 
-	CGE2Console *_console;
 	void init();
 	void deinit();
 
-	Common::String generateSaveName(int slot);
 	void writeSavegameHeader(Common::OutSaveFile *out, SavegameHeader &header);
 	void saveGame(int slotNumber, const Common::String &desc);
 	bool loadGame(int slotNumber);
@@ -156,18 +154,14 @@ private:
 	void resetGame();
 public:
 	CGE2Engine(OSystem *syst, const ADGameDescription *gameDescription);
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual bool canSaveGameStateCurrently();
-	virtual bool canLoadGameStateCurrently();
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
-	virtual Common::Error loadGameState(int slot);
-	virtual Common::Error run();
+	bool hasFeature(EngineFeature f) const override;
+	bool canSaveGameStateCurrently() override;
+	bool canLoadGameStateCurrently() override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	Common::Error loadGameState(int slot) override;
+	Common::Error run() override;
 
 	WARN_UNUSED_RESULT static bool readSavegameHeader(Common::InSaveFile *in, SavegameHeader &header, bool skipThumbnail = true);
-
-	GUI::Debugger *getDebugger() {
-		return _console;
-	}
 
 	bool showTitle(const char *name);
 	void cge2_main();

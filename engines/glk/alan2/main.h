@@ -27,7 +27,7 @@
 
 #include "common/file.h"
 #include "glk/alan2/types.h"
-#include "glk/alan2/jumps.h"
+#include "glk/jumps.h"
 
 namespace Glk {
 namespace Alan2 {
@@ -85,10 +85,6 @@ extern const char *advnam;
 
 /* Screen formatting info */
 extern int col, lin;
-extern int paglen, pagwidth;
-
-/* Long jump buffer for restart */
-//extern jmp_buf restart_label;
 
 extern Boolean verbose, errflg, trcflg, dbgflg, stpflg, logflg, statusflg;
 extern Boolean fail;

@@ -34,17 +34,13 @@
 #include "backends/platform/3ds/sprite.h"
 #include "common/rect.h"
 #include "common/queue.h"
+#include "engines/engine.h"
 
 #define TICKS_PER_MSEC 268123
 
 namespace _3DS {
 
-enum {
-	GFX_LINEAR = 0,
-	GFX_NEAREST = 1
-};
-
-enum InputMode {
+enum MagnifyMode {
 	MODE_MAGON,
 	MODE_MAGOFF,
 };
@@ -54,12 +50,49 @@ enum InputMode {
 	MODE_DRAG,
 };
 
-static const OSystem::GraphicsMode s_graphicsModes[] = {
-	{"default", "Default Test", GFX_LINEAR},
-	{ 0, 0, 0 }
+enum GraphicsModeID {
+	RGBA8,
+	RGB565,
+	RGB555,
+	RGB5A1,
+	CLUT8
 };
 
-class OSystem_3DS : public EventsBaseBackend, public PaletteManager {
+enum TransactionState {
+	kTransactionNone = 0,
+	kTransactionActive = 1,
+	kTransactionRollback = 2
+};
+
+
+struct TransactionDetails {
+	bool formatChanged, modeChanged;
+
+	TransactionDetails() {
+		formatChanged = false;
+		modeChanged = false;
+	}
+};
+
+typedef struct GfxMode3DS {
+	Graphics::PixelFormat surfaceFormat;
+	GPU_TEXCOLOR textureFormat;
+	uint32 textureTransferFlags;
+} GfxMode3DS;
+
+struct GfxState {
+	bool setup;
+	GraphicsModeID gfxModeID;
+	const GfxMode3DS *gfxMode;
+
+	GfxState() {
+		setup = false;
+		gfxModeID = CLUT8;
+	}
+};
+
+
+class OSystem_3DS : public EventsBaseBackend, public PaletteManager, public Common::EventObserver {
 public:
 	OSystem_3DS();
 	virtual ~OSystem_3DS();
@@ -73,7 +106,11 @@ public:
 	virtual void setFeatureState(OSystem::Feature f, bool enable);
 	virtual bool getFeatureState(OSystem::Feature f);
 
-	virtual bool pollEvent(Common::Event &event);
+	bool pollEvent(Common::Event &event) override;
+	bool notifyEvent(const Common::Event &event) override;
+	Common::HardwareInputSet *getHardwareInputSet() override;
+	Common::KeymapArray getGlobalKeymaps() override;
+	Common::KeymapperDefaultBindings *getKeymapperDefaultBindings() override;
 
 	virtual uint32 getMillis(bool skipRecord = false);
 	virtual void delayMillis(uint msecs);
@@ -96,16 +133,13 @@ public:
 	void addSysArchivesToSearchSet(Common::SearchSet &s, int priority) override;
 
 	// Graphics
-	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const;
-	int getDefaultGraphicsMode() const;
-	bool setGraphicsMode(int mode);
-	void resetGraphicsScale();
-	int getGraphicsMode() const;
 	inline Graphics::PixelFormat getScreenFormat() const { return _pfGame; }
 	virtual Common::List<Graphics::PixelFormat> getSupportedFormats() const;
 	void initSize(uint width, uint height,
 	              const Graphics::PixelFormat *format = NULL);
-	virtual int getScreenChangeID() const { return 0; };
+	virtual int getScreenChangeID() const { return _screenChangeId; };
+	GraphicsModeID chooseMode(Graphics::PixelFormat *format);
+	bool setGraphicsMode(GraphicsModeID modeID);
 
 	void beginGFXTransaction();
 	OSystem::TransactionError endGFXTransaction();
@@ -152,12 +186,10 @@ public:
 	void updateMagnify();
 	void updateConfig();
 	void updateSize();
-	void setMagnifyMode(MagnifyMode mode);
-	MagnifyMode getMagnifyMode(){ return _magnifyMode; }
 
 private:
-	void initGraphics();
-	void destroyGraphics();
+	void init3DSGraphics();
+	void destroy3DSGraphics();
 	void initAudio();
 	void destroyAudio();
 	void initEvents();
@@ -179,13 +211,19 @@ private:
 	Thread audioThread;
 
 	// Graphics
-	Graphics::PixelFormat _pfGame;
-	Graphics::PixelFormat _pfGameTexture;
+	GraphicsModeID _graphicsModeID;
+	TransactionState _transactionState;
+	TransactionDetails _transactionDetails;
+
+	GfxState _gfxState, _oldGfxState;
+	Graphics::PixelFormat _pfDefaultTexture;
+	Graphics::PixelFormat _pfGame, _oldPfGame;
 	Graphics::PixelFormat _pfCursor;
 	byte _palette[3 * 256];
 	byte _cursorPalette[3 * 256];
 
 	Graphics::Surface _gameScreen;
+	bool _gameTextureDirty;
 	Sprite _gameTopTexture;
 	Sprite _gameBottomTexture;
 	Sprite _overlay;
@@ -234,7 +272,8 @@ private:
 	bool _cursorPaletteEnabled;
 	bool _cursorVisible;
 	bool _cursorScalable;
-	float _cursorX, _cursorY;
+	float _cursorScreenX, _cursorScreenY;
+	float _cursorOverlayX, _cursorOverlayY;
 	float _cursorDeltaX, _cursorDeltaY;
 	int _cursorHotspotX, _cursorHotspotY;
 	uint32 _cursorKeyColor;
@@ -244,6 +283,10 @@ private:
 	u16 _magX, _magY;
 	u16 _magWidth, _magHeight;
 	u16 _magCenterX, _magCenterY;
+
+public:
+	// Pause
+	PauseToken _sleepPauseToken;
 };
 
 } // namespace _3DS

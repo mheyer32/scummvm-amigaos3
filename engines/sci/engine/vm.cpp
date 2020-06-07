@@ -37,6 +37,7 @@
 #include "sci/engine/gc.h"
 #include "sci/engine/workarounds.h"
 #include "sci/engine/scriptdebug.h"
+#include "sci/engine/vm_hooks.h"
 
 namespace Sci {
 
@@ -229,7 +230,9 @@ ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct, StackP
 	}
 
 	// Check if a breakpoint is set on this method
-	g_sci->checkExportBreakpoint(script, pubfunct);
+	if (g_sci->checkExportBreakpoint(script, pubfunct)) {
+		logExportCall(script, pubfunct, s, argc, argp);
+	}
 
 	uint32 exportAddr = scr->validateExportFunc(pubfunct, false);
 	if (!exportAddr)
@@ -584,6 +587,8 @@ void run_vm(EngineState *s) {
 	StackPtr s_temp; // Temporary stack pointer
 	int16 opparams[4]; // opcode parameters
 
+	VmHooks vmHooks;
+
 	s->r_rest = 0;	// &rest adjusts the parameter count by this value
 	// Current execution data:
 	s->xs = &(s->_executionStack.back());
@@ -609,6 +614,8 @@ void run_vm(EngineState *s) {
 #endif
 
 	while (1) {
+		vmHooks.vm_hook_before_exec(s);
+
 		int var_type; // See description below
 		int var_number;
 
@@ -677,7 +684,12 @@ void run_vm(EngineState *s) {
 
 		// Get opcode
 		byte extOpcode;
+		if (!vmHooks.isActive(s))
 		s->xs->addr.pc.incOffset(readPMachineInstruction(scr->getBuf(s->xs->addr.pc.getOffset()), extOpcode, opparams));
+		else {
+			int offset = readPMachineInstruction(vmHooks.data(), extOpcode, opparams);
+			vmHooks.advance(offset);
+		}
 		const byte opcode = extOpcode >> 1;
 		//debug("%s: %d, %d, %d, %d, acc = %04x:%04x, script %d, local script %d", opcodeNames[opcode], opparams[0], opparams[1], opparams[2], opparams[3], PRINT_REG(s->r_acc), scr->getScriptNumber(), local_script->getScriptNumber());
 
@@ -812,30 +824,44 @@ void run_vm(EngineState *s) {
 
 		case op_bt: // 0x17 (23)
 			// Branch relative if true
+			if (!vmHooks.isActive(s)) {
 			if (s->r_acc.getOffset() || s->r_acc.getSegment())
 				s->xs->addr.pc.incOffset(opparams[0]);
 
 			if (s->xs->addr.pc.getOffset() >= local_script->getScriptSize())
 				error("[VM] op_bt: request to jump past the end of script %d (offset %d, script is %d bytes)",
 					local_script->getScriptNumber(), s->xs->addr.pc.getOffset(), local_script->getScriptSize());
+			} else {
+				if (s->r_acc.getOffset() || s->r_acc.getSegment())
+					vmHooks.advance(opparams[0]);
+			}
 			break;
 
 		case op_bnt: // 0x18 (24)
 			// Branch relative if not true
+			if (!vmHooks.isActive(s)) {
 			if (!(s->r_acc.getOffset() || s->r_acc.getSegment()))
 				s->xs->addr.pc.incOffset(opparams[0]);
 
 			if (s->xs->addr.pc.getOffset() >= local_script->getScriptSize())
 				error("[VM] op_bnt: request to jump past the end of script %d (offset %d, script is %d bytes)",
 					local_script->getScriptNumber(), s->xs->addr.pc.getOffset(), local_script->getScriptSize());
+			} else {
+				if (!(s->r_acc.getOffset() || s->r_acc.getSegment()))
+					vmHooks.advance(opparams[0]);
+			}
 			break;
 
 		case op_jmp: // 0x19 (25)
+			if (!vmHooks.isActive(s)) {
 			s->xs->addr.pc.incOffset(opparams[0]);
 
 			if (s->xs->addr.pc.getOffset() >= local_script->getScriptSize())
 				error("[VM] op_jmp: request to jump past the end of script %d (offset %d, script is %d bytes)",
 					local_script->getScriptNumber(), s->xs->addr.pc.getOffset(), local_script->getScriptSize());
+			} else {
+				vmHooks.advance(opparams[0]);
+			}
 			break;
 
 		case op_ldi: // 0x1a (26)
@@ -1163,7 +1189,7 @@ void run_vm(EngineState *s) {
 		case op_pToa: // 0x31 (49)
 			// Property To Accumulator
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORREAD) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    validate_property(s, obj, opparams[0]), NULL_REG,
 				                    s->_segMan, BREAK_SELECTORREAD);
 			}
@@ -1175,7 +1201,7 @@ void run_vm(EngineState *s) {
 			// Accumulator To Property
 			reg_t &opProperty = validate_property(s, obj, opparams[0]);
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORWRITE) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    opProperty, s->r_acc,
 				                    s->_segMan, BREAK_SELECTORWRITE);
 			}
@@ -1192,7 +1218,7 @@ void run_vm(EngineState *s) {
 			// Property To Stack
 			reg_t value = validate_property(s, obj, opparams[0]);
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORREAD) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    value, NULL_REG,
 				                    s->_segMan, BREAK_SELECTORREAD);
 			}
@@ -1206,7 +1232,7 @@ void run_vm(EngineState *s) {
 			reg_t newValue = POP32();
 			reg_t &opProperty = validate_property(s, obj, opparams[0]);
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORWRITE) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    opProperty, newValue,
 				                    s->_segMan, BREAK_SELECTORWRITE);
 			}
@@ -1228,7 +1254,7 @@ void run_vm(EngineState *s) {
 			reg_t oldValue = opProperty;
 
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORREAD) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    oldValue, NULL_REG,
 				                    s->_segMan, BREAK_SELECTORREAD);
 			}
@@ -1239,7 +1265,7 @@ void run_vm(EngineState *s) {
 				opProperty -= 1;
 
 			if (g_sci->_debugState._activeBreakpointTypes & BREAK_SELECTORWRITE) {
-				debugPropertyAccess(obj, s->xs->objp, opparams[0],
+				debugPropertyAccess(obj, s->xs->objp, opparams[0], NULL_SELECTOR,
 				                    oldValue, opProperty,
 				                    s->_segMan, BREAK_SELECTORWRITE);
 			}

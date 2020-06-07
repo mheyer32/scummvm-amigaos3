@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #include "common/array.h"
@@ -405,6 +405,8 @@ Sprite *Sprite::expand() {
 						break;
 					case 0xFE:
 						s->_next = seqcnt - 1;
+						break;
+					default:
 						break;
 					}
 					if (s->_next > maxnxt)
@@ -1149,6 +1151,7 @@ void Bitmap::show(V2D pos) {
 			while (count-- > 0) {
 				// Transfer operation
 				switch (cmd) {
+				default:
 				case 1:
 					// SKIP
 					break;

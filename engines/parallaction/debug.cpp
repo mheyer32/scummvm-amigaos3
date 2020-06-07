@@ -51,12 +51,12 @@ Debugger::Debugger(Parallaction *vm)
 
 void Debugger::preEnter() {
 	_mouseState = _vm->_input->getMouseState();
-	_vm->pauseEngine(true);
+	GUI::Debugger::preEnter();
 }
 
 
 void Debugger::postEnter() {
-	_vm->pauseEngine(false);
+	GUI::Debugger::postEnter();
 	_vm->_input->setMouseState(_mouseState);
 	_vm->_input->setArrowCursor();	// unselects the active item, if any
 }
@@ -83,7 +83,10 @@ bool Debugger::Cmd_Location(int argc, const char **argv) {
 
 	case 1:
 		debugPrintf("location <location name> [character name]\n");
+		break;
 
+	default:
+		break;
 	}
 
 	return true;

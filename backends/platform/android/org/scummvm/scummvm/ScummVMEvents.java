@@ -36,6 +36,10 @@ public class ScummVMEvents implements
 	public static final int JE_JOYSTICK = 15;
 	public static final int JE_MMB_DOWN = 16;
 	public static final int JE_MMB_UP = 17;
+	public static final int JE_BMB_DOWN = 18;
+	public static final int JE_BMB_UP = 19;
+	public static final int JE_FMB_DOWN = 20;
+	public static final int JE_FMB_UP = 21;
 	public static final int JE_QUIT = 0x1000;
 
 	final protected Context _context;
@@ -87,6 +91,7 @@ public class ScummVMEvents implements
 				if (imm != null)
 					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 			} else if (msg.what == MSG_SBACK_LONG_PRESS) {
+				_scummvm.pushEvent(JE_SYS_KEY, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU, 0, 0, 0, 0);
 				_scummvm.pushEvent(JE_SYS_KEY, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MENU, 0, 0, 0, 0);
 			}
 		}
@@ -104,7 +109,7 @@ public class ScummVMEvents implements
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			if (_mouseHelper != null) {
-				if (_mouseHelper.getRmbGuard()) {
+				if (MouseHelper.isMouse(e)) {
 					// right mouse button was just clicked which sends an extra back button press (which should be ignored)
 					return true;
 				}
@@ -112,20 +117,6 @@ public class ScummVMEvents implements
 		}
 
 		if (e.isSystem()) {
-			// filter what we handle
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_BACK:
-			case KeyEvent.KEYCODE_MENU:
-			case KeyEvent.KEYCODE_CAMERA:
-			case KeyEvent.KEYCODE_SEARCH:
-			case KeyEvent.KEYCODE_MEDIA_PLAY:
-			case KeyEvent.KEYCODE_MEDIA_PAUSE:
-				break;
-
-			default:
-				return false;
-			}
-
 			// no repeats for system keys
 			if (e.getRepeatCount() > 0)
 				return false;
@@ -161,21 +152,20 @@ public class ScummVMEvents implements
 					keyHandler.sendMessageDelayed(keyHandler.obtainMessage(
 									typeOfLongPressMessage), _longPress);
 					return true;
+				} else if (action != KeyEvent.ACTION_UP) {
+					return true;
 				}
 
 				if (fired) {
 					return true;
 				}
 
-				// only send up events of the menu or back button to the native side
-				if (action != KeyEvent.ACTION_UP) {
-					return true;
-				}
+				// It's still necessary to send a key down event to the backend.
+				_scummvm.pushEvent(JE_SYS_KEY, KeyEvent.ACTION_DOWN, keyCode,
+							e.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK,
+							e.getMetaState(), e.getRepeatCount(),
+							(int)(e.getEventTime() - e.getDownTime()));
 			}
-
-			_scummvm.pushEvent(JE_SYS_KEY, action, keyCode, 0, 0, 0, 0);
-
-			return true;
 		}
 
 		// sequence of characters
@@ -198,6 +188,10 @@ public class ScummVMEvents implements
 
 		int type;
 		switch (keyCode) {
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+		case KeyEvent.KEYCODE_VOLUME_UP:
+			// We ignore these so that they can be handled by Android.
+			return false;
 		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_DOWN:
 		case KeyEvent.KEYCODE_DPAD_LEFT:
@@ -227,7 +221,11 @@ public class ScummVMEvents implements
 			type = JE_GAMEPAD;
 			break;
 		default:
-			type = JE_KEY;
+			if (e.isSystem()) {
+				type = JE_SYS_KEY;
+			} else {
+				type = JE_KEY;
+			}
 			break;
 		}
 

@@ -37,7 +37,6 @@
 #include "backends/fs/symbian/symbian-fs-factory.h"
 #include "backends/saves/default/default-saves.h"
 #include "backends/events/symbiansdl/symbiansdl-events.h"
-#include "backends/graphics/symbiansdl/symbiansdl-graphics.h"
 #include "backends/mixer/symbiansdl/symbiansdl-mixer.h"
 
 #define DEFAULT_CONFIG_FILE "scummvm.ini"
@@ -97,6 +96,7 @@ void OSystem_SDL_Symbian::initBackend() {
 	// Symbian OS  should have joystick_num set to 0 in the ini file,
 	// but uiq devices might refuse opening the joystick
 	ConfMan.setInt("joystick_num", 0);
+	ConfMan.setBool("fullscreen", true);
 	ConfMan.flushToDisk();
 
 	GUI::Actions::init();
@@ -110,8 +110,6 @@ void OSystem_SDL_Symbian::initBackend() {
 		// Setup and start mixer
 		_mixerManager->init();
 	}
-	if (_graphicsManager == 0)
-		_graphicsManager = new SymbianSdlGraphicsManager(_eventSource, _window);
 
 	// Call parent implementation of this method
 	OSystem_SDL::initBackend();
@@ -161,11 +159,6 @@ void OSystem_SDL_Symbian::checkMappings() {
 	GUI::Actions::Instance()->initInstanceGame();
 }
 
-// make sure we always go to normal, even if the string might be set wrong!
-bool OSystem_SDL_Symbian::setGraphicsMode(const char * /*name*/) {
-	return _graphicsManager->setGraphicsMode(0);
-}
-
 Common::String OSystem_SDL_Symbian::getDefaultConfigFileName() {
 	char configFile[MAXPATHLEN];
 	strcpy(configFile, Symbian::GetExecutablePath());
@@ -174,7 +167,8 @@ Common::String OSystem_SDL_Symbian::getDefaultConfigFileName() {
 }
 
 bool OSystem_SDL_Symbian::hasFeature(Feature f) {
-	if (f == kFeatureJoystickDeadzone) return false;
+	if (f == kFeatureJoystickDeadzone || f == kFeatureFullscreenMode)
+		return false;
 
 	return OSystem_SDL::hasFeature(f);
 }

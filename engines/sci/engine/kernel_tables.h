@@ -406,7 +406,7 @@ static const SciKernelMapSubEntry kBitmap_subops[] = {
 
 //    version,         subId, function-mapping,                    signature,              workarounds
 static const SciKernelMapSubEntry kCD_subops[] = {
-	{ SIG_SINCE_SCI21MID,  0, MAP_CALL(CheckCD),                   "(i)",                  NULL },
+	{ SIG_SINCE_SCI21MID,  0, MAP_CALL(CheckCD),                   "(i)(i)",               NULL },
 	{ SIG_SINCE_SCI21MID,  1, MAP_CALL(GetSavedCD),                "",                     NULL },
 	SCI_SUBOPENTRY_TERMINATOR
 };
@@ -545,7 +545,7 @@ static const SciKernelMapSubEntry kString_subops[] = {
 	{ SIG_THRU_SCI21MID,   2, MAP_CALL(StringGetChar),             "[r0]i",                NULL },
 	{ SIG_THRU_SCI21MID,   3, MAP_CALL(ArraySetElements),          "ri(i*)",               kArraySetElements_workarounds },
 	{ SIG_THRU_SCI21MID,   4, MAP_CALL(StringFree),                "[r0]",                 NULL },
-	{ SIG_THRU_SCI21MID,   5, MAP_CALL(ArrayFill),                 "rii",                  kArrayFill_workarounds },
+	{ SIG_THRU_SCI21MID,   5, MAP_CALL(ArrayFill),                 "riii",                 kArrayFill_workarounds },
 	{ SIG_THRU_SCI21MID,   6, MAP_CALL(ArrayCopy),                 "ririi",                NULL },
 	{ SIG_SCI32,           7, MAP_CALL(StringCompare),             "[r0][r0](i)",          NULL },
 
@@ -956,7 +956,7 @@ static SciKernelMapEntry s_kernelMap[] = {
 	{ MAP_DUMMY(GetHighItemPri),   SIG_EVERYWHERE,           "(.*)",                  NULL,            NULL },
 	{ MAP_DUMMY(ShowStylePercent), SIG_EVERYWHERE,           "(.*)",                  NULL,            NULL },
 	{ MAP_DUMMY(InvertRect),       SIG_THRU_SCI21EARLY, SIGFOR_ALL, "(.*)",           NULL,            NULL },
-	{ MAP_DUMMY(InputText),        SIG_EVERYWHERE,           "(.*)",                  NULL,            NULL },
+	{ MAP_CALL(InputText),         SIG_EVERYWHERE,           "rri",                   NULL,            NULL },
 	{ MAP_CALL(TextWidth),         SIG_THRU_SCI21EARLY, SIGFOR_ALL, "ri",             NULL,            NULL },
 	{ MAP_CALL(PointSize),         SIG_THRU_SCI21EARLY, SIGFOR_ALL, "i",              NULL,            NULL },
 
@@ -1245,7 +1245,7 @@ static const char *const sci2_default_knames[] = {
 	/*0x29*/ "Dummy",
 	/*0x2a*/ "SetQuitStr",
 	/*0x2b*/ "EditText",
-	/*0x2c*/ "InputText",			// unused function
+	/*0x2c*/ "InputText",
 	/*0x2d*/ "CreateTextBitmap",
 	/*0x2e*/ "DisposeTextBitmap",	// Priority in early SCI2.1 games with a SCI2 kernel table
 	/*0x2f*/ "GetEvent",
@@ -1440,7 +1440,7 @@ static const char *const sci21_default_knames[] = {
 	/*0x48*/ "Message",
 	/*0x49*/ "Font",
 	/*0x4a*/ "EditText",
-	/*0x4b*/ "InputText",		// unused function
+	/*0x4b*/ "InputText",
 	/*0x4c*/ "ScrollWindow",	// Dummy in SCI3
 	/*0x4d*/ "Dummy",
 	/*0x4e*/ "Dummy",

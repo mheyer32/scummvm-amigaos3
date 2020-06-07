@@ -48,7 +48,7 @@
 namespace Groovie {
 
 GroovieEngine::GroovieEngine(OSystem *syst, const GroovieGameDescription *gd) :
-	Engine(syst), _gameDescription(gd), _debugger(NULL), _script(NULL),
+	Engine(syst), _gameDescription(gd), _script(NULL),
 	_resMan(NULL), _grvCursorMan(NULL), _videoPlayer(NULL), _musicPlayer(NULL),
 	_graphicsMan(NULL), _macResFork(NULL), _waitingForInput(false), _font(NULL),
 	_spookyMode(false) {
@@ -79,7 +79,6 @@ GroovieEngine::GroovieEngine(OSystem *syst, const GroovieGameDescription *gd) :
 
 GroovieEngine::~GroovieEngine() {
 	// Delete the remaining objects
-	delete _debugger;
 	delete _resMan;
 	delete _grvCursorMan;
 	delete _videoPlayer;
@@ -119,11 +118,14 @@ Common::Error GroovieEngine::run() {
 		initGraphics(640, 480);
 		_pixelFormat = Graphics::PixelFormat::createFormatCLUT8();
 		break;
+	default:
+		break;
 	}
 
 	// Create debugger. It requires GFX to be initialized
-	_debugger = new Debugger(this);
-	_script->setDebugger(_debugger);
+	Debugger *debugger = new Debugger(this);
+	setDebugger(debugger);
+	_script->setDebugger(debugger);
 
 	// Create the graphics manager
 	_graphicsMan = new GraphicsMan(this);
@@ -161,6 +163,8 @@ Common::Error GroovieEngine::run() {
 #ifdef ENABLE_GROOVIE2
 		_videoPlayer = new ROQPlayer(this);
 #endif
+		break;
+	default:
 		break;
 	}
 
@@ -258,18 +262,11 @@ Common::Error GroovieEngine::run() {
 	}
 
 	while (!shouldQuit()) {
-		// Give the debugger a chance to act
-		_debugger->onFrame();
-
 		// Handle input
 		Common::Event ev;
 		while (_eventMan->pollEvent(ev)) {
 			switch (ev.type) {
 			case Common::EVENT_KEYDOWN:
-				// CTRL-D: Attach the debugger
-				if ((ev.kbd.flags & Common::KBD_CTRL) && ev.kbd.keycode == Common::KEYCODE_d)
-					_debugger->attach();
-
 				// Send the event to the scripts
 				_script->setKbdChar(ev.kbd.ascii);
 
@@ -349,7 +346,7 @@ Common::Platform GroovieEngine::getPlatform() const {
 
 bool GroovieEngine::hasFeature(EngineFeature f) const {
 	return
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 		(f == kSupportsSavingDuringRuntime) ||
 		(f == kSupportsLoadingDuringRuntime);
 }
@@ -394,7 +391,7 @@ Common::Error GroovieEngine::loadGameState(int slot) {
 	return Common::kNoError;
 }
 
-Common::Error GroovieEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error GroovieEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	_script->directGameSave(slot,desc);
 
 	// TODO: Use specific error codes

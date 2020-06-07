@@ -56,8 +56,8 @@ namespace Tinsel {
 
 // FIXME: Avoid non-const global vars
 
-static OBJECT *g_McurObj = NULL;		// Main cursor object
-static OBJECT *g_AcurObj = NULL;		// Auxiliary cursor object
+static OBJECT *g_McurObj = nullptr;		// Main cursor object
+static OBJECT *g_AcurObj = nullptr;		// Auxiliary cursor object
 
 static ANIM g_McurAnim = {0,0,0,0,0};		// Main cursor animation structure
 static ANIM g_AcurAnim = {0,0,0,0,0};		// Auxiliary cursor animation structure
@@ -121,15 +121,15 @@ static void InitCurTrailObj(int i, int x, int y) {
 
 	// Get rid of old object
 	if (g_ntrailData[i].trailObj != NULL)
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
 
 	pim = GetImageFromFilm(g_hCursorFilm, i+1, &pfr, &pmi, &pfilm);// Get pointer to image
-	assert(BgPal()); // No background palette
-	pim->hImgPal = TO_32(BgPal());
+	assert(_vm->_bg->BgPal()); // No background palette
+	pim->hImgPal = TO_32(_vm->_bg->BgPal());
 
 	// Initialize and insert the object, set its Z-pos, and hide it
 	g_ntrailData[i].trailObj = MultiInitObject(pmi);
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
 	MultiSetZPosition(g_ntrailData[i].trailObj, Z_CURSORTRAIL);
 	MultiSetAniXY(g_ntrailData[i].trailObj, x, y);
 
@@ -170,7 +170,7 @@ void SetCursorXY(int newx, int newy) {
 	int	x, y;
 	int	Loffset, Toffset;	// Screen offset
 
-	PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
+	_vm->_bg->PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
 	newx -= Loffset;
 	newy -= Toffset;
 
@@ -205,7 +205,7 @@ bool GetCursorXYNoWait(int *x, int *y, bool absolute) {
 
 	if (absolute) {
 		int	Loffset, Toffset;	// Screen offset
-		PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
+		_vm->_bg->PlayfieldGetPos(FIELD_WORLD, &Loffset, &Toffset);
 		*x += Loffset;
 		*y += Toffset;
 	}
@@ -267,8 +267,8 @@ void DwHideCursor() {
 
 	for (i = 0; i < g_numTrails; i++) {
 		if (g_ntrailData[i].trailObj != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
-			g_ntrailData[i].trailObj = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+			g_ntrailData[i].trailObj = nullptr;
 		}
 	}
 }
@@ -304,8 +304,8 @@ void HideCursorTrails() {
 
 	for (i = 0; i < g_numTrails; i++)	{
 		if (g_ntrailData[i].trailObj != NULL) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
-			g_ntrailData[i].trailObj = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+			g_ntrailData[i].trailObj = nullptr;
 		}
 	}
 }
@@ -357,8 +357,8 @@ IMAGE *GetImageFromFilm(SCNHANDLE hFilm, int reel, const FREEL **ppfr, const MUL
  */
 void DelAuxCursor() {
 	if (g_AcurObj != NULL) {
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_AcurObj);
-		g_AcurObj = NULL;
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_AcurObj);
+		g_AcurObj = nullptr;
 	}
 }
 
@@ -376,14 +376,14 @@ void SetAuxCursor(SCNHANDLE hFilm) {
 	DelAuxCursor();		// Get rid of previous
 
 	// WORKAROUND: There's no palette when loading a DW1 savegame with a held item, so exit if so
-	if (!BgPal())
+	if (!_vm->_bg->BgPal())
 		return;
 
 	GetCursorXY(&x, &y, false);	// Note: also waits for cursor to appear
 
 	pim = GetImageFromFilm(hFilm, 0, &pfr, &pmi, &pfilm);// Get pointer to image
-	assert(BgPal()); // no background palette
-	pim->hImgPal = TO_32(BgPal());			// Poke in the background palette
+	assert(_vm->_bg->BgPal()); // no background palette
+	pim->hImgPal = TO_32(_vm->_bg->BgPal());			// Poke in the background palette
 
 	g_ACoX = (short)(FROM_16(pim->imgWidth)/2 - ((int16) FROM_16(pim->anioffX)));
 	g_ACoY = (short)((FROM_16(pim->imgHeight) & ~C16_FLAG_MASK)/2 -
@@ -391,7 +391,7 @@ void SetAuxCursor(SCNHANDLE hFilm) {
 
 	// Initialize and insert the auxillary cursor object
 	g_AcurObj = MultiInitObject(pmi);
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_AcurObj);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_AcurObj);
 
 	// Initialize the animation and set its position
 	InitStepAnimScript(&g_AcurAnim, g_AcurObj, FROM_32(pfr->script), ONE_SECOND / FROM_32(pfilm->frate));
@@ -489,16 +489,16 @@ static void InitCurObj() {
 
 		PokeInPalette(pmi);
 	} else {
-		assert(BgPal()); // no background palette
+		assert(_vm->_bg->BgPal()); // no background palette
 
 		pim = GetImageFromFilm(g_hCursorFilm, 0, &pfr, &pmi, &pFilm);// Get pointer to image
-		pim->hImgPal = TO_32(BgPal());
+		pim->hImgPal = TO_32(_vm->_bg->BgPal());
 
-		g_AcurObj = NULL;		// No auxillary cursor
+		g_AcurObj = nullptr;		// No auxillary cursor
 	}
 
 	g_McurObj = MultiInitObject(pmi);
-	MultiInsertObject(GetPlayfieldList(FIELD_STATUS), g_McurObj);
+	MultiInsertObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_McurObj);
 
 	InitStepAnimScript(&g_McurAnim, g_McurObj, FROM_32(pfr->script), ONE_SECOND / FROM_32(pFilm->frate));
 }
@@ -556,7 +556,7 @@ void CursorProcess(CORO_PARAM, const void *) {
 
 	CORO_BEGIN_CODE(_ctx);
 
-	while (!g_hCursorFilm || !BgPal())
+	while (!g_hCursorFilm || !_vm->_bg->BgPal())
 		CORO_SLEEP(1);
 
 	InitCurObj();
@@ -580,8 +580,8 @@ void CursorProcess(CORO_PARAM, const void *) {
 		for (int i = 0; i < g_numTrails; i++) {
 			if (g_ntrailData[i].trailObj != NULL) {
 				if (StepAnimScript(&g_ntrailData[i].trailAnim) == ScriptFinished) {
-					MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
-					g_ntrailData[i].trailObj = NULL;
+					MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+					g_ntrailData[i].trailObj = nullptr;
 				}
 			}
 		}
@@ -635,23 +635,23 @@ void DwInitCursor(SCNHANDLE bfilm) {
 void DropCursor() {
 	if (TinselV2) {
 		if (g_AcurObj)
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_AcurObj);
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_AcurObj);
 		if (g_McurObj)
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_McurObj);
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_McurObj);
 
 		g_restart = 0;
 	}
 
-	g_AcurObj = NULL;		// No auxillary cursor
-	g_McurObj = NULL;		// No cursor object (imminently deleted elsewhere)
+	g_AcurObj = nullptr;		// No auxillary cursor
+	g_McurObj = nullptr;		// No cursor object (imminently deleted elsewhere)
 	g_bHiddenCursor = false;	// Not hidden in next scene
 	g_bTempNoTrailers = false;	// Trailers not hidden in next scene
 	g_bWhoa = true;		// Suspend cursor processes
 
 	for (int i = 0; i < g_numTrails; i++) {
 		if (g_ntrailData[i].trailObj != NULL)		{
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
-			g_ntrailData[i].trailObj = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), g_ntrailData[i].trailObj);
+			g_ntrailData[i].trailObj = nullptr;
 		}
 	}
 }
@@ -668,9 +668,9 @@ void RestartCursor() {
  * pointers etc.
  */
 void RebootCursor() {
-	g_McurObj = g_AcurObj = NULL;
+	g_McurObj = g_AcurObj = nullptr;
 	for (int i = 0; i < MAX_TRAILERS; i++)
-		g_ntrailData[i].trailObj = NULL;
+		g_ntrailData[i].trailObj = nullptr;
 
 	g_bHiddenCursor = g_bTempNoTrailers = g_bFrozenCursor = false;
 

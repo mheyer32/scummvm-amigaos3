@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE2_SOUND_H
@@ -115,13 +115,13 @@ private:
 	void sndMidiStop();
 public:
 	explicit MusicPlayer(CGE2Engine *vm);
-	~MusicPlayer();
+	~MusicPlayer() override;
 
 	void loadMidi(int ref);
 	void killMidi();
 
-	virtual void send(uint32 b);
-	virtual void sendToChannel(byte channel, uint32 b);
+	void send(uint32 b) override;
+	void sendToChannel(byte channel, uint32 b) override;
 };
 
 } // End of namespace CGE2

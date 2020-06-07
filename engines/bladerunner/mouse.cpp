@@ -159,6 +159,8 @@ void Mouse::setCursor(int cursor) {
 		_frame = 0;
 		_hotspotX = 11;
 		_hotspotY = 11;
+	default:
+		break;
 	}
 }
 
@@ -169,6 +171,8 @@ void Mouse::getXY(int *x, int *y) const {
 
 void Mouse::setMouseJitterUp() {
 	switch (_vm->_settings->getDifficulty()) {
+	default:
+		// fallthrough intended
 	case kGameDifficultyEasy:
 		_randomCountdownX = 2;
 		_randomX = _vm->_rnd.getRandomNumberRng(0, 6) - 3;
@@ -191,6 +195,8 @@ void Mouse::setMouseJitterUp() {
 
 void Mouse::setMouseJitterDown() {
 	switch (_vm->_settings->getDifficulty()) {
+	default:
+		// fallthrough intended
 	case kGameDifficultyEasy:
 		_randomCountdownY = 2;
 		_randomX = _vm->_rnd.getRandomNumberRng(0, 6) - 3;
@@ -236,14 +242,14 @@ void Mouse::draw(Graphics::Surface &surface, int x, int y) {
 	}
 
 	if (_randomCountdownX > 0) {
-		_randomCountdownX--;
+		--_randomCountdownX;
 		x += _randomX;
 		y += _randomY;
 
 		if (!_randomCountdownX)
 			setMouseJitterDown();
 	} else if (_randomCountdownY > 0) {
-		_randomCountdownY--;
+		--_randomCountdownY;
 		x += _randomX;
 		y += _randomY;
 	}
@@ -321,6 +327,9 @@ void Mouse::updateCursorFrame() {
 	case 16:
 		if (++_frame > 2)
 			_frame = 0;
+		break;
+	default:
+		break;
 	}
 }
 
@@ -361,6 +370,8 @@ void Mouse::tick(int x, int y) {
 			break;
 		case 3:
 			cursorId = 15;
+			break;
+		default:
 			break;
 		}
 		setCursor(cursorId);
@@ -404,6 +415,8 @@ void Mouse::tick(int x, int y) {
 		case 2:
 			cursorId = 11;
 			break;
+		default:
+			break;
 		}
 
 		if (!_vm->_playerActor->isMoving() && animationMode != kAnimationModeCombatAim && animationMode != kAnimationModeCombatHit && animationMode != kAnimationModeCombatDie) {
@@ -419,6 +432,8 @@ void Mouse::tick(int x, int y) {
 			break;
 		case 2:
 			cursorId = 10;
+			break;
+		default:
 			break;
 		}
 		if (!_vm->_playerActor->isMoving() && animationMode != kAnimationModeCombatIdle && animationMode != kAnimationModeCombatHit && animationMode != kAnimationModeCombatDie) {

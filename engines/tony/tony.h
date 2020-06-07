@@ -95,8 +95,8 @@ private:
 
 protected:
 	// Engine APIs
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 public:
 	LPCUSTOMFUNCTION _funcList[300];
 	Common::String _funcListStrings[300];
@@ -109,8 +109,6 @@ public:
 	FPSound _theSound;
 	Common::List<FPSfx *> _activeSfx;
 	Globals _globals;
-	Debugger *_debugger;
-	GUI::Debugger *getDebugger() { return _debugger; }
 
 	int16 _cTableDialog[256];
 	int16 _lTableDialog[256];
@@ -152,7 +150,7 @@ public:
 	int  _nTimeFreezed;
 public:
 	TonyEngine(OSystem *syst, const TonyGameDescription *gameDesc);
-	virtual ~TonyEngine();
+	~TonyEngine() override;
 
 	const TonyGameDescription *_gameDescription;
 	uint32 getFeatures() const;
@@ -164,10 +162,10 @@ public:
 		return &_theEngine;
 	}
 
-	virtual bool canLoadGameStateCurrently();
-	virtual bool canSaveGameStateCurrently();
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &desc);
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 
 	void play();
 	void close();
@@ -218,6 +216,7 @@ public:
 	void saveState(int n, const char *name);
 	void loadState(CORO_PARAM, int n);
 	static Common::String getSaveStateFileName(int n);
+	virtual Common::String getSaveStateName(int slot) const override;
 
 	/**
 	 * Get a thumbnail
@@ -230,7 +229,7 @@ public:
 	void openInitLoadMenu(CORO_PARAM);
 	void openInitOptions(CORO_PARAM);
 
-	virtual void syncSoundSettings();
+	void syncSoundSettings() override;
 	void saveSoundSettings();
 };
 

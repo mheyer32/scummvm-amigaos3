@@ -36,7 +36,7 @@ bool HDBGame::canSaveGameStateCurrently() {
 	return (_gameState == GAME_PLAY && !_ai->cinematicsActive());
 }
 
-Common::Error HDBGame::saveGameState(int slot, const Common::String &desc) {
+Common::Error HDBGame::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 
 	// If no map is loaded, don't try to save
 	if (!g_hdb->_map->isLoaded())
@@ -315,8 +315,8 @@ void AIEntity::load(Common::InSaveFile *in) {
 	FuncPtr init, init2, use, action;
 	EntFuncPtr drawf;
 
-	action = init = init2 = use = NULL;
-	drawf = NULL;
+	action = init = init2 = use = nullptr;
+	drawf = nullptr;
 
 	// Read 32-char names for the function ptrs we have in entity struct
 	in->read(funcString, 32);

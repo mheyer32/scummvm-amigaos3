@@ -27,7 +27,7 @@
 
 #include "backends/plugins/elf/elf-provider.h"
 
-class StatusMessageDialog : public GUI::MessageDialog {
+class CTRPluginProvider : public ELFPluginProvider {
 public:
 	Plugin *createPlugin(const Common::FSNode &node) const;
 };

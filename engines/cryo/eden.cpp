@@ -113,7 +113,6 @@ EdenGame::EdenGame(CryoEngine *vm) : _vm(vm), kMaxMusicSize(2200000) {
 	_soundAllocated = false;
 	_musicChannel = _voiceChannel = nullptr;
 	_hnmSoundChannel = nullptr;
-	_voiceSound = nullptr;
 	_cirsorPanX = 0;
 	_inventoryScrollDelay = 0;
 	_cursorPosY = _cursorPosX = 0;
@@ -1716,6 +1715,8 @@ void EdenGame::vivredino() {
 				perso->_steps = 1;
 			}
 			break;
+		default:
+			break;
 		}
 	}
 }
@@ -2321,6 +2322,8 @@ void EdenGame::my_bulle() {
 					break;
 				case 2:
 					_globals->_giveObj3 = c2;
+					break;
+				default:
 					break;
 				}
 				_globals->_numGiveObjs++;
@@ -4080,9 +4083,7 @@ void EdenGame::run() {
 	_vm->_video->setupSound(11025, false, false);
 	_vm->_video->setForceZero2Black(true);
 	_vm->_video->setupTimer(12.5);
-	_voiceSound = new Sound(0, 11025 * 65536.0, 8, 0);
 	_hnmSoundChannel = _vm->_video->getSoundChannel();
-	_voiceSound->setWantsDesigned(1); // CHECKME: Used?
 
 	_musicChannel = new CSoundChannel(_vm->_mixer, 11025, false);
 	_voiceChannel = new CSoundChannel(_vm->_mixer, 11025, false);
@@ -5452,6 +5453,8 @@ void EdenGame::confirmYes() {
 	case 2:
 		reallyquit();
 		break;
+	default:
+		break;
 	}
 }
 
@@ -5846,6 +5849,8 @@ void EdenGame::perso_ici(int16 action) {
 	case 5:
 		rangermammi(perso, _globals->_lastAreaPtr->_citadelRoomPtr);
 		break;
+	default:
+		break;
 	}
 	perso = _persons;
 	do {
@@ -5865,6 +5870,8 @@ void EdenGame::perso_ici(int16 action) {
 				break;
 			case 5:
 				rangermammi(perso, _globals->_lastAreaPtr->_citadelRoomPtr);
+				break;
+			default:
 				break;
 			}
 		}
@@ -7339,6 +7346,8 @@ void EdenGame::Eden_dep_and_rot() {
 		_rotationAngleX = 0;
 		_translationZ = Z_RESET;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -7809,6 +7818,7 @@ void EdenGame::enginePC() {
 	int step = _pcCursor->_speed;
 	switch (_pcCursor->_kind) {
 	case 0:
+	default:
 		break;
 	case 1:	// rot up-down
 		decAngleY();

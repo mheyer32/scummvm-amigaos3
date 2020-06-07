@@ -49,9 +49,7 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	DebugMan.addDebugChannel(kDebugAnimation, "Animation", "Animation Debug Flag");
 	DebugMan.addDebugChannel(kDebugSaveLoad, "SaveLoad", "Track Save/Load Function");
 
-	_vSyncInterrupt = false;
-
-	_console = 0;
+	_vSyncPrevTick = 0;
 	_sound = 0;
 	_speed = 1;
 	_turbo = false;
@@ -272,31 +270,28 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 
 DreamWebEngine::~DreamWebEngine() {
 	DebugMan.clearAllDebugChannels();
-	delete _console;
 	delete _sound;
 }
 
-static void vSyncInterrupt(void *refCon) {
-	DreamWebEngine *vm = (DreamWebEngine *)refCon;
-
-	if (!vm->isPaused()) {
-		vm->setVSyncInterrupt(true);
-	}
-}
-
-void DreamWebEngine::setVSyncInterrupt(bool flag) {
-	_vSyncInterrupt = flag;
+void DreamWebEngine::pauseEngineIntern(bool pause) {
+	Engine::pauseEngineIntern(pause);
+	if (!pause)
+		_vSyncPrevTick = _system->getMillis();
 }
 
 void DreamWebEngine::waitForVSync() {
+	if (isPaused())
+		return;
+
 	processEvents();
 
 	if (!_turbo) {
-		while (!_vSyncInterrupt) {
-			_system->delayMillis(10);
-		}
-		setVSyncInterrupt(false);
+		const uint32 delay =  1000 / 70 / _speed;
+		uint32 elapsed = _system->getMillis() - _vSyncPrevTick;
+		if (elapsed < delay)
+			_system->delayMillis(delay - elapsed);
 	}
+	_vSyncPrevTick = _system->getMillis();
 
 	doShake();
 	doFade();
@@ -308,31 +303,28 @@ void DreamWebEngine::quit() {
 	_lastHardKey = Common::KEYCODE_ESCAPE;
 }
 
-void DreamWebEngine::processEvents() {
+void DreamWebEngine::processEvents(bool processSoundEvents) {
 	if (_eventMan->shouldQuit()) {
 		quit();
 		return;
 	}
 
-	_sound->soundHandler();
+	if (processSoundEvents)
+		_sound->soundHandler();
+
 	Common::Event event;
 	int softKey;
 	while (_eventMan->pollEvent(event)) {
 		switch(event.type) {
-		case Common::EVENT_RTL:
+		case Common::EVENT_RETURN_TO_LAUNCHER:
 			quit();
 			break;
 		case Common::EVENT_KEYDOWN:
 			if (event.kbd.flags & Common::KBD_CTRL) {
 				switch (event.kbd.keycode) {
 
-				case Common::KEYCODE_d:
-					_console->attach();
-					_console->onFrame();
-					break;
-
 				case Common::KEYCODE_f:
-					setSpeed(_speed != 20? 20: 1);
+					setSpeed(_speed != 4? 4: 1);
 					break;
 
 				case Common::KEYCODE_g:
@@ -404,19 +396,17 @@ void DreamWebEngine::processEvents() {
 
 Common::Error DreamWebEngine::run() {
 	syncSoundSettings();
-	_console = new DreamWebConsole(this);
+	setDebugger(new DreamWebConsole(this));
 	_sound = new DreamWebSound(this);
 
 	_hasSpeech = Common::File::exists(_speechDirName + "/r01c0000.raw") && !ConfMan.getBool("speech_mute");
 	_brightPalette = ConfMan.getBool("bright_palette");
 	_copyProtection = ConfMan.getBool("copy_protection");
 
-	_timer->installTimerProc(vSyncInterrupt, 1000000 / 70, this, "dreamwebVSync");
+	_vSyncPrevTick = _system->getMillis();
 	dreamweb();
 	dreamwebFinalize();
 	_quitRequested = false;
-
-	_timer->removeTimerProc(vSyncInterrupt);
 
 	return Common::kNoError;
 }
@@ -424,8 +414,6 @@ Common::Error DreamWebEngine::run() {
 void DreamWebEngine::setSpeed(uint speed) {
 	debug(0, "setting speed %u", speed);
 	_speed = speed;
-	_timer->removeTimerProc(vSyncInterrupt);
-	_timer->installTimerProc(vSyncInterrupt, 1000000 / 70 / speed, this, "dreamwebVSync");
 }
 
 Common::String DreamWebEngine::getSavegameFilename(int slot) const {
@@ -500,12 +488,9 @@ void DreamWebEngine::cls() {
 }
 
 uint8 DreamWebEngine::modifyChar(uint8 c) const {
-	if (c < 128)
-		return c;
-
-	switch(getLanguage()) {
+	switch (getLanguage()) {
 	case Common::DE_DEU:
-		switch(c) {
+		switch (c) {
 		case 129:
 			return 'Z' + 3;
 		case 132:
@@ -580,6 +565,10 @@ uint8 DreamWebEngine::modifyChar(uint8 c) const {
 		default:
 			return c;
 		}
+	case Common::RU_RUS:
+		if (c >= 224)
+			c -= 48;
+		// fall through
 	default:
 		return c;
 	}

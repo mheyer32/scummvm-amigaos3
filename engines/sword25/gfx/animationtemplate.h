@@ -57,16 +57,16 @@ private:
 	AnimationTemplate(InputPersistenceBlock &reader, uint handle);
 
 public:
-	~AnimationTemplate();
+	~AnimationTemplate() override;
 
-	virtual const Frame    &getFrame(uint index) const {
+	const Frame    &getFrame(uint index) const override {
 		assert(index < _frames.size());
 		return _frames[index];
 	}
-	virtual uint    getFrameCount() const {
+	uint    getFrameCount() const override {
 		return _frames.size();
 	}
-	virtual void            unlock() {
+	void            unlock() override {
 		delete this;
 	}
 
@@ -75,18 +75,18 @@ public:
 	}
 
 	/**
-	    @brief Fügt einen neuen Frame zur Animation hinzu.
+	    @brief FÃ¼gt einen neuen Frame zur Animation hinzu.
 
-	    Der Frame wird an das Ende der Animation angehängt.
+	    Der Frame wird an das Ende der Animation angehÃ¤ngt.
 
 	    @param Index der Index des Frames in der Quellanimation
 	*/
 	void addFrame(int index);
 
 	/**
-	    @brief Ändert einen bereits in der Animation vorhandenen Frame.
-	    @param DestIndex der Index des Frames der überschrieben werden soll
-	    @param SrcIndex der Index des einzufügenden Frames in der Quellanimation
+	    @brief Ã„ndert einen bereits in der Animation vorhandenen Frame.
+	    @param DestIndex der Index des Frames der Ã¼berschrieben werden soll
+	    @param SrcIndex der Index des einzufÃ¼genden Frames in der Quellanimation
 	*/
 	void setFrame(int destIndex, int srcIndex);
 
@@ -104,8 +104,8 @@ public:
 	*/
 	void setFPS(int FPS);
 
-	virtual bool persist(OutputPersistenceBlock &writer);
-	virtual bool unpersist(InputPersistenceBlock &reader);
+	bool persist(OutputPersistenceBlock &writer) override;
+	bool unpersist(InputPersistenceBlock &reader) override;
 
 private:
 	Common::Array<Frame>  _frames;

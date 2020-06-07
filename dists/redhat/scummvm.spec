@@ -7,7 +7,7 @@
 #   Prologue information
 #------------------------------------------------------------------------------
 Name		: scummvm
-Version		: 2.1.2
+Version		: 2.2.0git
 Release		: 1
 Summary		: Graphic adventure game interpreter
 Group		: Interpreters
@@ -92,7 +92,7 @@ fi
 %{_datadir}/pixmaps/scummvm.xpm
 %{_datadir}/icons/hicolor/48x48/apps/scummvm.png
 %{_datadir}/icons/hicolor/scalable/apps/scummvm.svg
-%{_datadir}/appdata/scummvm.appdata.xml
+%{_datadir}/metainfo/scummvm.appdata.xml
 %{_datadir}/scummvm/*
 %{_mandir}/man6/scummvm.6*
 

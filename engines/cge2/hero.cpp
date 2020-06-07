@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #include "cge2/hero.h"
@@ -154,6 +154,8 @@ Sprite *Hero::expand() {
 						break;
 					case 0xFE:
 						s->_next = seqcnt - 1;
+						break;
+					default:
 						break;
 					}
 					if (s->_next > maxnxt)

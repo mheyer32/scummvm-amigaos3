@@ -60,6 +60,10 @@ DuckmanSpecialCode::~DuckmanSpecialCode() {
 	delete _propertyTimers;
 	delete _inventory;
 	delete _credits;
+
+	for (SpecialCodeMap::iterator it = _specialCodeMap.begin(); it != _specialCodeMap.end(); ++it) {
+		delete (*it)._value;
+	}
 }
 
 typedef Common::Functor1Mem<OpCall&, void, DuckmanSpecialCode> SpecialCodeFunctionDM;
@@ -337,6 +341,8 @@ void DuckmanSpecialCode::spcHoldGlowingElvisPoster(OpCall &opCall) {
 			_vm->_cursor._sequenceId2 = kPosterSequenceId;
 			_vm->_cursor._field14[_vm->_cursor._actorIndex - 1] = true;
 		}
+		break;
+	default:
 		break;
 	}
 	_vm->notifyThreadId(opCall._threadId);

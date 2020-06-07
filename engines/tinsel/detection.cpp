@@ -74,7 +74,6 @@ bool TinselEngine::isV1CD() const {
 } // End of namespace Tinsel
 
 static const PlainGameDescriptor tinselGames[] = {
-	{"tinsel", "Tinsel engine game"},
 	{"dw", "Discworld"},
 	{"dw2", "Discworld 2: Missing Presumed ...!?"},
 	{0, 0}
@@ -85,25 +84,28 @@ static const PlainGameDescriptor tinselGames[] = {
 class TinselMetaEngine : public AdvancedMetaEngine {
 public:
 	TinselMetaEngine() : AdvancedMetaEngine(Tinsel::gameDescriptions, sizeof(Tinsel::TinselGameDescription), tinselGames) {
-		_singleId = "tinsel";
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const  override{
+		return "tinsel";
+	}
+
+	const char *getName() const override {
 		return "Tinsel";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Tinsel (C) Psygnosis";
 	}
 
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
 	ADDetectedGame fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const override;
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
-	virtual void removeSaveState(const char *target, int slot) const;
+	bool hasFeature(MetaEngineFeature f) const override;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
+	void removeSaveState(const char *target, int slot) const override;
 };
 
 bool TinselMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -128,7 +130,7 @@ bool Tinsel::TinselEngine::hasFeature(EngineFeature f) const {
 		// global variables (static and non-static) which are never
 		// explicitly re-initialized when the engine is started
 		// for a second time.
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 #endif
 		(f == kSupportsLoadingDuringRuntime);
 }
@@ -438,7 +440,7 @@ Common::Error TinselEngine::loadGameState(int slot) {
 }
 
 #if 0
-Common::Error TinselEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error TinselEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	Common::String saveName = _vm->getSavegameFilename((int16)(slot + 1));
 	char saveDesc[SG_DESC_LEN];
 	Common::strlcpy(saveDesc, desc, SG_DESC_LEN);

@@ -142,6 +142,8 @@ void TuckerEngine::handleCreditsSequence() {
 				case 5:
 					filename = "loc78.pcx";
 					break;
+				default:
+					break;
 				}
 				if (!filename.empty())
 					loadImage(filename.c_str(), _quadBackgroundGfxBuf, 2);
@@ -534,6 +536,8 @@ void AnimationSequencePlayer::mainLoop() {
 	case kFirstAnimationSequenceGame:
 		_updateFunc = _gameSeqUpdateFuncs;
 		break;
+	default:
+		break;
 	}
 	_updateFuncIndex = 0;
 	_changeToNextSequence = true;
@@ -581,7 +585,7 @@ void AnimationSequencePlayer::syncTime() {
 				}
 				break;
 			case Common::EVENT_QUIT:
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 				_seqNum = 1;
 				break;
 			default:
@@ -622,6 +626,8 @@ Audio::RewindableAudioStream *AnimationSequencePlayer::loadSound(int index, Anim
 			break;
 		case kAnimationSoundTypeWAV:
 			stream = Audio::makeWAVStream(&f, DisposeAfterUse::NO);
+			break;
+		default:
 			break;
 		}
 

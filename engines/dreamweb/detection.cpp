@@ -71,24 +71,27 @@ public:
 	AdvancedMetaEngine(DreamWeb::gameDescriptions,
 	sizeof(DreamWeb::DreamWebGameDescription), dreamWebGames,
 	gameGuiOptions) {
-		_singleId = "dreamweb";
 		_guiOptions = GUIO1(GUIO_NOMIDI);
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "dreamweb";
+	}
+
+	const char *getName() const override {
 		return "DreamWeb";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "DreamWeb (C) Creative Reality";
 	}
 
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual void removeSaveState(const char *target, int slot) const;
-	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
+	bool hasFeature(MetaEngineFeature f) const override;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override;
+	void removeSaveState(const char *target, int slot) const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
 };
 
 bool DreamWebMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -108,7 +111,7 @@ bool DreamWebMetaEngine::hasFeature(MetaEngineFeature f) const {
 
 bool DreamWeb::DreamWebEngine::hasFeature(EngineFeature f) const {
 	switch(f) {
-	case kSupportsRTL:
+	case kSupportsReturnToLauncher:
 		return true;
 	case kSupportsSubtitleOptions:
 		return _gameDescription->desc.flags & ADGF_CD;
@@ -236,7 +239,7 @@ Common::Error DreamWebEngine::loadGameState(int slot) {
 	return Common::kNoError;
 }
 
-Common::Error DreamWebEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error DreamWebEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	return Common::kNoError;
 }
 

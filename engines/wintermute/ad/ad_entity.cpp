@@ -29,11 +29,14 @@
 
 #include "engines/wintermute/ad/ad_entity.h"
 #include "engines/wintermute/ad/ad_game.h"
+#include "engines/wintermute/ad/ad_layer.h"
 #include "engines/wintermute/ad/ad_scene.h"
+#include "engines/wintermute/ad/ad_scene_node.h"
 #include "engines/wintermute/ad/ad_waypoint_group.h"
 #include "engines/wintermute/ad/ad_sentence.h"
 #include "engines/wintermute/base/base_active_rect.h"
 #include "engines/wintermute/base/base_dynamic_buffer.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/base_file_manager.h"
 #include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/base/base_parser.h"
@@ -67,6 +70,10 @@ AdEntity::AdEntity(BaseGame *inGame) : AdTalkHolder(inGame) {
 	_walkToX = _walkToY = 0;
 	_walkToDir = DI_NONE;
 
+#ifdef ENABLE_FOXTAIL
+	_hintX = _hintY = -1;
+#endif
+
 	_theora = nullptr;
 }
 
@@ -97,6 +104,16 @@ TDirection AdEntity::getWalkToDir() const {
 const char *AdEntity::getItemName() const {
 	return _item;
 }
+
+#ifdef ENABLE_FOXTAIL
+int32 AdEntity::getHintX() const {
+	return _hintX;
+}
+
+int32 AdEntity::getHintY() const {
+	return _hintY;
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 bool AdEntity::loadFile(const char *filename) {
@@ -164,6 +181,10 @@ TOKEN_DEF(WALK_TO_X)
 TOKEN_DEF(WALK_TO_Y)
 TOKEN_DEF(WALK_TO_DIR)
 TOKEN_DEF(SAVE_STATE)
+#ifdef ENABLE_FOXTAIL
+TOKEN_DEF(HINT_X)
+TOKEN_DEF(HINT_Y)
+#endif
 TOKEN_DEF_END
 //////////////////////////////////////////////////////////////////////////
 bool AdEntity::loadBuffer(char *buffer, bool complete) {
@@ -210,6 +231,10 @@ bool AdEntity::loadBuffer(char *buffer, bool complete) {
 	TOKEN_TABLE(WALK_TO_Y)
 	TOKEN_TABLE(WALK_TO_DIR)
 	TOKEN_TABLE(SAVE_STATE)
+#ifdef ENABLE_FOXTAIL
+	TOKEN_TABLE(HINT_X)
+	TOKEN_TABLE(HINT_Y)
+#endif
 	TOKEN_TABLE_END
 
 	char *params;
@@ -487,8 +512,21 @@ bool AdEntity::loadBuffer(char *buffer, bool complete) {
 				i = DI_NONE;
 			}
 			_walkToDir = (TDirection)i;
+			break;
+
+#ifdef ENABLE_FOXTAIL
+		case TOKEN_HINT_X:
+			parser.scanStr(params, "%d", &_hintX);
+			break;
+		case TOKEN_HINT_Y:
+			parser.scanStr(params, "%d", &_hintY);
+			break;
+#endif
 		}
 		break;
+
+		default:
+			break;
 		}
 	}
 	if (cmd == PARSERR_TOKENNOTFOUND) {
@@ -804,6 +842,86 @@ bool AdEntity::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack
 		return STATUS_OK;
 	}
 
+#if defined(ENABLE_KINJAL) || defined(ENABLE_HEROCRAFT)
+	//////////////////////////////////////////////////////////////////////////
+	// [WME Kinjal 1.4] SetBeforeEntity / SetAfterEntity
+	// Usage at HeroCraft games: ent.SetBeforeEntity("redDuskaEntity")
+	// Look for target entity (entity with given name, on the same layer as source entity)
+	// If target entity is not found, do nothing
+	// Else shift nodes of the layer to put current entity behind/after target entity
+	//////////////////////////////////////////////////////////////////////////
+	else if (strcmp(name, "SetBeforeEntity") == 0 || strcmp(name, "SetAfterEntity") == 0) {
+		stack->correctParams(1);
+		const char *nodeName = stack->pop()->getString();
+
+		if (strcmp(getName(), nodeName) == 0) {
+			warning("%s(%s): source and target have the same name", name, nodeName);
+			stack->pushBool(false);
+			return STATUS_OK;
+		}
+
+		for (uint32 i = 0; i < ((AdGame *)_gameRef)->_scene->_layers.size(); i++) {
+			AdLayer *layer = ((AdGame *)_gameRef)->_scene->_layers[i];
+			for (uint32 j = 0; j < layer->_nodes.size(); j++) {
+				if (layer->_nodes[j]->_type == OBJECT_ENTITY && this == layer->_nodes[j]->_entity) {
+					// found source layer and index, looking for target node
+					for (uint32 k = 0; k < layer->_nodes.size(); k++) {
+						if (layer->_nodes[k]->_type == OBJECT_ENTITY && strcmp(layer->_nodes[k]->_entity->getName(), nodeName) == 0) {
+							// update target index, depending on method name and comparison of index values
+							if (j < k && strcmp(name, "SetBeforeEntity") == 0) {
+								k--;
+							} else if (j > k && strcmp(name, "SetAfterEntity") == 0) {
+								k++;
+							}
+
+							// shift layer nodes array between source and target
+							int32 delta = j <= k ? 1 : -1;
+							AdSceneNode *tmp = layer->_nodes[j];
+							for (int32 x = j; x != (int32)k; x += delta) {
+								layer->_nodes[x] = layer->_nodes[x + delta];
+							}
+							layer->_nodes[k] = tmp;
+
+							// done
+							stack->pushBool(true);
+							return STATUS_OK;
+						}
+					}
+				}
+			}
+		}
+
+		warning("%s(%s): not found", name, nodeName);
+		stack->pushBool(false);
+		return STATUS_OK;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// [WME Kinjal 1.4] GetLayer / GetIndex
+	// Find current entity's layer and node index
+	//////////////////////////////////////////////////////////////////////////
+	else if (strcmp(name, "GetLayer") == 0 || strcmp(name, "GetIndex") == 0) {
+		stack->correctParams(0);
+
+		for (uint32 i = 0; i < ((AdGame *)_gameRef)->_scene->_layers.size(); i++) {
+			AdLayer *layer = ((AdGame *)_gameRef)->_scene->_layers[i];
+			for (uint32 j = 0; j < layer->_nodes.size(); j++) {
+				if (layer->_nodes[j]->_type == OBJECT_ENTITY && this == layer->_nodes[j]->_entity) {
+					if (strcmp(name, "GetLayer") == 0) {
+						stack->pushNative(layer, true);
+					} else {
+						stack->pushInt(j);
+					}
+					return STATUS_OK;
+				}
+			}
+		}
+
+		warning("%s(): not found", name);
+		stack->pushNULL();
+		return STATUS_OK;
+	}
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	// CreateRegion
@@ -897,6 +1015,24 @@ ScValue *AdEntity::scGetProperty(const Common::String &name) {
 		return _scValue;
 	}
 
+#ifdef ENABLE_FOXTAIL
+	//////////////////////////////////////////////////////////////////////////
+	// [FoxTail] HintX
+	//////////////////////////////////////////////////////////////////////////
+	else if (name == "HintX") {
+		_scValue->setInt(_hintX);
+		return _scValue;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// [FoxTail] HintY
+	//////////////////////////////////////////////////////////////////////////
+	else if (name == "HintY") {
+		_scValue->setInt(_hintY);
+		return _scValue;
+	}
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// WalkToDirection
 	//////////////////////////////////////////////////////////////////////////
@@ -947,6 +1083,24 @@ bool AdEntity::scSetProperty(const char *name, ScValue *value) {
 		_walkToY = value->getInt();
 		return STATUS_OK;
 	}
+
+#ifdef ENABLE_FOXTAIL
+	//////////////////////////////////////////////////////////////////////////
+	// [FoxTail] HintX
+	//////////////////////////////////////////////////////////////////////////
+	else if (strcmp(name, "HintX") == 0) {
+		_hintX = value->getInt();
+		return STATUS_OK;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// HintY
+	//////////////////////////////////////////////////////////////////////////
+	else if (strcmp(name, "HintY") == 0) {
+		_hintY = value->getInt();
+		return STATUS_OK;
+	}
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	// WalkToDirection
@@ -1008,6 +1162,11 @@ bool AdEntity::saveAsText(BaseDynamicBuffer *buffer, int indent) {
 	if (_walkToDir != DI_NONE) {
 		buffer->putTextIndent(indent + 2, "WALK_TO_DIR=%d\n", (int)_walkToDir);
 	}
+
+#ifdef ENABLE_FOXTAIL
+	buffer->putTextIndent(indent + 2, "HINT_X=%d\n", _hintX);
+	buffer->putTextIndent(indent + 2, "HINT_Y=%d\n", _hintY);
+#endif
 
 	for (uint32 i = 0; i < _scripts.size(); i++) {
 		buffer->putTextIndent(indent + 2, "SCRIPT=\"%s\"\n", _scripts[i]->_filename);
@@ -1104,6 +1263,13 @@ bool AdEntity::persist(BasePersistenceManager *persistMgr) {
 	persistMgr->transferSint32(TMEMBER_INT(_walkToDir));
 
 	persistMgr->transferPtr(TMEMBER_PTR(_theora));
+
+#ifdef ENABLE_FOXTAIL
+    if (BaseEngine::instance().isFoxTail(FOXTAIL_1_2_527, FOXTAIL_LATEST_VERSION)) {
+	    persistMgr->transferSint32(TMEMBER(_hintX));
+	    persistMgr->transferSint32(TMEMBER(_hintY));
+	}
+#endif
 
 	return STATUS_OK;
 }

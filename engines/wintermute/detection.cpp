@@ -25,6 +25,7 @@
 #include "engines/wintermute/game_description.h"
 #include "engines/wintermute/base/base_persistence_manager.h"
 
+#include "common/achievements.h"
 #include "common/config-manager.h"
 #include "common/error.h"
 #include "common/fs.h"
@@ -33,7 +34,9 @@
 
 #include "engines/metaengine.h"
 
+#include "engines/wintermute/achievements_tables.h"
 #include "engines/wintermute/detection_tables.h"
+#include "engines/wintermute/keymapper_tables.h"
 
 namespace Wintermute {
 
@@ -88,16 +91,23 @@ static const char *directoryGlobs[] = {
 class WintermuteMetaEngine : public AdvancedMetaEngine {
 public:
 	WintermuteMetaEngine() : AdvancedMetaEngine(Wintermute::gameDescriptions, sizeof(WMEGameDescription), Wintermute::wintermuteGames, gameGuiOptions) {
-		_singleId = "wintermute";
+		// Use kADFlagUseExtraAsHint to distinguish between SD and HD versions
+		// of J.U.L.I.A. when their datafiles sit in the same directory (e.g. in Steam distribution).
+		_flags = kADFlagUseExtraAsHint;
 		_guiOptions = GUIO3(GUIO_NOMIDI, GAMEOPTION_SHOW_FPS, GAMEOPTION_BILINEAR);
 		_maxScanDepth = 2;
 		_directoryGlobs = directoryGlobs;
 	}
-	virtual const char *getName() const {
+
+	const char *getEngineId() const override {
+		return "wintermute";
+	}
+
+	const char *getName() const override {
 		return "Wintermute";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Copyright (C) 2011 Jan Nedoma";
 	}
 
@@ -147,7 +157,7 @@ public:
 		return game;
 	}
 
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override {
 		assert(syst);
 		assert(engine);
 		const WMEGameDescription *gd = (const WMEGameDescription *)desc;
@@ -155,7 +165,7 @@ public:
 		return true;
 	}
 
-	bool hasFeature(MetaEngineFeature f) const {
+	bool hasFeature(MetaEngineFeature f) const override {
 		switch (f) {
 		case MetaEngine::kSupportsListSaves:
 			return true;
@@ -174,7 +184,7 @@ public:
 		}
 	}
 
-	SaveStateList listSaves(const char *target) const {
+	SaveStateList listSaves(const char *target) const override {
 		SaveStateList saves;
 		Wintermute::BasePersistenceManager pm(target, true);
 		for (int i = 0; i < getMaximumSaveSlot(); i++) {
@@ -187,22 +197,62 @@ public:
 		return saves;
 	}
 
-	int getMaximumSaveSlot() const {
+	int getMaximumSaveSlot() const override {
 		return 100;
 	}
 
-	void removeSaveState(const char *target, int slot) const {
+	void removeSaveState(const char *target, int slot) const override {
 		Wintermute::BasePersistenceManager pm(target, true);
 		pm.deleteSaveSlot(slot);
 	}
 
-	virtual SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const {
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override {
 		Wintermute::BasePersistenceManager pm(target, true);
 		SaveStateDescriptor retVal;
 		retVal.setDescription("Invalid savegame");
 		pm.getSaveStateDesc(slot, retVal);
 		return retVal;
 	}
+
+	const Common::AchievementsInfo getAchievementsInfo(const Common::String &target) const override {
+		Common::String gameId = ConfMan.get("gameid", target);
+
+		// HACK: "juliauntold" is a DLC of "juliastars", they share the same achievements list
+		if (gameId == "juliauntold") {
+			gameId = "juliastars";
+		}
+
+		Common::AchievementsPlatform platform = Common::STEAM_ACHIEVEMENTS;
+		if (ConfMan.get("extra", target).contains("GOG")) {
+			platform = Common::GALAXY_ACHIEVEMENTS;
+		}
+
+		// "(gameId, platform) -> result" search
+		Common::AchievementsInfo result;
+		for (const AchievementDescriptionList *i = achievementDescriptionList; i->gameId; i++) {
+			if (i->gameId == gameId && i->platform == platform) {
+				result.platform = i->platform;
+				result.appId = i->appId;
+				for (const Common::AchievementDescription *it = i->descriptions; it->id; it++) {
+					result.descriptions.push_back(*it);
+				}
+				break;
+			}
+		}
+		return result;
+	}
+	
+	Common::KeymapArray initKeymaps(const char *target) const override {
+		Common::String gameId = ConfMan.get("gameid", target);
+		const char *gameDescr = "Unknown WME game";
+		for (const PlainGameDescriptor *it = Wintermute::wintermuteGames; it->gameId ; it++ ) {
+			if (gameId == it->gameId) {
+				gameDescr = it->description;
+			}
+		}
+		return getWintermuteKeymaps(target, gameId, gameDescr);
+	}
+
 };
 
 } // End of namespace Wintermute

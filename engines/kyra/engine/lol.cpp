@@ -36,6 +36,7 @@
 #include "common/system.h"
 #include "common/translation.h"
 
+#include "backends/keymapper/action.h"
 #include "backends/keymapper/keymapper.h"
 
 namespace Kyra {
@@ -366,8 +367,7 @@ Common::Error LoLEngine::init() {
 	assert(_screen);
 	_screen->setResolution();
 
-	_debugger = new Debugger_LoL(this);
-	assert(_debugger);
+	setDebugger(new Debugger_LoL(this));
 
 	KyraEngine_v1::init();
 	initStaticResource();
@@ -457,46 +457,96 @@ Common::Error LoLEngine::init() {
 	_spellProcs.push_back(new SpellProc(this, 0));
 	_spellProcs.push_back(new SpellProc(this, &LoLEngine::castGuardian));
 
-#ifdef ENABLE_KEYMAPPER
-	_eventMan->getKeymapper()->pushKeymap(kKeymapName, true);
-#endif
-
 	return Common::kNoError;
 }
 
-void LoLEngine::initKeymap() {
-#ifdef ENABLE_KEYMAPPER
-	Common::Keymapper *const mapper = _eventMan->getKeymapper();
+Common::KeymapArray LoLEngine::initKeymaps() {
+	Common::Keymap *engineKeyMap = new Common::Keymap(Common::Keymap::kKeymapTypeGame, kKeymapName, "Lands of Lore");
 
-	// Do not try to recreate same keymap over again
-	if (mapper->getKeymap(kKeymapName) != 0)
-		return;
+	Common::Action *act;
 
-	Common::Keymap *const engineKeyMap = new Common::Keymap(kKeymapName);
+	act = new Common::Action("LCLK", _("Interact via Left Click"));
+	act->setLeftClickEvent();
+	act->addDefaultInputMapping("MOUSE_LEFT");
+	act->addDefaultInputMapping("JOY_A");
+	engineKeyMap->addAction(act);
 
-	const Common::KeyActionEntry keyActionEntries[] = {
-		{Common::KeyState(Common::KEYCODE_F1, Common::ASCII_F1), "AT1", _("Attack 1")},
-		{Common::KeyState(Common::KEYCODE_F2, Common::ASCII_F2), "AT2", _("Attack 2")},
-		{Common::KeyState(Common::KEYCODE_F3, Common::ASCII_F3), "AT3", _("Attack 3")},
-		{Common::KeyState(Common::KEYCODE_UP), "MVF", _("Move Forward")},
-		{Common::KeyState(Common::KEYCODE_DOWN), "MVB", _("Move Back")},
-		{Common::KeyState(Common::KEYCODE_LEFT), "SLL", _("Slide Left")},
-		{Common::KeyState(Common::KEYCODE_RIGHT), "SLR", _("Slide Right")},
-		{Common::KeyState(Common::KEYCODE_HOME), "TL", _("Turn Left")},
-		{Common::KeyState(Common::KEYCODE_PAGEUP), "TR", _("Turn Right")},
-		{Common::KeyState(Common::KEYCODE_r), "RST", _("Rest")},
-		{Common::KeyState(Common::KEYCODE_o), "OPT", _("Options")},
-		{Common::KeyState(Common::KEYCODE_SLASH), "SPL", _("Choose Spell")},
-		{Common::KeyState(), 0, 0}
-	};
+	act = new Common::Action("RCLK", _("Interact via Right Click"));
+	act->setRightClickEvent();
+	act->addDefaultInputMapping("MOUSE_RIGHT");
+	act->addDefaultInputMapping("JOY_B");
+	engineKeyMap->addAction(act);
 
-	for (const Common::KeyActionEntry *entry = keyActionEntries; entry->id; ++entry) {
-		Common::Action *const act = new Common::Action(engineKeyMap, entry->id, entry->description);
-		act->addKeyEvent(entry->ks);
-	}
+	act = new Common::Action("AT1", _("Attack 1"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_F1, Common::ASCII_F1));
+	act->addDefaultInputMapping("F1");
+	act->addDefaultInputMapping("JOY_X");
+	engineKeyMap->addAction(act);
 
-	mapper->addGameKeymap(engineKeyMap);
-#endif
+	act = new Common::Action("AT2", _("Attack 2"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_F2, Common::ASCII_F2));
+	act->addDefaultInputMapping("F2");
+	act->addDefaultInputMapping("JOY_Y");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("AT3", _("Attack 3"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_F3, Common::ASCII_F3));
+	act->addDefaultInputMapping("F3");
+	act->addDefaultInputMapping("JOY_LEFT_SHOULDER");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("MVF", _("Move Forward"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_UP));
+	act->addDefaultInputMapping("UP");
+	act->addDefaultInputMapping("JOY_UP");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("MVB", _("Move Back"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_DOWN));
+	act->addDefaultInputMapping("DOWN");
+	act->addDefaultInputMapping("JOY_DOWN");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("SLL", _("Slide Left"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_LEFT));
+	act->addDefaultInputMapping("LEFT");
+	act->addDefaultInputMapping("JOY_LEFT_TRIGGER");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("SLR", _("Slide Right"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_RIGHT));
+	act->addDefaultInputMapping("RIGHT");
+	act->addDefaultInputMapping("JOY_RIGHT_TRIGGER");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("TL", _("Turn Left"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_HOME));
+	act->addDefaultInputMapping("HOME");
+	act->addDefaultInputMapping("JOY_LEFT");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("TR", _("Turn Right"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_PAGEUP));
+	act->addDefaultInputMapping("PAGEUP");
+	act->addDefaultInputMapping("JOY_RIGHT");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("RST", _("Rest"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_r, 'r'));
+	act->addDefaultInputMapping("r");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("OPT", _("Options"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_o, 'o'));
+	act->addDefaultInputMapping("o");
+	engineKeyMap->addAction(act);
+
+	act = new Common::Action("SPL", _("Choose Spell"));
+	act->setKeyEvent(Common::KeyState(Common::KEYCODE_SLASH, '/'));
+	act->addDefaultInputMapping("SLASH");
+	engineKeyMap->addAction(act);
+
+	return Common::Keymap::arrayOf(engineKeyMap);
 }
 
 void LoLEngine::pauseEngineIntern(bool pause) {
@@ -524,7 +574,7 @@ Common::Error LoLEngine::go() {
 	// the prologue code we need to setup them manually here.
 	if (_gameToLoad != -1 && action != 3) {
 		preInit();
-		_screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_FNT : Screen::FID_9_FNT);
+		_screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_TEXTMODE_FNT : Screen::FID_9_FNT);
 	}
 
 	// We have three sound.dat files, one for the intro, one for the
@@ -695,7 +745,7 @@ int LoLEngine::mainMenu() {
 			{ 0, 0, 0, 0, 0 },
 			{ 0x01, 0x04, 0x0C, 0x04, 0x00, 0xC1, 0xE1 },
 			{ 0xCC, 0xDD, 0xDD, 0xDD },
-			Screen::FID_SJIS_FNT, 1
+			Screen::FID_SJIS_TEXTMODE_FNT, 1
 		}
 	};
 
@@ -866,7 +916,7 @@ void LoLEngine::startupNew() {
 
 void LoLEngine::runLoop() {
 	// Initialize debugger since how it should be fully usable
-	_debugger->initialize();
+	static_cast<Debugger_LoL *>(getDebugger())->initialize();
 
 	enableSysTimer(2);
 
@@ -4191,7 +4241,7 @@ void LoLEngine::drawMapPage(int pageNum) {
 			_screen->copyRegion(236, 16, 236 + xOffset, 16, -xOffset, 1, pageNum, pageNum, Screen::CR_NO_P_CHECK);
 
 		int cp = _screen->setCurPage(pageNum);
-		Screen::FontId of = _screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_FNT : Screen::FID_9_FNT);
+		Screen::FontId of = _screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_TEXTMODE_FNT : Screen::FID_9_FNT);
 		_screen->printText(getLangString(_autoMapStrings[_currentMapLevel]), 236 + xOffset, 8, 1, 0);
 		uint16 blX = mapGetStartPosX();
 		uint16 bl = (mapGetStartPosY() << 5) + blX;
@@ -4251,7 +4301,7 @@ void LoLEngine::drawMapPage(int pageNum) {
 		_screen->setFont(of);
 		_screen->setCurPage(cp);
 
-		of = _screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_FNT : Screen::FID_6_FNT);
+		of = _screen->setFont((_flags.lang == Common::JA_JPN && _flags.use16ColorMode) ? Screen::FID_SJIS_TEXTMODE_FNT : Screen::FID_6_FNT);
 
 		int tY = 0;
 		sx = mapGetStartPosX();

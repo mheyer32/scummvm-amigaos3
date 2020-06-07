@@ -157,6 +157,14 @@ bool Scene::open(int setId, int sceneId, bool isLoadingGame) {
 	if (_specialLoopMode == kSceneLoopModeNone) {
 		startDefaultLoop();
 	}
+
+	// This frame advancement (frame skip) may be required here
+	// It is in the original code and possible initializes some variables
+	// (or perhaps z-buffering related stuff)
+	// It may cause issues when in a scene we need to trigger some action
+	// based on the first frame of the loop when entering the scene (using SceneFrameAdvanced())
+	// (eg. it is contributing to the barrel flame glitch in pan from DR04 to DR01)
+	// However, better to resolve those issues with a workaround (eg. using InitializeScene())
 	advanceFrame();
 
 	_vm->_playerActor->setAtXYZ(_actorStartPosition, _actorStartFacing);
@@ -375,7 +383,7 @@ void Scene::objectSetIsObstacle(int objectId, bool isObstacle, bool sceneLoaded,
 
 void Scene::objectSetIsObstacleAll(bool isObstacle, bool sceneLoaded) {
 	int i;
-	for (i = 0; i < (int)_set->getObjectCount(); i++) {
+	for (i = 0; i < (int)_set->getObjectCount(); ++i) {
 		_set->objectSetIsObstacle(i, isObstacle);
 		if (sceneLoaded) {
 			_vm->_sceneObjects->setIsObstacle(i + kSceneObjectOffsetObjects, isObstacle);

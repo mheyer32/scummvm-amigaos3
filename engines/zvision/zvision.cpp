@@ -35,6 +35,9 @@
 #include "zvision/text/truetype_font.h"
 #include "zvision/sound/midi.h"
 
+#include "backends/keymapper/keymap.h"
+#include "backends/keymapper/keymapper.h"
+
 #include "common/config-manager.h"
 #include "common/str.h"
 #include "common/debug.h"
@@ -76,6 +79,10 @@ struct zvisionIniSettings {
 	{"mpegmovies", StateKey_MPEGMovies, -1, true, true}		// Zork: Grand Inquisitor DVD hi-res MPEG movies (0 = normal, 1 = hires, 2 = disable option)
 };
 
+const char *mainKeymapId = "zvision";
+const char *gameKeymapId = "zvision-game";
+const char *cutscenesKeymapId = "zvision-cutscenes";
+
 ZVision::ZVision(OSystem *syst, const ZVisionGameDescription *gameDesc)
 	: Engine(syst),
 	  _gameDescription(gameDesc),
@@ -90,7 +97,6 @@ ZVision::ZVision(OSystem *syst, const ZVisionGameDescription *gameDesc)
 	  _cursorManager(nullptr),
 	  _midiManager(nullptr),
 	  _rnd(nullptr),
-	  _console(nullptr),
 	  _menu(nullptr),
 	  _searchManager(nullptr),
 	  _textRenderer(nullptr),
@@ -112,7 +118,6 @@ ZVision::~ZVision() {
 	debug(1, "ZVision::~ZVision");
 
 	// Dispose of resources
-	delete _console;
 	delete _cursorManager;
 	delete _stringManager;
 	delete _saveManager;
@@ -202,6 +207,12 @@ void ZVision::initialize() {
 
 	initScreen();
 
+	Common::Keymapper *keymapper = _system->getEventManager()->getKeymapper();
+	_gameKeymap = keymapper->getKeymap(gameKeymapId);
+	_gameKeymap->setEnabled(true);
+	_cutscenesKeymap = keymapper->getKeymap(cutscenesKeymapId);
+	_cutscenesKeymap->setEnabled(false);
+
 	// Register random source
 	_rnd = new Common::RandomSource("zvision");
 
@@ -234,7 +245,7 @@ void ZVision::initialize() {
 #endif
 
 	// Create debugger console. It requires GFX to be initialized
-	_console = new Console(this);
+	setDebugger(new Console(this));
 	_doubleFPS = ConfMan.getBool("doublefps");
 
 	// Initialize FPS timer callback
@@ -350,10 +361,6 @@ Common::Error ZVision::run() {
 			delay >>= 1;
 		}
 
-		if (canSaveGameStateCurrently() && shouldPerformAutoSave(_saveManager->getLastSaveTime())) {
-			_saveManager->autoSave();
-		}
-
 		_system->delayMillis(delay);
 	}
 
@@ -370,20 +377,12 @@ void ZVision::pauseEngineIntern(bool pause) {
 	}
 }
 
-Common::String ZVision::generateSaveFileName(uint slot) {
-	return Common::String::format("%s.%03u", _targetName.c_str(), slot);
-}
-
 void ZVision::setRenderDelay(uint delay) {
 	_frameRenderDelay = delay;
 }
 
 bool ZVision::canRender() {
 	return _frameRenderDelay <= 0;
-}
-
-GUI::Debugger *ZVision::getDebugger() {
-	return _console;
 }
 
 void ZVision::syncSoundSettings() {

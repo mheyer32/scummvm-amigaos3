@@ -29,12 +29,12 @@ namespace Pink {
 
 class CelDecoder : public Video::FlicDecoder {
 public:
-	virtual bool loadStream(Common::SeekableReadStream *stream);
+	bool loadStream(Common::SeekableReadStream *stream) override;
 
-	uint16 getTransparentColourIndex();
+	uint16 getTransparentColourIndex() const;
 
-	Common::Point getCenter();
-	const Graphics::Surface *getCurrentFrame();
+	Common::Point getCenter() const;
+	const Graphics::Surface *getCurrentFrame() const;
 	void skipFrame();
 
 	void setEndOfTrack();
@@ -43,23 +43,23 @@ protected:
 	class CelVideoTrack : public FlicVideoTrack {
 	public:
 		CelVideoTrack(Common::SeekableReadStream *stream, uint16 frameCount, uint16 width, uint16 height, bool skipHeader = false);
-		virtual void readHeader();
+		void readHeader() override;
 
-		uint16 getTransparentColourIndex();
+		uint16 getTransparentColourIndex() const;
 
 		// Hack. Pink needs so that Track needed an update after lastFrame delay ends
 		void setEndOfTrack() { _curFrame = _frameCount; }
 		bool endOfTrack() const override { return getCurFrame() >= getFrameCount(); }
 
-		Common::Point getCenter();
-		const Graphics::Surface *getCurrentFrame();
+		Common::Point getCenter() const;
+		const Graphics::Surface *getCurrentFrame() const;
 
 		void skipFrame();
 
 		bool rewind() override;
 
 	private:
-		const Graphics::Surface *decodeNextFrame();
+		const Graphics::Surface *decodeNextFrame() override;
 		void readPrefixChunk();
 
 		Common::Point _center;

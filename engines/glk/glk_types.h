@@ -30,14 +30,18 @@ namespace Glk {
 
 class Window;
 
+
 /**
  * List of the different sub-engines the engine will likely eventually support
  */
 enum InterpreterType {
+	INTERPRETER_ADRIFT,
 	INTERPRETER_ADVSYS,
 	INTERPRETER_AGILITY,
+	INTERPRETER_AGT,
 	INTERPRETER_ALAN2,
 	INTERPRETER_ALAN3,
+	INTERPRETER_ARCHETYPE,
 	INTERPRETER_BOCFEL,
 	INTERPRETER_FROTZ,
 	INTERPRETER_GEAS,
@@ -46,6 +50,7 @@ enum InterpreterType {
 	INTERPRETER_JACL,
 	INTERPRETER_LEVEL9,
 	INTERPRETER_MAGNETIC,
+	INTERPRETER_QUEST,
 	INTERPRETER_SCARE,
 	INTERPRETER_SCOTT,
 	INTERPRETER_TADS2,
@@ -153,7 +158,7 @@ enum WinMethod {
 	winmethod_Right        = 0x01,
 	winmethod_Above        = 0x02,
 	winmethod_Below        = 0x03,
-	winmethod_Arbitrary    = 0x04,		///< Newly introduced for ScummGlk
+	winmethod_Arbitrary    = 0x04,		///< Newly introduced for ScummVM Glk
 	winmethod_DirMask      = 0x0f,
 
 	winmethod_Fixed        = 0x10,
@@ -243,6 +248,8 @@ struct gidispatch_intconst_struct {
 	uint32 val;
 };
 typedef gidispatch_intconst_struct gidispatch_intconst_t;
+
+typedef uint32 glui32;
 
 } // End of namespace Glk
 

@@ -144,9 +144,9 @@ bool PrinceEngine::canLoadGameStateCurrently() {
 	return false;
 }
 
-Common::Error PrinceEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error PrinceEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	// Set up the serializer
-	Common::String slotName = generateSaveName(slot);
+	Common::String slotName = getSaveStateName(slot);
 	Common::OutSaveFile *saveFile = g_system->getSavefileManager()->openForSaving(slotName);
 
 	// Write out the ScummVM savegame header
@@ -163,10 +163,6 @@ Common::Error PrinceEngine::saveGameState(int slot, const Common::String &desc) 
 	delete saveFile;
 
 	return Common::kNoError;
-}
-
-Common::String PrinceEngine::generateSaveName(int slot) {
-	return Common::String::format("%s.%03d", _targetName.c_str(), slot);
 }
 
 void PrinceEngine::writeSavegameHeader(Common::OutSaveFile *out, SavegameHeader &header) {
@@ -435,8 +431,11 @@ bool PrinceEngine::loadGame(int slotNumber) {
 	Common::MemoryReadStream *readStream;
 
 	// Open up the savegame file
-	Common::String slotName = generateSaveName(slotNumber);
+	Common::String slotName = getSaveStateName(slotNumber);
 	Common::InSaveFile *saveFile = g_system->getSavefileManager()->openForLoading(slotName);
+
+	if (!saveFile)
+		return false;
 
 	// Read the data into a data buffer
 	int size = saveFile->size();

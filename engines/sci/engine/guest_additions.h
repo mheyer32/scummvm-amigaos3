@@ -257,15 +257,23 @@ private:
 	reg_t promptSaveRestoreRama(EngineState *s, int argc, reg_t *argv) const;
 
 	/**
+	 * Prompts for a save game and returns it to game scripts using Hoyle 5's
+	 * custom SRDialog class semantics.
+	 */
+	reg_t promptSaveRestoreHoyle5(EngineState *s, int argc, reg_t *argv) const;
+
+public:
+	/**
 	 * Prompts the user to save or load a game.
 	 *
 	 * @param isSave If true, the prompt is for saving.
 	 * @param outDescription Will be filled with the save game description.
 	 * Optional for loads, required for saves.
-	 * @param forcedSaveNo During delayed restore, force the returned save game
-	 * number to this value.
+	 * @param forcedSaveId During delayed restore, force the returned save game
+	 * id to this value.
 	 */
-	int runSaveRestore(const bool isSave, const reg_t outDescription, const int forcedSaveNo = -1) const;
+	int runSaveRestore(const bool isSave, const reg_t outDescription, const int forcedSaveId = -1) const;
+	int runSaveRestore(const bool isSave, Common::String &outDescription, const int forcedSaveId = -1) const;
 #endif
 
 #pragma mark -

@@ -75,6 +75,8 @@ Puzzle::Puzzle(SagaEngine *vm) : _vm(vm), _solved(false), _active(false) {
 		_lang = 2;
 	else if (_vm->getLanguage() == Common::FR_FRA)
 		_lang = 3;
+	else if (_vm->getLanguage() == Common::JA_JPN)
+		_lang = 4;
 
 	_hintRqState = kRQNoHint;
 	_hintOffer = 0;
@@ -516,6 +518,9 @@ void Puzzle::handleReply(int reply) {
 		_vm->getTimerManager()->removeTimerProc(&hintTimerCallback);
 		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime * 2, this, "sagaPuzzleHint");
 		clearHint();
+		break;
+
+	default:
 		break;
 	}
 }

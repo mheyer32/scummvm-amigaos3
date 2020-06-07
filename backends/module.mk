@@ -8,6 +8,14 @@ MODULE_OBJS := \
 	events/default/default-events.o \
 	fs/abstract-fs.o \
 	fs/stdiostream.o \
+	keymapper/action.o \
+	keymapper/hardware-input.o \
+	keymapper/input-watcher.o \
+	keymapper/keymap.o \
+	keymapper/keymapper.o \
+	keymapper/remap-widget.o \
+	keymapper/standard-actions.o \
+	keymapper/virtual-mouse.o \
 	log/log.o \
 	midi/alsa.o \
 	midi/dmedia.o \
@@ -65,6 +73,8 @@ MODULE_OBJS += \
 	networking/curl/networkreadstream.o \
 	networking/curl/curlrequest.o \
 	networking/curl/curljsonrequest.o \
+	networking/curl/postrequest.o \
+	networking/curl/sessionrequest.o \
 	networking/curl/request.o
 endif
 
@@ -99,15 +109,6 @@ MODULE_OBJS += \
 	plugins/elf/version.o
 endif
 
-ifdef ENABLE_KEYMAPPER
-MODULE_OBJS += \
-	keymapper/action.o \
-	keymapper/hardware-input.o \
-	keymapper/keymap.o \
-	keymapper/keymapper.o \
-	keymapper/remap-dialog.o
-endif
-
 ifdef ENABLE_VKEYBD
 MODULE_OBJS += \
 	vkeybd/image-map.o \
@@ -137,6 +138,7 @@ endif
 # derive from the SDL backend, and they all need the following files.
 ifdef SDL_BACKEND
 MODULE_OBJS += \
+	events/sdl/legacy-sdl-events.o \
 	events/sdl/sdl-events.o \
 	graphics/sdl/sdl-graphics.o \
 	graphics/surfacesdl/surfacesdl-graphics.o \
@@ -161,13 +163,15 @@ ifdef POSIX
 MODULE_OBJS += \
 	fs/posix/posix-fs.o \
 	fs/posix/posix-fs-factory.o \
+	fs/posix/posix-iostream.o \
 	fs/posix-drives/posix-drives-fs.o \
 	fs/posix-drives/posix-drives-fs-factory.o \
 	fs/chroot/chroot-fs-factory.o \
 	fs/chroot/chroot-fs.o \
 	plugins/posix/posix-provider.o \
 	saves/posix/posix-saves.o \
-	taskbar/unity/unity-taskbar.o
+	taskbar/unity/unity-taskbar.o \
+	dialogs/gtk/gtk-dialogs.o
 
 ifdef USE_SPEECH_DISPATCHER
 ifdef USE_TTS
@@ -230,24 +234,6 @@ MODULE_OBJS += \
 	midi/camd.o
 endif
 
-ifdef MORPHOS
-MODULE_OBJS += \
-	fs/morphos/morphos-fs.o \
-	fs/morphos/morphos-fs-factory.o \
-	midi/camd.o
-endif
-
-ifdef AMIGAOS3
-MODULE_OBJS += \
-	events/amigaos3/amigaos3-events.o \
-	fs/amigaos3/amigaos3-fs-node.o \
-	fs/amigaos3/amigaos3-fs-factory.o \
-	fs/amigaos3/amigaos3-fs-file.o \
-	mixer/amigaos3/amigaos3-mixer.o \
-	midi/amigaos3/amigaos3-camd.o \
-	timer/amigaos3/amigaos3-timer.o
-endif
-
 ifdef RISCOS
 MODULE_OBJS += \
 	events/riscossdl/riscossdl-events.o \
@@ -255,10 +241,12 @@ MODULE_OBJS += \
 	fs/riscos/riscos-fs-factory.o \
 	platform/sdl/riscos/riscos-utils.o
 endif
+
 ifdef PLAYSTATION3
 MODULE_OBJS += \
 	fs/posix/posix-fs.o \
 	fs/posix/posix-fs-factory.o \
+	fs/posix/posix-iostream.o \
 	fs/ps3/ps3-fs-factory.o \
 	events/ps3sdl/ps3sdl-events.o
 endif
@@ -288,19 +276,14 @@ endif
 ifeq ($(BACKEND),dingux)
 MODULE_OBJS += \
 	events/dinguxsdl/dinguxsdl-events.o \
-	graphics/dinguxsdl/dinguxsdl-graphics.o
+	graphics/downscalesdl/downscalesdl-graphics.o
 endif
 
 ifeq ($(BACKEND),gph)
 MODULE_OBJS += \
 	events/gph/gph-events.o \
-	graphics/gph/gph-graphics.o
-endif
-
-ifeq ($(BACKEND),linuxmoto)
-MODULE_OBJS += \
-	events/linuxmotosdl/linuxmotosdl-events.o \
-	graphics/linuxmotosdl/linuxmotosdl-graphics.o
+	graphics/gph/gph-graphics.o \
+	graphics/downscalesdl/downscalesdl-graphics.o
 endif
 
 ifeq ($(BACKEND),maemo)
@@ -341,6 +324,7 @@ endif
 ifeq ($(BACKEND),psp2)
 MODULE_OBJS += \
 	fs/posix/posix-fs.o \
+	fs/posix/posix-iostream.o \
 	fs/psp2/psp2-fs-factory.o \
 	fs/psp2/psp2-dirent.o \
 	events/psp2sdl/psp2sdl-events.o \
@@ -349,23 +333,12 @@ endif
 
 ifeq ($(BACKEND),samsungtv)
 MODULE_OBJS += \
-	events/samsungtvsdl/samsungtvsdl-events.o \
-	graphics/samsungtvsdl/samsungtvsdl-graphics.o
+	events/samsungtvsdl/samsungtvsdl-events.o
 endif
 
 ifeq ($(BACKEND),webos)
 MODULE_OBJS += \
 	events/webossdl/webossdl-events.o
-endif
-
-ifeq ($(BACKEND),wince)
-MODULE_OBJS += \
-	events/wincesdl/wincesdl-events.o \
-	fs/windows/windows-fs.o \
-	fs/windows/windows-fs-factory.o \
-	graphics/wincesdl/wincesdl-graphics.o \
-	mixer/wincesdl/wincesdl-mixer.o \
-	plugins/win32/win32-provider.o
 endif
 
 ifeq ($(BACKEND),wii)

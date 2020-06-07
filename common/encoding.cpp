@@ -71,6 +71,7 @@ char *Encoding::switchEndian(const char *string, int length, int bitCount) {
 			((uint32 *) newString)[i] = SWAP_BYTES_32(((const uint32 *) string)[i]);
 		return newString;
 	} else {
+		free(newString);
 		return nullptr;
 	}
 }
@@ -87,13 +88,16 @@ char *Encoding::convertWithTransliteration(const String &to, const String &from,
 	if (from.equalsIgnoreCase(to)) {
 		// don't convert, just copy the string and return it
 		char *result = (char *) calloc(sizeof(char), length + 4);
+
 		if (!result) {
 			warning("Could not allocate memory for string conversion");
 			return nullptr;
 		}
+
 		memcpy(result, string, length);
 		return result;
 	}
+
 	if ((addUtfEndianness(to).equalsIgnoreCase("utf-16be") &&
 		addUtfEndianness(from).equalsIgnoreCase("utf-16le")) ||
 		(addUtfEndianness(to).equalsIgnoreCase("utf-16le") &&
@@ -101,56 +105,69 @@ char *Encoding::convertWithTransliteration(const String &to, const String &from,
 		(addUtfEndianness(to).equalsIgnoreCase("utf-32be") &&
 		addUtfEndianness(from).equalsIgnoreCase("utf-32le")) ||
 		(addUtfEndianness(to).equalsIgnoreCase("utf-32le") &&
-		addUtfEndianness(from).equalsIgnoreCase("utf-32be")))
-	{
+			addUtfEndianness(from).equalsIgnoreCase("utf-32be"))) {
 		// The encoding is the same, we just need to switch the endianness
 		if (to.hasPrefixIgnoreCase("utf-16"))
 			return switchEndian(string, length, 16);
 		else
 			return switchEndian(string, length, 32);
 	}
+
 	char *newString = nullptr;
 	String newFrom = from;
 	size_t newLength = length;
+
 	if (from.equalsIgnoreCase("iso-8859-5") &&
 			!to.hasPrefixIgnoreCase("utf")) {
 		// There might be some cyrillic characters, which need to be transliterated.
 		newString = transliterateCyrillic(string);
+
 		if (!newString)
 			return nullptr;
+
 		newFrom = "ASCII";
 	}
+
 	if (from.hasPrefixIgnoreCase("utf") &&
 			!to.hasPrefixIgnoreCase("utf") &&
 			!to.equalsIgnoreCase("iso-8859-5")) {
 		// There might be some cyrillic characters, which need to be transliterated.
 		char *tmpString;
-		if (from.hasPrefixIgnoreCase("utf-32"))
+		if (from.hasPrefixIgnoreCase("utf-32")) {
 			tmpString = nullptr;
-		else {
+		} else {
 			tmpString = conversion("UTF-32", from, string, length);
 			if (!tmpString)
 				return nullptr;
 			// find out the length in bytes of the tmpString
 			int i;
-			for (i = 0; ((const uint32 *)tmpString)[i]; i++) {}
+
+			for (i = 0; ((const uint32 *)tmpString)[i]; i++)
+				;
+
 			newLength = i * 4;
 			newFrom = "UTF-32";
 		}
+
 		if (tmpString != nullptr) {
 			newString = (char *) transliterateUTF32((const uint32 *) tmpString, newLength);
 			free(tmpString);
-		} else
+		} else {
 			newString = (char *) transliterateUTF32((const uint32 *) string, newLength);
+		}
+
 		if (!newString)
 			return nullptr;
 	}
+
 	char *result;
 	if (newString != nullptr) {
 		result = conversion(to, newFrom, newString, newLength);
 		free(newString);
-	} else
+	} else {
 		result = conversion(to, newFrom, string, newLength);
+	}
+
 	return result;
 }
 
@@ -179,12 +196,13 @@ char *Encoding::convertIconv(const char *to, const char *from, const char *strin
 
 	String toTranslit = String(to) + "//TRANSLIT";
 	iconv_t iconvHandle = iconv_open(toTranslit.c_str(), from);
+
 	if (iconvHandle == (iconv_t) -1)
 		return nullptr;
 
 	size_t inSize = length;
-	size_t outSize = inSize;
 	size_t stringSize = inSize > 4 ? inSize : 4;
+	size_t outSize = stringSize;
 
 
 #ifdef ICONV_USES_CONST

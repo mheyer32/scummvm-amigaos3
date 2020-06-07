@@ -84,6 +84,16 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		break;
 	case kClueLabCorpses:
 		KIA_Play_Actor_Dialogue(kActorKlein, 140);
+		// Similar fix to PS07:
+		// quote 150 is *boop* in ENG version
+		// it is redundant in DEU and FRA versions (identical to second half of quote 140)
+		// it is required in ESP and ITA versions. It is the missing second half of quote 140.
+		if (_vm->_cutContent
+		    && (_vm->_language == Common::ES_ESP
+		        || _vm->_language == Common::IT_ITA)
+		) {
+			KIA_Play_Actor_Dialogue(kActorKlein, 150);
+		}
 		break;
 	case kClueLabShellCasings:
 		KIA_Play_Actor_Dialogue(kActorKlein, 50);
@@ -108,7 +118,18 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		KIA_Play_Actor_Dialogue(kActorRunciter, 290);
 		break;
 	case kClueCrowdInterviewA:
-		KIA_Play_Actor_Dialogue(kActorOfficerLeary, 100);
+		if (_vm->_cutContent
+		    && (_vm->_language == Common::ES_ESP
+		        || _vm->_language == Common::IT_ITA)
+		) {
+			// Same fix as in RC01:
+			// Quote 110 is the second half of the sentence about Lucy hanging around with Zuben ("a fat guy")
+			// in ENG, DEU and FRA it is redundant, but it's needed in ESP and ITA
+			KIA_Play_Actor_Dialogue(kActorOfficerLeary, 100);
+			KIA_Play_Actor_Dialogue(kActorOfficerLeary, 110);
+		} else {
+			KIA_Play_Actor_Dialogue(kActorOfficerLeary, 100);
+		}
 		break;
 	case kClueCrowdInterviewB:
 		KIA_Play_Actor_Dialogue(kActorOfficerLeary, 120);
@@ -777,7 +798,25 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 	case kClueCrimeSceneNotes:
 		KIA_Play_Actor_Dialogue(kActorSteele, 3310);
 		KIA_Play_Actor_Dialogue(kActorSteele, 3320);
-		KIA_Play_Actor_Dialogue(kActorSteele, 3330);
+		if (_vm->_cutContent
+		    && (_vm->_language == Common::ES_ESP
+		        || _vm->_language == Common::IT_ITA)
+		) {
+			//
+			// in ITA and ESP the 3340 quote is the second half of the sentence starting in previous quote (3330)
+			KIA_Play_Actor_Dialogue(kActorSteele, 3330);
+			KIA_Play_Actor_Dialogue(kActorSteele, 3340);
+		} else if (_vm->_cutContent
+		           && _vm->_language == Common::FR_FRA
+		) {
+			// in FRA the 3340 quote has the full sentence rendering the previous quote (3330) redundant
+			// FRA (Restored Content) version needs only 3340
+			KIA_Play_Actor_Dialogue(kActorSteele, 3340);
+		} else {
+			// ENG and DEU and non-restored content versions need only 3330
+			// the 3340 quote is *BOOP* in the ENG and DEU versions
+			KIA_Play_Actor_Dialogue(kActorSteele, 3330);
+		}
 		KIA_Play_Actor_Dialogue(kActorSteele, 3350);
 		KIA_Play_Actor_Dialogue(kActorSteele, 3360);
 		KIA_Play_Actor_Dialogue(kActorSteele, 3370);
@@ -798,7 +837,19 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		KIA_Play_Actor_Dialogue(kActorSteele, 3470);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1300);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1310);
-		KIA_Play_Actor_Dialogue(kActorSteele, 3480);
+		if (_vm->_cutContent
+		    && (_vm->_language == Common::ES_ESP
+		        || _vm->_language == Common::IT_ITA)
+		) {
+			//
+			// in ITA and ESP the 3490 quote is the second half of the sentence starting in previous quote (3480)
+			KIA_Play_Actor_Dialogue(kActorSteele, 3480);
+			KIA_Play_Actor_Dialogue(kActorSteele, 3490);
+		} else {
+			// the 3490 quote is *BOOP* in the ENG and DEU versions
+			// the 3490 quote is also redundant in FRA version, since it's only the first half of the previous quote (3480)
+			KIA_Play_Actor_Dialogue(kActorSteele, 3480);
+		}
 		KIA_Play_Actor_Dialogue(kActorSteele, 3500);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1320);
 		KIA_Play_Actor_Dialogue(kActorGrigorian, 1330);
@@ -985,6 +1036,8 @@ void KIAScript::SCRIPT_KIA_DLL_Play_Clue_Asset_Script(int notUsed, int clueId) {
 		KIA_Play_Actor_Dialogue(kActorRunciter, 630);
 		KIA_Play_Actor_Dialogue(kActorRunciter, 640);
 		KIA_Play_Actor_Dialogue(kActorRunciter, 650);
+		break;
+	default:
 		break;
 	}
 }

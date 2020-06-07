@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Soltys source code
- * Copyright (c) 1994-1995 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1995 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE_CGEMAIN_H
@@ -92,8 +92,8 @@ public:
 
 	void setPal();
 	void funTouch();
-	virtual void touch(uint16 mask, int x, int y, Common::KeyCode keyCode);
-	void tick();
+	void touch(uint16 mask, int x, int y, Common::KeyCode keyCode) override;
+	void tick() override;
 private:
 	CGEEngine *_vm;
 };
@@ -101,7 +101,7 @@ private:
 class Square : public Sprite {
 public:
 	Square(CGEEngine *vm);
-	virtual void touch(uint16 mask, int x, int y, Common::KeyCode keyCode);
+	void touch(uint16 mask, int x, int y, Common::KeyCode keyCode) override;
 private:
 	CGEEngine *_vm;
 };

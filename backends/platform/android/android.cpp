@@ -56,10 +56,13 @@
 #include "common/config-manager.h"
 
 #include "backends/audiocd/default/default-audiocd.h"
-#include "backends/keymapper/keymapper.h"
 #include "backends/mutex/pthread/pthread-mutex.h"
 #include "backends/saves/default/default-saves.h"
 #include "backends/timer/default/default-timer.h"
+
+#include "backends/keymapper/keymapper.h"
+#include "backends/keymapper/keymapper-defaults.h"
+#include "backends/keymapper/standard-actions.h"
 
 #include "backends/platform/android/jni-android.h"
 #include "backends/platform/android/android.h"
@@ -102,8 +105,7 @@ OSystem_Android::OSystem_Android(int audio_sample_rate, int audio_buffer_size) :
 	_dpad_scale(4),
 	_fingersDown(0),
 	_trackball_scale(2),
-	_joystick_scale(10),
-	_swap_menu_and_back(false) {
+	_joystick_scale(10) {
 
 	_fsFactory = new POSIXFilesystemFactory();
 
@@ -308,14 +310,22 @@ void OSystem_Android::initBackend() {
 	ConfMan.registerDefault("aspect_ratio", true);
 	ConfMan.registerDefault("touchpad_mouse_mode", true);
 	ConfMan.registerDefault("onscreen_control", true);
+	// The swap_menu_and_back is a legacy configuration key
+	// It is no longer relevant, after introducing the keymapper functionality
+	// since the behaviour of the menu and back buttons is now handled by the keymapper.
+	// The key is thus registered to default to a "false" value
 	ConfMan.registerDefault("swap_menu_and_back", false);
 
 	ConfMan.setInt("autosave_period", 0);
 	ConfMan.setBool("FM_high_quality", false);
 	ConfMan.setBool("FM_medium_quality", true);
 
-	if (!ConfMan.hasKey("browser_lastpath") || (ConfMan.hasKey("browser_lastpath") && (ConfMan.get("browser_lastpath") == "/storage")))
-		ConfMan.set("browser_lastpath", getenv("SDCARD"));
+
+	if (!ConfMan.hasKey("browser_lastpath")) {
+		// TODO remove the debug message eventually
+		LOGD("Setting Browser Lastpath to root");
+		ConfMan.set("browser_lastpath", "/");
+	}
 
 	if (ConfMan.hasKey("touchpad_mouse_mode"))
 		_touchpad_mode = ConfMan.getBool("touchpad_mouse_mode");
@@ -327,19 +337,13 @@ void OSystem_Android::initBackend() {
 	else
 		ConfMan.setBool("onscreen_control", true);
 
-	if (ConfMan.hasKey("swap_menu_and_back_buttons"))
-		_swap_menu_and_back = ConfMan.getBool("swap_menu_and_back_buttons");
-	else
-		ConfMan.setBool("swap_menu_and_back_buttons", false);
-
-	// must happen before creating TimerManager to avoid race in
-	// creating EventManager
-	setupKeymapper();
-
 	// BUG: "transient" ConfMan settings get nuked by the options
 	// screen. Passing the savepath in this way makes it stick
 	// (via ConfMan.registerDefault)
 	_savefileManager = new DefaultSaveFileManager(ConfMan.get("savepath"));
+	// TODO remove the debug message eventually
+	LOGD("Setting DefaultSaveFileManager path to: %s", ConfMan.get("savepath").c_str());
+
 	_mutexManager = new PthreadMutexManager();
 	_timerManager = new DefaultTimerManager();
 
@@ -372,7 +376,6 @@ bool OSystem_Android::hasFeature(Feature f) {
 			f == kFeatureOpenUrl ||
 			f == kFeatureTouchpadMode ||
 			f == kFeatureOnScreenControl ||
-			f == kFeatureSwapMenuAndBackButtons ||
 			f == kFeatureClipboardSupport) {
 		return true;
 	}
@@ -395,10 +398,6 @@ void OSystem_Android::setFeatureState(Feature f, bool enable) {
 		ConfMan.setBool("onscreen_control", enable);
 		JNI::showKeyboardControl(enable);
 		break;
-	case kFeatureSwapMenuAndBackButtons:
-		ConfMan.setBool("swap_menu_and_back_buttons", enable);
-		_swap_menu_and_back = enable;
-		break;
 	default:
 		ModularBackend::setFeatureState(f, enable);
 		break;
@@ -413,11 +412,29 @@ bool OSystem_Android::getFeatureState(Feature f) {
 		return ConfMan.getBool("touchpad_mouse_mode");
 	case kFeatureOnScreenControl:
 		return ConfMan.getBool("onscreen_control");
-	case kFeatureSwapMenuAndBackButtons:
-		return ConfMan.getBool("swap_menu_and_back_buttons");
 	default:
 		return ModularBackend::getFeatureState(f);
 	}
+}
+
+Common::KeymapperDefaultBindings *OSystem_Android::getKeymapperDefaultBindings() {
+	Common::KeymapperDefaultBindings *keymapperDefaultBindings = new Common::KeymapperDefaultBindings();
+
+	// The swap_menu_and_back is a legacy configuration key
+	// It is only checked here for compatibility with old config files
+	// where it may have been set as "true"
+	// TODO Why not just ignore it entirely anyway?
+	if (ConfMan.hasKey("swap_menu_and_back")  && ConfMan.getBool("swap_menu_and_back")) {
+		keymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, "MENU", "AC_BACK");
+		keymapperDefaultBindings->setDefaultBinding("engine-default", Common::kStandardActionSkip, "MENU");
+		keymapperDefaultBindings->setDefaultBinding(Common::kGuiKeymapName, "CLOS", "MENU");
+	} else {
+		keymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, "MENU", "MENU");
+		keymapperDefaultBindings->setDefaultBinding("engine-default", Common::kStandardActionSkip, "AC_BACK");
+		keymapperDefaultBindings->setDefaultBinding(Common::kGuiKeymapName, "CLOS", "AC_BACK");
+	}
+
+	return keymapperDefaultBindings;
 }
 
 uint32 OSystem_Android::getMillis(bool skipRecord) {

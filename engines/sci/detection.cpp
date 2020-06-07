@@ -555,19 +555,23 @@ static const char *directoryGlobs[] = {
 	"italian",
 	"msg",
 	"spanish",
+	"patches",
 	0
 };
 
 class SciMetaEngine : public AdvancedMetaEngine {
 public:
 	SciMetaEngine() : AdvancedMetaEngine(Sci::SciGameDescriptions, sizeof(ADGameDescription), s_sciGameTitles, optionsList) {
-		_singleId = "sci";
 		_maxScanDepth = 3;
 		_directoryGlobs = directoryGlobs;
 		_matchFullPaths = true;
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "sci";
+	}
+
+	const char *getName() const override {
 		return "SCI ["
 #ifdef ENABLE_SCI32
 			"all games"
@@ -577,17 +581,17 @@ public:
 			"]";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Sierra's Creative Interpreter (C) Sierra Online";
 	}
 
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *gd) const;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *gd) const override;
 	ADDetectedGame fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const override;
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual void removeSaveState(const char *target, int slot) const;
-	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	bool hasFeature(MetaEngineFeature f) const override;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override;
+	void removeSaveState(const char *target, int slot) const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
 };
 
 Common::Language charToScummVMLanguage(const char c) {
@@ -800,7 +804,7 @@ bool SciMetaEngine::hasFeature(MetaEngineFeature f) const {
 
 bool SciEngine::hasFeature(EngineFeature f) const {
 	return
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 		(f == kSupportsLoadingDuringRuntime); // ||
 		//(f == kSupportsSavingDuringRuntime);
 		// We can't allow saving through ScummVM menu, because
@@ -937,29 +941,12 @@ Common::Error SciEngine::loadGameState(int slot) {
 	return Common::kNoError;
 }
 
-Common::Error SciEngine::saveGameState(int slot, const Common::String &desc) {
-	Common::String fileName = Common::String::format("%s.%03d", _targetName.c_str(), slot);
-	Common::SaveFileManager *saveFileMan = g_engine->getSaveFileManager();
-	Common::OutSaveFile *out = saveFileMan->openForSaving(fileName);
+Common::Error SciEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	const char *version = "";
-	if (!out) {
-		warning("Opening savegame \"%s\" for writing failed", fileName.c_str());
-		return Common::kWritingFailed;
-	}
-
-	if (!gamestate_save(_gamestate, out, desc, version)) {
-		warning("Saving the game state to '%s' failed", fileName.c_str());
-		return Common::kWritingFailed;
-	} else {
-		out->finalize();
-		if (out->err()) {
-			warning("Writing the savegame failed");
-			return Common::kWritingFailed;
-		}
-		delete out;
-	}
-
+	if (gamestate_save(_gamestate, slot, desc, version)) {
 	return Common::kNoError;
+}
+	return Common::kWritingFailed;
 }
 
 bool SciEngine::canLoadGameStateCurrently() {

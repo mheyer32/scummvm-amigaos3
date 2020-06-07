@@ -52,23 +52,23 @@ private:
 	File *_innerStream;
 public:
 	y222();
-	virtual ~y222();
+	~y222() override;
 
-	virtual uint32 read(void *dataPtr, uint32 dataSize);
-	virtual bool eos() const { return _innerStream->eos(); }
-	virtual int32 pos() const { return _innerStream->pos(); }
-	virtual int32 size() const { return _innerStream->size(); }
-	virtual bool seek(int32 offset, int whence = SEEK_SET) {
+	uint32 read(void *dataPtr, uint32 dataSize) override;
+	bool eos() const override { return _innerStream->eos(); }
+	int32 pos() const override { return _innerStream->pos(); }
+	int32 size() const override { return _innerStream->size(); }
+	bool seek(int32 offset, int whence = SEEK_SET) override {
 		return _innerStream->seek(offset, whence);
 	}
-	virtual bool skip(uint32 offset) {
+	bool skip(uint32 offset) override {
 		return _innerStream->skip(offset);
 	}
-	virtual char *readLine(char *s, size_t bufSize) {
-		return _innerStream->readLine(s, bufSize);
+	char *readLine(char *s, size_t bufSize, bool handleCR = true) override {
+		return _innerStream->readLine(s, bufSize, handleCR);
 	}
-	virtual Common::String readLine() {
-		return _innerStream->readLine();
+	Common::String readLine(bool handleCR = true) override {
+		return _innerStream->readLine(handleCR);
 	}
 };
 

@@ -107,6 +107,9 @@ byte ClassicCostumeRenderer::mainRoutine(int xmoveCur, int ymoveCur) {
 			ex1 = READ_LE_UINT16(_loaded._frameOffsets + ex1 * 2);
 			_srcptr = _loaded._baseptr + READ_LE_UINT16(_loaded._baseptr + ex1 + ex2 * 2) + 14;
 		}
+		break;
+	default:
+		break;
 	}
 
 	use_scaling = (_scaleX != 0xFF) || (_scaleY != 0xFF);
@@ -754,7 +757,7 @@ void ClassicCostumeLoader::loadCostume(int id) {
 }
 
 byte NESCostumeRenderer::drawLimb(const Actor *a, int limb) {
-	const byte darkpalette[16] = {0x00,0x00,0x2D,0x3D,0x00,0x00,0x2D,0x3D,0x00,0x00,0x2D,0x3D,0x00,0x00,0x2D,0x3D};
+	const byte darkpalette[16] = { 0x2d,0x1d,0x2d,0x3d, 0x2d,0x1d,0x2d,0x3d, 0x2d,0x1d,0x2d,0x3d, 0x2d,0x1d,0x2d,0x3d };
 	const CostumeData &cost = a->_cost;
 	const byte *palette, *src, *sprdata;
 	int anim, frameNum, frame, offset, numSprites;

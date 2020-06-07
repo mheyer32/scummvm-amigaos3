@@ -195,7 +195,7 @@ void Gui::draw() {
 	drawDraggedObject();
 	drawDialog();
 	// TODO: When window titles with custom borders are in MacGui, this should be used.
-	//drawWindowTitle(kMainGameWindow, _mainGameWindow->getSurface());
+	//drawWindowTitle(kMainGameWindow, _mainGameWindow->getWindowSurface());
 }
 
 void Gui::drawMenu() {
@@ -410,7 +410,7 @@ bool Gui::loadMenus() {
 	if ((resArray = _resourceManager->getResIDArray(MKTAG('M', 'E', 'N', 'U'))).size() == 0)
 		return false;
 
-	_menu->addMenuSubItem(0, "Abb", kMenuActionAbout, 0, 'A', true);
+	_menu->addMenuItem(nullptr, "Abb", kMenuActionAbout, 0, 'A', true);
 
 	int i = 1;
 	for (iter = resArray.begin(); iter != resArray.end(); ++iter) {
@@ -430,7 +430,8 @@ bool Gui::loadMenus() {
 		title[titleLength] = '\0';
 
 		if (titleLength > 1) {
-			_menu->addMenuItem(title);
+			_menu->addMenuItem(nullptr, title);
+			Graphics::MacMenuSubMenu *submenu = _menu->addSubMenu(nullptr);
 
 			// Read submenu items
 			while ((titleLength = res->readByte())) {
@@ -445,7 +446,7 @@ bool Gui::loadMenus() {
 				res->readUint16BE();
 				// Read style
 				style = res->readUint16BE();
-				_menu->addMenuSubItem(i, title, 0, style, key, false);
+				_menu->addMenuItem(submenu, title, 0, style, key, false);
 			}
 		}
 
@@ -573,7 +574,7 @@ void Gui::drawWindows() {
 
 void Gui::drawCommandsWindow() {
 	if (_engine->needsClickToContinue()) {
-		Graphics::ManagedSurface *srf = _controlsWindow->getSurface();
+		Graphics::ManagedSurface *srf = _controlsWindow->getWindowSurface();
 		WindowData data = getWindowData(kCommandsWindow);
 		srf->fillRect(Common::Rect(0, 0, srf->w, srf->h), kColorWhite);
 		getCurrentFont().drawString(
@@ -589,7 +590,7 @@ void Gui::drawCommandsWindow() {
 		for (; it != _controlData->end(); ++it) {
 			CommandButton button = *it;
 			if (button.getData().type != kControlExitBox)
-				button.draw(*_controlsWindow->getSurface());
+				button.draw(*_controlsWindow->getWindowSurface());
 		}
 	}
 }
@@ -605,13 +606,13 @@ void Gui::drawMainGameWindow() {
 		ensureAssetLoaded(objRef);
 
 		_assets[objRef]->blitInto(
-			_mainGameWindow->getSurface(),
+			_mainGameWindow->getWindowSurface(),
 			border.leftOffset,
 			border.topOffset,
 			kBlitDirect);
 	}
 
-	drawObjectsInWindow(data, _mainGameWindow->getSurface());
+	drawObjectsInWindow(data, _mainGameWindow->getWindowSurface());
 
 	if (DebugMan.isDebugChannelEnabled(kMVDebugGUI)) {
 		Graphics::MacWindow *win = findWindow(data.refcon);
@@ -619,14 +620,14 @@ void Gui::drawMainGameWindow() {
 		int x = win->getDimensions().left;
 		int y = win->getDimensions().top;
 		innerDims.translate(-x, -y);
-		win->getSurface()->frameRect(innerDims, kColorGreen);
+		win->getWindowSurface()->frameRect(innerDims, kColorGreen);
 	}
 
 	findWindow(kMainGameWindow)->setDirty(true);
 }
 
 void Gui::drawSelfWindow() {
-	drawObjectsInWindow(getWindowData(kSelfWindow), _selfWindow->getSurface());
+	drawObjectsInWindow(getWindowData(kSelfWindow), _selfWindow->getWindowSurface());
 	if (_engine->isObjSelected(1)) {
 		invertWindowColors(kSelfWindow);
 	}
@@ -639,7 +640,7 @@ void Gui::drawInventories() {
 	for (uint i = 0; i < _inventoryWindows.size(); i++) {
 		const WindowData &data = getWindowData((WindowReference)(kInventoryStart + i));
 		Graphics::MacWindow *win = findWindow(data.refcon);
-		srf = win->getSurface();
+		srf = win->getWindowSurface();
 		srf->clear(kColorGreen);
 		srf->fillRect(srf->getBounds(), kColorWhite);
 		drawObjectsInWindow(data, srf);
@@ -660,7 +661,7 @@ void Gui::drawInventories() {
 void Gui::drawExitsWindow() {
 	_exitsWindow->setBackgroundPattern(kPatternLightGray);
 
-	Graphics::ManagedSurface *srf = _exitsWindow->getSurface();
+	Graphics::ManagedSurface *srf = _exitsWindow->getWindowSurface();
 
 	Common::Array<CommandButton>::const_iterator it = _exitsData->begin();
 	for (; it != _exitsData->end(); ++it) {
@@ -673,7 +674,7 @@ void Gui::drawExitsWindow() {
 
 void Gui::drawConsoleWindow() {
 
-	Graphics::ManagedSurface *srf = _outConsoleWindow->getSurface();
+	Graphics::ManagedSurface *srf = _outConsoleWindow->getWindowSurface();
 	BorderBounds bounds = borderBounds(getWindowData(kOutConsoleWindow).type);
 	_consoleText->renderInto(srf, bounds, kConsoleLeftOffset);
 }
@@ -819,7 +820,7 @@ void Gui::updateWindow(WindowReference winID, bool containerOpen) {
 			drawMainGameWindow();
 		} else {
 			Graphics::MacWindow *winRef = findWindow(winID);
-			winRef->getSurface()->fillRect(data.bounds, kColorGray);
+			winRef->getWindowSurface()->fillRect(data.bounds, kColorGray);
 		}
 		if (data.type == kZoomDoc && data.updateScroll) {
 			warning("Unimplemented: update scroll");
@@ -849,7 +850,7 @@ void Gui::updateExit(ObjID obj) {
 	int i = 0;
 	Common::Array<CommandButton>::const_iterator it = _exitsData->begin();
 	for (;it != _exitsData->end(); it++) {
-		if (it->getData().refcon == obj)
+		if ((ObjID)it->getData().refcon == obj)
 			ctl = i;
 		else
 			i++;
@@ -1239,7 +1240,7 @@ void menuCommandsCallback(int action, Common::String &text, void *data) {
 
 
 void Gui::invertWindowColors(WindowReference winID) {
-	Graphics::ManagedSurface *srf = findWindow(winID)->getSurface();
+	Graphics::ManagedSurface *srf = findWindow(winID)->getWindowSurface();
 	for (uint y = 0; y < srf->h; y++) {
 		for (uint x = 0; x < srf->w; x++) {
 			byte p = *(byte *)srf->getBasePtr(x, y);

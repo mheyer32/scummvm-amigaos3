@@ -296,6 +296,11 @@ void ScriptBase::Actor_Says(int actorId, int sentenceId, int animationMode) {
 	Actor_Says_With_Pause(actorId, sentenceId, 0.5f, animationMode);
 }
 
+/**
+* Actor actorId speaks the quote of sentenceId.
+* If pause > 0.0f, there will be a delay for "pause" seconds after the spoken sentence.
+* Pause can be 0.0f which can be used to simulate a talking actor being interrupted by another actor.
+*/
 void ScriptBase::Actor_Says_With_Pause(int actorId, int sentenceId, float pause, int animationMode) {
 	debugC(kDebugScript, "Actor_Says_With_Pause(%d, %d, %f, %d)", actorId, sentenceId, pause, animationMode);
 	_vm->gameWaitForActive();
@@ -892,22 +897,37 @@ void ScriptBase::Set_Subtitle_Text_On_Screen(Common::String displayText) {
 
 #if BLADERUNNER_ORIGINAL_BUGS
 #else
-void ScriptBase::Screen_Effect_Skip(int effectInc) {
+/**
+* USE WITH CAUTION
+* Methods to remove a rogue effect from a scene
+*
+* In UG01 we need a forced frame skip to make the effect disappear properly (without delay)
+* However other times we might not need this extra frame skip (eg. in transition pan from DR04 to DR01)
+* -- especially in scenes where events, effects, sounds etc are triggered at specific frames
+* TODO: Is there a better way to update the effect state without force skipping a frame?
+*/
+void ScriptBase::Screen_Effect_Skip(int effectInc, bool forceExtraFrameSkip) {
 	debugC(kDebugScript, "Screen_Effect_Skip(%d)", effectInc);
 	_vm->_screenEffects->toggleEntry(effectInc, true);
-	_vm->_scene->advanceFrame(false);
+	if (forceExtraFrameSkip) {
+		_vm->_scene->advanceFrame(false);
+	}
 }
 
-void ScriptBase::Screen_Effect_Restore(int effectInc) {
+void ScriptBase::Screen_Effect_Restore(int effectInc, bool forceExtraFrameSkip) {
 	debugC(kDebugScript, "Screen_Effect_Restore(%d)", effectInc);
 	_vm->_screenEffects->toggleEntry(effectInc, false);
-	_vm->_scene->advanceFrame(false);
+	if (forceExtraFrameSkip) {
+		_vm->_scene->advanceFrame(false);
+	}
 }
 
-void ScriptBase::Screen_Effect_Restore_All() {
+void ScriptBase::Screen_Effect_Restore_All(bool forceExtraFrameSkip) {
 	debugC(kDebugScript, "Screen_Effect_Restore_All()");
 	_vm->_screenEffects->toggleEntry(-1, false);
-	_vm->_scene->advanceFrame(false);
+	if (forceExtraFrameSkip) {
+		_vm->_scene->advanceFrame(false);
+	}
 }
 #endif // BLADERUNNER_ORIGINAL_BUGS
 
@@ -1071,9 +1091,9 @@ int ScriptBase::Random_Query(int min, int max) {
 	return _vm->_rnd.getRandomNumberRng(min, max);
 }
 
-void ScriptBase::Sound_Play(int id, int volume, int panFrom, int panTo, int priority) {
-	debugC(6, kDebugScript, "Sound_Play(%d, %d, %d, %d, %d)", id, volume, panFrom, panTo, priority);
-	_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(id), volume, panFrom, panTo, priority);
+void ScriptBase::Sound_Play(int id, int volume, int panStart, int panEnd, int priority) {
+	debugC(6, kDebugScript, "Sound_Play(%d, %d, %d, %d, %d)", id, volume, panStart, panEnd, priority);
+	_vm->_audioPlayer->playAud(_vm->_gameInfo->getSfxTrack(id), volume, panStart, panEnd, priority);
 }
 
 void ScriptBase::Sound_Play_Speech_Line(int actorId, int sentenceId, int volume, int a4, int priority) {

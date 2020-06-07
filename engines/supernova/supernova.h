@@ -62,18 +62,17 @@ class Screen;
 class SupernovaEngine : public Engine {
 public:
 	explicit SupernovaEngine(OSystem *syst);
-	~SupernovaEngine();
+	~SupernovaEngine() override;
 
-	virtual Common::Error run();
-	virtual Common::Error loadGameState(int slot);
-	virtual bool canLoadGameStateCurrently();
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
-	virtual bool canSaveGameStateCurrently();
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual void pauseEngineIntern(bool pause);
+	Common::Error run() override;
+	Common::Error loadGameState(int slot) override;
+	bool canLoadGameStateCurrently() override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	bool canSaveGameStateCurrently() override;
+	bool hasFeature(EngineFeature f) const override;
+	void pauseEngineIntern(bool pause) override;
 
 	GameManager *_gm;
-	Console *_console;
 	Sound *_sound;
 	ResourceManager *_resMan;
 	Screen *_screen;
@@ -91,6 +90,7 @@ public:
 
 	Common::Error loadGameStrings();
 	void init();
+	virtual Common::String getSaveStateName(int slot) const override;
 	bool loadGame(int slot);
 	bool saveGame(int slot, const Common::String &description);
 	bool serialize(Common::WriteStream *out);

@@ -88,6 +88,9 @@ void EngineState::reset(bool isRestoring) {
 
 	_delayedRestoreGameId = -1;
 
+	_kq7MacSaveGameId = -1;
+	_kq7MacSaveGameDescription.clear();
+
 	executionStackBase = 0;
 	_executionStackPosChanged = false;
 	stack_base = 0;
@@ -264,7 +267,11 @@ Common::String SciEngine::getSciLanguageString(const Common::String &str, kLangu
 						fullWidth += 0x0D; // CR
 						textPtr += 2;
 						continue;
+					default:
+						break;
 					}
+				default:
+					break;
 				}
 
 				textPtr++;

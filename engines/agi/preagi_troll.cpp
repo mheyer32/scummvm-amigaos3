@@ -61,7 +61,7 @@ bool TrollEngine::getMenuSel(const char *szMenu, int *iSel, int nSel) {
 	while (!shouldQuit()) {
 		while (_system->getEventManager()->pollEvent(event)) {
 			switch (event.type) {
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 			case Common::EVENT_QUIT:
 				return 0;
 			case Common::EVENT_MOUSEMOVE:
@@ -197,7 +197,7 @@ void TrollEngine::waitAnyKeyIntro() {
 	while (!shouldQuit()) {
 		while (_system->getEventManager()->pollEvent(event)) {
 			switch (event.type) {
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 			case Common::EVENT_QUIT:
 			case Common::EVENT_LBUTTONUP:
 			case Common::EVENT_KEYDOWN:
@@ -218,6 +218,8 @@ void TrollEngine::waitAnyKeyIntro() {
 		case 100:
 			drawStr(22, 3, kColorDefault, IDS_TRO_INTRO_3);
 			g_system->updateScreen();
+			break;
+		default:
 			break;
 		}
 
@@ -286,6 +288,8 @@ void TrollEngine::tutorial() {
 				break;
 			case IDI_TRO_SEL_OPTION_3:
 				done = true;
+				break;
+			default:
 				break;
 			}
 		}

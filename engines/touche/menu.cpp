@@ -76,6 +76,8 @@ void ToucheEngine::drawButton(Button *button) {
 			dx = -1;
 			dy = -2;
 			break;
+		default:
+			break;
 		}
 		const int x = button->x + button->w / 2;
 		const int y = button->y + button->h / 2;
@@ -158,6 +160,8 @@ static void setupMenu(MenuMode mode, MenuData *menuData) {
 		menuData->buttonsTable = saveLoadButtonsTable;
 		menuData->buttonsCount = ARRAYSIZE(saveLoadButtonsTable);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -176,6 +180,8 @@ void ToucheEngine::redrawMenu(MenuData *menu) {
 	case kMenuLoadStateMode:
 	case kMenuSaveStateMode:
 		drawSaveGameStateDescriptions(_offscreenBuffer, kScreenWidth, menu, _saveLoadCurrentPage, _saveLoadCurrentSlot);
+		break;
+	default:
 		break;
 	}
 	for (uint i = 0; i < menu->buttonsCount; ++i) {
@@ -302,7 +308,7 @@ void ToucheEngine::handleOptions(int forceDisplay) {
 			while (_eventMan->pollEvent(event)) {
 				const Button *button = 0;
 				switch (event.type) {
-				case Common::EVENT_RTL:
+				case Common::EVENT_RETURN_TO_LAUNCHER:
 				case Common::EVENT_QUIT:
 					menuData.quit = true;
 					menuData.exit = true;
@@ -466,7 +472,7 @@ int ToucheEngine::displayQuitDialog() {
 		Common::Event event;
 		while (_eventMan->pollEvent(event)) {
 			switch (event.type) {
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 			case Common::EVENT_QUIT:
 				quitLoop = true;
 				ret = 1;

@@ -159,7 +159,6 @@ MohawkEngine_LivingBooks::MohawkEngine_LivingBooks(OSystem *syst, const MohawkGa
 MohawkEngine_LivingBooks::~MohawkEngine_LivingBooks() {
 	destroyPage();
 
-	delete _console;
 	delete _sound;
 	delete _video;
 	delete _gfx;
@@ -174,7 +173,7 @@ Common::Error MohawkEngine_LivingBooks::run() {
 		return Common::kAudioDeviceInitFailed;
 	}
 
-	_console = new LivingBooksConsole(this);
+	setDebugger(new LivingBooksConsole(this));
 	// Load the book info from the detected file
 	loadBookInfo(getBookInfoFileName());
 
@@ -235,13 +234,6 @@ Common::Error MohawkEngine_LivingBooks::run() {
 
 			case Common::EVENT_KEYDOWN:
 				switch (event.kbd.keycode) {
-				case Common::KEYCODE_d:
-					if (event.kbd.flags & Common::KBD_CTRL) {
-						_console->attach();
-						_console->onFrame();
-					}
-					break;
-
 				case Common::KEYCODE_SPACE:
 					pauseGame();
 					break;
@@ -602,6 +594,9 @@ void MohawkEngine_LivingBooks::updatePage() {
 				if (item)
 					item->setVisible(false);
 				break;
+
+			default:
+				break;
 			}
 		}
 		_phase++;
@@ -629,6 +624,9 @@ void MohawkEngine_LivingBooks::updatePage() {
 
 		_phase++;
 		break;
+
+	default:
+		break;
 	}
 
 	while (_eventQueue.size()) {
@@ -652,6 +650,8 @@ void MohawkEngine_LivingBooks::updatePage() {
 				break;
 			case kLBDelayedEventDone:
 				_items[i]->done(true);
+				break;
+			default:
 				break;
 			}
 
@@ -1221,6 +1221,9 @@ void MohawkEngine_LivingBooks::handleUIQuitClick(uint controlId) {
 		if (!tryLoadPageStart(kLBControlMode, 1))
 			error("couldn't return to menu");
 		break;
+
+	default:
+		break;
 	}
 }
 
@@ -1293,6 +1296,9 @@ void MohawkEngine_LivingBooks::handleUIOptionsClick(uint controlId) {
 		if (!tryLoadPageStart(kLBPlayMode, _curSelectedPage))
 			error("failed to load page %d", _curSelectedPage);
 		break;
+
+	default:
+		break;
 	}
 }
 
@@ -1336,6 +1342,9 @@ void MohawkEngine_LivingBooks::handleNotify(NotifyEvent &event) {
 		case 3:
 			// options screen
 			handleUIOptionsClick(event.param);
+			break;
+
+		default:
 			break;
 		}
 		break;
@@ -1585,6 +1594,8 @@ NodeState LBAnimationNode::update(bool seeking) {
 				debug(4, "d: ResetSound(%0d)", soundResourceId);
 				// TODO
 				_vm->_sound->stopSound(soundResourceId);
+				break;
+			default:
 				break;
 			}
 			}
@@ -2685,6 +2696,8 @@ void LBItem::startPhase(uint phase) {
 			setNextTime(_periodMin, _periodMax);
 		}
 		break;
+	default:
+		break;
 	}
 }
 
@@ -2835,6 +2848,8 @@ int LBItem::runScriptEntry(LBScriptEntry *entry) {
 			case 2:
 				// Loop.
 				entry->state = 0;
+				break;
+			default:
 				break;
 			}
 		}
@@ -3060,6 +3075,8 @@ int LBItem::runScriptEntry(LBScriptEntry *entry) {
 				case kLBOpJumpToExpression:
 					debug(2, "JumpToExpression got %d (on %d, of %d)", e, i, entry->subentries.size());
 					i = e - 1;
+					break;
+				default:
 					break;
 				}
 			}

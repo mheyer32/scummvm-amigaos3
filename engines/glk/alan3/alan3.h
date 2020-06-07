@@ -20,6 +20,8 @@
  *
  */
 
+/* Based on Alan 3 interpreter 3.0beta6 */
+
 #ifndef GLK_ALAN3
 #define GLK_ALAN3
 
@@ -53,25 +55,25 @@ public:
 	/**
 	 * Run the game
 	 */
-	void runGame();
+	void runGame() override;
 
 	/**
 	 * Returns the running interpreter type
 	 */
-	virtual InterpreterType getInterpreterType() const override {
+	InterpreterType getInterpreterType() const override {
 		return INTERPRETER_ALAN3;
 	}
 
 	/**
 	 * Load a savegame from the passed Quetzal file chunk stream
 	 */
-	virtual Common::Error readSaveData(Common::SeekableReadStream *rs) override;
+	Common::Error readSaveData(Common::SeekableReadStream *rs) override;
 
 	/**
 	 * Save the game. The passed write stream represents access to the UMem chunk
 	 * in the Quetzal save file that will be created
 	 */
-	virtual Common::Error writeGameData(Common::WriteStream *ws) override;
+	Common::Error writeGameData(Common::WriteStream *ws) override;
 };
 
 extern Alan3 *g_vm;

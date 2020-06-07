@@ -1,6 +1,7 @@
 package org.scummvm.scummvm;
 
 import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -11,10 +12,13 @@ import android.view.View;
 public class MouseHelper {
 	private View.OnHoverListener _listener;
 	private ScummVM _scummvm;
-	private long _rmbGuardTime;
 	private boolean _rmbPressed;
 	private boolean _lmbPressed;
 	private boolean _mmbPressed;
+	private boolean _bmbPressed;
+	private boolean _fmbPressed;
+	private boolean _srmbPressed;
+	private boolean _smmbPressed;
 
 	/**
 	 * Class initialization fails when this throws an exception.
@@ -51,6 +55,14 @@ public class MouseHelper {
 		main_surface.setOnHoverListener(_listener);
 	}
 
+	public static boolean isMouse(KeyEvent e) {
+		int source = e.getSource();
+
+		return ((source & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) ||
+		       ((source & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) ||
+		       ((source & InputDevice.SOURCE_TOUCHPAD) == InputDevice.SOURCE_TOUCHPAD);
+	}
+
 	public static boolean isMouse(MotionEvent e) {
 		if (e == null) {
 			return false;
@@ -67,6 +79,25 @@ public class MouseHelper {
 		return ((sources & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) ||
 		       ((sources & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) ||
 		       ((sources & InputDevice.SOURCE_TOUCHPAD) == InputDevice.SOURCE_TOUCHPAD);
+	}
+
+	private boolean handleButton(MotionEvent e, boolean mbPressed, int mask, int downEvent, int upEvent) {
+		boolean mbDown = (e.getButtonState() & mask) == mask;
+		if (mbDown) {
+			if (!mbPressed) {
+				// left mouse button was pressed just now
+				_scummvm.pushEvent(downEvent, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
+			}
+
+			return true;
+		} else {
+			if (mbPressed) {
+				// left mouse button was released just now
+				_scummvm.pushEvent(upEvent, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
+			}
+
+			return false;
+		}
 	}
 
 	public boolean onMouseEvent(MotionEvent e, boolean hover) {
@@ -97,51 +128,13 @@ public class MouseHelper {
 			_lmbPressed = false;
 		}
 
-		boolean rmbDown = (buttonState & MotionEvent.BUTTON_SECONDARY) == MotionEvent.BUTTON_SECONDARY;
-		if (rmbDown) {
-			if (!_rmbPressed) {
-				// right mouse button was pressed just now
-				_scummvm.pushEvent(ScummVMEvents.JE_RMB_DOWN, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
-			}
-
-			_rmbPressed = true;
-		} else {
-			if (_rmbPressed) {
-				// right mouse button was released just now
-				_scummvm.pushEvent(ScummVMEvents.JE_RMB_UP, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
-				_rmbGuardTime = System.currentTimeMillis();
-			}
-
-			_rmbPressed = false;
-		}
-
-		boolean mmbDown = (buttonState & MotionEvent.BUTTON_TERTIARY) == MotionEvent.BUTTON_TERTIARY;
-		if (mmbDown) {
-			if (!_mmbPressed) {
-				// middle mouse button was pressed just now
-				_scummvm.pushEvent(ScummVMEvents.JE_MMB_DOWN, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
-			}
-
-			_mmbPressed = true;
-		} else {
-			if (_mmbPressed) {
-				// middle mouse button was released just now
-				_scummvm.pushEvent(ScummVMEvents.JE_MMB_UP, (int)e.getX(), (int)e.getY(), e.getButtonState(), 0, 0, 0);
-			}
-
-			_mmbPressed = false;
-		}
+		_rmbPressed = handleButton(e, _rmbPressed, MotionEvent.BUTTON_SECONDARY, ScummVMEvents.JE_RMB_DOWN, ScummVMEvents.JE_RMB_UP);
+		_mmbPressed = handleButton(e, _mmbPressed, MotionEvent.BUTTON_TERTIARY, ScummVMEvents.JE_MMB_DOWN, ScummVMEvents.JE_MMB_UP);
+		_bmbPressed = handleButton(e, _bmbPressed, MotionEvent.BUTTON_BACK, ScummVMEvents.JE_BMB_DOWN, ScummVMEvents.JE_BMB_UP);
+		_fmbPressed = handleButton(e, _fmbPressed, MotionEvent.BUTTON_FORWARD, ScummVMEvents.JE_FMB_DOWN, ScummVMEvents.JE_FMB_UP);
+		_srmbPressed = handleButton(e, _srmbPressed, MotionEvent.BUTTON_STYLUS_PRIMARY, ScummVMEvents.JE_RMB_DOWN, ScummVMEvents.JE_RMB_UP);
+		_smmbPressed = handleButton(e, _smmbPressed, MotionEvent.BUTTON_STYLUS_SECONDARY, ScummVMEvents.JE_MMB_DOWN, ScummVMEvents.JE_MMB_UP);
 
 		return true;
-	}
-
-	/**
-	 * Checks whether right mouse button is pressed or was pressed just previously. This is used to prevent sending
-	 * extra back key on right mouse click which is the default behaviour in some platforms.
-	 *
-	 * @return true if right mouse button is (or was in the last 200ms) pressed
-	 */
-	public boolean getRmbGuard() {
-		return _rmbPressed || _rmbGuardTime + 200 > System.currentTimeMillis();
 	}
 }

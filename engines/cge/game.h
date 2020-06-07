@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Soltys source code
- * Copyright (c) 1994-1995 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1995 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE_GAME_H
@@ -45,7 +45,7 @@ private:
 public:
 	int _tx, _ty;
 	Fly(CGEEngine *vm, Bitmap **shpl);
-	void tick();
+	void tick() override;
 };
 
 } // End of namespace CGE

@@ -59,12 +59,12 @@ struct GameState {
 class NeverhoodEngine : public ::Engine {
 protected:
 
-	Common::Error run();
+	Common::Error run() override;
 	void mainLoop();
 
 public:
 	NeverhoodEngine(OSystem *syst, const NeverhoodGameDescription *gameDesc);
-	virtual ~NeverhoodEngine();
+	~NeverhoodEngine() override;
 
 	// Detection related functions
 	const NeverhoodGameDescription *_gameDescription;
@@ -73,7 +73,7 @@ public:
 	uint16 getVersion() const;
 	Common::Platform getPlatform() const;
 	Common::Language getLanguage() const;
-	bool hasFeature(EngineFeature f) const;
+	bool hasFeature(EngineFeature f) const override;
 	bool isDemo() const;
 	bool applyResourceFixes() const;
 	Common::String getTargetName() { return _targetName; };
@@ -89,8 +89,6 @@ public:
 	ResourceMan *_res;
 	GameModule *_gameModule;
 	StaticData *_staticData;
-	Console *_console;
-	GUI::Debugger *getDebugger() { return _console; }
 
 	SoundMan *_soundMan;
 	AudioResourceMan *_audioResourceMan;
@@ -119,15 +117,15 @@ public:
 
 	bool _isSaveAllowed;
 
-	bool canLoadGameStateCurrently() { return _isSaveAllowed; }
-	bool canSaveGameStateCurrently() { return _isSaveAllowed; }
+	bool canLoadGameStateCurrently() override { return _isSaveAllowed; }
+	bool canSaveGameStateCurrently() override { return _isSaveAllowed; }
 
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &description);
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &description, bool isAutosave = false) override;
 	Common::Error removeGameState(int slot);
 	bool savegame(const char *filename, const char *description);
 	bool loadgame(const char *filename);
-	const char *getSavegameFilename(int num);
+	Common::String getSaveStateName(int slot) const override;
 	static Common::String getSavegameFilename(const Common::String &target, int num);
 	WARN_UNUSED_RESULT static kReadSaveHeaderError readSaveHeader(Common::SeekableReadStream *in, SaveHeader &header, bool skipThumbnail = true);
 

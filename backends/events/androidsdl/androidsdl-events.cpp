@@ -28,33 +28,14 @@
 #include "backends/platform/androidsdl/androidsdl-sdl.h"
 
 bool AndroidSdlEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &event) {
-	if (ev.button.button == SDL_BUTTON_LEFT)
-		event.type = Common::EVENT_LBUTTONDOWN;
-	else if (ev.button.button == SDL_BUTTON_RIGHT)
-		event.type = Common::EVENT_RBUTTONDOWN;
-#if defined(SDL_BUTTON_WHEELUP) && defined(SDL_BUTTON_WHEELDOWN)
-	else if (ev.button.button == SDL_BUTTON_WHEELUP)
-		event.type = Common::EVENT_WHEELUP;
-	else if (ev.button.button == SDL_BUTTON_WHEELDOWN)
-		event.type = Common::EVENT_WHEELDOWN;
-#endif
 #if defined(SDL_BUTTON_MIDDLE)
-	else if (ev.button.button == SDL_BUTTON_MIDDLE) {
-		event.type = Common::EVENT_MBUTTONDOWN;
-
+	if (ev.button.button == SDL_BUTTON_MIDDLE) {
 		const bool show_onscreen = g_system->getFeatureState(OSystem::kFeatureOnScreenControl);
 		g_system->setFeatureState(OSystem::kFeatureOnScreenControl, !show_onscreen);
 	}
 #endif
-	else
-		return false;
 
-	processMouseEvent(event, ev.button.x, ev.button.y);
-	// update KbdMouse
-	_km.x = ev.button.x * MULTIPLIER;
-	_km.y = ev.button.y * MULTIPLIER;
-
-	return true;
+	return SdlEventSource::handleMouseButtonDown(ev, event);
 }
 
 bool AndroidSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
@@ -75,7 +56,7 @@ bool AndroidSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 	return false;
 }
 
-int AndroidSdlEventSource::mapKey(SDLKey sdlKey, SDLMod mod, Uint16 unicode) {
+int AndroidSdlEventSource::mapKey(SDL_Keycode sdlKey, SDL_Keymod mod, Uint16 unicode) {
 	Common::KeyCode key = SDLToOSystemKeycode(sdlKey);
 
 	if (key >= Common::KEYCODE_F1 && key <= Common::KEYCODE_F9) {
@@ -86,7 +67,7 @@ int AndroidSdlEventSource::mapKey(SDLKey sdlKey, SDLMod mod, Uint16 unicode) {
 		return key;
 	} else if (key >= 'a' && key <= 'z' && (mod & KMOD_SHIFT)) {
 		return key & ~0x20;
-	} else if (key >= Common::KEYCODE_NUMLOCK && key <= Common::KEYCODE_EURO) {
+	} else if (key >= Common::KEYCODE_NUMLOCK && key < Common::KEYCODE_LAST) {
 		return 0;
 	} else {
 		return key;

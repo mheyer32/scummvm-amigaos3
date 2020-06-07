@@ -20,6 +20,9 @@
  *
  */
 
+#include "common/substream.h"
+
+#include "director/director.h"
 #include "director/stxt.h"
 
 namespace Director {
@@ -31,6 +34,16 @@ Stxt::Stxt(Common::SeekableSubReadStreamEndian &textStream) {
 	uint32 dataLen = textStream.readUint32();
 	Common::String text;
 
+	_fontId = 0;
+	_fontSize = 12;
+	_textType = kTextTypeFixed;
+	_textAlign = kTextAlignLeft;
+	_textShadow = kSizeNone;
+	_textSlant = 0;
+	_palinfo1 = _palinfo2 = _palinfo3 = 0;
+	_unk1f = _unk2f = 0;
+	_unk3f = 0;
+
 	for (uint32 i = 0; i < strLen; i++) {
 		byte ch = textStream.readByte();
 		if (ch == 0x0d) {
@@ -40,7 +53,9 @@ Stxt::Stxt(Common::SeekableSubReadStreamEndian &textStream) {
 	}
 	debugC(3, kDebugText, "Stxt init: unk1: %d strLen: %d dataLen: %d textlen: %u", unk1, strLen, dataLen, text.size());
 	if (strLen < 200)
-		debugC(3, kDebugText, "text: '%s'", text.c_str());
+		debugC(3, kDebugText, "text: '%s'", Common::toPrintable(text).c_str());
+
+	_ptext = text;
 
 	uint16 formattingCount = textStream.readUint16();
 	uint32 prevPos = 0;
@@ -81,19 +96,14 @@ Stxt::Stxt(Common::SeekableSubReadStreamEndian &textStream) {
 
 		debugCN(4, kDebugText, "*");
 
-		_ftext += Common::String::format("\001\015%c%c%c%c%c%c%c%c%c%c%c",
-										 (_fontId >> 8) & 0xff, _fontId & 0xff,
-										 _textSlant & 0xff,
-										 (_fontSize >> 8) & 0xff, _fontSize & 0xff,
-										 (_palinfo1 >> 8) & 0xff, _palinfo1 & 0xff,
-										 (_palinfo2 >> 8) & 0xff, _palinfo2 & 0xff,
-										 (_palinfo3 >> 8) & 0xff, _palinfo3 & 0xff);
+		_ftext += Common::String::format("\001\016%04x%02x%04x%04x%04x%04x", _fontId, _textSlant, _fontSize, _palinfo1, _palinfo2, _palinfo3);
 
 		formattingCount--;
 	}
 
-	debugC(4, kDebugText, "%s", text.c_str());
 	_ftext += text;
+
+	debugC(4, kDebugText, "#### text:\n%s\n####", Common::toPrintable(_ftext).c_str());
 }
 
 } // End of namespace Director

@@ -13,7 +13,7 @@ all: $(EXECUTABLE).dwp
 endif
 
 ifdef USE_PANDOC
-all: README$(PANDOCEXT) NEWS$(PANDOCEXT) doc/de/NEUES$(PANDOCEXT)
+all: PANDOC_CONVERT
 endif
 
 ######################################################################
@@ -21,15 +21,15 @@ endif
 ######################################################################
 
 PLUGINS :=
-MODULES := devtools base $(MODULES)
+MODULES := test devtools base $(MODULES)
 
 -include engines/engines.mk
 
 # After the game specific modules follow the shared modules
 MODULES += \
+	engines \
 	gui \
 	backends \
-	engines \
 	video \
 	image \
 	graphics \
@@ -40,8 +40,6 @@ MODULES += \
 ifdef USE_MT32EMU
 MODULES += audio/softsynth/mt32
 endif
-
-MODULES += test
 
 ######################################################################
 # The build rules follow - normally you should have no need to
@@ -138,6 +136,10 @@ ifdef CXX_UPDATE_DEP_FLAG
 	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
 	$(QUIET_AS)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(ASFLAGS) -c $(<) -o $*.o
 
+base/version.o: base/version.cpp
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(CXXFLAGS) $(VERFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
 else
 
 # Dumb compile rule, for C++ compilers that don't allow dependency tracking or
@@ -151,6 +153,9 @@ else
 	$(QUIET)$(MKDIR) $(*D)
 	$(QUIET_AS)$(CXX) $(ASFLAGS) -c $(<) -o $*.o
 
+base/version.o: base/version.cpp
+	$(QUIET)$(MKDIR) $(*D)
+	$(QUIET_CXX)$(CXX) $(CXXFLAGS) $(VERFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
 endif
 
 # Build rule for assembler files
@@ -193,8 +198,8 @@ VER_EXTRA = $(shell echo $(VERSION) | cut -d. -f 3 | cut -c2-)
 
 ifdef AMIGAOS
 # Amiga needs date in specific format for the version cookie
-AMIGA_DATE = $(shell date '+%d.%m.%Y')
-base/version.o: CXXFLAGS:=$(CXXFLAGS) -DAMIGA_DATE=\"$(AMIGA_DATE)\"
+AMIGA_DATE = $(shell gdate '+%d.%m.%Y')
+VERFLAGS += -DAMIGA_DATE=\"$(AMIGA_DATE)\"
 endif
 
 ifdef AMIGAOS3
@@ -226,7 +231,7 @@ endif
 # Define the Subversion revision if available, either autodetected or
 # specified by the user, but only for base/version.cpp.
 ifneq ($(origin VER_REV), undefined)
-base/version.o: CXXFLAGS:=$(CXXFLAGS) -DSCUMMVM_REVISION=\"$(VER_REV)\"
+VERFLAGS += -DSCUMMVM_REVISION=\"$(VER_REV)\"
 endif
 
 ######################################################################
@@ -249,6 +254,10 @@ VERFILE := $(DISTDIR)/$(DISTNAME)/base/internal_version.h
 
 ifdef USE_PANDOC
 # Convert README.md and NEWS.md to plain text for any platform that might require it
+PANDOC_CONVERT: README$(PANDOCEXT) CONTRIBUTING$(PANDOCEXT) NEWS$(PANDOCEXT) doc/de/NEUES$(PANDOCEXT)
+	@sed -i'' -e "s/NEWS.md/NEWS$(PANDOCEXT)/g" README$(PANDOCEXT)
+	@sed -i'' -e "s/CONTRIBUTING.md/CONTRIBUTING$(PANDOCEXT)/g" README$(PANDOCEXT)
+
 %$(PANDOCEXT): %.md
 	$(QUIET)$(MKDIR) $(*D)
 	$(QUIET_PANDOC)$(PANDOC) -f gfm -t $(PANDOCFORMAT) --metadata pagetitle=$(basename $(notdir $@)) -s -o $@ $<
@@ -283,9 +292,9 @@ dist-src: \
 	@#DEB-src?
 
 # Common files
-DIST_FILES_DOCS:=$(addprefix $(srcdir)/,AUTHORS COPYING COPYING.BSD COPYING.LGPL COPYING.FREEFONT COPYING.OFL COPYRIGHT NEWS.md README.md)
+DIST_FILES_DOCS:=$(addprefix $(srcdir)/,AUTHORS COPYING COPYING.BSD COPYING.LGPL COPYING.FREEFONT COPYING.OFL COPYRIGHT NEWS.md README.md CONTRIBUTING.md)
 ifdef USE_PANDOC
-DIST_FILES_DOCS+=README$(PANDOCEXT) NEWS$(PANDOCEXT)
+DIST_FILES_DOCS+=README$(PANDOCEXT) NEWS$(PANDOCEXT) CONTRIBUTING$(PANDOCEXT)
 endif
 
 DIST_FILES_DOCS_languages=cz da de es fr it no-nb se
@@ -369,6 +378,9 @@ DIST_FILES_ENGINEDATA+=tony.dat
 endif
 ifdef ENABLE_TOON
 DIST_FILES_ENGINEDATA+=toon.dat
+endif
+ifdef ENABLE_ULTIMA
+DIST_FILES_ENGINEDATA+=ultima.dat
 endif
 ifdef ENABLE_WINTERMUTE
 DIST_FILES_ENGINEDATA+=wintermute.zip

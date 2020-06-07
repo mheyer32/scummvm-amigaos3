@@ -76,7 +76,7 @@ from vqasTextResource import *
 #sys.setdefaultencoding('utf8')
 
 COMPANY_EMAIL = "classic.adventures.in.greek@gmail.com"
-APP_VERSION = "0.85"
+APP_VERSION = "1.60"
 APP_NAME = "sortBladeRunnerWavs"
 APP_WRAPPER_NAME = "quotesSpreadsheetCreator.py"
 APP_NAME_SPACED = "Blade Runner Transcript Excel Creator (bare bones)"
@@ -138,7 +138,8 @@ SUPPORTED_PLACEHOLDER_VQA_LOCALIZED_FILES = [
 	('END04A_', 'Moonbus Ending - Start', '7933.333 ms, 119 frames'),
 	('END04B_', 'Moonbus Ending - With Lucy', '6533.333 ms, 98 frames'),
 	('END04C_', 'Moonbus Ending - With Dektora', '7733.333 ms, 116 frames'),
-	('END06_',  'Kipple Ending - With Steele', '36400 ms, 546 frames')
+	('END06_',  'Kipple Ending - With Steele', '36400 ms, 546 frames'),
+	('TB_FLY_',  'Fly-through to Tyrell Building', '13533.333 ms, 203 frames')
 	]
 SUPPORTED_SPECIAL_POGO_FILE = 'POGO.TR'
 SUPPORTED_DIALOGUE_VERSION_SHEET = 'SBTLVERS.TRE'
@@ -555,7 +556,9 @@ def auxPopulateExtraSpeechAudioRow(sh = None, n = 0, pFilenameStr = '', pTextStr
 						# checks if not empty
 						if gStringReplacementForRootFolderWithExportedFiles and gNumReplaceStartingCharacters > 0:
 							realPathOfFileNameToLink = realPathOfFileNameToLink.replace(realPathOfFileNameToLink[:gNumReplaceStartingCharacters], gStringReplacementForRootFolderWithExportedFiles)
-
+						# Libreoffice seems to only work with forward slashes (v6.2.8.2)
+						# Also works with MS Excel (tested with Office 2007)
+						realPathOfFileNameToLink = realPathOfFileNameToLink.replace('\\','/');
 						hyperlinkAudioFormula = 'HYPERLINK("file:///%s","%s")' % (realPathOfFileNameToLink, shortHandFileName)
 						sh.write(n, 6, Formula(hyperlinkAudioFormula))
 						break
@@ -947,6 +950,10 @@ def outputXLS(filename, sheet, listTlkWavs, listDevsWavs, parseTREResourcesAlso 
 				# also works in Windows + LibreOffice (run from msys) -- tried something like:
 				#	python sortBladeRunnerWavs.py -op /g/WORKSPACE/BladeRunnerWorkspace/br-mixer-master/data/WAV -m "G:/WORKSPACE/BladeRunnerWorkspace/br-mixer-master/data/WAV"
 				# put real full path for each file as FILE URL, and real (or approximate shorthand file name as alias)
+				#
+				# Libreoffice seems to only work with forward slashes (v6.2.8.2)
+				# Also works with MS Excel (tested with Office 2007)
+				realPathOfFileNameToLink = realPathOfFileNameToLink.replace('\\','/');
 				hyperlinkAudioFormula = 'HYPERLINK("file:///%s","%s")' % (realPathOfFileNameToLink, shortHandFileName)
 				sh.write(m, 6, Formula(hyperlinkAudioFormula))
 			else:

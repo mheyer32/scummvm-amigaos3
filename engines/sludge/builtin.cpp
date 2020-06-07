@@ -82,6 +82,8 @@ bool failSecurityCheck(const Common::String &fn) {
 			case '|':
 				fatal("Filenames may not contain the following characters: \n\n\\  /  :  \"  <  >  |  ?  *\n\nConsequently, the following filename is not allowed:", fn);
 				return true;
+			default:
+				break;
 		}
 	}
 	return false;
@@ -123,6 +125,9 @@ static BuiltReturn sayCore(int numParams, LoadedFunction *fun, bool sayIt) {
 			//debugOut ("BUILTIN: sayCore: %s (%i)\n", newText, p);
 			fun->isSpeech = true;
 			return BR_KEEP_AND_PAUSE;
+
+		default:
+			break;
 	}
 
 	fatal("Function should have either 2 or 3 parameters");
@@ -837,8 +842,10 @@ builtIn(anim) {
 
 	// Load the required sprite bank
 	LoadedSpriteBank *sprBanky = g_sludge->_gfxMan->loadBankForAnim(fileNumber);
-	if (!sprBanky)
+	if (!sprBanky) {
+		delete ba;
 		return BR_ERROR;    // File not found, fatal done already
+	}
 	ba->theSprites = sprBanky;
 
 	// Return value

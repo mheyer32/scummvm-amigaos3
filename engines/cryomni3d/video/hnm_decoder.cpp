@@ -165,6 +165,7 @@ HNMDecoder::HNM4VideoTrack::HNM4VideoTrack(uint32 width, uint32 height, uint32 f
 	} else {
 		memset(_palette, 0, 256 * 3);
 	}
+	_dirtyPalette = true;
 
 	if (width * height != frameSize) {
 		error("Invalid frameSize");
@@ -289,6 +290,9 @@ void HNMDecoder::HNM4VideoTrack::decodeInterframe(Common::SeekableReadStream *st
 				// End of picture
 				eop = true;
 				break;
+			default:
+				error("BUG: Shouldn't be here");
+				break;
 			}
 		} else {
 			if (size < 2) {
@@ -336,7 +340,7 @@ void HNMDecoder::HNM4VideoTrack::decodeInterframe(Common::SeekableReadStream *st
 
 void HNMDecoder::HNM4VideoTrack::decodeIntraframe(Common::SeekableReadStream *stream, uint32 size) {
 	Image::HLZDecoder::decodeFrameInPlace(*stream, size, _frameBufferC);
-	memcpy(_frameBufferP, _frameBufferC, _surface.w * _surface.h);
+	memcpy(_frameBufferP, _frameBufferC, (uint)_surface.w * (uint)_surface.h);
 	_surface.setPixels(_frameBufferC);
 
 	_curFrame++;

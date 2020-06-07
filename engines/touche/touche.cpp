@@ -110,7 +110,7 @@ ToucheEngine::ToucheEngine(OSystem *system, Common::Language language)
 	DebugMan.addDebugChannel(kDebugMenu,     "Menu",     "Menu debug level");
 	DebugMan.addDebugChannel(kDebugCharset,  "Charset",   "Charset debug level");
 
-	_console = new ToucheConsole(this);
+	setDebugger(new ToucheConsole(this));
 
 	_newEpisodeNum = 0;
 	_currentEpisodeNum = 0;
@@ -192,7 +192,6 @@ ToucheEngine::ToucheEngine(OSystem *system, Common::Language language)
 
 ToucheEngine::~ToucheEngine() {
 	DebugMan.clearAllDebugChannels();
-	delete _console;
 
 	stopMusic();
 	delete _midiPlayer;
@@ -338,6 +337,8 @@ void ToucheEngine::writeConfigurationSettings() {
 		ConfMan.setBool("speech_mute", false);
 		ConfMan.setBool("subtitles", true);
 		break;
+	default:
+		break;
 	}
 	ConfMan.setInt("music_volume", getMusicVolume());
 	ConfMan.flushToDisk();
@@ -432,9 +433,6 @@ void ToucheEngine::processEvents(bool handleKeyEvents) {
 			if (event.kbd.hasFlags(Common::KBD_CTRL)) {
 				if (event.kbd.keycode == Common::KEYCODE_f) {
 					_fastMode = !_fastMode;
-				} else if (event.kbd.keycode == Common::KEYCODE_d) {
-					this->getDebugger()->attach();
-					this->getDebugger()->onFrame();
 				}
 			} else {
 				if (event.kbd.keycode == Common::KEYCODE_t) {
@@ -850,6 +848,8 @@ void ToucheEngine::setKeyCharFrame(int keyChar, int16 type, int16 value1, int16 
 	case 4:
 		key->anim3Start = value1;
 		key->anim3Count = value2;
+		break;
+	default:
 		break;
 	}
 }
@@ -1612,6 +1612,8 @@ void ToucheEngine::handleLeftMouseButtonClickOnInventory() {
 						drawInventory(_objectDescriptionNum, 1);
 					}
 					break;
+				default:
+					break;
 				}
 			}
 			break;
@@ -1698,6 +1700,8 @@ void ToucheEngine::handleMouseClickOnRoom(int flag) {
 						hitPosY = mousePos.y;
 					}
 				}
+				break;
+			default:
 				break;
 			}
 			if (_giveItemToCounter == 0 && !_hideInventoryTexts) {
@@ -2097,6 +2101,8 @@ void ToucheEngine::updateRoomRegions() {
 					_programAreaTable[i].animNext = 0;
 				}
 				i += _programAreaTable[i].animCount + 1;
+				break;
+			default:
 				break;
 			}
 		}
@@ -2778,6 +2784,8 @@ void ToucheEngine::adjustKeyCharPosToWalkBox(KeyChar *key, int moveType) {
 			key->yPos = dy * kz / dz + y1;
 		}
 		break;
+	default:
+		break;
 	}
 }
 
@@ -3056,6 +3064,8 @@ void ToucheEngine::updateKeyCharWalkPath(KeyChar *key, int16 dx, int16 dy, int16
 				key->zPos = zpos;
 			}
 		}
+		break;
+	default:
 		break;
 	}
 }

@@ -500,9 +500,7 @@ void EoBCoreEngine::initStaticResource() {
 		data = _staticres->loadRawData(kEoB2PcmSoundEffectsFinale, temp2);
 		SoundResourceInfo_TownsEoB finale(files, temp, data, temp2, 40);
 		sndInfo_finale = &finale;
-	} else if (_flags.platform == Common::kPlatformPC98) {
-
-	} else {
+	} else if (_flags.platform != Common::kPlatformPC98) {
 		const char *const *files = _staticres->loadStrings(kEoBBaseSoundFilesIngame, temp);
 		SoundResourceInfo_PC ingame(files, temp);
 		sndInfo_ingame = &ingame;
@@ -513,7 +511,7 @@ void EoBCoreEngine::initStaticResource() {
 		SoundResourceInfo_PC finale(files, temp);
 		sndInfo_finale = &finale;
 	}
-	
+
 	_sound->initAudioResourceInfo(kMusicIngame, sndInfo_ingame);
 	_sound->initAudioResourceInfo(kMusicIntro, sndInfo_intro);
 	_sound->initAudioResourceInfo(kMusicFinale, sndInfo_finale);
@@ -522,40 +520,51 @@ void EoBCoreEngine::initStaticResource() {
 	// EOB I doesn't have load and save menus, because there is only one single
 	// save slot. Instead of emulating this we provide a menu similiar to EOB II.
 
-	static const char *const saveLoadStrings[5][4] = {
+	static const char *const saveLoadStrings[6][4] = {
 		{   "Cancel",   "Empty Slot",		"Save Game",    "Load Game"     },
 		{   "Abbr.",    "Leerer Slot",		"Speichern",    "  Laden"       },
 		{	" < < ",	"Posizione Vuota",	"Salva",		"Carica"	    },
+		{	"Anular",	"Sin Uso",			"Grabar",		"Cargar"	    },
 		{   0,          0,					0,					0			},
 		{	0,          0,					0,					0			}
 	};
 
-	static const char *const errorSlotEmptyString[5] = {
+	static const char *const errorSlotEmptyString[6] = {
 		"There is no game\rsaved in that slot!",
 		"Hier ist noch kein\rSpiel gespeichert!",
 		"Non c'\x0E alcun gioco\rsalvato in quella\rposizione!",
+		"No hay partidas\rgrabadas!",
 		"\r ""\x82\xBB\x82\xCC\x83""X""\x83\x8D\x83""b""\x83""g""\x82\xC9\x82\xCD\x83""Q""\x81""[""\x83\x80\x82\xAA\x83""Z""\x81""[""\x83""u\r ""\x82\xB3\x82\xEA\x82\xC4\x82\xA2\x82\xDC\x82\xB9\x82\xF1\x81""B",
 		0
 	};
-
-	if (_flags.lang == Common::EN_ANY) {
-		_saveLoadStrings = saveLoadStrings[0];
-		_errorSlotEmptyString = errorSlotEmptyString[0];
-	} else if (_flags.lang == Common::DE_DEU) {
-		_saveLoadStrings = saveLoadStrings[1];
-		_errorSlotEmptyString = errorSlotEmptyString[1];
-	} else if (_flags.lang == Common::IT_ITA) {
-		_saveLoadStrings = saveLoadStrings[2];
-		_errorSlotEmptyString = errorSlotEmptyString[2];
-	} else if (_flags.lang == Common::JA_JPN) {
-		// EOB II FM-Towns uses English here.
-		// Only the empty slot warning is in Japanese.
-		_saveLoadStrings = saveLoadStrings[0];
-		_errorSlotEmptyString = errorSlotEmptyString[3];
-	} else {
-		_saveLoadStrings = saveLoadStrings[4];
-		_errorSlotEmptyString = errorSlotEmptyString[4];
-	}	
+	
+	switch (_flags.lang) {
+		case Common::EN_ANY:
+			_saveLoadStrings = saveLoadStrings[0];
+			_errorSlotEmptyString = errorSlotEmptyString[0];
+			break;
+		case Common::DE_DEU:
+			_saveLoadStrings = saveLoadStrings[1];
+			_errorSlotEmptyString = errorSlotEmptyString[1];
+			break;
+		case Common::IT_ITA:
+			_saveLoadStrings = saveLoadStrings[2];
+			_errorSlotEmptyString = errorSlotEmptyString[2];
+			break;
+		case Common::ES_ESP:
+			_saveLoadStrings = saveLoadStrings[3];
+			_errorSlotEmptyString = errorSlotEmptyString[3];
+			break;
+		case Common::JA_JPN:
+			// EOB II FM-Towns uses English here.
+			// Only the empty slot warning is in Japanese.
+			_saveLoadStrings = saveLoadStrings[0];
+			_errorSlotEmptyString = errorSlotEmptyString[4];
+			break;
+		default:
+			_saveLoadStrings = saveLoadStrings[5];
+			_errorSlotEmptyString = errorSlotEmptyString[5];
+	}
 
 	_menuOkString = "OK";
 }
@@ -669,7 +678,7 @@ void EoBCoreEngine::initButtonData() {
 
 	_buttonDefs = new EoBGuiButtonDef[ARRAYSIZE(buttonDefs)];
 	memcpy(_buttonDefs, buttonDefs, sizeof(buttonDefs));
-	
+
 	if (_flags.platform == Common::kPlatformFMTowns) {
 		static const uint16 keyCodesFMTowns[] = {
 			93, 94, 95, 96, 67, 27, 24, 349, 350, 351, 352, 80, 27, 24, 30, 0, 31, 0, 29, 0, 28, 0, 127, 18, 27, 93, 94, 95, 96,
@@ -783,6 +792,11 @@ void EoBCoreEngine::initMenus() {
 		{  18,  12,  20, 158,  14,  32,  3  },
 		{  19,  12,  37, 158,  14,  50,  3  },
 		{  20,  12,  54, 158,  14,  21,  3  },
+		{  8,  128, 122,  40,  14,  19,  7  },
+		// PC-98 options menu
+		{  17,  12,  20, 158,  14,  32,  3  },
+		{  18,  12,  37, 158,  14,  50,  3  },
+		{  19,  12,  54, 158,  14,  21,  3  },
 		{  8,  128, 122,  40,  14,  19,  7  }
 	};
 
@@ -812,9 +826,13 @@ void EoBCoreEngine::initMenus() {
 		// assign FM-Towns style options menu
 		_menuDefs[2].numButtons = 4;
 		_menuDefs[2].firstButtonStrId = 44;
-	}
-
-	if (_flags.platform == Common::kPlatformAmiga) {
+		_prefMenuPlatformOffset = 32;
+	} else if (_flags.platform == Common::kPlatformPC98) {
+		// assign PC-98 style options menu
+		_menuDefs[2].numButtons = 4;
+		_menuDefs[2].firstButtonStrId = 48;
+		_prefMenuPlatformOffset = 36;
+	} else if (_flags.platform == Common::kPlatformAmiga) {
 		// assign Amiga text colors
 		_menuDefs[0].titleCol = _menuDefs[1].titleCol = _menuDefs[2].titleCol = _menuDefs[4].titleCol = _menuDefs[6].titleCol = guiSettings()->colors.guiColorLightBlue;
 		_menuDefs[3].titleCol = _menuDefs[5].titleCol = guiSettings()->colors.guiColorWhite;
@@ -1163,6 +1181,8 @@ void EoBEngine::initStaticResource() {
 	for (int i = 0; i < 5; i++)
 		_cgaMappingLevel[i] = _staticres->loadRawData(kEoB1CgaMappingLevel0 + i, temp);
 
+	_itemNamesPC98 = _staticres->loadStrings(kEoB1ItemNames, _numItemNamesPC98);
+
 	_turnUndeadString = _staticres->loadStrings(kEoB1TurnUndeadString, temp);
 
 	_npcShpData = _staticres->loadRawData(kEoB1NpcShpData, temp);
@@ -1206,16 +1226,45 @@ void EoBEngine::initStaticResource() {
 		p->dmgModifierEvade = *ps++;
 	}
 
+	if (_flags.platform == Common::kPlatformPC98) {
+		const char *const *files = _staticres->loadStrings(kEoBBaseSoundFilesIngame, temp);
+		SoundResourceInfo_PC ingame(files, temp);
+		_sound->initAudioResourceInfo(kMusicIngame, &ingame);
+		files = _staticres->loadStrings(kEoBBaseSoundFilesIntro, temp);
+		SoundResourceInfo_PC intro(files, temp);
+		_sound->initAudioResourceInfo(kMusicIntro, &intro);
+		files = _staticres->loadStrings(kEoBBaseSoundFilesFinale, temp);
+		SoundResourceInfo_PC finale(files, temp);
+		_sound->initAudioResourceInfo(kMusicFinale, &finale);
+	}
+
 	_monsterAcHitChanceTable1 = _monsterAcHitChanceTbl1;
 	_monsterAcHitChanceTable2 = _monsterAcHitChanceTbl2;
 
-	static const char *const errorSlotNoNameString[3] = {
+	static const char *const errorSlotNoNameString[5] = {
 		" You must specify\r a name for your\r save game!",
 		" Spielstaende mues-\r sen einen Namen\r haben!",
+		" Debes especificar\r un nombre para\r tu partida!",
+		"",
 		0
 	};
 
-	_errorSlotNoNameString = errorSlotNoNameString[(_flags.lang == Common::EN_ANY) ? 0 : ((_flags.lang == Common::DE_DEU) ? 1 : 2)];
+	switch (_flags.lang) {
+	case Common::EN_ANY:
+		_errorSlotNoNameString = errorSlotNoNameString[0];
+		break;
+	case Common::DE_DEU:
+		_errorSlotNoNameString = errorSlotNoNameString[1];
+		break;
+	case Common::ES_ESP:
+		_errorSlotNoNameString = errorSlotNoNameString[2];
+		break;
+	case Common::JA_JPN:
+		_errorSlotNoNameString = errorSlotNoNameString[3];
+		break;
+	default:
+		_errorSlotNoNameString = errorSlotNoNameString[ARRAYSIZE(errorSlotNoNameString) - 1];
+	}
 }
 
 void EoBEngine::initSpells() {
@@ -1301,22 +1350,27 @@ void EoBEngine::initSpells() {
 }
 
 const KyraRpgGUISettings EoBEngine::_guiSettingsVGA = {
-	{ 9, 15, 95, 9, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
+	{ 9, 15, 95, 9, 2, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
 	{ 135, 130, 132, 180, 133, 17, 23, 20, 184, 177, 180, 184, 177, 180, 15, 6, 8, 9, 2, 5, 4, 3, 12 }
 };
 
 const KyraRpgGUISettings EoBEngine::_guiSettingsEGA = {
-	{ 9, 15, 95, 9, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
+	{ 9, 15, 95, 9, 2, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
+	{ 13, 9, 2, 14, 2, 6, 13, 8, 13, 15, 14, 13, 15, 14, 15, 6, 8, 9, 2, 5, 4, 3, 12 }
+};
+
+const KyraRpgGUISettings EoBEngine::_guiSettingsPC98 = {
+	{ 9, 15, 95, 11, 1, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
 	{ 13, 9, 2, 14, 2, 6, 13, 8, 13, 15, 14, 13, 15, 14, 15, 6, 8, 9, 2, 5, 4, 3, 12 }
 };
 
 const KyraRpgGUISettings EoBEngine::_guiSettingsAmiga = {
-	{ 28, 31, 95, 9, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
+	{ 28, 31, 95, 9, 2, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
 	{ 18, 17, 10, 17, 11, 24, 22, 25, 18, 9, 10, 18, 9, 10, 31, 24, 25, 28, 29, 7, 26, 27, 19 }
 };
 
 const KyraRpgGUISettings EoBEngine::_guiSettingsAmigaMainMenu = {
-	{ 28, 31, 95, 9, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
+	{ 28, 31, 95, 9, 2, 7, { 285, 139 }, { 189, 162 }, { 31, 31 } },
 	{ 22, 28, 30, 17, 11, 24, 22, 25, 18, 9, 10, 18, 9, 10, 31, 24, 25, 28, 29, 7, 26, 27, 19 }
 };
 
@@ -1330,6 +1384,63 @@ const uint8 EoBEngine::_monsterAcHitChanceTbl1[] = {
 
 const uint8 EoBEngine::_monsterAcHitChanceTbl2[] = {
 	2, 1, 1, 1
+};
+
+const EoBEngine::RenderModePalFile EoBEngine::_renderModePalFiles[3] = {
+	{	Common::kRenderDefault, "EOBPAL.COL" },
+	{	Common::kRenderVGA, "EOBPAL.COL" },
+	{	-1, "" }
+};
+
+const EoBEngine::TitleScreenConfig EoBEngine::_titleConfig[4] = {
+	{
+		Common::kPlatformDOS,
+		Common::UNK_LANG,
+		"INTRO",
+		_renderModePalFiles,
+		-1,
+		2,
+		false,
+		77, 165, 173, 29, 14, 13, 12,
+		76, 164, 175, 31, 14, 13, -1,
+		0
+	},
+	{
+		Common::kPlatformAmiga,
+		Common::UNK_LANG,
+		"TITLE",
+		&_renderModePalFiles[2],
+		-1,
+		1,
+		true,
+		75, 165, 177, 29, 22, 28, -1,
+		74, 164, 179, 31, 22, 28, -1,
+		0
+	},
+	{
+		Common::kPlatformPC98,
+		Common::UNK_LANG,
+		"EOBTITLE",
+		&_renderModePalFiles[2],
+		1,
+		2,
+		false,
+		77, 161, 173, 29, 1, 2, 12,
+		76, 160, 175, 31, 1, 2, -1,
+		-8
+	},
+	{
+		Common::kPlatformDOS,
+		Common::ES_ESP,
+		"NNTRO",
+		_renderModePalFiles,
+		-1,
+		2,
+		false,
+		77, 165, 173, 29, 14, 13, 12,
+		76, 164, 175, 31, 14, 13, -1,
+		0
+	},
 };
 
 void DarkMoonEngine::initStaticResource() {
@@ -1371,16 +1482,15 @@ void DarkMoonEngine::initStaticResource() {
 	_amigaSoundIndex2 = _staticres->loadRawData(kEoB2SoundIndex2, temp);
 	_amigaSoundPatch = _staticres->loadRawData(kEoB2MonsterSoundPatchData, _amigaSoundPatchSize);
 
-	static const char *const errorSlotNoNameString[3] = {
+	static const char *const errorSlotNoNameString[4] = {
 		" You must specify\r a name for your\r save game!",
 		" Spielst[nde m]ssen\r einen Namen haben!",
+		" Debes poner\run nombre al\rfichero!",
 		0
 	};
 
-	_errorSlotNoNameString = errorSlotNoNameString[(_flags.lang == Common::EN_ANY) ? 0 : ((_flags.lang == Common::DE_DEU) ? 1 : 2)];
-
 	// ScummVM specific
-	static const char *const transferStringsScummVM[3][5] = {
+	static const char *const transferStringsScummVM[4][5] = {
 		{
 			"\r We cannot find any EOB save game\r file. Please make sure that the\r save game file with the party\r you wish to transfer is located\r in your ScummVM save game\r directory. If you have set up\r multiple save directories you\r have to copy the EOB save file\r into your EOB II save directory.\r Do you wish to try again?",
 			"Game ID",
@@ -1396,11 +1506,35 @@ void DarkMoonEngine::initStaticResource() {
 			"\r\r  Bitte warten..."
 		},
 		{
+			"\r No se ha encontrado ninguna partida\r de EOB. Comprueba que el fichero de la partida que quieres\r transferir se encuentra en el\r directorio de ScummVM para los\r juegos guardados. Si tienes\r varios de estos directorios debes\r copiar el fichero en tu directorio\r de guardado de EOB II.\r Quieres volver a intentarlo?",
+			"Game ID",
+			"\r Parece que ya se ha vencido\r Xanathar aqui. Deseas transferir\r el grupo que ha\r finalizado el juego? En caso contrario\r puedes seleccionar otra partida\r de las anteriores guardadas.",
+			"Escoge Fichero",
+			"\r\r   Un momento\r   por favor..."
+		},
+		{
 			0, 0, 0, 0
 		}
 	};
 
-	_transferStringsScummVM = transferStringsScummVM[(_flags.lang == Common::EN_ANY) ? 0 : ((_flags.lang == Common::DE_DEU) ? 1 : 2)];
+	switch(_flags.lang) {
+		case Common::EN_ANY:
+			_errorSlotNoNameString = errorSlotNoNameString[0];
+			_transferStringsScummVM = transferStringsScummVM[0];
+			break;
+		case Common::DE_DEU:
+			_errorSlotNoNameString = errorSlotNoNameString[1];
+			_transferStringsScummVM = transferStringsScummVM[1];
+			break;
+		case Common::ES_ESP:
+			_errorSlotNoNameString = errorSlotNoNameString[2];
+			_transferStringsScummVM = transferStringsScummVM[2];
+			break;
+		default:
+			_errorSlotNoNameString = errorSlotNoNameString[3];
+			_transferStringsScummVM = transferStringsScummVM[3];
+	}
+
 }
 
 void DarkMoonEngine::initSpells() {
@@ -1424,17 +1558,17 @@ void DarkMoonEngine::initSpells() {
 }
 
 const KyraRpgGUISettings DarkMoonEngine::_guiSettingsFMTowns = {
-	{ 9, 15, 95, 11, 7, { 221, 76 }, { 187, 162 }, { 95, 95 } },
+	{ 9, 15, 95, 11, 1, 7, { 221, 76 }, { 187, 162 }, { 95, 95 } },
 	{ 186, 181, 183, 183, 184, 17, 23, 20, 186, 181, 183, 182, 177, 180, 15, 6, 8, 9, 2, 5, 4, 3, 12 }
 };
 
 const KyraRpgGUISettings DarkMoonEngine::_guiSettingsDOS = {
-	{ 9, 15, 95, 9, 7, { 221, 76 }, { 189, 162 }, { 95, 95 } },
+	{ 9, 15, 95, 9, 2, 7, { 221, 76 }, { 189, 162 }, { 95, 95 } },
 	{ 186, 181, 183, 183, 184, 17, 23, 20, 186, 181, 183, 182, 177, 180, 15, 6, 8, 9, 2, 5, 4, 3, 12 }
 };
 
 const KyraRpgGUISettings DarkMoonEngine::_guiSettingsAmiga = {
-	{ 28, 31, 95, 9, 7, { 221, 76 }, { 189, 162 }, { 95, 95 } },
+	{ 28, 31, 95, 9, 2, 7, { 221, 76 }, { 189, 162 }, { 95, 95 } },
 	{ 18, 17, 10, 17, 11, 10, 12, 25, 18, 9, 10, 18, 9, 10, 31, 24, 25, 28, 29, 7, 26, 27, 19 }
 };
 

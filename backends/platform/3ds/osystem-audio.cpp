@@ -20,7 +20,7 @@
  *
  */
 
-#include "osystem.h"
+#include "backends/platform/3ds/osystem.h"
 #include "audio/mixer.h"
 
 namespace _3DS {
@@ -40,7 +40,7 @@ static void audioThreadFunc(void *arg) {
 
 	ndspWaveBuf buffers[bufferCount];
 
-	for (i = 0; i < bufferCount; ++i) {
+	for (int i = 0; i < bufferCount; ++i) {
 		memset(&buffers[i], 0, sizeof(ndspWaveBuf));
 		buffers[i].data_vaddr = linearAlloc(bufferSize);
 		buffers[i].looping = false;
@@ -52,12 +52,14 @@ static void audioThreadFunc(void *arg) {
 	ndspChnSetRate(channel, sampleRate);
 	ndspChnSetFormat(channel, NDSP_FORMAT_STEREO_PCM16);
 
-	while (!osys->exiting) {		
+	while (!osys->exiting) {
 		svcSleepThread(5000 * 1000); // Wake up the thread every 5 ms
 
-		if (osys->sleeping) continue;
+		if (osys->sleeping) {
+			continue;
+		}
 
-			ndspWaveBuf *buf = &buffers[bufferIndex];
+		ndspWaveBuf *buf = &buffers[bufferIndex];
 		if (buf->status == NDSP_WBUF_FREE || buf->status == NDSP_WBUF_DONE) {
 			buf->nsamples = mixer->mixCallback(buf->data_adpcm, bufferSize);
 			if (buf->nsamples > 0) {
@@ -70,7 +72,7 @@ static void audioThreadFunc(void *arg) {
 		}
 	}
 
-	for (i = 0; i < bufferCount; ++i)
+	for (int i = 0; i < bufferCount; ++i)
 		linearFree(buffers[i].data_pcm16);
 }
 

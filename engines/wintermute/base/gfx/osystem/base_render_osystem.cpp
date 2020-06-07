@@ -146,7 +146,15 @@ bool BaseRenderOSystem::initRenderer(int width, int height, bool windowed) {
 }
 
 bool BaseRenderOSystem::indicatorFlip() {
-	g_system->copyRectToScreen((byte *)_renderSurface->getBasePtr(_indicatorX, _indicatorY), _renderSurface->pitch, _indicatorX, _indicatorY, _indicatorWidthDrawn, _indicatorHeight);
+	if (_indicatorWidthDrawn > 0 && _indicatorHeight > 0) {
+		g_system->copyRectToScreen((byte *)_renderSurface->getBasePtr(_indicatorX, _indicatorY), _renderSurface->pitch, _indicatorX, _indicatorY, _indicatorWidthDrawn, _indicatorHeight);
+		g_system->updateScreen();
+	}
+	return STATUS_OK;
+}
+
+bool BaseRenderOSystem::forcedFlip() {
+	g_system->copyRectToScreen((byte *)_renderSurface->getPixels(), _renderSurface->pitch, 0, 0, _renderSurface->w, _renderSurface->h);
 	g_system->updateScreen();
 	return STATUS_OK;
 }
@@ -204,6 +212,19 @@ bool BaseRenderOSystem::flip() {
 	g_system->updateScreen();
 
 	return STATUS_OK;
+}
+
+//////////////////////////////////////////////////////////////////////
+void BaseRenderOSystem::onWindowChange() {
+	_windowed = !g_system->getFeatureState(OSystem::kFeatureFullscreenMode);
+}
+
+//////////////////////////////////////////////////////////////////////
+void BaseRenderOSystem::setWindowed(bool windowed) {
+	ConfMan.setBool("fullscreen", !windowed);
+	g_system->beginGFXTransaction();
+	g_system->setFeatureState(OSystem::kFeatureFullscreenMode, !windowed);
+	g_system->endGFXTransaction();
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -32,6 +32,7 @@
 #include "glk/glk.h"
 #include "glk/blorb.h"
 #include "glk/conf.h"
+#include "glk/debugger.h"
 #include "glk/events.h"
 #include "glk/picture.h"
 #include "glk/quetzal.h"
@@ -46,9 +47,9 @@ namespace Glk {
 GlkEngine *g_vm;
 
 GlkEngine::GlkEngine(OSystem *syst, const GlkGameDescription &gameDesc) :
-		_gameDescription(gameDesc), Engine(syst), _random("Glk"), _blorb(nullptr),
-		_clipboard(nullptr), _conf(nullptr), _debugger(nullptr), _events(nullptr), _pictures(nullptr),
-		_screen(nullptr), _selection(nullptr), _sounds(nullptr), _streams(nullptr), _windows(nullptr),
+		_gameDescription(gameDesc), Engine(syst), _random("Glk"), _quitFlag(false), _blorb(nullptr),
+		_clipboard(nullptr), _conf(nullptr),_events(nullptr), _pictures(nullptr), _screen(nullptr),
+		_selection(nullptr), _sounds(nullptr), _streams(nullptr), _windows(nullptr),
 		_copySelect(false), _terminated(false), _pcSpeaker(nullptr), _loadSaveSlot(-1),
 		gli_register_obj(nullptr), gli_unregister_obj(nullptr), gli_register_arr(nullptr),
 		gli_unregister_arr(nullptr) {
@@ -65,7 +66,6 @@ GlkEngine::~GlkEngine() {
 	delete _blorb;
 	delete _clipboard;
 	delete _conf;
-	delete _debugger;
 	delete _events;
 	delete _pcSpeaker;
 	delete _pictures;
@@ -78,9 +78,9 @@ GlkEngine::~GlkEngine() {
 
 void GlkEngine::initialize() {
 	initGraphicsMode();
+	setDebugger(new Debugger());
 
 	_conf = new Conf(getInterpreterType());
-	_debugger = createDebugger();
 	_screen = createScreen();
 	_screen->initialize();
 	_clipboard = new Clipboard();
@@ -204,7 +204,7 @@ Common::Error GlkEngine::loadGameState(int slot) {
 				Common::String md5 = QuetzalReader::readString(rs);
 				delete rs;
 
-				if (interpType != INTERPRETER_IDS[getInterpreterType()] ||
+				if (interpType != QuetzalBase::getInterpreterTag(getInterpreterType()) ||
 					parseLanguage(langCode) !=getLanguage() || md5 != getGameMD5())
 					errCode = Common::kReadingFailed;
 			}
@@ -228,7 +228,7 @@ Common::Error GlkEngine::loadGameState(int slot) {
 	return errCode;
 }
 
-Common::Error GlkEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error GlkEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	Common::String msg;
 	FileReference ref(slot, desc, fileusage_BinaryMode | fileusage_SavedGame);
 

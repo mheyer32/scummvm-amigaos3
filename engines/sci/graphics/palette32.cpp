@@ -108,11 +108,19 @@ const HunkPalette::EntryHeader HunkPalette::getEntryHeader() const {
 const Palette HunkPalette::toPalette() const {
 	Palette outPalette;
 
+	// Set outPalette structures to 0
+	for (int16 i = 0; i < ARRAYSIZE(outPalette.mapping); ++i) {
+		outPalette.mapping[i] = 0;
+	}
+	outPalette.timestamp = 0;
 	for (int16 i = 0; i < ARRAYSIZE(outPalette.colors); ++i) {
 		outPalette.colors[i].used = false;
 		outPalette.colors[i].r = 0;
 		outPalette.colors[i].g = 0;
 		outPalette.colors[i].b = 0;
+	}
+	for (int16 i = 0; i < ARRAYSIZE(outPalette.intensity); ++i) {
+		outPalette.intensity[i] = 0;
 	}
 
 	if (_numPalettes) {
@@ -491,9 +499,13 @@ void GfxPalette32::updateHardware() {
 	// to the backend. This makes those high pixels render black, which seems to
 	// match what would happen in the original interpreter, and saves us from
 	// having to clutter up the engine with a bunch of palette shifting garbage.
+	//
+	// This workaround also handles Mac games, as they use 236 for black to avoid
+	//  conflicting with the operating system's palette which uses 0 for white.
 	int maxIndex = ARRAYSIZE(_currentPalette.colors) - 2;
 	if (g_sci->getGameId() == GID_HOYLE5 ||
-		(g_sci->getGameId() == GID_GK2 && g_sci->isDemo())) {
+		(g_sci->getGameId() == GID_GK2 && g_sci->isDemo()) ||
+		g_sci->getPlatform() == Common::kPlatformMacintosh) {
 		maxIndex = 235;
 	}
 

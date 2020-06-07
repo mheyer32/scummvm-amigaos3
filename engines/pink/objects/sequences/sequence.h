@@ -35,10 +35,10 @@ class SequenceContext;
 class Sequence : public NamedObject {
 public:
 	Sequence();
-	~Sequence();
+	~Sequence() override;
 
 	void deserialize(Archive &archive) override ;
-	void toConsole() override;
+	void toConsole() const override;
 
 public:
 	virtual void init(bool loadingSave);
@@ -76,7 +76,7 @@ public:
 		: _leader(nullptr) {}
 
 	void deserialize(Archive &archive) override;
-	void toConsole() override;
+	void toConsole() const override;
 
 	void init(bool loadingSave) override;
 	void start(bool loadingSave) override;

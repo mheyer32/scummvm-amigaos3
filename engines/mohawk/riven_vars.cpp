@@ -322,6 +322,7 @@ void MohawkEngine_Riven::initVars() {
 	_vars["grviewmpos"] = 1617;
 	_vars["omusicplayer"] = 1;
 	_vars["tdomeelev"] = 1;
+	_vars["transitionmode"] = kRivenTransitionModeFastest;
 
 	uint32 transitions = ConfMan.getInt("transition_mode");
 	_vars["transitionmode"] = sanitizeTransitionMode(transitions);

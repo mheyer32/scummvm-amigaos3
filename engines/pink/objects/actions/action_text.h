@@ -39,7 +39,7 @@ public:
 	~ActionText() override;
 	void deserialize(Archive &archive) override;
 
-	void toConsole() override;
+	void toConsole() const override;
 
 	void start() override;
 	void end() override;
@@ -52,6 +52,7 @@ private:
 
 private:
 	Common::String _fileName;
+	Common::U32String _text;
 	Graphics::MacTextWindow *_txtWnd;
 
 	uint32 _xLeft;

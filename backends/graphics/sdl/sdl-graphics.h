@@ -31,7 +31,7 @@
 
 class SdlEventSource;
 
-#if !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
+#ifndef __SYMBIAN32__
 #define USE_OSD	1
 #endif
 
@@ -94,7 +94,7 @@ public:
 	 */
 	virtual bool notifyMousePosition(Common::Point &mouse);
 
-	virtual bool showMouse(const bool visible) override;
+	virtual bool showMouse(bool visible) override;
 
 	virtual bool saveScreenshot(const Common::String &filename) const { return false; }
 	void saveScreenshot();
@@ -134,7 +134,28 @@ public:
 
 	virtual void initSizeHint(const Graphics::ModeList &modes) override;
 
+	Common::Keymap *getKeymap();
+
 protected:
+	enum CustomEventAction {
+		kActionToggleFullscreen = 100,
+		kActionToggleMouseCapture,
+		kActionSaveScreenshot,
+		kActionToggleAspectRatioCorrection,
+		kActionToggleFilteredScaling,
+		kActionCycleStretchMode,
+		kActionIncreaseScaleFactor,
+		kActionDecreaseScaleFactor,
+		kActionSetScaleFilter1,
+		kActionSetScaleFilter2,
+		kActionSetScaleFilter3,
+		kActionSetScaleFilter4,
+		kActionSetScaleFilter5,
+		kActionSetScaleFilter6,
+		kActionSetScaleFilter7,
+		kActionSetScaleFilter8
+	};
+
 	virtual int getGraphicsModeScale(int mode) const = 0;
 
 	bool defaultGraphicsModeConfig() const;

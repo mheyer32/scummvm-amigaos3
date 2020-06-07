@@ -216,7 +216,7 @@ bool MystGameState::saveState(int slot) {
 	debugC(kDebugSaveLoad, "Saving game to '%s'", filename.c_str());
 
 	Common::Serializer s(nullptr, saveFile);
-	syncGameState(s, _vm->getFeatures() & GF_ME);
+	syncGameState(s, _vm->isGameVariant(GF_ME));
 	saveFile->finalize();
 	delete saveFile;
 
@@ -271,41 +271,24 @@ bool MystGameState::saveMetadata(int slot, const Graphics::Surface *thumbnail) {
 	return true;
 }
 
-bool MystGameState::isAutoSaveAllowed() {
-	// Open autosave slot and see if it an autosave
-	// Autosaving will be enabled if it is an autosave or if there is no save in that slot
-
-	Common::String dataFilename = buildSaveFilename(kAutoSaveSlot);
-	Common::ScopedPtr<Common::InSaveFile> dataFile(g_system->getSavefileManager()->openForLoading(dataFilename));
-	if (!dataFile) { // Cannot load non-meta file, enable autosave
-		return true;
-	}
-
-	Common::String metaFilename = buildMetadataFilename(kAutoSaveSlot);
-	Common::ScopedPtr<Common::InSaveFile> metadataFile(g_system->getSavefileManager()->openForLoading(metaFilename));
-	if (!metadataFile) { // Can load non-meta file, but not metafile, could be a save from the original, disable autosave
-		return false;
-	}
-
-	Common::Serializer m(metadataFile.get(), nullptr);
-
-	// Read the metadata file
-	Mohawk::MystSaveMetadata metadata;
-	if (!metadata.sync(m)) { // the save in the autosave slot is corrupted, enable autosave
-		return true;
-	}
-
-	return metadata.autoSave;
-}
-
 SaveStateDescriptor MystGameState::querySaveMetaInfos(int slot) {
-	// Open the metadata file
-	Common::String filename = buildMetadataFilename(slot);
-	Common::InSaveFile *metadataFile = g_system->getSavefileManager()->openForLoading(filename);
-
 	SaveStateDescriptor desc;
 	desc.setWriteProtectedFlag(slot == kAutoSaveSlot);
 
+	// Open the save file
+	Common::String filename = buildSaveFilename(slot);
+	Common::InSaveFile *saveFile = g_system->getSavefileManager()->openForLoading(filename);
+	if (!saveFile) {
+		return desc;
+	}
+	delete saveFile;
+
+	// There is a save in the slot
+	desc.setSaveSlot(slot);
+
+	// Open the metadata file
+	filename = buildMetadataFilename(slot);
+	Common::InSaveFile *metadataFile = g_system->getSavefileManager()->openForLoading(filename);
 	if (!metadataFile) {
 		return desc;
 	}
@@ -324,6 +307,7 @@ SaveStateDescriptor MystGameState::querySaveMetaInfos(int slot) {
 	desc.setSaveDate(metadata.saveYear, metadata.saveMonth, metadata.saveDay);
 	desc.setSaveTime(metadata.saveHour, metadata.saveMinute);
 	desc.setPlayTime(metadata.totalPlayTime);
+	desc.setAutosave(metadata.autoSave);
 	if (metadata.autoSave) // Allow non-saves to be deleted, but not autosaves
 		desc.setDeletableFlag(slot != kAutoSaveSlot);
 
@@ -551,7 +535,7 @@ void MystGameState::addZipDest(MystStack stack, uint16 view) {
 	ZipDests *zipDests = nullptr;
 
 	// The demo has no zip dest storage
-	if (_vm->getFeatures() & GF_DEMO)
+	if (_vm->isGameVariant(GF_DEMO))
 		return;
 
 	// Select stack
@@ -593,11 +577,11 @@ void MystGameState::addZipDest(MystStack stack, uint16 view) {
 
 bool MystGameState::isReachableZipDest(MystStack stack, uint16 view) {
 	// Zip mode enabled
-	if (!_globals.zipMode)
+	if (!ConfMan.getBool("zip_mode"))
 		return false;
 
 	// The demo has no zip dest storage
-	if (_vm->getFeatures() & GF_DEMO)
+	if (_vm->isGameVariant(GF_DEMO))
 		return false;
 
 	// Select stack

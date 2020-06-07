@@ -22,7 +22,7 @@
 
 #define FORBIDDEN_SYMBOL_EXCEPTION_getcwd
 
-#if defined(WIN32) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
+#if defined(WIN32) && !defined(__SYMBIAN32__)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <direct.h>
@@ -31,6 +31,7 @@
 #include "engines/engine.h"
 #include "engines/dialogs.h"
 #include "engines/util.h"
+#include "engines/metaengine.h"
 
 #include "common/config-manager.h"
 #include "common/events.h"
@@ -40,12 +41,14 @@
 #include "common/error.h"
 #include "common/list.h"
 #include "common/memstream.h"
+#include "common/savefile.h"
 #include "common/scummsys.h"
 #include "common/taskbar.h"
 #include "common/textconsole.h"
 #include "common/translation.h"
 #include "common/singleton.h"
 
+#include "backends/keymapper/action.h"
 #include "backends/keymapper/keymapper.h"
 #include "base/version.h"
 
@@ -53,6 +56,7 @@
 #include "gui/debugger.h"
 #include "gui/dialog.h"
 #include "gui/message.h"
+#include "gui/saveload.h"
 
 #include "audio/mixer.h"
 
@@ -63,10 +67,6 @@
 
 #ifdef USE_TTS
 #include "common/text-to-speech.h"
-#endif
-
-#ifdef _WIN32_WCE
-extern bool isSmartphone();
 #endif
 
 // FIXME: HACK for error()
@@ -86,11 +86,7 @@ static void defaultErrorHandler(const char *msg) {
 	// Unless this error -originated- within the debugger itself, we
 	// now invoke the debugger, if available / supported.
 	if (g_engine) {
-		GUI::Debugger *debugger = g_engine->getDebugger();
-#ifdef _WIN32_WCE
-		if (isSmartphone())
-			debugger = 0;
-#endif
+		GUI::Debugger *debugger = g_engine->getOrCreateDebugger();
 
 #if defined(USE_TASKBAR)
 		g_system->getTaskbarManager()->notifyError();
@@ -151,7 +147,10 @@ Engine::Engine(OSystem *syst)
 		_pauseStartTime(0),
 		_saveSlotToLoad(-1),
 		_engineStartTime(_system->getMillis()),
-		_mainMenuDialog(NULL) {
+		_mainMenuDialog(NULL),
+		_debugger(NULL),
+		_autosaveInterval(ConfMan.getInt("autosave_period")),
+		_lastAutosaveTime(_system->getMillis()) {
 
 	g_engine = this;
 	Common::setErrorOutputFormatter(defaultOutputFormatter);
@@ -185,6 +184,7 @@ Engine::Engine(OSystem *syst)
 Engine::~Engine() {
 	_mixer->stopAll();
 
+	delete _debugger;
 	delete _mainMenuDialog;
 	g_engine = NULL;
 
@@ -215,6 +215,9 @@ void initCommonGFX() {
 
 		if (gameDomain->contains("stretch_mode"))
 			g_system->setStretchMode(ConfMan.get("stretch_mode").c_str());
+
+		if (gameDomain->contains("shader"))
+			g_system->setShader(ConfMan.get("shader").c_str());
 	}
 }
 
@@ -269,6 +272,8 @@ void splashScreen() {
 	// Delay 0.6 secs
 	uint time0 = g_system->getMillis();
 	Common::Event event;
+
+	// We must poll an event in order to have the window shown at least on Mac
 	g_system->getEventManager()->pollEvent(event);
 
 	while (time0 + 600 > g_system->getMillis()) {
@@ -414,7 +419,7 @@ void GUIErrorMessageFormat(const char *fmt, ...) {
 }
 
 void Engine::checkCD() {
-#if defined(WIN32) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
+#if defined(WIN32) && !defined(__SYMBIAN32__)
 	// It is a known bug under Windows that games that play CD audio cause
 	// ScummVM to crash if the data files are read from the same CD. Check
 	// if this appears to be the case and issue a warning.
@@ -482,28 +487,67 @@ void Engine::checkCD() {
 #endif
 }
 
-bool Engine::shouldPerformAutoSave(int lastSaveTime) {
-	const int diff = _system->getMillis() - lastSaveTime;
-	const int autosavePeriod = ConfMan.getInt("autosave_period");
-	return autosavePeriod != 0 && diff > autosavePeriod * 1000;
+void Engine::handleAutoSave() {
+	const int diff = _system->getMillis() - _lastAutosaveTime;
+
+	if (_autosaveInterval != 0 && diff > (_autosaveInterval * 1000)) {
+		// Save the autosave
+		saveAutosaveIfEnabled();
+	}
+}
+
+void Engine::saveAutosaveIfEnabled() {
+	if (_autosaveInterval != 0) {
+		bool saveFlag = canSaveAutosaveCurrently();
+
+		if (saveFlag) {
+			// First check for an existing savegame in the slot, and if present, if it's an autosave
+			SaveStateDescriptor desc = getMetaEngine().querySaveMetaInfos(
+				_targetName.c_str(), getAutosaveSlot());
+			saveFlag = desc.getSaveSlot() == -1 || desc.isAutosave();
+		}
+
+		if (saveFlag && saveGameState(getAutosaveSlot(), _("Autosave"), true).getCode() != Common::kNoError) {
+			// Couldn't autosave at the designated time
+			g_system->displayMessageOnOSD(_("Error occurred making autosave"));
+			saveFlag = false;
+		}
+
+		if (!saveFlag) {
+			// Set the next autosave interval to be in 5 minutes, rather than whatever
+			// full autosave interval the user has selected
+			_lastAutosaveTime = _system->getMillis() + (5 * 60 * 1000) - _autosaveInterval;
+			return;
+		}
+	}
+
+	// Reset the last autosave time
+	_lastAutosaveTime = _system->getMillis();
 }
 
 void Engine::errorString(const char *buf1, char *buf2, int size) {
 	Common::strlcpy(buf2, buf1, size);
 }
 
-void Engine::pauseEngine(bool pause) {
-	assert((pause && _pauseLevel >= 0) || (!pause && _pauseLevel));
+PauseToken Engine::pauseEngine() {
+	assert(_pauseLevel >= 0);
 
-	if (pause)
-		_pauseLevel++;
-	else
-		_pauseLevel--;
+	_pauseLevel++;
 
-	if (_pauseLevel == 1 && pause) {
+	if (_pauseLevel == 1) {
 		_pauseStartTime = _system->getMillis();
 		pauseEngineIntern(true);
-	} else if (_pauseLevel == 0) {
+	}
+
+	return PauseToken(this);
+}
+
+void Engine::resumeEngine() {
+	assert(_pauseLevel > 0);
+
+	_pauseLevel--;
+
+	if (_pauseLevel == 0) {
 		pauseEngineIntern(false);
 		_engineStartTime += _system->getMillis() - _pauseStartTime;
 		_pauseStartTime = 0;
@@ -520,8 +564,10 @@ void Engine::openMainMenuDialog() {
 		_mainMenuDialog = new MainMenuDialog(this);
 #ifdef USE_TTS
 	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
-	ttsMan->pushState();
-	g_gui.initTextToSpeech();
+	if (ttsMan != nullptr) {
+		ttsMan->pushState();
+		g_gui.initTextToSpeech();
+	}
 #endif
 
 	setGameToLoadSlot(-1);
@@ -543,9 +589,11 @@ void Engine::openMainMenuDialog() {
 		}
 	}
 
+	applyGameSettings();
 	syncSoundSettings();
 #ifdef USE_TTS
-	ttsMan->popState();
+	if (ttsMan != nullptr)
+		ttsMan->popState();
 #endif
 }
 
@@ -579,9 +627,8 @@ void Engine::setTotalPlayTime(uint32 time) {
 }
 
 int Engine::runDialog(GUI::Dialog &dialog) {
-	pauseEngine(true);
+	PauseToken pt = pauseEngine();
 	int result = dialog.runModal();
-	pauseEngine(false);
 
 	return result;
 }
@@ -620,12 +667,6 @@ void Engine::syncSoundSettings() {
 	_mixer->setVolumeForSoundType(Audio::Mixer::kSpeechSoundType, soundVolumeSpeech);
 }
 
-void Engine::deinitKeymap() {
-#ifdef ENABLE_KEYMAPPER
-	_eventMan->getKeymapper()->cleanupGameKeymaps();
-#endif
-}
-
 void Engine::flipMute() {
 	// Mute will be set to true by default here. This has two reasons:
 	// - if the game already has an "mute" config entry, it will be overwritten anyway.
@@ -642,8 +683,28 @@ void Engine::flipMute() {
 }
 
 Common::Error Engine::loadGameState(int slot) {
-	// Do nothing by default
-	return Common::kNoError;
+	// In case autosaves are on, do a save first before loading the new save
+	saveAutosaveIfEnabled();
+
+	Common::InSaveFile *saveFile = _saveFileMan->openForLoading(getSaveStateName(slot));
+
+	if (!saveFile)
+		return Common::kReadingFailed;
+
+	Common::Error result = loadGameStream(saveFile);
+	if (result.getCode() == Common::kNoError) {
+		ExtendedSavegameHeader header;
+		if (MetaEngine::readSavegameHeader(saveFile, &header))
+			setTotalPlayTime(header.playtime);
+	}
+
+	delete saveFile;
+	return result;
+}
+
+Common::Error Engine::loadGameStream(Common::SeekableReadStream *stream) {
+	// Default to returning an error when not implemented
+	return Common::kReadingFailed;
 }
 
 bool Engine::canLoadGameStateCurrently() {
@@ -651,14 +712,92 @@ bool Engine::canLoadGameStateCurrently() {
 	return false;
 }
 
-Common::Error Engine::saveGameState(int slot, const Common::String &desc) {
-	// Do nothing by default
-	return Common::kNoError;
+Common::Error Engine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
+	Common::OutSaveFile *saveFile = _saveFileMan->openForSaving(getSaveStateName(slot));
+
+	if (!saveFile)
+		return Common::kWritingFailed;
+
+	Common::Error result = saveGameStream(saveFile, isAutosave);
+	if (result.getCode() == Common::kNoError) {
+		MetaEngine::appendExtendedSave(saveFile, getTotalPlayTime() / 1000, desc, isAutosave);
+
+		saveFile->finalize();
+	}
+
+	delete saveFile;
+	return result;
+}
+
+Common::Error Engine::saveGameStream(Common::WriteStream *stream, bool isAutosave) {
+	// Default to returning an error when not implemented
+	return Common::kWritingFailed;
 }
 
 bool Engine::canSaveGameStateCurrently() {
 	// Do not allow saving by default
 	return false;
+}
+
+bool Engine::loadGameDialog() {
+	if (!canLoadGameStateCurrently()) {
+		g_system->displayMessageOnOSD(_("Loading game is currently unavailable"));
+		return false;
+	}
+
+	GUI::SaveLoadChooser *dialog = new GUI::SaveLoadChooser(_("Load game:"), _("Load"), false);
+
+	int slotNum;
+	{
+		PauseToken pt = pauseEngine();
+		slotNum = dialog->runModalWithCurrentTarget();
+	}
+
+	delete dialog;
+
+	if (slotNum < 0)
+		return false;
+
+	Common::Error loadError = loadGameState(slotNum);
+	if (loadError.getCode() != Common::kNoError) {
+		GUI::MessageDialog errorDialog(loadError.getDesc());
+		errorDialog.runModal();
+		return false;
+	}
+
+	return true;
+}
+
+bool Engine::saveGameDialog() {
+	if (!canSaveGameStateCurrently()) {
+		g_system->displayMessageOnOSD(_("Saving game is currently unavailable"));
+		return false;
+	}
+
+	GUI::SaveLoadChooser *dialog = new GUI::SaveLoadChooser(_("Save game:"), _("Save"), true);
+	int slotNum;
+	{
+		PauseToken pt = pauseEngine();
+		slotNum = dialog->runModalWithCurrentTarget();
+	}
+
+	Common::String desc = dialog->getResultString();
+	if (desc.empty())
+		desc = dialog->createDefaultSaveDescription(slotNum);
+
+	delete dialog;
+
+	if (slotNum < 0)
+		return false;
+
+	Common::Error saveError = saveGameState(slotNum, desc);
+	if (saveError.getCode() != Common::kNoError) {
+		GUI::MessageDialog errorDialog(saveError.getDesc());
+		errorDialog.runModal();
+		return false;
+	}
+
+	return true;
 }
 
 void Engine::quitGame() {
@@ -670,17 +809,75 @@ void Engine::quitGame() {
 
 bool Engine::shouldQuit() {
 	Common::EventManager *eventMan = g_system->getEventManager();
-	return (eventMan->shouldQuit() || eventMan->shouldRTL());
+	return (eventMan->shouldQuit() || eventMan->shouldReturnToLauncher());
+}
+
+GUI::Debugger *Engine::getOrCreateDebugger() {
+	if (!_debugger)
+		// Create a bare-bones debugger. This is useful for engines without their own
+		// debugger when an error occurs
+		_debugger = new GUI::Debugger();
+
+	return _debugger;
 }
 
 /*
 EnginePlugin *Engine::getMetaEnginePlugin() const {
-
-	const EnginePlugin *plugin = 0;
-	Common::String gameid = ConfMan.get("gameid");
-	gameid.toLowercase();
-	EngineMan.findGame(gameid, &plugin);
-	return plugin;
+	return EngineMan.findPlugin(ConfMan.get("engineid"));
 }
 
 */
+
+MetaEngine &Engine::getMetaEngine() {
+	const Plugin *plugin = EngineMan.findPlugin(ConfMan.get("engineid"));
+	assert(plugin);
+	return plugin->get<MetaEngine>();
+}
+
+PauseToken::PauseToken() : _engine(nullptr) {}
+
+PauseToken::PauseToken(Engine *engine) : _engine(engine) {}
+
+void PauseToken::operator=(const PauseToken &t2) {
+	if (_engine) {
+		error("Tried to assign to an already busy PauseToken");
+	}
+	_engine = t2._engine;
+	if (_engine) {
+		_engine->_pauseLevel++;
+	}
+}
+
+PauseToken::PauseToken(const PauseToken &t2) : _engine(t2._engine) {
+	if (_engine) {
+		_engine->_pauseLevel++;
+	}
+}
+
+void PauseToken::clear() {
+	if (!_engine) {
+		error("Tried to clear an already cleared PauseToken");
+	}
+	_engine->resumeEngine();
+	_engine = nullptr;
+}
+
+PauseToken::~PauseToken() {
+	if (_engine) {
+		_engine->resumeEngine();
+	}
+}
+
+#if __cplusplus >= 201103L
+PauseToken::PauseToken(PauseToken &&t2) : _engine(t2._engine) {
+	t2._engine = nullptr;
+}
+
+void PauseToken::operator=(PauseToken &&t2) {
+	if (_engine) {
+		error("Tried to assign to an already busy PauseToken");
+	}
+	_engine = t2._engine;
+	t2._engine = nullptr;
+}
+#endif

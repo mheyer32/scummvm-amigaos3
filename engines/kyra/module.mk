@@ -60,10 +60,10 @@ MODULE_OBJS := \
 	sequence/sequences_v2.o \
 	sequence/sequences_hof.o \
 	sequence/sequences_mr.o \
-	sound/sound_adlib.o \
 	sound/sound_amiga_lok.o \
 	sound/sound_digital_mr.o \
-	sound/sound_midi.o \
+	sound/sound_pc_midi.o \
+	sound/sound_pc_v1.o \
 	sound/sound_pc98_lok.o \
 	sound/sound_pc98_v2.o \
 	sound/sound_towns_lok.o \
@@ -71,8 +71,7 @@ MODULE_OBJS := \
 	sound/sound_lok.o \
 	sound/drivers/adlib.o \
 	sound/drivers/audstream.o \
-	sound/drivers/midi.o \
-	sound/drivers/pcspeaker.o \
+	sound/drivers/pcspeaker_v2.o \
 	text/text.o \
 	text/text_lok.o \
 	text/text_hof.o \
@@ -129,8 +128,11 @@ MODULE_OBJS += \
 	sequence/sequences_eob.o \
 	sequence/sequences_darkmoon.o \
 	sound/sound_amiga_eob.o \
+	sound/sound_pc98_eob.o \
 	sound/sound_towns_darkmoon.o \
-	sound/drivers/audiomaster2.o
+	sound/drivers/audiomaster2.o \
+	sound/drivers/mlalf98.o \
+	sound/drivers/pcspeaker_v1.o
 endif
 
 # This module can be built as a plugin

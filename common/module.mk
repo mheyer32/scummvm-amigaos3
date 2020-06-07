@@ -1,14 +1,14 @@
 MODULE := common
 
 MODULE_OBJS := \
+	achievements.o \
 	archive.o \
 	config-manager.o \
 	coroutines.o \
 	dcl.o \
 	debug.o \
 	error.o \
-	EventDispatcher.o \
-	EventMapper.o \
+	events.o \
 	file.o \
 	fs.o \
 	gui_options.o \
@@ -30,12 +30,14 @@ MODULE_OBJS := \
 	rational.o \
 	rendermode.o \
 	str.o \
+	str-enc.o \
 	stream.o \
 	system.o \
 	textconsole.o \
 	tokenizer.o \
 	translation.o \
 	unarj.o \
+	unicode-bidi.o \
 	unzip.o \
 	ustr.o \
 	util.o \

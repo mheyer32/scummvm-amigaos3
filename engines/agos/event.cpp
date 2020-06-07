@@ -430,8 +430,6 @@ void AGOSEngine::delay(uint amount) {
 
 	_system->getAudioCDManager()->update();
 
-	_debugger->onFrame();
-
 	vgaPeriod = (_fastMode) ? 10 : _vgaPeriod;
 	if (getGameType() == GType_PP && getGameId() != GID_DIMP) {
 		if (vgaPeriod == 15 && _variableArray[999] == 0)
@@ -484,8 +482,6 @@ void AGOSEngine::delay(uint amount) {
 						_aboutDialog->runModal();
 					} else if (event.kbd.keycode == Common::KEYCODE_f) {
 						_fastMode = !_fastMode;
-					} else if (event.kbd.keycode == Common::KEYCODE_d) {
-						_debugger->attach();
 					}
 				}
 
@@ -522,7 +518,7 @@ void AGOSEngine::delay(uint amount) {
 			case Common::EVENT_RBUTTONUP:
 				_rightClick = true;
 				break;
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 			case Common::EVENT_QUIT:
 				return;
 			case Common::EVENT_WHEELUP:
@@ -695,11 +691,13 @@ void AGOSEngine_DIMP::dimpIdle() {
 					while (z == 0) {
 						n = _rnd.getRandomNumber(2);
 						switch (n) {
+							default:
 							case(0):
 								if (_variableArray[110] > 2)
 									break;
 								n = _rnd.getRandomNumber(6);
 								switch (n) {
+									default:
 									case(0): loadSoundFile("And01.wav");break;
 									case(1): loadSoundFile("And02.wav");break;
 									case(2): loadSoundFile("And03.wav");break;
@@ -715,6 +713,7 @@ void AGOSEngine_DIMP::dimpIdle() {
 									break;
 								n = _rnd.getRandomNumber(6);
 								switch (n) {
+									default:
 									case(0): loadSoundFile("And08.wav");break;
 									case(1): loadSoundFile("And09.wav");break;
 									case(2): loadSoundFile("And0a.wav");break;
@@ -730,6 +729,7 @@ void AGOSEngine_DIMP::dimpIdle() {
 									break;
 								n = _rnd.getRandomNumber(4);
 								switch (n) {
+									default:
 									case(0): loadSoundFile("And0f.wav");break;
 									case(1): loadSoundFile("And0g.wav");break;
 									case(2): loadSoundFile("And0h.wav");break;

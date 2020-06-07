@@ -52,7 +52,7 @@ public:
 			_remAct(cmd.numAct) { }
 
 private:
-	kOpType getOpType() const {
+	kOpType getOpType() const override {
 		if (_remCond > 0)
 			return kOpTypeCond;
 		if (_remAct > 0)
@@ -60,7 +60,7 @@ private:
 		return kOpTypeDone;
 	}
 
-	void next(uint numArgs) {
+	void next(uint numArgs) override {
 		_ip += numArgs + 1;
 		if (_remCond > 0)
 			--_remCond;
@@ -74,7 +74,6 @@ private:
 AdlEngine::~AdlEngine() {
 	delete _display;
 	delete _graphics;
-	delete _console;
 	delete _dumpFile;
 	delete _inputScript;
 	delete _random;
@@ -95,7 +94,6 @@ AdlEngine::AdlEngine(OSystem *syst, const AdlGameDescription *gd) :
 		_inputScript(nullptr),
 		_scriptDelay(1000),
 		_scriptPaused(false),
-		_console(nullptr),
 		_messageIds(),
 		_saveVerb(0),
 		_saveNoun(0),
@@ -109,8 +107,6 @@ AdlEngine::AdlEngine(OSystem *syst, const AdlGameDescription *gd) :
 }
 
 bool AdlEngine::pollEvent(Common::Event &event) const {
-	_console->onFrame();
-
 	if (g_system->getEventManager()->pollEvent(event)) {
 		if (event.type != Common::EVENT_KEYDOWN)
 			return false;
@@ -118,11 +114,6 @@ bool AdlEngine::pollEvent(Common::Event &event) const {
 		if (event.kbd.flags & Common::KBD_CTRL) {
 			if (event.kbd.keycode == Common::KEYCODE_q) {
 				quitGame();
-				return false;
-			}
-
-			if (event.kbd.keycode == Common::KEYCODE_d) {
-				_console->attach();
 				return false;
 			}
 		}
@@ -244,6 +235,8 @@ Common::String AdlEngine::inputString(byte prompt) const {
 					_display->setCharAtCursor(_display->asciiToNative(' '));
 					s.deleteLastChar();
 				}
+				break;
+			default:
 				break;
 			};
 		} else {
@@ -734,7 +727,7 @@ Common::Error AdlEngine::run() {
 	if (!_display)
 		return Common::kUnsupportedColorMode;
 
-	_console = new Console(this);
+	setDebugger(new Console(this));
 	_display->init();
 
 	setupOpcodeTables();
@@ -765,7 +758,7 @@ bool AdlEngine::hasFeature(EngineFeature f) const {
 	switch (f) {
 	case kSupportsLoadingDuringRuntime:
 	case kSupportsSavingDuringRuntime:
-	case kSupportsRTL:
+	case kSupportsReturnToLauncher:
 		return true;
 	default:
 		return false;
@@ -931,8 +924,12 @@ void AdlEngine::saveState(Common::WriteStream &stream) {
 		stream.writeByte(_state.vars[i]);
 }
 
-Common::Error AdlEngine::saveGameState(int slot, const Common::String &desc) {
-	Common::String fileName = Common::String::format("%s.s%02d", _targetName.c_str(), slot);
+Common::String AdlEngine::getSaveStateName(int slot) const {
+	return Common::String::format("%s.s%02d", _targetName.c_str(), slot);
+}
+
+Common::Error AdlEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
+	Common::String fileName = getSaveStateName(slot);
 	Common::OutSaveFile *outFile = getSaveFileManager()->openForSaving(fileName);
 
 	if (!outFile) {

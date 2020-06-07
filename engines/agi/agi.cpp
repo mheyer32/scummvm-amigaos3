@@ -66,7 +66,6 @@ void AgiEngine::wait(uint32 msec, bool busy) {
 
 	do {
 		processScummVMEvents();
-		_console->onFrame();
 		_system->updateScreen();
 		_system->delayMillis(10);
 	} while (_system->getMillis() < endTime);
@@ -137,6 +136,9 @@ int AgiEngine::agiInit() {
 		debug("Emulating Sierra AGI v%x.002.%03x",
 		      (int)(getVersion() >> 12) & 0xF,
 		      (int)(getVersion()) & 0xFFF);
+		break;
+	default:
+		warning("Unknown AGI Emulation Version %x", (int)(getVersion() >> 12));
 		break;
 	}
 
@@ -335,7 +337,7 @@ void AgiBase::initRenderMode() {
 		break;
 	}
 
-	if (getFeatures() & (GF_AGI256 | GF_AGI256_2)) {
+	if (getFeatures() & GF_AGI256) {
 		// If current game is AGI256, switch (force) to VGA render mode
 		_renderMode = Common::kRenderVGA;
 	}
@@ -397,8 +399,6 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 
 	_setVolumeBrokenFangame = false; // for further study see AgiEngine::setVolumeViaScripts()
 
-	_lastSaveTime = 0;
-
 	_playTimeInSecondsAdjust = 0;
 	_lastUsedPlayTimeInCycles = 0;
 	_lastUsedPlayTimeInSeconds = 0;
@@ -406,7 +406,6 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 
 	memset(_keyQueue, 0, sizeof(_keyQueue));
 
-	_console = nullptr;
 	_font = nullptr;
 	_gfx = nullptr;
 	_sound = nullptr;
@@ -462,7 +461,7 @@ void AgiEngine::initialize() {
 
 	initRenderMode();
 
-	_console = new Console(this);
+	setDebugger(new Console(this));
 	_words = new Words(this);
 	_font = new GfxFont(this);
 	_gfx = new GfxMgr(this, _font);
@@ -483,8 +482,6 @@ void AgiEngine::initialize() {
 	_text->charAttrib_Set(15, 0);
 
 	_game.name[0] = '\0';
-
-	_lastSaveTime = 0;
 
 	debugC(2, kDebugLevelMain, "Detect game");
 
@@ -528,7 +525,6 @@ AgiEngine::~AgiEngine() {
 	delete _gfx;
 	delete _font;
 	delete _words;
-	delete _console;
 }
 
 Common::Error AgiBase::init() {

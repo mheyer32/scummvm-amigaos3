@@ -51,12 +51,12 @@ public:
 	 * @see addTest()
 	 */
 	EventTestSuite();
-	~EventTestSuite() {}
-	const char *getName() const {
+	~EventTestSuite() override {}
+	const char *getName() const override {
 		return "Events";
 	}
-	const char *getDescription() const {
-		return "Events : Keyboard/Mouse/RTL";
+	const char *getDescription() const override {
+		return "Events : Keyboard/Mouse/Return to Launcher";
 	}
 };
 

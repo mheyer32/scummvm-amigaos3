@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Soltys source code
- * Copyright (c) 1994-1995 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1995 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #include "common/scummsys.h"
@@ -206,7 +206,7 @@ bool CGEEngine::loadGame(int slotNumber, SavegameHeader *header, bool tiny) {
 
 	} else {
 		// Open up the savegame file
-		Common::String slotName = generateSaveName(slotNumber);
+		Common::String slotName = getSaveStateName(slotNumber);
 		Common::InSaveFile *saveFile = g_system->getSavefileManager()->openForLoading(slotName);
 
 		// Read the data into a data buffer
@@ -257,20 +257,12 @@ bool CGEEngine::loadGame(int slotNumber, SavegameHeader *header, bool tiny) {
  * Returns true if a given savegame exists
  */
 bool CGEEngine::savegameExists(int slotNumber) {
-	Common::String slotName = generateSaveName(slotNumber);
+	Common::String slotName = getSaveStateName(slotNumber);
 
 	Common::InSaveFile *saveFile = g_system->getSavefileManager()->openForLoading(slotName);
 	bool result = saveFile != NULL;
 	delete saveFile;
 	return result;
-}
-
-/**
- * Support method that generates a savegame name
- * @param slot		Slot number
- */
-Common::String CGEEngine::generateSaveName(int slot) {
-	return Common::String::format("%s.%03d", _targetName.c_str(), slot);
 }
 
 Common::Error CGEEngine::loadGameState(int slot) {
@@ -298,7 +290,7 @@ void CGEEngine::resetGame() {
 	_commandHandler->reset();
 }
 
-Common::Error CGEEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error CGEEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	sceneDown();
 	_hero->park();
 	_oldLev = _lev;
@@ -323,7 +315,7 @@ Common::Error CGEEngine::saveGameState(int slot, const Common::String &desc) {
 
 void CGEEngine::saveGame(int slotNumber, const Common::String &desc) {
 	// Set up the serializer
-	Common::String slotName = generateSaveName(slotNumber);
+	Common::String slotName = getSaveStateName(slotNumber);
 	Common::OutSaveFile *saveFile = g_system->getSavefileManager()->openForSaving(slotName);
 
 	// Write out the ScummVM savegame header
@@ -941,6 +933,8 @@ void CGEEngine::optionTouch(int opt, uint16 mask) {
 		if (mask & kMouseLeftUp)
 			quit();
 		break;
+	default:
+		break;
 	}
 }
 
@@ -1065,22 +1059,23 @@ void CGEEngine::loadSprite(const char *fname, int ref, int scene, int col = 0, i
 
 
 			switch (i) {
-			case  0 : // Name - will be taken in Expand routine
+			default:
+			case 0: // Name - will be taken in Expand routine
 				break;
-			case  1 : // Type
+			case 1: // Type
 				if ((type = takeEnum(Type, strtok(NULL, " \t,;/"))) < 0)
 					error("Bad line %d [%s]", lcnt, fname);
 				break;
-			case  2 : // Phase
+			case 2: // Phase
 				shpcnt++;
 				break;
-			case  3 : // East
+			case 3: // East
 				east = (atoi(strtok(NULL, " \t,;/")) != 0);
 				break;
-			case 11 : // Portable
+			case 11: // Portable
 				port = (atoi(strtok(NULL, " \t,;/")) != 0);
 				break;
-			case 12 : // Transparent
+			case 12: // Transparent
 				tran = (atoi(strtok(NULL, " \t,;/")) != 0);
 				break;
 			}

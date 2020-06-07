@@ -173,7 +173,7 @@ Common::SeekableReadStream *KyraEngine_v1::openSaveForReading(const char *filena
 				warning("Can not load DOS CD-ROM savefile for this (non DOS CD-ROM) gameversion");
 				delete in;
 				return 0;
-			} else if ((header.flags & GF_FMTOWNS) && !(_flags.platform == Common::kPlatformFMTowns || _flags.platform == Common::kPlatformPC98)) {
+			} else if (checkID && ((header.flags & GF_FMTOWNS) && !(_flags.platform == Common::kPlatformFMTowns || _flags.platform == Common::kPlatformPC98))) {
 				warning("Can not load FM-TOWNS/PC98 savefile for this (non FM-TOWNS/PC98) gameversion");
 				delete in;
 				return 0;
@@ -252,13 +252,6 @@ bool KyraEngine_v1::saveFileLoadable(int slot) {
 	}
 
 	return false;
-}
-
-void KyraEngine_v1::checkAutosave() {
-	if (shouldPerformAutoSave(_lastAutosave)) {
-		saveGameStateIntern(999, "Autosave", 0);
-		_lastAutosave = _system->getMillis();
-	}
 }
 
 void KyraEngine_v1::loadGameStateCheck(int slot) {

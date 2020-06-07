@@ -49,7 +49,7 @@ KIASectionSave::KIASectionSave(BladeRunnerEngine *vm) : KIASectionBase(vm) {
 	_scrollBox = new UIScrollBox(_vm, scrollBoxCallback, this, 1024, 0, true, Common::Rect(155, 158, 461, 346), Common::Rect(506, 160, 506, 350));
 	_uiContainer->add(_scrollBox);
 
-	_inputBox = new UIInputBox(_vm, inputBoxCallback, this, Common::Rect(155, 367, 461, 376), SaveFileManager::kNameLength, ""); // original game had limit 41 characters
+	_inputBox = new UIInputBox(_vm, inputBoxCallback, this, Common::Rect(155, 367, 461, 376), SaveFileManager::kNameLength, ""); // original game has limit 41 characters
 	_uiContainer->add(_inputBox);
 	_inputBox->hide();
 
@@ -154,7 +154,7 @@ void KIASectionSave::draw(Graphics::Surface &surface) {
 
 		// Original game shows warnings/error here, but we don't have any
 
-		const char *textTypeName = _vm->_textOptions->getText(24); // Type a name ...
+		const char *textTypeName = _vm->_textOptions->getText(25); // Type a name ...
 		int textTypeNameWidth = _vm->_mainFont->getStringWidth(textTypeName);
 		_vm->_mainFont->drawString(&surface, textTypeName, 308 - textTypeNameWidth / 2, 352, surface.w, surface.format.RGBToColor(240, 232, 192));
 

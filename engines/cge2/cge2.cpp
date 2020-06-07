@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #include "engines/util.h"
@@ -76,7 +76,6 @@ CGE2Engine::CGE2Engine(OSystem *syst, const ADGameDescription *gameDescription)
 		_vol[i] = nullptr;
 	_eventManager = nullptr;
 	_map = nullptr;
-	_console = nullptr;
 	_quitFlag = false;
 	_bitmapPalette = nullptr;
 	_gamePhase = kPhaseIntro;
@@ -113,7 +112,7 @@ CGE2Engine::CGE2Engine(OSystem *syst, const ADGameDescription *gameDescription)
 
 void CGE2Engine::init() {
 	// Create debugger console
-	_console = new CGE2Console(this);
+	setDebugger(new CGE2Console(this));
 	_resman = new ResourceManager();
 	_vga = new Vga(this);
 	_fx = new Fx(this, 16);
@@ -148,8 +147,6 @@ void CGE2Engine::init() {
 void CGE2Engine::deinit() {
 	// Remove all of our debug levels here
 	DebugMan.clearAllDebugChannels();
-
-	delete _console;
 
 	delete _spare;
 	delete _resman;
@@ -186,7 +183,7 @@ void CGE2Engine::deinit() {
 
 bool CGE2Engine::hasFeature(EngineFeature f) const {
 	return (f == kSupportsLoadingDuringRuntime) || (f == kSupportsSavingDuringRuntime)
-		|| (f == kSupportsRTL);
+		|| (f == kSupportsReturnToLauncher);
 }
 
 Common::Error CGE2Engine::run() {

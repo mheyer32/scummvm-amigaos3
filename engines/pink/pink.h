@@ -29,8 +29,6 @@
 #include "engines/engine.h"
 #include "engines/savestate.h"
 
-#include "graphics/wincursor.h"
-
 #include "gui/debugger.h"
 
 #include "pink/constants.h"
@@ -62,8 +60,13 @@
 
 struct ADGameDescription;
 
+namespace Common {
+	class PEResources;
+}
+
 namespace Graphics {
 class MacMenu;
+struct WinCursorGroup;
 }
 
 namespace Pink {
@@ -87,36 +90,38 @@ enum {
 class PinkEngine : public Engine {
 public:
 	PinkEngine(OSystem *system, const ADGameDescription *desc);
-	~PinkEngine();
+	~PinkEngine() override;
 
 	Common::Error run() override;
 
 	bool hasFeature(EngineFeature f) const override;
 
-	virtual Common::Error loadGameState(int slot) override;
+	Common::Error loadGameState(int slot) override;
 	bool canLoadGameStateCurrently() override;
 
-	Common::Error saveGameState(int slot, const Common::String &desc) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 	bool canSaveGameStateCurrently() override;
-
-	static void pauseEngine(void *engine, bool pause); // for MacWndMgr
+	virtual Common::String getSaveStateName(int slot) const override {
+		return Common::String::format("%s.s%02d", _targetName.c_str(), slot);
+	}
 
 	friend class Console;
 
 protected:
-	virtual void pauseEngineIntern(bool pause) override;
+	void pauseEngineIntern(bool pause) override;
 
 public:
 	void load(Archive &archive);
 
 	void changeScene();
 
-	bool isPeril();
+	bool isPeril() const;
 
 	void setVariable(Common::String &variable, Common::String &value);
-	bool checkValueOfVariable(Common::String &variable, Common::String &value);
+	bool checkValueOfVariable(const Common::String &variable, const Common::String &value) const;
 
 	void executeMenuCommand(uint id);
+	bool executePageChangeCommand(uint id);
 
 	Common::Language getLanguage() const;
 	OrbFile *getOrb()  { return &_orb; }
@@ -132,21 +137,24 @@ public:
 private:
 	Common::Error init();
 
-	void initMenu(Common::PEResources &exeResources);
+	void initMenu();
 
-	bool loadCursors(Common::PEResources &exeResources);
+	bool loadCursors();
 
 	void initModule(const Common::String &moduleName, const Common::String &pageName, Archive *saveFile);
 	void addModule(const Common::String &moduleName);
 	void removeModule();
 
+	void openLocalWebPage(const Common::String &pageName) const;
+
 private:
-	Console *_console;
 	Common::RandomSource _rnd;
 	Common::Array<Graphics::WinCursorGroup *> _cursors;
 
 	Common::String _nextModule;
 	Common::String _nextPage;
+
+	Common::PEResources *_exeResources;
 
 	OrbFile  _orb;
 	BroFile *_bro;

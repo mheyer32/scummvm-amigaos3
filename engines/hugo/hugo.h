@@ -212,7 +212,7 @@ class HugoConsole;
 class HugoEngine : public Engine {
 public:
 	HugoEngine(OSystem *syst, const HugoGameDescription *gd);
-	~HugoEngine();
+	~HugoEngine() override;
 
 	OSystem *_system;
 
@@ -239,8 +239,6 @@ public:
 	Maze      _maze;                                // Maze control structure
 	hugoBoot  _boot;                                // Boot info structure
 
-	GUI::Debugger *getDebugger();
-
 	Common::RandomSource *_rnd;
 
 	const char *_episode;
@@ -263,8 +261,8 @@ public:
 		return *s_Engine;
 	}
 
-	virtual bool canLoadGameStateCurrently();
-	virtual bool canSaveGameStateCurrently();
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
 	bool loadHugoDat();
 
 	int8 getTPS() const;
@@ -277,7 +275,7 @@ public:
 	void readScreenFiles(const int screen);
 	void setNewScreen(const int screen);
 	void shutdown();
-	void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	Status &getGameStatus();
 	int getScore() const;
@@ -285,12 +283,12 @@ public:
 	void adjustScore(const int adjustment);
 	int getMaxScore() const;
 	void setMaxScore(const int newScore);
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	Common::Error loadGameState(int slot);
-	bool hasFeature(EngineFeature f) const;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	Common::Error loadGameState(int slot) override;
+	bool hasFeature(EngineFeature f) const override;
 	const char *getCopyrightString() const;
 
-	Common::String getSavegameFilename(int slot);
+	virtual Common::String getSaveStateName(int slot) const override;
 	uint16 **loadLongArray(Common::SeekableReadStream &in);
 
 	FileManager *_file;
@@ -309,7 +307,7 @@ public:
 protected:
 
 	// Engine APIs
-	Common::Error run();
+	Common::Error run() override;
 
 private:
 	static const int kTurboTps = 16;                // This many in turbo mode
@@ -319,8 +317,6 @@ private:
 	uint32 _curTime;
 
 	static HugoEngine *s_Engine;
-
-	HugoConsole *_console;
 
 	GameType _gameType;
 	Common::Platform _platform;

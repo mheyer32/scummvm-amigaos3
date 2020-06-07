@@ -145,6 +145,40 @@ enum {
 	BUTTON_HELP2        = 54
 };
 
+#else
+
+/* Main Joystick Button Mappings */
+enum {
+	/* Joystick Buttons */
+	BUTTON_A            = 0,
+	BUTTON_B            = 1,
+	BUTTON_X            = 2,
+	BUTTON_Y            = 3,
+	BUTTON_L            = 4,
+	BUTTON_R            = 5,
+	BUTTON_SELECT       = 6,
+	BUTTON_MENU         = 7,
+	BUTTON_CLICK        = 8    // Stick Click
+};
+
+enum {
+	/* Unused Joystick Buttons */
+	BUTTON_VOLUP        = 51,
+	BUTTON_VOLDOWN      = 52,
+	BUTTON_UP           = 53,
+	BUTTON_UPLEFT       = 54,
+	BUTTON_LEFT         = 55,
+	BUTTON_DOWNLEFT     = 56,
+	BUTTON_DOWN         = 57,
+	BUTTON_DOWNRIGHT    = 58,
+	BUTTON_RIGHT        = 59,
+	BUTTON_UPRIGHT      = 60,
+	BUTTON_HOME         = 61,    // Home
+	BUTTON_HOLD         = 62,    // Hold (on Power)
+	BUTTON_HELP         = 63,    // Help I
+	BUTTON_HELP2        = 64     // Help II
+};
+
 #endif
 
 enum {
@@ -174,38 +208,26 @@ void GPHEventSource::ToggleTapMode() {
 /* Custom handleMouseButtonDown/handleMouseButtonUp to deal with 'Tap Mode' for the touchscreen */
 
 bool GPHEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &event) {
-	if (ev.button.button == SDL_BUTTON_LEFT) {
-		if (_buttonStateL == true) /* _buttonStateL = Left Trigger Held, force Right Click */
-			event.type = Common::EVENT_RBUTTONDOWN;
-		else if (_tapmodeLevel == TAPMODE_LEFT) /* TAPMODE_LEFT = Left Click Tap Mode */
-			event.type = Common::EVENT_LBUTTONDOWN;
-		else if (_tapmodeLevel == TAPMODE_RIGHT) /* TAPMODE_RIGHT = Right Click Tap Mode */
-			event.type = Common::EVENT_RBUTTONDOWN;
-		else if (_tapmodeLevel == TAPMODE_HOVER) /* TAPMODE_HOVER = Hover (No Click) Tap Mode */
-			event.type = Common::EVENT_MOUSEMOVE;
-		else
-			event.type = Common::EVENT_LBUTTONDOWN; /* For normal mice etc. */
-	} else if (ev.button.button == SDL_BUTTON_RIGHT)
-		event.type = Common::EVENT_RBUTTONDOWN;
-#if defined(SDL_BUTTON_WHEELUP) && defined(SDL_BUTTON_WHEELDOWN)
-	else if (ev.button.button == SDL_BUTTON_WHEELUP)
-		event.type = Common::EVENT_WHEELUP;
-	else if (ev.button.button == SDL_BUTTON_WHEELDOWN)
-		event.type = Common::EVENT_WHEELDOWN;
-#endif
-#if defined(SDL_BUTTON_MIDDLE)
-	else if (ev.button.button == SDL_BUTTON_MIDDLE)
-		event.type = Common::EVENT_MBUTTONDOWN;
-#endif
-	else
-		return false;
+	if (ev.button.button != SDL_BUTTON_LEFT)
+		return SdlEventSource::handleMouseButtonDown(ev, event);
 
-	processMouseEvent(event, ev.button.x, ev.button.y);
+	if (_buttonStateL == true) /* _buttonStateL = Left Trigger Held, force Right Click */
+		event.type = Common::EVENT_RBUTTONDOWN;
+	else if (_tapmodeLevel == TAPMODE_LEFT) /* TAPMODE_LEFT = Left Click Tap Mode */
+		event.type = Common::EVENT_LBUTTONDOWN;
+	else if (_tapmodeLevel == TAPMODE_RIGHT) /* TAPMODE_RIGHT = Right Click Tap Mode */
+		event.type = Common::EVENT_RBUTTONDOWN;
+	else if (_tapmodeLevel == TAPMODE_HOVER) /* TAPMODE_HOVER = Hover (No Click) Tap Mode */
+		event.type = Common::EVENT_MOUSEMOVE;
+	else
+		event.type = Common::EVENT_LBUTTONDOWN; /* For normal mice etc. */
+
+
 	// update KbdMouse
 	_km.x = ev.button.x * MULTIPLIER;
 	_km.y = ev.button.y * MULTIPLIER;
 
-	return true;
+	return processMouseEvent(event, ev.button.x, ev.button.y);
 }
 
 bool GPHEventSource::handleMouseButtonUp(SDL_Event &ev, Common::Event &event) {

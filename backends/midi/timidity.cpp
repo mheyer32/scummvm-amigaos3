@@ -84,11 +84,11 @@ class MidiDriver_TIMIDITY : public MidiDriver_MPU401 {
 public:
 	MidiDriver_TIMIDITY();
 
-	int open();
-	bool isOpen() const { return _isOpen; }
-	void close();
-	void send(uint32 b);
-	void sysEx(const byte *msg, uint16 length);
+	int open() override;
+	bool isOpen() const override { return _isOpen; }
+	void close() override;
+	void send(uint32 b) override;
+	void sysEx(const byte *msg, uint16 length) override;
 
 private:
 	/* creates a tcp connection to TiMidity server, returns filedesc (like open()) */
@@ -352,7 +352,7 @@ void MidiDriver_TIMIDITY::timidity_meta_seq(int p1, int p2, int p3) {
 	/* see _CHN_COMMON from soundcard.h; this is simplified
 	 * to just send seq to the server without any buffers,
 	 * delays and extra functions/macros */
-	u_char seqbuf[8];
+	unsigned char seqbuf[8];
 
 	seqbuf[0] = 0x92;
 	seqbuf[1] = 0;
@@ -445,6 +445,8 @@ void MidiDriver_TIMIDITY::send(uint32 b) {
 	unsigned char buf[256];
 	int position = 0;
 
+	midiDriverCommonSend(b);
+
 	switch (b & 0xF0) {
 	case 0x80:
 	case 0x90:
@@ -490,6 +492,8 @@ void MidiDriver_TIMIDITY::sysEx(const byte *msg, uint16 length) {
 	const byte *chr = msg;
 
 	assert(length + 2 <= 266);
+
+	midiDriverCommonSysEx(msg, length);
 
 	buf[position++] = SEQ_MIDIPUTC;
 	buf[position++] = 0xF0;

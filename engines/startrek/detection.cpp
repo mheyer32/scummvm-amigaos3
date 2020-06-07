@@ -60,7 +60,6 @@ Common::Language StarTrekEngine::getLanguage() const {
 } // End of Namespace StarTrek
 
 static const PlainGameDescriptor starTrekGames[] = {
-	{"startrek", "Star Trek game"},
 	{"st25", "Star Trek: 25th Anniversary"},
 	{"stjr", "Star Trek: Judgment Rites"},
 	{0, 0}
@@ -96,7 +95,7 @@ static const StarTrekGameDescription gameDescriptions[] = {
 		},
 		GType_ST25,
 		GF_CDROM,
-	},	
+	},
 
 	{ // ST25 DOS CD-ROM edition (FR)
 		{
@@ -321,24 +320,27 @@ static const StarTrekGameDescription gameDescriptions[] = {
 class StarTrekMetaEngine : public AdvancedMetaEngine {
 public:
 	StarTrekMetaEngine() : AdvancedMetaEngine(StarTrek::gameDescriptions, sizeof(StarTrek::StarTrekGameDescription), starTrekGames) {
-		_singleId = "startrek";
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "startrek";
+	}
+
+	const char *getName() const override {
 		return "Star Trek";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Star Trek: 25th Anniversary, Star Trek: Judgment Rites (C) Interplay";
 	}
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
+	bool hasFeature(MetaEngineFeature f) const override;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
 
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual void removeSaveState(const char *target, int slot) const;
-	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override;
+	void removeSaveState(const char *target, int slot) const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
 };
 
 bool StarTrekMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -478,4 +480,3 @@ REGISTER_PLUGIN_DYNAMIC(STARTREK, PLUGIN_TYPE_ENGINE, StarTrekMetaEngine);
 #else
 REGISTER_PLUGIN_STATIC(STARTREK, PLUGIN_TYPE_ENGINE, StarTrekMetaEngine);
 #endif
-

@@ -20,6 +20,8 @@
  *
  */
 
+/* Based on Glulxe intrepreter version 0.5.4 */
+
 #ifndef GLK_GLULXE
 #define GLK_GLULXE
 
@@ -44,15 +46,16 @@ private:
 	 * \defgroup vm fields
 	 * @{
 	 */
-	CharHandler stream_char_handler;
-	UnicharHandler stream_unichar_handler, glkio_unichar_han_ptr;
 
 	bool vm_exited_cleanly;
 	uint gamefile_start, gamefile_len;
+	UnicharHandler glkio_unichar_han_ptr;
 	char *init_err, *init_err2;
+	CharHandler stream_char_handler;
 
 	byte *memmap;
 	byte *stack;
+	UnicharHandler stream_unichar_handler;
 
 	uint ramstart;
 	uint endgamefile;
@@ -398,25 +401,25 @@ public:
 	/**
 	 * Run the game
 	 */
-	void runGame();
+	void runGame() override;
 
 	/**
 	 * Returns the running interpreter type
 	 */
-	virtual InterpreterType getInterpreterType() const override {
+	InterpreterType getInterpreterType() const override {
 		return INTERPRETER_GLULXE;
 	}
 
 	/**
 	 * Load a savegame from the passed Quetzal file chunk stream
 	 */
-	virtual Common::Error readSaveData(Common::SeekableReadStream *rs) override;
+	Common::Error readSaveData(Common::SeekableReadStream *rs) override;
 
 	/**
 	 * Save the game. The passed write stream represents access to the UMem chunk
 	 * in the Quetzal save file that will be created
 	 */
-	virtual Common::Error writeGameData(Common::WriteStream *ws) override;
+	Common::Error writeGameData(Common::WriteStream *ws) override;
 
 	/**
 	 * \defgroup Main access methods

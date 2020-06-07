@@ -92,7 +92,8 @@ const char *Subtitles::SUBTITLES_FILENAME_PREFIXES[kMaxTextResourceEntries] = {
 	"END01D",           // 22
 	"END01E",           // 23
 	"END01F",           // 24
-	"END03"             // 25
+	"END03",            // 25
+	"TB_FLY"            // 26
 };
 
 /**
@@ -141,11 +142,10 @@ void Subtitles::init(void) {
 			_subtitlesInfo.fontName = SUBTITLES_FONT_FILENAME_EXTERNAL;
 		}
 
-		debug("Subtitles version info: v%s (%s) %s by: %s",
+		debug("Subtitles version info: v%s (%s) %s",
 		       _subtitlesInfo.versionStr.c_str(),
 		       _subtitlesInfo.dateOfCompile.c_str(),
-		       _subtitlesInfo.languageMode.c_str(),
-		       _subtitlesInfo.credits.c_str());
+		       _subtitlesInfo.languageMode.c_str());
 
 	} else {
 		debug("Subtitles version info: N/A");
@@ -180,7 +180,7 @@ void Subtitles::init(void) {
 
 	//
 	// Loading text resources
-	for (int i = 0; i < kMaxTextResourceEntries; i++) {
+	for (int i = 0; i < kMaxTextResourceEntries; ++i) {
 		_vqaSubsTextResourceEntries[i] = new TextResource(_vm);
 		Common::String tmpConstructedFileName = "";
 		bool localizedResource = true;
@@ -373,7 +373,7 @@ void Subtitles::draw(Graphics::Surface &s) {
 
 	int y = s.h - (kMarginBottom + MAX(kPreferedLine, lines.size()) * _font->getFontHeight());
 
-	for (uint i = 0; i < lines.size(); i++, y += _font->getFontHeight()) {
+	for (uint i = 0; i < lines.size(); ++i, y += _font->getFontHeight()) {
 		switch (_subtitlesInfo.fontType) {
 			case Subtitles::kSubtitlesFontTypeInternal:
 				// shadow/outline is part of the font color data

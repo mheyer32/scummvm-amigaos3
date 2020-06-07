@@ -31,11 +31,11 @@ namespace Pink {
 
 class InventoryItem : public NamedObject {
 public:
-	virtual void deserialize(Archive &archive);
+	void deserialize(Archive &archive) override;
 
-	virtual void toConsole();
+	void toConsole() const override;
 
-	const Common::String &getCurrentOwner() { return _currentOwner; }
+	const Common::String &getCurrentOwner() const { return _currentOwner; }
 
 	friend class InventoryMgr;
 private:
@@ -49,9 +49,9 @@ class Actor;
 class InventoryMgr : public Object {
 public:
 	InventoryMgr();
-	virtual ~InventoryMgr();
-	virtual void deserialize(Archive &archive);
-	virtual void toConsole();
+	~InventoryMgr() override;
+	void deserialize(Archive &archive) override;
+	void toConsole() const override;
 
 	void loadState(Archive &archive);
 	void saveState(Archive &archive);
@@ -67,7 +67,7 @@ public:
 	bool isPinkOwnsAnyItems();
 	void setItemOwner(const Common::String &owner, InventoryItem *item);
 
-	InventoryItem *getCurrentItem() { return _item; }
+	InventoryItem *getCurrentItem() { return _currentItem; }
 
 	friend class Console;
 
@@ -85,7 +85,7 @@ private:
 	Actor *_rightArrow;
 	Actor *_leftArrow;
 
-	InventoryItem *_item;
+	InventoryItem *_currentItem;
 	Array<InventoryItem *> _items;
 
 	enum State {

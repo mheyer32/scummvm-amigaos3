@@ -446,15 +446,15 @@ public:
 	};
 
 	TuckerEngine(OSystem *system, Common::Language language, uint32 flags);
-	virtual ~TuckerEngine();
+	~TuckerEngine() override;
 
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
-	GUI::Debugger *getDebugger() { return _console; }
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 
 	WARN_UNUSED_RESULT static SavegameError readSavegameHeader(Common::InSaveFile *file, SavegameHeader &header, bool skipThumbnail = true);
 	WARN_UNUSED_RESULT static SavegameError readSavegameHeader(const char *target, int slot, SavegameHeader &header);
-	bool isAutosaveAllowed();
+	virtual bool canSaveAutosaveCurrently() override;
+
 	static bool isAutosaveAllowed(const char *target);
 protected:
 
@@ -743,17 +743,18 @@ protected:
 	void updateSprite_locationNum82(int i);
 
 	template<class S> SavegameError saveOrLoadGameStateData(S &s);
-	virtual Common::Error loadGameState(int slot);
-	virtual Common::Error saveGameState(int slot, const Common::String &description);
-	Common::Error writeSavegame(int slot, const Common::String &description, bool autosave = false);
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 	SavegameError writeSavegameHeader(Common::OutSaveFile *file, SavegameHeader &header);
-	void writeAutosave();
-	bool canLoadOrSave() const;
-	virtual bool canLoadGameStateCurrently();
-	virtual bool canSaveGameStateCurrently();
-	virtual bool existsSavegame();
+	virtual int getAutosaveSlot() const override { return kAutoSaveSlot; }
+	virtual Common::String getSaveStateName(int slot) const override {
+		return Common::String::format("%s.%d", _targetName.c_str(), slot);
+	}
 
-	TuckerConsole *_console;
+	bool canLoadOrSave() const;
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	virtual bool existsSavegame();
 
 	void handleIntroSequence();
 	void handleCreditsSequence();
@@ -798,7 +799,6 @@ protected:
 	Common::Language _gameLang;
 	uint32 _gameFlags;
 	int _startSlot;
-	uint32 _lastSaveTime;
 
 	bool _quitGame;
 	bool _fastMode;

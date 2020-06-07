@@ -195,7 +195,7 @@ check back often.
 Among the systems on which you can play those games are regular desktop
 computers (running Windows, Linux, Mac OS X, ...), game consoles
 (Dreamcast, Nintendo DS & Wii, PS2, PSP, ...), smartphones (Android,
-iPhone, PocketPC, Symbian ...) and more.
+iPhone, Symbian ...) and more.
 
 At this time ScummVM is still under heavy development. Be aware that
 whilst we attempt to make sure that many games can be completed with few
@@ -1208,7 +1208,8 @@ The CD games where speech and subtitles can be shown simultaneously are:
   - Police Quest 4 CD
   - Shivers CD
   - Space Quest 4 CD
-  - Space Quest 6 CD Torin's Passage CD
+  - Space Quest 6 CD
+  - Torin's Passage CD
 
 **EcoQuest 1 CD:** Speech and text can be toggled via the game's "Mode"
 option in the options dialog, or via ScummVM's audio options.
@@ -1338,8 +1339,6 @@ Supported platforms include (but are not limited to):
 
   - UNIX (Linux, Solaris, IRIX, \*BSD, ...)
   - Windows
-  - Windows CE
-  - Windows Mobile (including Smartphones and PocketPCs)
   - Mac OS X
   - AmigaOS
   - Android
@@ -1403,7 +1402,7 @@ arguments -- see the next section.
 
     Usage: scummvm [OPTIONS]... [GAME]
     
-    [GAME]                   Short name of game to load. For example, 'monkey'
+    [GAME]                   Short name of game to load. For example, 'scumm:monkey'
                               for Monkey Island. This can be either a built-in
                               gameid, or a user configured target.
     
@@ -1411,6 +1410,7 @@ arguments -- see the next section.
     -h, --help               Display a brief help text and exit
     -z, --list-games         Display list of supported games and exit
     -t, --list-targets       Display list of configured targets and exit
+    --list-engines           Display list of suppported engines and exit
     --list-saves             Display a list of saved games for the target specified
                               with --game=TARGET, or all targets if none is specified
     -a, --add                Add all games from current or specified directory.
@@ -1471,6 +1471,8 @@ arguments -- see the next section.
                               supported by some MIDI drivers)
     --multi-midi             Enable combination of AdLib and native MIDI
     --native-mt32            True Roland MT-32 (disable GM emulation)
+    --dump-midi              Dumps MIDI events to 'dump.mid', until quitting from game
+                              (if file already exists, it will be overwritten)
     --enable-gs              Enable Roland GS mode for MIDI playback
     --output-rate=RATE       Select output sample rate in Hz (e.g. 22050)
     --opl-driver=DRIVER      Select AdLib (OPL) emulator (db, mame, nuked)
@@ -1504,17 +1506,17 @@ Examples:
   - Win32:  
     Running Monkey Island, fullscreen, from a hard disk:  
     `C:\Games\LucasArts\scummvm.exe -f -pC:\Games\LucasArts\monkey\
-    monkey`  
+    scumm:monkey`
     Running Full Throttle from CD, fullscreen and with subtitles
     enabled:  
-    `C:\Games\LucasArts\scummvm.exe -f -n -pD:\resource\ ft`
+    `C:\Games\LucasArts\scummvm.exe -f -n -pD:\resource\ scumm:ft`
 
   - Unix:  
     Running Monkey Island, fullscreen, from a hard disk:  
-    `/path/to/scummvm -f -p/games/LucasArts/monkey/ monkey`  
+    `/path/to/scummvm -f -p/games/LucasArts/monkey/ scumm:monkey`
     Running Full Throttle from CD, fullscreen and with subtitles
     enabled:  
-    `/path/to/scummvm -f -n -p/cdrom/resource/ ft`
+    `/path/to/scummvm -f -n -p/cdrom/resource/ scumm:ft`
 
 ### 5.2) Global Menu
 
@@ -1592,7 +1594,7 @@ They are:
 To select a graphics filter, select it in the Launcher, or pass its name
 via the '-g' option to scummvm, for example:
 
-    scummvm -gadvmame2x monkey2
+    scummvm -gadvmame2x scumm:monkey2
 
 Note \#1: Not all backends support all (or even any) of the filters
 listed above; some may support additional ones. The filters listed above
@@ -1661,6 +1663,9 @@ games and other games.
     Period (.)             - Skips current line of text in some games
     Enter                  - Simulate left mouse button press
     Tab                    - Simulate right mouse button press
+
+  AGI/SCI (Sierra):
+    Ctrl-Shift-d           - Starts the debugger
 
   Beneath a Steel Sky:
     Ctrl-d                 - Starts the debugger
@@ -1794,6 +1799,8 @@ games and other games.
     Period (.)             - starmap move backward
     l                      - starmap lock coordinate
     d                      - starmap unlock coordinate
+	b                      - starmap show boundary sphere
+	c                      - starmap show constellations sphere
     
   The Feeble Files:
     Ctrl-d                 - Starts the debugger
@@ -1848,10 +1855,6 @@ games and other games.
 Note that using Ctrl-f or Ctrl-g is not recommended: games can crash
 when being run faster than their normal speed, as scripts will lose
 synchronisation.
-
-Note for WinCE users: Due to the limited keyboard input in most devices,
-a small subset of these hot keys are supported via key remapping and/or
-panel actions. Please consult the README-WinCE.txt file.
 
 ### 5.5) Language options
 
@@ -2157,7 +2160,7 @@ depending on your operating system and configuration.
 To select a sound driver, select it in the Launcher, or pass its name
 via the `-e` option to scummvm, for example:
 
-`scummvm -eadlib monkey2`
+`scummvm -eadlib scumm:monkey2`
 
 ### 7.1) AdLib emulation
 

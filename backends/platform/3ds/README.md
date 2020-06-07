@@ -54,18 +54,23 @@ the `scummvm.cia` file.
 
 2.1) Default key mappings
 -------------------------
-The D-Pad and A/B/X/Y buttons have mirrored usage. So they do the same things
-depending on if you're right or left-handed.
+
+The key mappings can be customized in the options dialog for the global mappings,
+and in the edit game dialog for per-game mappings. Per-game mappings overlay the
+global mappings, so if a button is bound to an action twice, the per-game mapping
+wins.
+
+The default keymap is:
 
 |  Buttons   |   Function                     |
 |------------|--------------------------------|
-| A / D-left | Left-click                     |
-| X / D-up   | Right-click                    |
-| B / D-down | ESC (skips cutscenes and such) |
-| Y / D-right| Use virtual keyboard           |
+| A          | Left-click                     |
+| B          | Right-click                    |
+| Y          | ESC (skips cutscenes and such) |
+| X          | Use virtual keyboard           |
 | L          | Toggle magnify mode on/off     |
 | R          | Toggle hover/drag modes        |
-| Start      | Open game menu                 |
+| Start      | Open global main menu          |
 | Select     | Open 3DS config menu           |
 | Circle Pad | Move the cursor                |
 
@@ -147,6 +152,11 @@ The following libraries can be downloaded with pacman:
 |  tremor       |  3ds-libvorbisidec    |
 |  flac         |  3ds-flac             |
 |  curl         |  3ds-curl             |
+
+At the moment of writing, the version of `freetype2` packaged by devkitPro has an issue
+where it allocates too much data on the stack when ScummVM loads GUI themes.
+As a workaround, an older version can be used. Version 2.6.5 is known to work well. The
+instructions below can be used to compile it.
 
 At the moment of writing, `faad` is not in the devkitPro 3DS pacman repository. It
 can be compiled by following the instructions in the section below, in case it cannot

@@ -47,7 +47,7 @@ CruiseEngine::CruiseEngine(OSystem * syst, const CRUISEGameDescription *gameDesc
 	DebugMan.addDebugChannel(kCruiseDebugSound, "sound", "Sound debug level");
 
 	_vm = this;
-	_debugger = new Debugger();
+	setDebugger(new Debugger());
 	_sound = new PCSound(_mixer, this);
 
 	PCFadeFlag = false;
@@ -66,7 +66,6 @@ CruiseEngine::CruiseEngine(OSystem * syst, const CRUISEGameDescription *gameDesc
 extern void listMemory();
 
 CruiseEngine::~CruiseEngine() {
-	delete _debugger;
 	delete _sound;
 
 	freeSystem();
@@ -77,7 +76,7 @@ CruiseEngine::~CruiseEngine() {
 
 bool CruiseEngine::hasFeature(EngineFeature f) const {
 	return
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 		(f == kSupportsLoadingDuringRuntime) ||
 		(f == kSupportsSavingDuringRuntime);
 }
@@ -179,9 +178,8 @@ bool CruiseEngine::loadLanguageStrings() {
 }
 
 void CruiseEngine::pauseEngine(bool pause) {
-	Engine::pauseEngine(pause);
-
 	if (pause) {
+		_gamePauseToken = Engine::pauseEngine();
 		// Draw the 'Paused' message
 		drawSolidBox(64, 100, 256, 117, 0);
 		drawString(10, 100, langString(ID_PAUSED), gfxModuleData.pPage00, itemColor, 300);
@@ -190,6 +188,7 @@ void CruiseEngine::pauseEngine(bool pause) {
 		_savedCursor = currentCursor;
 		changeCursor(CURSOR_NOMOUSE);
 	} else {
+		_gamePauseToken.clear();
 		processAnimation();
 		flipScreen();
 		changeCursor(_savedCursor);
@@ -206,7 +205,7 @@ bool CruiseEngine::canLoadGameStateCurrently() {
 	return playerMenuEnabled != 0;
 }
 
-Common::Error CruiseEngine::saveGameState(int slot, const Common::String &desc) {
+Common::Error CruiseEngine::saveGameState(int slot, const Common::String &desc, bool isAutosave) {
 	return saveSavegameData(slot, desc);
 }
 

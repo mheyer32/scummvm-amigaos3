@@ -133,6 +133,7 @@ bool BaseFileManager::addPath(TPathType type, const Common::FSNode &path) {
 
 	switch (type) {
 	case PATH_SINGLE:
+	default:
 		//  _singlePaths.push_back(path);
 		error("TODO: Allow adding single-paths");
 		break;
@@ -193,8 +194,8 @@ bool BaseFileManager::registerPackages(const Common::FSList &fslist) {
 bool BaseFileManager::registerPackages() {
 	debugC(kWintermuteDebugFileAccess | kWintermuteDebugLog, "Scanning packages");
 
-	// We need the target name as a Common::String to perform some game-specific hacks.
-	Common::String targetName = BaseEngine::instance().getGameTargetName();
+	// We need game flags to perform some game-specific hacks.
+	uint32 flags = BaseEngine::instance().getFlags();
 
 	// Register without using SearchMan, as otherwise the FSNode-based lookup in openPackage will fail
 	// and that has to be like that to support the detection-scheme.
@@ -223,6 +224,13 @@ bool BaseFileManager::registerPackages() {
 			// issues.
 			Common::String parentName = it->getName();
 			parentName.toLowercase();
+
+			// Avoid registering all the resolutions for SD/HD games
+			if (flags & GF_IGNORE_HD_FILES && fileName.hasSuffix("_hd.dcp")) {
+				continue;
+			} else if (flags & GF_IGNORE_SD_FILES && fileName.hasSuffix("_sd.dcp")) {
+				continue;
+			}
 
 			// Avoid registering all the language files
 			// TODO: Select based on the gameDesc.
@@ -287,6 +295,11 @@ bool BaseFileManager::registerPackages() {
 					if (_language != Common::RU_RUS) {
 						continue;
 					}
+				// Serbian
+				} else if (fileName == "xlanguage_sr.dcp") {
+					if (_language != Common::SR_SER) {
+						continue;
+					}
 				// Spanish
 				} else if (fileName == "spanish.dcp" || fileName == "xlanguage_es.dcp" || fileName == "spanish_language_pack.dcp") {
 					if (_language != Common::ES_ESP) {
@@ -299,7 +312,7 @@ bool BaseFileManager::registerPackages() {
 				}
 			}
 			debugC(kWintermuteDebugFileAccess, "Registering %s %s", fileIt->getPath().c_str(), fileIt->getName().c_str());
-			registerPackage((*fileIt), "", searchSignature);
+			registerPackage((*fileIt), fileName, searchSignature);
 		}
 	}
 
@@ -310,7 +323,8 @@ bool BaseFileManager::registerPackages() {
 
 bool BaseFileManager::registerPackage(Common::FSNode file, const Common::String &filename, bool searchSignature) {
 	PackageSet *pack = new PackageSet(file, filename, searchSignature);
-	_packages.add(file.getName(), pack, pack->getPriority() , true);
+	_packages.add(filename, pack, pack->getPriority() , true);
+	_versions[filename] = pack->getVersion();
 
 	return STATUS_OK;
 }
@@ -347,6 +361,16 @@ Common::SeekableReadStream *BaseFileManager::openPkgFile(const Common::String &f
 	return file;
 }
 
+//////////////////////////////////////////////////////////////////////////
+uint32 BaseFileManager::getPackageVersion(const Common::String &filename) {
+	Common::HashMap<Common::String, uint32>::iterator it = _versions.find(filename);
+	if (it != _versions.end()) {
+		return it->_value;
+	}
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
 bool BaseFileManager::hasFile(const Common::String &filename) {
 	if (scumm_strnicmp(filename.c_str(), "savegame:", 9) == 0) {
 		BasePersistenceManager pm(BaseEngine::instance().getGameTargetName());
@@ -371,8 +395,22 @@ bool BaseFileManager::hasFile(const Common::String &filename) {
 	return false;
 }
 
-int BaseFileManager::listMatchingMembers(Common::ArchiveMemberList &list, const Common::String &pattern) {
+//////////////////////////////////////////////////////////////////////////
+int BaseFileManager::listMatchingPackageMembers(Common::ArchiveMemberList &list, const Common::String &pattern) {
 	return _packages.listMatchingMembers(list, pattern);
+}
+
+//////////////////////////////////////////////////////////////////////////
+int BaseFileManager::listMatchingFiles(Common::StringArray &list, const Common::String &pattern) {
+	list = sfmFileList(pattern);
+	
+	Common::ArchiveMemberList files;
+	listMatchingDiskFileMembers(files, pattern);
+	for (Common::ArchiveMemberList::const_iterator it = files.begin(); it != files.end(); ++it) {
+		list.push_back((*it)->getName());
+	}
+		
+	return list.size();
 }
 
 //////////////////////////////////////////////////////////////////////////

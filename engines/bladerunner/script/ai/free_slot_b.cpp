@@ -158,6 +158,10 @@ void AIScriptFreeSlotB::ClickedByPlayer() {
 	if (_vm->_cutContent && !Game_Flag_Query(kFlagMcCoyCommentsOnHoodooRats)) {
 		Game_Flag_Set(kFlagMcCoyCommentsOnHoodooRats);
 		Actor_Voice_Over(1060, kActorVoiceOver);  // Hoodoo rats
+		// Note: Quote 1070 is *boop* in ENG version.
+		// However, it is similar to 1060 quote in FRA, DEU, ESP and ITA versions
+		//          with the only difference being not mentioning the "Hoodoo Rats" name.
+		//          It uses a generic "rats" in its place.
 		Actor_Voice_Over(1080, kActorVoiceOver);
 		Actor_Voice_Over(1090, kActorVoiceOver);
 	} else {
@@ -169,15 +173,15 @@ void AIScriptFreeSlotB::ClickedByPlayer() {
 	}
 }
 
-void AIScriptFreeSlotB::EnteredScene(int sceneId) {
+void AIScriptFreeSlotB::EnteredSet(int setId) {
 	// return false;
 }
 
-void AIScriptFreeSlotB::OtherAgentEnteredThisScene(int otherActorId) {
+void AIScriptFreeSlotB::OtherAgentEnteredThisSet(int otherActorId) {
 	// return false;
 }
 
-void AIScriptFreeSlotB::OtherAgentExitedThisScene(int otherActorId) {
+void AIScriptFreeSlotB::OtherAgentExitedThisSet(int otherActorId) {
 #if !BLADERUNNER_ORIGINAL_BUGS
 	if (otherActorId == kActorMcCoy && Actor_Query_Goal_Number(kActorFreeSlotB) == kGoalFreeSlotBGone) {
 		if (Global_Variable_Query(kVariableChapter) == 4) {
@@ -261,7 +265,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 	switch (_animationState) {
 	case 0:
 		*animation = 861;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(861)) {
 			_animationFrame = 0;
 		}
@@ -270,7 +274,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 	case 1:
 		*animation = 862;
 		if (_var1) {
-			_var1--;
+			--_var1;
 		} else {
 			_animationFrame += _var2;
 			if (_animationFrame < 8) {
@@ -290,7 +294,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 
 	case 2:
 		*animation = 862;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame > Slice_Animation_Query_Number_Of_Frames(862) - 1) {
 			*animation = 861;
 			_animationFrame = 0;
@@ -300,7 +304,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 
 	case 3:
 		*animation = 858;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(858)) {
 			_animationFrame = 0;
 		}
@@ -308,7 +312,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 
 	case 4:
 		*animation = 857;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame == 3) {
 			int snd;
 			if (Random_Query(1, 2) == 1) {
@@ -332,7 +336,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 		// This is an animation for Maggie (exploding) but is also used for generic death states (rats, generic walkers)
 		// probably for debug purposes
 		*animation = 874;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(874) - 1) {
 			_animationState = 8;
 			_animationFrame = Slice_Animation_Query_Number_Of_Frames(874) - 1;
@@ -344,7 +348,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 			Ambient_Sounds_Play_Sound(kSfxRATTY3, 99, 0, 0, 20);
 		}
 		*animation = 860;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame >= Slice_Animation_Query_Number_Of_Frames(860)) {
 			_animationFrame = 0;
 			_animationState = 0;
@@ -354,7 +358,7 @@ bool AIScriptFreeSlotB::UpdateAnimation(int *animation, int *frame) {
 
 	case 7:
 		*animation = 859;
-		_animationFrame++;
+		++_animationFrame;
 		if (_animationFrame == 1) {
 			Ambient_Sounds_Play_Sound(kSfxRATTY5, 99, 0, 0, 25);
 		}

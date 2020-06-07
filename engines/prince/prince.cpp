@@ -102,7 +102,6 @@ PrinceEngine::~PrinceEngine() {
 	DebugMan.clearAllDebugChannels();
 
 	delete _rnd;
-	delete _debugger;
 	delete _cursor1;
 	delete _cursor3;
 	delete _midiPlayer;
@@ -118,6 +117,7 @@ PrinceEngine::~PrinceEngine() {
 	free(_dialogDat);
 	delete _graph;
 	delete _room;
+	//_debugger is deleted by Engine
 
 	if (_cursor2 != nullptr) {
 		_cursor2->free();
@@ -198,10 +198,6 @@ PrinceEngine::~PrinceEngine() {
 	free(_mobTranslationData);
 }
 
-GUI::Debugger *PrinceEngine::getDebugger() {
-	return _debugger;
-}
-
 void PrinceEngine::init() {
 
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
@@ -241,7 +237,7 @@ void PrinceEngine::init() {
 	if (getFeatures() & GF_TRANSLATED) {
 		PtcArchive *translation = new PtcArchive();
 		if (getFeatures() & GF_TRANSLATED) {
-			if (!translation->openTranslation("all/prince_translation.dat"))
+			if (!translation->openTranslation("prince_translation.dat"))
 				error("Can't open prince_translation.dat");
 		}
 
@@ -272,6 +268,7 @@ void PrinceEngine::init() {
 	_interpreter = new Interpreter(this, _script, _flags);
 
 	_debugger = new Debugger(this, _flags);
+	setDebugger(_debugger);
 
 	_variaTxt = new VariaTxt();
 	if (getFeatures() & GF_TRANSLATED) {
@@ -552,11 +549,6 @@ void PrinceEngine::keyHandler(Common::Event event) {
 		if (canSaveGameStateCurrently())
 			scummVMSaveLoadDialog(true);
 		break;
-	case Common::KEYCODE_d:
-		if (event.kbd.hasFlags(Common::KBD_CTRL)) {
-			getDebugger()->attach();
-		}
-		break;
 	case Common::KEYCODE_z:
 		if (_flags->getFlagValue(Flags::POWERENABLED)) {
 			_flags->setFlagValue(Flags::MBFLAG, 1);
@@ -569,6 +561,8 @@ void PrinceEngine::keyHandler(Common::Event event) {
 		break;
 	case Common::KEYCODE_ESCAPE:
 		_flags->setFlagValue(Flags::ESCAPED2, 1);
+		break;
+	default:
 		break;
 	}
 }
@@ -626,6 +620,8 @@ void PrinceEngine::correctStringDEU(char *s) {
 			break;
 		case '\xfc':
 			*s = '\x82';
+			break;
+		default:
 			break;
 		}
 		s++;
@@ -922,7 +918,7 @@ void PrinceEngine::dialogRun() {
 			break;
 		}
 
-		getDebugger()->onFrame();
+
 		_graph->update(_graph->_frontScreen);
 		pausePrinceEngine();
 	}
@@ -1022,6 +1018,8 @@ void PrinceEngine::mouseWeirdo() {
 			break;
 		case 3:
 			mousePos.y -= kCelStep;
+			break;
+		default:
 			break;
 		}
 		mousePos.x = CLIP(mousePos.x, (int16) 315, (int16) 639);

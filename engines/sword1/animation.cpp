@@ -182,10 +182,12 @@ bool MoviePlayer::load(uint32 id) {
 		filename = Common::String::format("%s.smk", sequenceList[id]);
 		break;
 	case kVideoDecoderPSX:
-		filename = Common::String::format("%s.str", (_vm->_systemVars.isDemo) ? sequenceList[id] : sequenceListPSX[id]);
+		filename = Common::String::format("%s.str", (_vm->_systemVars.isDemo && id == 4) ? "intro" : sequenceListPSX[id]);
 		break;
 	case kVideoDecoderMP2:
 		filename = Common::String::format("%s.mp2", sequenceList[id]);
+		break;
+	default:
 		break;
 	}
 
@@ -267,6 +269,8 @@ void MoviePlayer::performPostProcessing(byte *screen) {
 					break;
 				case LETTER_COL:
 					dst[x] = findTextColor();
+					break;
+				default:
 					break;
 				}
 			}
@@ -443,6 +447,8 @@ uint32 MoviePlayer::findTextColor() {
 			return g_system->getScreenFormat().RGBToColor(200, 120, 184);
 		case 4:
 			return g_system->getScreenFormat().RGBToColor(80, 152, 184);
+		default:
+			break;
 		}
 
 		return g_system->getScreenFormat().RGBToColor(0xFF, 0xFF, 0xFF);
@@ -457,6 +463,8 @@ uint32 MoviePlayer::findTextColor() {
 		return _c3Color;
 	case 4:
 		return _c4Color;
+	default:
+		break;
 	}
 	return _c1Color;
 }
@@ -512,8 +520,8 @@ MoviePlayer *makeMoviePlayer(uint32 id, SwordEngine *vm, Text *textMan, ResMan *
 
 	// For the PSX version, we'll try the PlayStation stream files
 	if (vm->isPsx()) {
-		// The demo uses the normal file names
-		filename = ((vm->_systemVars.isDemo) ? Common::String(sequenceList[id]) : Common::String(sequenceListPSX[id])) + ".str";
+		// The demo uses the normal file names for the intro cutscene
+		filename = ((vm->_systemVars.isDemo && id == 4) ? "intro" : Common::String(sequenceListPSX[id])) + ".str";
 
 		if (Common::File::exists(filename)) {
 #ifdef USE_RGB_COLOR

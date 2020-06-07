@@ -34,8 +34,6 @@
 #include "graphics/surface.h"
 
 #include "engines/engine.h"
-
-#include "gui/debugger.h"
 #include "fullpipe/console.h"
 
 struct ADGameDescription;
@@ -104,14 +102,11 @@ void global_messageHandler_handleSound(ExCommand *cmd);
 class FullpipeEngine : public ::Engine {
 protected:
 
-	Common::Error run();
+	Common::Error run() override;
 
 public:
 	FullpipeEngine(OSystem *syst, const ADGameDescription *gameDesc);
-	virtual ~FullpipeEngine();
-
-	Console _console;
-	GUI::Debugger *getDebugger() { return &_console; }
+	~FullpipeEngine() override;
 
 	void initialize();
 	void restartGame();
@@ -360,12 +355,13 @@ public:
 
 	bool _isSaveAllowed;
 
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &description);
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &description, bool isAutosave = false) override;
+	virtual Common::String getSaveStateName(int slot) const override;
 
-	virtual bool canLoadGameStateCurrently() { return true; }
-	virtual bool canSaveGameStateCurrently() { return _isSaveAllowed; }
-	virtual bool hasFeature(EngineFeature f) const;
+	bool canLoadGameStateCurrently() override { return true; }
+	bool canSaveGameStateCurrently() override { return _isSaveAllowed; }
+	bool hasFeature(EngineFeature f) const override;
 
 };
 

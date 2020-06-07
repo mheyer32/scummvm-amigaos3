@@ -63,7 +63,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::DE_DEU,
 		Common::kPlatformDOS,
 		ADGF_NO_FLAGS,
-		GUIO1(GAMEOPTION_IMPROVED)
+		GUIO2(GAMEOPTION_IMPROVED, GUIO_NOMIDI)
 	},
 	{
 		"msn1",
@@ -72,7 +72,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::EN_ANY,
 		Common::kPlatformDOS,
 		ADGF_NO_FLAGS,
-		GUIO1(GAMEOPTION_IMPROVED)
+		GUIO2(GAMEOPTION_IMPROVED, GUIO_NOMIDI)
 	},
 	// Mission Supernova 2
 	{
@@ -82,7 +82,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::DE_DEU,
 		Common::kPlatformDOS,
 		ADGF_NO_FLAGS,
-		GUIO1(GAMEOPTION_IMPROVED)
+		GUIO2(GAMEOPTION_IMPROVED, GUIO_NOMIDI)
 	},
 	{
 		"msn2",
@@ -91,7 +91,7 @@ static const ADGameDescription gameDescriptions[] = {
 		Common::EN_ANY,
 		Common::kPlatformDOS,
 		ADGF_NO_FLAGS,
-		GUIO1(GAMEOPTION_IMPROVED)
+		GUIO2(GAMEOPTION_IMPROVED, GUIO_NOMIDI)
 	},
 	AD_TABLE_END_MARKER
 };
@@ -100,25 +100,28 @@ static const ADGameDescription gameDescriptions[] = {
 class SupernovaMetaEngine: public AdvancedMetaEngine {
 public:
 	SupernovaMetaEngine() : AdvancedMetaEngine(Supernova::gameDescriptions, sizeof(ADGameDescription), supernovaGames, optionsList) {
-//		_singleId = "supernova";
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "supernova";
+	}
+
+	const char *getName() const override {
 		return "Mission Supernova";
 	}
 
-	virtual const char *getOriginalCopyright() const {
-		return "Mission Supernova (c) 1994 Thomas and Steffen Dingel";
+	const char *getOriginalCopyright() const override {
+		return "Mission Supernova (C) 1994 Thomas and Steffen Dingel";
 	}
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual void removeSaveState(const char *target, int slot) const;
-	virtual int getMaximumSaveSlot() const {
+	bool hasFeature(MetaEngineFeature f) const override;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
+	SaveStateList listSaves(const char *target) const override;
+	void removeSaveState(const char *target, int slot) const override;
+	int getMaximumSaveSlot() const override {
 		return 99;
 	}
-	virtual SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
 };
 
 bool SupernovaMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -207,7 +210,7 @@ SaveStateDescriptor SupernovaMetaEngine::querySaveMetaInfos(const char *target, 
 
 	if (savefile) {
 		uint saveHeader = savefile->readUint32LE();
-		if ((!strncmp(target, "msn1", 4) && saveHeader != SAVEGAME_HEADER) || 
+		if ((!strncmp(target, "msn1", 4) && saveHeader != SAVEGAME_HEADER) ||
 			(!strncmp(target, "msn2", 4) && saveHeader != SAVEGAME_HEADER2)) {
 			delete savefile;
 			return SaveStateDescriptor();

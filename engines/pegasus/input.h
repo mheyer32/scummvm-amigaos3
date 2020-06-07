@@ -27,7 +27,6 @@
 #define PEGASUS_INPUT_H
 
 #include "common/events.h"
-#include "common/hashmap.h"
 #include "common/rect.h"
 #include "common/singleton.h"
 
@@ -39,12 +38,31 @@ namespace Pegasus {
 class Hotspot;
 class Input;
 
+enum PegasusAction {
+	kPegasusActionNone,
+	kPegasusActionUp,
+	kPegasusActionDown,
+	kPegasusActionLeft,
+	kPegasusActionRight,
+	kPegasusActionInteract,
+	kPegasusActionShowInventory,
+	kPegasusActionShowBiochip,
+	kPegasusActionToggleCenterDisplay,
+	kPegasusActionShowInfoScreen,
+	kPegasusActionShowPauseMenu,
+	kPegasusActionSaveGameState,
+	kPegasusActionLoadGameState,
+	kPegasusActionEnableEasterEgg,
+
+	kPegasusActionCount
+};
+
 class InputDeviceManager : public Common::Singleton<InputDeviceManager>, public Common::EventObserver {
 public:
 	InputDeviceManager();
-	~InputDeviceManager();
+	~InputDeviceManager() override;
 
-	bool notifyEvent(const Common::Event &event);
+	bool notifyEvent(const Common::Event &event) override;
 
 	void getInput(Input &, const InputBits);
 
@@ -52,15 +70,12 @@ public:
 
 	void pumpEvents();
 
-	uint convertJoystickToKey(uint joybutton);
-
 protected:
 	friend class Common::Singleton<SingletonBaseType>;
 
 	// Keep track of which keys are down (= true) or not
-	Common::HashMap<uint, bool> _keyMap;
+	bool _keysDown[kPegasusActionCount];
 	InputBits _lastRawBits;
-	bool _consoleRequested;
 };
 
 enum {
@@ -373,25 +388,21 @@ public:
 	bool anyInputBitSet(const InputBits bits) const { return (_inputState & bits) != 0; }
 
 	bool isAltDown() const { return _altDown; }
-	bool isConsoleRequested() const { return _consoleRequested; }
 
 	void clearInput() {
 		_inputState = kAllUpBits;
 		_inputLocation.x = 0;
 		_inputLocation.y = 0;
-		_consoleRequested = false;
 		_altDown = false;
 	}
 
 protected:
 	void setInputBits(const InputBits state) { _inputState = state; }
 	void setInputLocation(const Common::Point &where) { _inputLocation = where; }
-	void setConsoleRequested(bool consoleRequested) { _consoleRequested = consoleRequested; }
 	void setAltDown(bool altDown) { _altDown = altDown; }
 
 	InputBits _inputState;
 	Common::Point _inputLocation;
-	bool _consoleRequested;
 	bool _altDown;
 };
 
@@ -454,9 +465,9 @@ protected:
 class Tracker : public InputHandler {
 public:
 	Tracker() : InputHandler(0), _savedHandler(nullptr) {}
-	virtual ~Tracker() {}
+	~Tracker() override {}
 
-	virtual void handleInput(const Input &, const Hotspot *);
+	void handleInput(const Input &, const Hotspot *) override;
 	virtual bool stopTrackingInput(const Input &) { return false; }
 
 	virtual void startTracking(const Input &);
@@ -464,9 +475,9 @@ public:
 	virtual void continueTracking(const Input &) {}
 
 	bool isTracking() { return this == _currentTracker; }
-	bool isClickInput(const Input &, const Hotspot *);
+	bool isClickInput(const Input &, const Hotspot *) override;
 
-	bool releaseInputFocus() { return !isTracking(); }
+	bool releaseInputFocus() override { return !isTracking(); }
 
 protected:
 	static Tracker *_currentTracker;

@@ -82,7 +82,7 @@ class SwordEngine : public Engine {
 	friend class SwordConsole;
 public:
 	SwordEngine(OSystem *syst);
-	virtual ~SwordEngine();
+	~SwordEngine() override;
 	static SystemVars _systemVars;
 	void reinitialize();
 
@@ -98,23 +98,23 @@ protected:
 	// Engine APIs
 	Common::Error init();
 	Common::Error go();
-	virtual Common::Error run() {
+	Common::Error run() override {
 		Common::Error err;
 		err = init();
 		if (err.getCode() != Common::kNoError)
 			return err;
 		return go();
 	}
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual void syncSoundSettings();
+	bool hasFeature(EngineFeature f) const override;
+	void syncSoundSettings() override;
 
-	GUI::Debugger *getDebugger() { return _console; }
-
-	Common::Error loadGameState(int slot);
-	bool canLoadGameStateCurrently();
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	bool canSaveGameStateCurrently();
-
+	Common::Error loadGameState(int slot) override;
+	bool canLoadGameStateCurrently() override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	bool canSaveGameStateCurrently() override;
+	virtual Common::String getSaveStateName(int slot) const override {
+		return Common::String::format("sword1.%03d", slot);
+	}
 private:
 	void delay(int32 amount);
 
@@ -124,8 +124,6 @@ private:
 	void flagsToBool(bool *dest, uint8 flags);
 
 	void reinitRes(); //Reinits the resources after a GMM load
-
-	SwordConsole *_console;
 
 	uint8 mainLoop();
 

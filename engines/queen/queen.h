@@ -64,7 +64,7 @@ class QueenEngine : public Engine {
 public:
 
 	QueenEngine(OSystem *syst);
-	virtual ~QueenEngine();
+	~QueenEngine() override;
 
 	BamScene *bam() const { return _bam; }
 	BankManager *bankMan() const { return _bankMan; }
@@ -94,10 +94,12 @@ public:
 	void update(bool checkPlayerInput = false);
 
 	bool canLoadOrSave() const;
-	bool canLoadGameStateCurrently();
-	bool canSaveGameStateCurrently();
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	Common::Error loadGameState(int slot);
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	Common::Error loadGameState(int slot) override;
+	virtual int getAutosaveSlot() const override { return 99; }
+	virtual Common::String getSaveStateName(int slot) const override;
 	void makeGameStateName(int slot, char *buf) const;
 	int getGameStateSlot(const char *filename) const;
 	void findGameStateDescriptions(char descriptions[100][32]);
@@ -119,15 +121,13 @@ public:
 protected:
 
 	// Engine APIs
-	virtual Common::Error run();
-	virtual GUI::Debugger *getDebugger();
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual void syncSoundSettings();
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
+	void syncSoundSettings() override;
 
 
 	int _talkSpeed;
 	bool _subtitles;
-	uint32 _lastSaveTime;
 	uint32 _lastUpdateTime;
 	bool _gameStarted;
 

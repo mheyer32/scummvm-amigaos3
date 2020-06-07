@@ -77,8 +77,8 @@ class PauseDialog : public GUI::Dialog {
 public:
 	PauseDialog();
 
-	virtual void reflowLayout();
-	virtual void handleKeyDown(Common::KeyState state);
+	void reflowLayout() override;
+	void handleKeyDown(Common::KeyState state) override;
 
 private:
 	Common::String _message;
@@ -150,12 +150,12 @@ GobEngine::GobEngine(OSystem *syst) : Engine(syst), _rnd("gob") {
 	_copyProtection = ConfMan.getBool("copy_protection");
 
 	_console = new GobConsole(this);
+	setDebugger(_console);
 }
 
 GobEngine::~GobEngine() {
 	deinitGameParts();
-
-	delete _console;
+	//_console is deleted by Engine
 }
 
 const char *GobEngine::getLangDesc(int16 language) const {

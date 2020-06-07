@@ -28,7 +28,6 @@
 #include "glk/alan2/main.h"
 #include "glk/alan2/params.h"
 #include "glk/alan2/parse.h"
-#include "glk/alan2/term.h"
 #include "glk/alan2/types.h"
 
 namespace Glk {
@@ -133,9 +132,9 @@ static char *gettoken(char *tokBuf) {
 	while (*marker != '\0' && isSpace(*marker) && *marker != '\n') marker++;
 	tokBuf = marker;
 	if (isISOLetter(*marker))
-		while (*marker && (isISOLetter(*marker) || isdigit(*marker) || *marker == '\'')) marker++;
-	else if (isdigit(*marker))
-		while (isdigit(*marker)) marker++;
+		while (*marker && (isISOLetter(*marker) || Common::isDigit(*marker) || *marker == '\'')) marker++;
+	else if (Common::isDigit(*marker))
+		while (Common::isDigit(*marker)) marker++;
 	else if (*marker == '\"') {
 		marker++;
 		while (*marker != '\"') marker++;
@@ -166,7 +165,6 @@ static void agetline(CONTEXT) {
 			CALL0(quit)
 		}
 
-		getPageSize();
 		anyOutput = FALSE;
 		if (logflg)
 			fprintf(logfil, "%s\n", buf);
@@ -205,7 +203,7 @@ static void scan(CONTEXT) {
 
 			if (!isNoise(w))
 				wrds[i++] = w;
-		} else if (isdigit(token[0])) {
+		} else if (Common::isDigit(token[0])) {
 			if (litCount > MAXPARAMS)
 				syserr("Too many parameters.");
 			wrds[i++] = dictsize + litCount; /* Word outside dictionary = literal */
@@ -217,7 +215,7 @@ static void scan(CONTEXT) {
 			wrds[i++] = dictsize + litCount; /* Word outside dictionary = literal */
 			litValues[litCount].type = TYPSTR;
 			/* Remove the string quotes while copying */
-			str = strdup(&token[1]);
+			str = scumm_strdup(&token[1]);
 			str[strlen(token) - 2] = '\0';
 			litValues[litCount++].value = (Aptr) str;
 		} else if (token[0] == ',') {
@@ -458,7 +456,7 @@ static void complex(CONTEXT, ParamElem olst[]) {
 	if (isAll(wrds[wrdidx])) {
 		plural = TRUE;
 		// Build list of all objects
-		CALL1(buildall, alst)     
+		CALL1(buildall, alst)
 		wrdidx++;
 		if (wrds[wrdidx] != EOD && isBut(wrds[wrdidx])) {
 			wrdidx++;

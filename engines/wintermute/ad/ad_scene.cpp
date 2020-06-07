@@ -41,6 +41,7 @@
 #include "engines/wintermute/ad/ad_scene_state.h"
 #include "engines/wintermute/ad/ad_sentence.h"
 #include "engines/wintermute/ad/ad_waypoint_group.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/base_dynamic_buffer.h"
 #include "engines/wintermute/base/base_file_manager.h"
 #include "engines/wintermute/base/font/base_font.h"
@@ -59,7 +60,6 @@
 #include "engines/wintermute/ui/ui_window.h"
 #include "engines/wintermute/utils/utils.h"
 #include "engines/wintermute/wintermute.h"
-#include <limits.h>
 
 namespace Wintermute {
 
@@ -234,7 +234,7 @@ bool AdScene::getPath(const BasePoint &source, const BasePoint &target, AdPath *
 
 		// last point
 		//_pfPath.add(new AdPathPoint(target.x, target.y, INT_MAX));
-		pfPointsAdd(target.x, target.y, INT_MAX);
+		pfPointsAdd(target.x, target.y, INT_MAX_VALUE);
 
 		// active waypoints
 		for (uint32 i = 0; i < _waypointGroups.size(); i++) {
@@ -274,7 +274,7 @@ void AdScene::pfAddWaypointGroup(AdWaypointGroup *wpt, BaseObject *requester) {
 		}
 
 		//_pfPath.add(new AdPathPoint(Wpt->_points[i]->x, Wpt->_points[i]->y, INT_MAX));
-		pfPointsAdd(wpt->_points[i]->x, wpt->_points[i]->y, INT_MAX);
+		pfPointsAdd(wpt->_points[i]->x, wpt->_points[i]->y, INT_MAX_VALUE);
 	}
 }
 
@@ -472,7 +472,7 @@ int AdScene::getPointsDist(const BasePoint &p1, const BasePoint &p2, BaseObject 
 void AdScene::pathFinderStep() {
 	int i;
 	// get lowest unmarked
-	int lowestDist = INT_MAX;
+	int lowestDist = INT_MAX_VALUE;
 	AdPathPoint *lowestPt = nullptr;
 
 	for (i = 0; i < _pfPointsNum; i++)
@@ -878,6 +878,8 @@ bool AdScene::loadBuffer(char *buffer, bool complete) {
 			parseEditorProperty(params, false);
 			break;
 
+		default:
+			break;
 		}
 	}
 	if (cmd == PARSERR_TOKENNOTFOUND) {
@@ -1222,7 +1224,7 @@ bool AdScene::displayRegionContentOld(AdRegion *region) {
 	// display all objects in region sorted by _posY
 	do {
 		obj = nullptr;
-		int minY = INT_MAX;
+		int minY = INT_MAX_VALUE;
 
 		// global objects
 		for (uint32 i = 0; i < adGame->_objects.size(); i++) {
@@ -1491,7 +1493,19 @@ bool AdScene::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack,
 		BaseObject *node = getNodeByName(nodeName);
 		if (node) {
 			stack->pushNative((BaseScriptable *)node, true);
-		} else {
+		}
+
+#ifdef ENABLE_HEROCRAFT
+		//////////////////////////////////////////////////////////////////////////
+		// [HeroCraft] papasEntity
+		// Used in some self-check at "Papa's Daughters 2"
+		//////////////////////////////////////////////////////////////////////////
+		else if (BaseEngine::instance().getTargetExecutable() == WME_HEROCRAFT && strcmp(nodeName,"papasEntity") == 0) {
+			stack->pushInt(777);
+		}
+#endif
+
+		else {
 			stack->pushNULL();
 		}
 
@@ -2468,7 +2482,7 @@ bool AdScene::correctTargetPoint(int32 startX, int32 startY, int32 *argX, int32 
 		return STATUS_OK;
 	}
 
-	int offsetX = INT_MAX, offsetY = INT_MAX;
+	int offsetX = INT_MAX_VALUE, offsetY = INT_MAX_VALUE;
 
 	if (foundLeft && foundRight) {
 		if (abs(lengthLeft) < abs(lengthRight)) {
@@ -3003,4 +3017,3 @@ Common::String AdScene::debuggerToString() const {
 	return Common::String::format("%p: Scene \"%s\", paralax: %d, autoscroll: %d", (const void *)this, getName(), _paralaxScrolling, _autoScroll);
 }
 } // End of namespace Wintermute
-

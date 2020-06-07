@@ -66,7 +66,6 @@ MacVentureEngine::MacVentureEngine(OSystem *syst, const ADGameDescription *gameD
 
 	initDebugChannels();
 
-	_debugger = NULL;
 	_resourceManager = NULL;
 	_globalSettings = NULL;
 	_gui = NULL;
@@ -93,9 +92,6 @@ MacVentureEngine::~MacVentureEngine() {
 
 	if (_rnd)
 		delete _rnd;
-
-	if (_debugger)
-		delete _debugger;
 
 	if (_resourceManager)
 		delete _resourceManager;
@@ -148,7 +144,9 @@ Common::Error MacVentureEngine::run() {
 	debug("MacVenture::MacVentureEngine::init()");
 	initGraphics(kScreenWidth, kScreenHeight);
 
-	_debugger = new Console(this);
+	setInitialFlags();
+
+	setDebugger(new Console(this));
 
 	// Additional setup.
 	debug("MacVentureEngine::init");
@@ -176,8 +174,6 @@ Common::Error MacVentureEngine::run() {
 	_scriptEngine = new ScriptEngine(this, _world);
 
 	_soundManager = new SoundManager(this, _mixer);
-
-	setInitialFlags();
 
 	int directSaveSlotLoading = ConfMan.getInt("save_slot");
 	if (directSaveSlotLoading >= 0) {
@@ -313,8 +309,10 @@ void MacVentureEngine::refreshReady() {
 		_cmdReady = _currentSelection.size() != 0;
 		break;
 	case 2:
-		if (_destObject > 0) // We have a destination seleted
+		if (_destObject > 0) // We have a destination selected
 			_cmdReady = true;
+		break;
+	default:
 		break;
 	}
 }

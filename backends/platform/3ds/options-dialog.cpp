@@ -34,11 +34,11 @@
 #include "common/translation.h"
 
 namespace _3DS {
-	
+
 bool optionMenuOpened = false;
 
 OptionsDialog::OptionsDialog() : GUI::Dialog(20, 20, 280, 200) {
-	
+
 	optionMenuOpened = true;
 
 	new GUI::ButtonWidget(this, 120, 180, 72, 16, _("~C~lose"), 0, GUI::kCloseCmd);
@@ -46,26 +46,19 @@ OptionsDialog::OptionsDialog() : GUI::Dialog(20, 20, 280, 200) {
 
 	_showCursorCheckbox = new GUI::CheckboxWidget(this, 5, 5, 130, 20, _("Show mouse cursor"), 0, 0, 'T');
 	_showCursorCheckbox->setState(config.showCursor);
-	
+
 	_snapToBorderCheckbox = new GUI::CheckboxWidget(this, 5, 22, 130, 20, _("Snap to edges"), 0, 0, 'T');
 	_snapToBorderCheckbox->setState(config.snapToBorder);
-	
+
 	_stretchToFitCheckbox = new GUI::CheckboxWidget(this, 140, 5, 130, 20, _("Stretch to fit"), 0, 0, 'T');
 	_stretchToFitCheckbox->setState(config.stretchToFit);
 
 	new GUI::StaticTextWidget(this, 0, 60, 110, 15, _("Use Screen:"), Graphics::kTextAlignRight);
 	_screenRadioGroup = new GUI::RadiobuttonGroup(this, kScreenRadioGroup);
-	_screenTopRadioWidget = new GUI::RadiobuttonWidget(this, 120, 50, 60, 20, _screenRadioGroup, kScreenTop, _("Top"));
-	_screenBottomRadioWidget = new GUI::RadiobuttonWidget(this, 190, 50, 80, 20, _screenRadioGroup, kScreenBottom, _("Bottom"));
-	_screenBothRadioWidget = new GUI::RadiobuttonWidget(this, 155, 70, 80, 20, _screenRadioGroup, kScreenBoth, _("Both"));
+	_screenTopRadioWidget = new GUI::RadiobuttonWidget(this, 120, 50, 60, 20, _screenRadioGroup, kScreenTop, _c("Top", "3ds-screen"));
+	_screenBottomRadioWidget = new GUI::RadiobuttonWidget(this, 190, 50, 80, 20, _screenRadioGroup, kScreenBottom, _c("Bottom", "3ds-screen"));
+	_screenBothRadioWidget = new GUI::RadiobuttonWidget(this, 155, 70, 80, 20, _screenRadioGroup, kScreenBoth, _c("Both", "3ds-screen"));
 	_screenRadioGroup->setValue(config.screen);
-
-	new GUI::StaticTextWidget(this, 0, 100, 110, 15, _("C-Pad Sensitivity:"), Graphics::kTextAlignRight);
-	_sensitivity = new GUI::SliderWidget(this, 115, 100, 160, 15);
-	_sensitivity->setMinValue(-15);
-	_sensitivity->setMaxValue(30);
-	_sensitivity->setValue(config.sensitivity);
-	_sensitivity->setFlags(GUI::WIDGET_CLEARBG);
 }
 
 OptionsDialog::~OptionsDialog() {
@@ -82,10 +75,6 @@ bool OptionsDialog::getSnapToBorder() const {
 
 bool OptionsDialog::getStretchToFit() const {
 	return _stretchToFitCheckbox->getState();
-}
-
-int OptionsDialog::getSensitivity() const {
-	return _sensitivity->getValue();
 }
 
 int OptionsDialog::getScreen() const {

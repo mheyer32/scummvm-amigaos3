@@ -319,8 +319,8 @@ public:
 	virtual void init()	{}
 	virtual void loadFirstPlugin() {}
 	virtual bool loadNextPlugin() { return false; }
-	virtual bool loadPluginFromGameId(const Common::String &gameId) { return false; }
-	virtual void updateConfigWithFileName(const Common::String &gameId) {}
+	virtual bool loadPluginFromEngineId(const Common::String &engineId) { return false; }
+	virtual void updateConfigWithFileName(const Common::String &engineId) {}
 
 	// Functions used only by the cached PluginManager
 	virtual void loadAllPlugins();
@@ -349,8 +349,8 @@ public:
 	virtual void init();
 	virtual void loadFirstPlugin();
 	virtual bool loadNextPlugin();
-	virtual bool loadPluginFromGameId(const Common::String &gameId);
-	virtual void updateConfigWithFileName(const Common::String &gameId);
+	virtual bool loadPluginFromEngineId(const Common::String &engineId);
+	virtual void updateConfigWithFileName(const Common::String &engineId);
 
 	virtual void loadAllPlugins() {} 	// we don't allow these
 	virtual void loadAllPluginsOfType(PluginType type) {}

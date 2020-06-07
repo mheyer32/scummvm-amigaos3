@@ -39,7 +39,8 @@ namespace Sci {
 // This table is only used for debugging. Don't include it for devices
 // with not enough available memory (e.g. phones), where REDUCE_MEMORY_USAGE
 // is defined
-#ifndef REDUCE_MEMORY_USAGE
+// Update: This is used in the VM hooks mechanism. TODO: Readd the memory check?
+//#ifndef REDUCE_MEMORY_USAGE
 const char *opcodeNames[] = {
 	   "bnot",       "add",      "sub",      "mul",      "div",
 		"mod",       "shr",      "shl",      "xor",      "and",
@@ -68,7 +69,7 @@ const char *opcodeNames[] = {
 	   "-agi",      "-ali",     "-ati",     "-api",     "-sgi",
 	   "-sli",      "-sti",     "-spi"
 };
-#endif	// REDUCE_MEMORY_USAGE
+//#endif	// REDUCE_MEMORY_USAGE
 
 void DebugState::updateActiveBreakpointTypes() {
 	int type = 0;
@@ -81,7 +82,7 @@ void DebugState::updateActiveBreakpointTypes() {
 }
 
 // Disassembles one command from the heap, returns address of next command or 0 if a ret was encountered.
-reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag, bool printBytecode) {
+reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag, bool printBytecode, bool printCSyntax) {
 	SegmentObj *mobj = s->_segMan->getSegment(pos.getSegment(), SEG_TYPE_SCRIPT);
 	Script *script_entity = NULL;
 	reg_t retval = make_reg32(pos.getSegment(), pos.getOffset() + 1);
@@ -117,14 +118,27 @@ reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag,
 			return retval;
 		}
 
-		for (i = 0; i < bytecount; i++)
-			debugN("%02x ", scr[pos.getOffset() + i]);
+		for (i = 0; i < bytecount; i++) {
+			const char *f;
+			if (printCSyntax) {
+				f = "0x%02x, ";		// avoiding the builtin '#' formatter because it doesn't prepend '0x' to zeroes
+			} else {
+				f = "%02x ";
+			}
+			debugN(f, scr[pos.getOffset() + i]);
+		}
 
 		for (i = bytecount; i < 5; i++)
-			debugN("   ");
+			if (printCSyntax) 
+				debugN("      ");
+			else
+				debugN("   ");
 	}
 
 	opsize &= 1; // byte if true, word if false
+
+	if (printCSyntax)
+		debugN("       // ");
 
 	if (printBWTag)
 		debugN("[%c] ", opsize ? 'B' : 'W');
@@ -136,9 +150,9 @@ reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag,
 		return retval;
 	}
 
-#ifndef REDUCE_MEMORY_USAGE
+//#ifndef REDUCE_MEMORY_USAGE
 	debugN("%-5s", opcodeNames[opcode]);
-#endif
+//#endif
 
 	static const char *defaultSeparator = "\t\t; ";
 
@@ -218,7 +232,7 @@ reg_t disassemble(EngineState *s, reg_t pos, const Object *obj, bool printBWTag,
 					if (obj != nullptr) {
 						const Object *const super = obj->getClass(s->_segMan);
 						assert(super);
-						if (param_value / 2 < super->getVarCount()) {
+						if ((param_value / 2) < (uint16)super->getVarCount()) {
 							selectorName = kernel->getSelectorName(super->getVarSelector(param_value / 2)).c_str();
 						} else {
 							selectorName = "<invalid>";
@@ -493,7 +507,7 @@ void SciEngine::scriptDebug() {
 	}
 
 	debugN("Step #%d\n", s->scriptStepCounter);
-	disassemble(s, s->xs->addr.pc, s->_segMan->getObject(s->xs->objp), false, true);
+	disassemble(s, s->xs->addr.pc, s->_segMan->getObject(s->xs->objp), false, true, false);
 
 	if (_debugState.runningStep) {
 		_debugState.runningStep--;
@@ -947,7 +961,7 @@ void debugSelectorCall(reg_t send_obj, Selector selector, int argc, StackPtr arg
 	}	// switch
 }
 
-void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, reg_t curValue, reg_t newValue, SegManager *segMan, BreakpointType breakpointType) {
+void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, Selector selector, reg_t curValue, reg_t newValue, SegManager *segMan, BreakpointType breakpointType) {
 	const Object *var_container = obj;
 	if (!obj->isClass()
 #ifdef ENABLE_SCI32
@@ -956,30 +970,30 @@ void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, reg_t curV
 			)
 		var_container = segMan->getObject(obj->getSuperClassSelector());
 
-	uint16 varSelector;
 #ifdef ENABLE_SCI32
-	if (getSciVersion() == SCI_VERSION_3) {
-		varSelector = index;
-	} else
+    if (getSciVersion() == SCI_VERSION_3) {
+	    selector = index;
+    } else
 #endif
 	{
 		index >>= 1;
 
-		if (index >= var_container->getVarCount()) {
-			// TODO: error, warning, debug?
-			return;
-		}
+			if (index >= var_container->getVarCount()) {
+				// TODO: error, warning, debug?
+				return;
+			}
 
-		varSelector = var_container->getVarSelector(index);
+			selector = var_container->getVarSelector(index);
+		}
 	}
 
-	if (g_sci->checkSelectorBreakpoint(breakpointType, objp, varSelector)) {
+	if (g_sci->checkSelectorBreakpoint(breakpointType, objp, selector)) {
 		// checkSelectorBreakpoint has already triggered the breakpoint.
 		// We just output the relevant data here.
 
 		Console *con = g_sci->getSciDebugger();
 		const char *objectName = segMan->getObjectName(objp);
-		const char *selectorName = g_sci->getKernel()->getSelectorName(varSelector).c_str();
+		const char *selectorName = g_sci->getKernel()->getSelectorName(selector).c_str();
 		if (breakpointType == BREAK_SELECTORWRITE) {
 			con->debugPrintf("Write to selector (%s:%s): change %04x:%04x to %04x:%04x\n",
 								objectName, selectorName,
@@ -995,27 +1009,11 @@ void debugPropertyAccess(Object *obj, reg_t objp, unsigned int index, reg_t curV
 	}
 }
 
-void logKernelCall(const KernelFunction *kernelCall, const KernelSubFunction *kernelSubCall, EngineState *s, int argc, reg_t *argv, reg_t result) {
-	if (s->abortScriptProcessing != kAbortNone) {
-		return;
-	}
-
-	Kernel *kernel = g_sci->getKernel();
-	if (!kernelSubCall) {
-		debugN("k%s: ", kernelCall->name);
-	} else {
-		int callNameLen = strlen(kernelCall->name);
-		if (strncmp(kernelCall->name, kernelSubCall->name, callNameLen) == 0) {
-			const char *subCallName = kernelSubCall->name + callNameLen;
-			debugN("k%s(%s): ", kernelCall->name, subCallName);
-		} else {
-			debugN("k%s(%s): ", kernelCall->name, kernelSubCall->name);
-		}
-	}
+static void logParameters(const KernelFunction *kernelCall, EngineState *s, int argc, reg_t *argv) {
 	for (int parmNr = 0; parmNr < argc; parmNr++) {
 		if (parmNr)
 			debugN(", ");
-		uint16 regType = kernel->findRegType(argv[parmNr]);
+		uint16 regType = g_sci->getKernel()->findRegType(argv[parmNr]);
 		if (regType & SIG_TYPE_NULL)
 			debugN("0");
 		else if (regType & SIG_TYPE_UNINITIALIZED)
@@ -1052,7 +1050,7 @@ void logKernelCall(const KernelFunction *kernelCall, const KernelSubFunction *ke
 						// TODO: Any other segment types which could
 						// use special handling?
 
-						if (kernelCall->function == kSaid) {
+						if (kernelCall != nullptr && kernelCall->function == &kSaid) {
 							SegmentRef saidSpec = s->_segMan->dereference(argv[parmNr]);
 							if (saidSpec.isRaw) {
 								debugN(" ('");
@@ -1073,12 +1071,46 @@ void logKernelCall(const KernelFunction *kernelCall, const KernelSubFunction *ke
 			}
 		}
 	}
+}
+
+void logKernelCall(const KernelFunction *kernelCall, const KernelSubFunction *kernelSubCall, EngineState *s, int argc, reg_t *argv, reg_t result) {
+	if (s->abortScriptProcessing != kAbortNone) {
+		return;
+	}
+
+	if (!kernelSubCall) {
+		debugN("k%s: ", kernelCall->name);
+	} else {
+		int callNameLen = strlen(kernelCall->name);
+		if (strncmp(kernelCall->name, kernelSubCall->name, callNameLen) == 0) {
+			const char *subCallName = kernelSubCall->name + callNameLen;
+			debugN("k%s(%s): ", kernelCall->name, subCallName);
+		} else {
+			debugN("k%s(%s): ", kernelCall->name, kernelSubCall->name);
+		}
+	}
+
+	logParameters(kernelCall, s, argc, argv);
+
 	if (result.isPointer())
 		debugN(" = %04x:%04x\n", PRINT_REG(result));
 	else
 		debugN(" = %d\n", result.getOffset());
 }
 
+void logExportCall(uint16 script, uint16 pubfunct, EngineState *s, int argc, reg_t *argv) {
+	if (s->abortScriptProcessing != kAbortNone) {
+		return;
+	}
+
+	debugN("script %d, export %d: ", script, pubfunct);
+
+	if (argc > 1) {
+		argv++;
+		logParameters(nullptr, s, argc, argv);
+	}
+	debugN("\n");
+}
 
 void logBacktrace() {
 	Console *con = g_sci->getSciDebugger();
@@ -1119,6 +1151,9 @@ void logBacktrace() {
 		case EXEC_STACK_TYPE_VARSELECTOR:
 			con->debugPrintf(" %x:[%x] vs%s %s::%s (", i, call.debugOrigin, (call.argc) ? "write" : "read",
 			          objname, g_sci->getKernel()->getSelectorName(call.debugSelector).c_str());
+			break;
+
+		default:
 			break;
 		}
 

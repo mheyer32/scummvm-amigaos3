@@ -36,6 +36,7 @@
 #include "engines/wintermute/math/rect32.h"
 #include "engines/wintermute/debugger.h"
 #include "common/events.h"
+#include "common/random.h"
 #if EXTENDED_DEBUGGER_ENABLED
 #include "engines/wintermute/base/scriptables/debuggable/debuggable_script_engine.h"
 #endif
@@ -163,7 +164,7 @@ public:
 	BaseSurfaceStorage *_surfaceStorage;
 	BaseFontStorage *_fontStorage;
 	BaseGame(const Common::String &targetName);
-	virtual ~BaseGame();
+	~BaseGame() override;
 
 	bool _debugDebugMode;
 
@@ -178,10 +179,10 @@ public:
 
 	virtual bool externalCall(ScScript *script, ScStack *stack, ScStack *thisStack, char *name);
 	// scripting interface
-	virtual ScValue *scGetProperty(const Common::String &name) override;
-	virtual bool scSetProperty(const char *name, ScValue *value) override;
-	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
-	virtual const char *scToString() override;
+	ScValue *scGetProperty(const Common::String &name) override;
+	bool scSetProperty(const char *name, ScValue *value) override;
+	bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
+	const char *scToString() override;
 	// compatibility bits
 	bool _compatKillMethodThreads;
 
@@ -195,11 +196,11 @@ public:
 
 	bool getIsLoading() const { return _loading; }
 
-	virtual bool handleMouseWheel(int32 delta);
+	bool handleMouseWheel(int32 delta) override;
 	bool _quitting;
 	virtual bool getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *extMinor) const;
 
-	virtual bool handleKeypress(Common::Event *event, bool printable = false);
+	bool handleKeypress(Common::Event *event, bool printable = false) override;
 	virtual void handleKeyRelease(Common::Event *event);
 
 	bool unfreeze();
@@ -219,7 +220,7 @@ public:
 	bool loadGame(uint32 slot);
 	bool loadGame(const char *filename);
 	bool saveGame(int32 slot, const char *desc, bool quickSave = false);
-	virtual bool showCursor();
+	bool showCursor() override;
 
 	BaseObject *_activeObject;
 
@@ -295,8 +296,8 @@ private:
 
 	int32 _soundBufferSizeSec;
 
-	virtual bool invalidateDeviceObjects();
-	virtual bool restoreDeviceObjects();
+	bool invalidateDeviceObjects() override;
+	bool restoreDeviceObjects() override;
 
 	// TODO: This can probably be removed completely:
 	bool _saveDirChecked;
@@ -369,6 +370,15 @@ protected:
 
 public:
 	void autoSaveOnExit();
+
+#ifdef ENABLE_HEROCRAFT
+private:
+	// HeroCraft games specific random source with ability a in-script function to set the seed
+	Common::RandomSource *_rndHc;
+
+	// HeroCraft games specific checksum function, used in Papa's Daughters 2 selfcheck
+	uint8 getFilePartChecksumHc(const char *filename, uint32 begin, uint32 end);	
+#endif
 
 };
 

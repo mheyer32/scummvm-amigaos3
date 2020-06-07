@@ -30,6 +30,10 @@
 #include "gui/ThemeEval.h"
 #include "gui/launcher.h"
 
+#include "backends/keymapper/keymapper.h"
+#include "backends/keymapper/remap-widget.h"
+
+#include "common/achievements.h"
 #include "common/fs.h"
 #include "common/config-manager.h"
 #include "common/gui_options.h"
@@ -78,6 +82,7 @@ enum {
 	kChooseExtraDirCmd		= 'chex',
 	kExtraPathClearCmd		= 'clex',
 	kChoosePluginsDirCmd	= 'chpl',
+	kPluginsPathClearCmd	= 'clpl',
 	kChooseThemeCmd			= 'chtf',
 	kUpdatesCheckCmd		= 'updc',
 	kKbdMouseSpeedChanged	= 'kmsc',
@@ -124,19 +129,19 @@ enum {
 	kApplyCmd = 'appl'
 };
 
-static const char *savePeriodLabels[] = { _s("Never"), _s("Every 5 mins"), _s("Every 10 mins"), _s("Every 15 mins"), _s("Every 30 mins"), 0 };
+static const char *savePeriodLabels[] = { _s("Never"), _s("Every 5 mins"), _s("Every 10 mins"), _s("Every 15 mins"), _s("Every 30 mins"), nullptr };
 static const int savePeriodValues[] = { 0, 5 * 60, 10 * 60, 15 * 60, 30 * 60, -1 };
 // The keyboard mouse speed values range from 0 to 7 and correspond to speeds shown in the label
 // "10" (value 3) is the default speed corresponding to the speed before introduction of this control
-static const char *kbdMouseSpeedLabels[] = { "3", "5", "8", "10", "13", "15", "18", "20", 0 };
+static const char *kbdMouseSpeedLabels[] = { "3", "5", "8", "10", "13", "15", "18", "20", nullptr };
 
 OptionsDialog::OptionsDialog(const Common::String &domain, int x, int y, int w, int h)
-	: Dialog(x, y, w, h), _domain(domain), _graphicsTabId(-1), _midiTabId(-1), _pathsTabId(-1), _tabWidget(0) {
+	: Dialog(x, y, w, h), _domain(domain), _graphicsTabId(-1), _midiTabId(-1), _pathsTabId(-1), _tabWidget(nullptr) {
 	init();
 }
 
 OptionsDialog::OptionsDialog(const Common::String &domain, const Common::String &name)
-	: Dialog(name), _domain(domain), _graphicsTabId(-1), _midiTabId(-1), _pathsTabId(-1), _tabWidget(0) {
+	: Dialog(name), _domain(domain), _graphicsTabId(-1), _midiTabId(-1), _pathsTabId(-1), _tabWidget(nullptr) {
 	init();
 }
 
@@ -146,68 +151,69 @@ OptionsDialog::~OptionsDialog() {
 
 void OptionsDialog::init() {
 	_enableControlSettings = false;
-	_onscreenCheckbox = 0;
-	_touchpadCheckbox = 0;
-	_swapMenuAndBackBtnsCheckbox = 0;
-	_kbdMouseSpeedDesc = 0;
-	_kbdMouseSpeedSlider = 0;
-	_kbdMouseSpeedLabel = 0;
-	_joystickDeadzoneDesc = 0;
-	_joystickDeadzoneSlider = 0;
-	_joystickDeadzoneLabel = 0;
+	_onscreenCheckbox = nullptr;
+	_touchpadCheckbox = nullptr;
+	_swapMenuAndBackBtnsCheckbox = nullptr;
+	_kbdMouseSpeedDesc = nullptr;
+	_kbdMouseSpeedSlider = nullptr;
+	_kbdMouseSpeedLabel = nullptr;
+	_joystickDeadzoneDesc = nullptr;
+	_joystickDeadzoneSlider = nullptr;
+	_joystickDeadzoneLabel = nullptr;
+	_keymapperWidget = nullptr;
 	_enableGraphicSettings = false;
-	_gfxPopUp = 0;
-	_gfxPopUpDesc = 0;
-	_renderModePopUp = 0;
-	_renderModePopUpDesc = 0;
-	_stretchPopUp = 0;
-	_stretchPopUpDesc = 0;
-	_fullscreenCheckbox = 0;
-	_filteringCheckbox = 0;
-	_aspectCheckbox = 0;
+	_gfxPopUp = nullptr;
+	_gfxPopUpDesc = nullptr;
+	_renderModePopUp = nullptr;
+	_renderModePopUpDesc = nullptr;
+	_stretchPopUp = nullptr;
+	_stretchPopUpDesc = nullptr;
+	_fullscreenCheckbox = nullptr;
+	_filteringCheckbox = nullptr;
+	_aspectCheckbox = nullptr;
 	_enableShaderSettings = false;
-	_shaderPopUpDesc = 0;
-	_shaderPopUp = 0;
+	_shaderPopUpDesc = nullptr;
+	_shaderPopUp = nullptr;
 	_enableAudioSettings = false;
-	_midiPopUp = 0;
-	_midiPopUpDesc = 0;
-	_oplPopUp = 0;
-	_oplPopUpDesc = 0;
+	_midiPopUp = nullptr;
+	_midiPopUpDesc = nullptr;
+	_oplPopUp = nullptr;
+	_oplPopUpDesc = nullptr;
 	_enableMIDISettings = false;
-	_gmDevicePopUp = 0;
-	_gmDevicePopUpDesc = 0;
-	_soundFont = 0;
-	_soundFontButton = 0;
-	_soundFontClearButton = 0;
-	_multiMidiCheckbox = 0;
-	_midiGainDesc = 0;
-	_midiGainSlider = 0;
-	_midiGainLabel = 0;
+	_gmDevicePopUp = nullptr;
+	_gmDevicePopUpDesc = nullptr;
+	_soundFont = nullptr;
+	_soundFontButton = nullptr;
+	_soundFontClearButton = nullptr;
+	_multiMidiCheckbox = nullptr;
+	_midiGainDesc = nullptr;
+	_midiGainSlider = nullptr;
+	_midiGainLabel = nullptr;
 	_enableMT32Settings = false;
-	_mt32Checkbox = 0;
-	_mt32DevicePopUp = 0;
-	_mt32DevicePopUpDesc = 0;
-	_enableGSCheckbox = 0;
+	_mt32Checkbox = nullptr;
+	_mt32DevicePopUp = nullptr;
+	_mt32DevicePopUpDesc = nullptr;
+	_enableGSCheckbox = nullptr;
 	_enableVolumeSettings = false;
-	_musicVolumeDesc = 0;
-	_musicVolumeSlider = 0;
-	_musicVolumeLabel = 0;
-	_sfxVolumeDesc = 0;
-	_sfxVolumeSlider = 0;
-	_sfxVolumeLabel = 0;
-	_speechVolumeDesc = 0;
-	_speechVolumeSlider = 0;
-	_speechVolumeLabel = 0;
-	_muteCheckbox = 0;
+	_musicVolumeDesc = nullptr;
+	_musicVolumeSlider = nullptr;
+	_musicVolumeLabel = nullptr;
+	_sfxVolumeDesc = nullptr;
+	_sfxVolumeSlider = nullptr;
+	_sfxVolumeLabel = nullptr;
+	_speechVolumeDesc = nullptr;
+	_speechVolumeSlider = nullptr;
+	_speechVolumeLabel = nullptr;
+	_muteCheckbox = nullptr;
 	_enableSubtitleSettings = false;
-	_subToggleDesc = 0;
-	_subToggleGroup = 0;
-	_subToggleSubOnly = 0;
-	_subToggleSpeechOnly = 0;
-	_subToggleSubBoth = 0;
-	_subSpeedDesc = 0;
-	_subSpeedSlider = 0;
-	_subSpeedLabel = 0;
+	_subToggleDesc = nullptr;
+	_subToggleGroup = nullptr;
+	_subToggleSubOnly = nullptr;
+	_subToggleSpeechOnly = nullptr;
+	_subToggleSubBoth = nullptr;
+	_subSpeedDesc = nullptr;
+	_subSpeedSlider = nullptr;
+	_subSpeedLabel = nullptr;
 
 	// Retrieve game GUI options
 	_guioptions.clear();
@@ -229,21 +235,21 @@ void OptionsDialog::build() {
 	if (g_system->hasFeature(OSystem::kFeatureOnScreenControl)) {
 		if (ConfMan.hasKey("onscreen_control", _domain)) {
 			bool onscreenState =  g_system->getFeatureState(OSystem::kFeatureOnScreenControl);
-			if (_onscreenCheckbox != 0)
+			if (_onscreenCheckbox != nullptr)
 				_onscreenCheckbox->setState(onscreenState);
 		}
 	}
 	if (g_system->hasFeature(OSystem::kFeatureTouchpadMode)) {
 		if (ConfMan.hasKey("touchpad_mouse_mode", _domain)) {
 			bool touchpadState =  g_system->getFeatureState(OSystem::kFeatureTouchpadMode);
-			if (_touchpadCheckbox != 0)
+			if (_touchpadCheckbox != nullptr)
 				_touchpadCheckbox->setState(touchpadState);
 		}
 	}
 	if (g_system->hasFeature(OSystem::kFeatureSwapMenuAndBackButtons)) {
 		if (ConfMan.hasKey("swap_menu_and_back_buttons", _domain)) {
 			bool state =  g_system->getFeatureState(OSystem::kFeatureSwapMenuAndBackButtons);
-			if (_swapMenuAndBackBtnsCheckbox != 0)
+			if (_swapMenuAndBackBtnsCheckbox != nullptr)
 				_swapMenuAndBackBtnsCheckbox->setState(state);
 		}
 	}
@@ -256,10 +262,15 @@ void OptionsDialog::build() {
 	}
 	if (g_system->hasFeature(OSystem::kFeatureJoystickDeadzone)) {
 		int value = ConfMan.getInt("joystick_deadzone", _domain);
-		if (_joystickDeadzoneSlider != 0) {
+		if (_joystickDeadzoneSlider != nullptr) {
 			_joystickDeadzoneSlider->setValue(value);
 			_joystickDeadzoneLabel->setValue(value);
 		}
+	}
+
+	// Keymapper options
+	if (_keymapperWidget) {
+		_keymapperWidget->load();
 	}
 
 	// Graphic options
@@ -338,10 +349,24 @@ void OptionsDialog::build() {
 	}
 
 	// Shader options
-	if (g_system->hasFeature(OSystem::kFeatureShader)) {
 		if (_shaderPopUp) {
-			int value = ConfMan.getInt("shader", _domain);
-			_shaderPopUp->setSelected(value);
+		_shaderPopUp->setSelected(0);
+
+		if (g_system->hasFeature(OSystem::kFeatureShader)) {
+			if (ConfMan.hasKey("shader", _domain)) {
+				const OSystem::GraphicsMode *sm = g_system->getSupportedShaders();
+				Common::String shader(ConfMan.get("shader", _domain));
+				int shaderCount = 1;
+				while (sm->name) {
+					shaderCount++;
+					if (scumm_stricmp(sm->name, shader.c_str()) == 0)
+						_shaderPopUp->setSelected(shaderCount);
+					sm++;
+				}
+			}
+		} else {
+			_shaderPopUpDesc->setVisible(false);
+			_shaderPopUp->setVisible(false);
 		}
 	}
 
@@ -524,6 +549,31 @@ void OptionsDialog::apply() {
 		}
 	}
 
+	// Shader options
+	if (_shaderPopUp) {
+		if (_enableShaderSettings) {
+			bool isSet = false;
+
+			if ((int32)_shaderPopUp->getSelectedTag() >= 0) {
+				const OSystem::GraphicsMode *sm = g_system->getSupportedShaders();
+				while (sm->name) {
+					if (sm->id == (int)_shaderPopUp->getSelectedTag()) {
+						if (ConfMan.get("shader", _domain) != sm->name)
+							graphicsModeChanged = true;
+						ConfMan.set("shader", sm->name, _domain);
+						isSet = true;
+						break;
+					}
+					sm++;
+				}
+			}
+			if (!isSet)
+				ConfMan.removeKey("shader", _domain);
+		} else {
+			ConfMan.removeKey("shader", _domain);
+		}
+	}
+
 	// Setup graphics again if needed
 	if (_domain == Common::ConfigManager::kApplicationDomain && graphicsModeChanged) {
 		g_system->beginGFXTransaction();
@@ -537,6 +587,8 @@ void OptionsDialog::apply() {
 			g_system->setFeatureState(OSystem::kFeatureFullscreenMode, ConfMan.getBool("fullscreen", _domain));
 		if (ConfMan.hasKey("filtering"))
 			g_system->setFeatureState(OSystem::kFeatureFilteringMode, ConfMan.getBool("filtering", _domain));
+		if (ConfMan.hasKey("shader"))
+			g_system->setShader(ConfMan.get("shader", _domain).c_str());
 
 		OSystem::TransactionError gfxError = g_system->endGFXTransaction();
 
@@ -606,15 +658,11 @@ void OptionsDialog::apply() {
 		}
 	}
 
-	// Shader options
-	if (_enableShaderSettings) {
-		if (g_system->hasFeature(OSystem::kFeatureShader)) {
-			if (_shaderPopUp) {
-				if (ConfMan.getInt("shader", _domain) != (int32)_shaderPopUp->getSelectedTag()) {
-					ConfMan.setInt("shader", _shaderPopUp->getSelectedTag(), _domain);
-					g_system->setShader(_shaderPopUp->getSelectedTag());
-				}
-			}
+	if (_keymapperWidget) {
+		bool changes = _keymapperWidget->save();
+		if (changes) {
+			Common::Keymapper *keymapper = g_system->getEventManager()->getKeymapper();
+			keymapper->reloadAllMappings();
 		}
 	}
 
@@ -861,6 +909,22 @@ void OptionsDialog::handleCommand(CommandSender *sender, uint32 cmd, uint32 data
 	}
 }
 
+void OptionsDialog::handleTickle() {
+	Dialog::handleTickle();
+
+	if (_keymapperWidget) {
+		_keymapperWidget->handleTickle();
+	}
+}
+
+void OptionsDialog::handleOtherEvent(const Common::Event &event) {
+	Dialog::handleOtherEvent(event);
+
+	if (event.type == Common::EVENT_INPUT_CHANGED && _keymapperWidget) {
+		_keymapperWidget->handleInputChanged();
+	}
+}
+
 void OptionsDialog::setGraphicSettingsState(bool enabled) {
 	_enableGraphicSettings = enabled;
 
@@ -883,13 +947,20 @@ void OptionsDialog::setGraphicSettingsState(bool enabled) {
 		_aspectCheckbox->setEnabled(enabled);
 }
 
+void OptionsDialog::setShaderSettingsState(bool enabled) {
+	_enableShaderSettings = enabled;
+
+	_shaderPopUpDesc->setEnabled(enabled);
+	_shaderPopUp->setEnabled(enabled);
+}
+
 void OptionsDialog::setAudioSettingsState(bool enabled) {
 	_enableAudioSettings = enabled;
 	_midiPopUpDesc->setEnabled(enabled);
 	_midiPopUp->setEnabled(enabled);
 
 	const Common::String allFlags = MidiDriver::musicType2GUIO((uint32)-1);
-	bool hasMidiDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != NULL);
+	bool hasMidiDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != nullptr);
 
 	if (_domain != Common::ConfigManager::kApplicationDomain && // global dialog
 		hasMidiDefined && // No flags are specified
@@ -1031,20 +1102,107 @@ void OptionsDialog::addControlControls(GuiObject *boss, const Common::String &pr
 	_enableControlSettings = true;
 }
 
+void OptionsDialog::addKeyMapperControls(GuiObject *boss, const Common::String &prefix, const Common::KeymapArray &keymaps, const Common::String &domain) {
+	Common::Keymapper *mapper = g_system->getEventManager()->getKeymapper();
+	for (uint i = 0; i < keymaps.size(); i++) {
+		mapper->initKeymap(keymaps[i], ConfMan.getDomain(domain));
+	}
+
+	_keymapperWidget = new Common::RemapWidget(boss, prefix + "Container", keymaps);
+}
+
+void OptionsDialog::addAchievementsControls(GuiObject *boss, const Common::String &prefix, const Common::AchievementsInfo &info) {
+	Common::String achDomainId = ConfMan.get("achievements", _domain);
+	AchMan.setActiveDomain(info.platform, info.appId);
+
+	GUI::ScrollContainerWidget *scrollContainer;
+	scrollContainer = new GUI::ScrollContainerWidget(boss, prefix + "Container", "");
+	scrollContainer->setBackgroundType(GUI::ThemeEngine::kWidgetBackgroundNo);
+
+	uint16 nAchieved = 0;
+	uint16 nHidden = 0;
+	uint16 nMax = info.descriptions.size();
+
+	uint16 lineHeight = g_gui.xmlEval()->getVar("Globals.Line.Height");
+	uint16 yStep = lineHeight;
+	uint16 ySmallStep = yStep/3;
+	uint16 yPos = lineHeight + yStep*3;
+	uint16 progressBarWidth = 240;
+	uint16 width = g_system->getOverlayWidth() <= 320 ? 240 : 410;
+	uint16 descrDelta = g_system->getOverlayWidth() <= 320 ? 25 : 30;
+
+	for (int16 viewAchieved = 1; viewAchieved >= 0; viewAchieved--) {
+		// run this twice, first view all achieved, then view all non-hidden & non-achieved
+
+		for (uint16 idx = 0; idx < nMax ; idx++) {
+			int16 isAchieved = AchMan.isAchieved(info.descriptions[idx].id) ? 1 : 0;
+
+			if (isAchieved != viewAchieved) {
+				continue;
+			}
+
+			if (isAchieved) {
+				nAchieved++;
+			}
+
+			if (!isAchieved && info.descriptions[idx].isHidden) {
+				nHidden++;
+				continue;
+			}
+
+			CheckboxWidget *checkBox;
+			checkBox = new CheckboxWidget(scrollContainer, lineHeight, yPos, width, yStep, info.descriptions[idx].title);
+			checkBox->setEnabled(false);
+			checkBox->setState(isAchieved);
+			yPos += yStep;
+
+	        if (info.descriptions[idx].comment && strlen(info.descriptions[idx].comment) > 0) {
+				new StaticTextWidget(scrollContainer, lineHeight + descrDelta, yPos, width - descrDelta, yStep, info.descriptions[idx].comment, Graphics::kTextAlignLeft, "", ThemeEngine::kFontStyleNormal);
+				yPos += yStep;
+			}
+
+			yPos += ySmallStep;
+		}
+	}
+
+	if (nHidden) {
+		Common::String hiddenStr = Common::String::format(_("%d hidden achievements remaining"), nHidden);
+		new StaticTextWidget(scrollContainer, lineHeight, yPos, width, yStep, hiddenStr.c_str(), Graphics::kTextAlignLeft);
+	}
+
+	if (nMax) {
+		Common::String totalStr = Common::String::format(_("Achievements unlocked: %d/%d"), nAchieved, nMax);
+		new StaticTextWidget(scrollContainer, lineHeight, lineHeight, width, yStep, totalStr.c_str(), Graphics::kTextAlignLeft);
+
+		SliderWidget *progressBar;
+		progressBar = new SliderWidget(scrollContainer, lineHeight, lineHeight*2, progressBarWidth, lineHeight);
+		progressBar->setMinValue(0);
+		progressBar->setValue(nAchieved);
+		progressBar->setMaxValue(nMax);
+		progressBar->setEnabled(false);
+	}
+}
+
 void OptionsDialog::addShaderControls(GuiObject *boss, const Common::String &prefix) {
+	Common::String context;
+	if (g_system->getOverlayWidth() <= 320)
+		context = "lowres";
+
 	// Shader selector
-	if (g_system->hasFeature(OSystem::kFeatureShader)) {
 		if (g_system->getOverlayWidth() > 320)
 			_shaderPopUpDesc = new StaticTextWidget(boss, prefix + "grShaderPopUpDesc", _("HW Shader:"), _("Different hardware shaders give different visual effects"));
 		else
 			_shaderPopUpDesc = new StaticTextWidget(boss, prefix + "grShaderPopUpDesc", _c("HW Shader:", "lowres"), _("Different hardware shaders give different visual effects"));
 		_shaderPopUp = new PopUpWidget(boss, prefix + "grShaderPopUp", _("Different shaders give different visual effects"));
 		const OSystem::GraphicsMode *p = g_system->getSupportedShaders();
+
+	_shaderPopUp->appendEntry(_("<default>"));
+	_shaderPopUp->appendEntry("");
 		while (p->name) {
-			_shaderPopUp->appendEntry(p->name, p->id);
+		_shaderPopUp->appendEntry(_c(p->description, context), p->id);
 			p++;
 		}
-	}
+
 	_enableShaderSettings = true;
 }
 
@@ -1067,7 +1225,7 @@ void OptionsDialog::addGraphicControls(GuiObject *boss, const Common::String &pr
 
 	// RenderMode popup
 	const Common::String allFlags = Common::allRenderModesGUIOs();
-	bool renderingTypeDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != NULL);
+	bool renderingTypeDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != nullptr);
 
 	_renderModePopUpDesc = new StaticTextWidget(boss, prefix + "grRenderPopupDesc", _("Render mode:"), _("Special dithering modes supported by some games"));
 	_renderModePopUp = new PopUpWidget(boss, prefix + "grRenderPopup", _("Special dithering modes supported by some games"));
@@ -1114,7 +1272,7 @@ void OptionsDialog::addAudioControls(GuiObject *boss, const Common::String &pref
 
 	// Populate it
 	const Common::String allFlags = MidiDriver::musicType2GUIO((uint32)-1);
-	bool hasMidiDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != NULL);
+	bool hasMidiDefined = (strpbrk(_guioptions.c_str(), allFlags.c_str()) != nullptr);
 
 	const PluginList p = MusicMan.getPlugins();
 	for (PluginList::const_iterator m = p.begin(); m != p.end(); ++m) {
@@ -1196,7 +1354,7 @@ void OptionsDialog::addMIDIControls(GuiObject *boss, const Common::String &prefi
 
 	// MIDI gain setting (FluidSynth uses this)
 	_midiGainDesc = new StaticTextWidget(boss, prefix + "mcMidiGainText", _("MIDI gain:"));
-	_midiGainSlider = new SliderWidget(boss, prefix + "mcMidiGainSlider", 0, kMidiGainChanged);
+	_midiGainSlider = new SliderWidget(boss, prefix + "mcMidiGainSlider", nullptr, kMidiGainChanged);
 	_midiGainSlider->setMinValue(0);
 	_midiGainSlider->setMaxValue(1000);
 	_midiGainLabel = new StaticTextWidget(boss, prefix + "mcMidiGainLabel", "1.00");
@@ -1273,7 +1431,7 @@ void OptionsDialog::addSubtitleControls(GuiObject *boss, const Common::String &p
 	}
 
 	// Subtitle speed
-	_subSpeedSlider = new SliderWidget(boss, prefix + "subSubtitleSpeedSlider", 0, kSubtitleSpeedChanged);
+	_subSpeedSlider = new SliderWidget(boss, prefix + "subSubtitleSpeedSlider", nullptr, kSubtitleSpeedChanged);
 	_subSpeedLabel = new StaticTextWidget(boss, prefix + "subSubtitleSpeedLabel", "100%");
 	_subSpeedSlider->setMinValue(0); _subSpeedSlider->setMaxValue(maxSliderVal);
 	_subSpeedLabel->setFlags(WIDGET_CLEARBG);
@@ -1288,13 +1446,13 @@ void OptionsDialog::addVolumeControls(GuiObject *boss, const Common::String &pre
 		_musicVolumeDesc = new StaticTextWidget(boss, prefix + "vcMusicText", _("Music volume:"));
 	else
 		_musicVolumeDesc = new StaticTextWidget(boss, prefix + "vcMusicText", _c("Music volume:", "lowres"));
-	_musicVolumeSlider = new SliderWidget(boss, prefix + "vcMusicSlider", 0, kMusicVolumeChanged);
+	_musicVolumeSlider = new SliderWidget(boss, prefix + "vcMusicSlider", nullptr, kMusicVolumeChanged);
 	_musicVolumeLabel = new StaticTextWidget(boss, prefix + "vcMusicLabel", "100%");
 	_musicVolumeSlider->setMinValue(0);
 	_musicVolumeSlider->setMaxValue(Audio::Mixer::kMaxMixerVolume);
 	_musicVolumeLabel->setFlags(WIDGET_CLEARBG);
 
-	_muteCheckbox = new CheckboxWidget(boss, prefix + "vcMuteCheckbox", _("Mute all"), 0, kMuteAllChanged);
+	_muteCheckbox = new CheckboxWidget(boss, prefix + "vcMuteCheckbox", _("Mute all"), nullptr, kMuteAllChanged);
 
 	if (g_system->getOverlayWidth() > 320)
 		_sfxVolumeDesc = new StaticTextWidget(boss, prefix + "vcSfxText", _("SFX volume:"), _("Special sound effects volume"));
@@ -1310,29 +1468,13 @@ void OptionsDialog::addVolumeControls(GuiObject *boss, const Common::String &pre
 		_speechVolumeDesc = new StaticTextWidget(boss, prefix + "vcSpeechText" , _("Speech volume:"));
 	else
 		_speechVolumeDesc = new StaticTextWidget(boss, prefix + "vcSpeechText" , _c("Speech volume:", "lowres"));
-	_speechVolumeSlider = new SliderWidget(boss, prefix + "vcSpeechSlider", 0, kSpeechVolumeChanged);
+	_speechVolumeSlider = new SliderWidget(boss, prefix + "vcSpeechSlider", nullptr, kSpeechVolumeChanged);
 	_speechVolumeLabel = new StaticTextWidget(boss, prefix + "vcSpeechLabel", "100%");
 	_speechVolumeSlider->setMinValue(0);
 	_speechVolumeSlider->setMaxValue(Audio::Mixer::kMaxMixerVolume);
 	_speechVolumeLabel->setFlags(WIDGET_CLEARBG);
 
 	_enableVolumeSettings = true;
-}
-
-void OptionsDialog::addEngineControls(GuiObject *boss, const Common::String &prefix, const ExtraGuiOptions &engineOptions) {
-	// Note: up to 7 engine options can currently fit on screen (the most that
-	// can fit in a 320x200 screen with the classic theme).
-	// TODO: Increase this number by including the checkboxes inside a scroll
-	// widget. The appropriate number of checkboxes will need to be added to
-	// the theme files.
-
-	uint i = 1;
-	ExtraGuiOptions::const_iterator iter;
-	for (iter = engineOptions.begin(); iter != engineOptions.end(); ++iter, ++i) {
-		Common::String id = Common::String::format("%d", i);
-		_engineCheckboxes.push_back(new CheckboxWidget(boss,
-			prefix + "customOption" + id + "Checkbox", _(iter->label), _(iter->tooltip)));
-	}
 }
 
 bool OptionsDialog::loadMusicDeviceSetting(PopUpWidget *popup, Common::String setting, MusicType preferredType) {
@@ -1452,82 +1594,83 @@ void OptionsDialog::setupGraphicsTab() {
 GlobalOptionsDialog::GlobalOptionsDialog(LauncherDialog *launcher)
 	: OptionsDialog(Common::ConfigManager::kApplicationDomain, "GlobalOptions"), CommandSender(nullptr), _launcher(launcher) {
 #ifdef GUI_ENABLE_KEYSDIALOG
-	_keysDialog = 0;
+	_keysDialog = nullptr;
 #endif
 #ifdef USE_FLUIDSYNTH
-	_fluidSynthSettingsDialog = 0;
+	_fluidSynthSettingsDialog = nullptr;
 #endif
-	_savePath = 0;
-	_savePathClearButton = 0;
-	_themePath = 0;
-	_themePathClearButton = 0;
-	_extraPath = 0;
-	_extraPathClearButton = 0;
+	_savePath = nullptr;
+	_savePathClearButton = nullptr;
+	_themePath = nullptr;
+	_themePathClearButton = nullptr;
+	_extraPath = nullptr;
+	_extraPathClearButton = nullptr;
 #ifdef DYNAMIC_MODULES
-	_pluginsPath = 0;
+	_pluginsPath = nullptr;
+	_pluginsPathClearButton = nullptr;
 #endif
-	_curTheme = 0;
-	_rendererPopUpDesc = 0;
-	_rendererPopUp = 0;
-	_autosavePeriodPopUpDesc = 0;
-	_autosavePeriodPopUp = 0;
-	_guiLanguagePopUpDesc = 0;
-	_guiLanguagePopUp = 0;
+	_curTheme = nullptr;
+	_rendererPopUpDesc = nullptr;
+	_rendererPopUp = nullptr;
+	_autosavePeriodPopUpDesc = nullptr;
+	_autosavePeriodPopUp = nullptr;
+	_guiLanguagePopUpDesc = nullptr;
+	_guiLanguagePopUp = nullptr;
 	_guiLanguageUseGameLanguageCheckbox = nullptr;
-	_useSystemDialogsCheckbox = 0;
+	_useSystemDialogsCheckbox = nullptr;
 #ifdef USE_UPDATES
-	_updatesPopUpDesc = 0;
-	_updatesPopUp = 0;
+	_updatesPopUpDesc = nullptr;
+	_updatesPopUp = nullptr;
 #endif
 #ifdef USE_CLOUD
 #ifdef USE_LIBCURL
 	_selectedStorageIndex = CloudMan.getStorageIndex();
-	_storagePopUpDesc = 0;
-	_storagePopUp = 0;
-	_storageDisabledHint = 0;
-	_storageEnableButton = 0;
-	_storageUsernameDesc = 0;
-	_storageUsername = 0;
-	_storageUsedSpaceDesc = 0;
-	_storageUsedSpace = 0;
-	_storageSyncHint = 0;
-	_storageLastSyncDesc = 0;
-	_storageLastSync = 0;
-	_storageSyncSavesButton = 0;
-	_storageDownloadHint = 0;
-	_storageDownloadButton = 0;
-	_storageDisconnectHint = 0;
-	_storageDisconnectButton = 0;
+	_storagePopUpDesc = nullptr;
+	_storagePopUp = nullptr;
+	_storageDisabledHint = nullptr;
+	_storageEnableButton = nullptr;
+	_storageUsernameDesc = nullptr;
+	_storageUsername = nullptr;
+	_storageUsedSpaceDesc = nullptr;
+	_storageUsedSpace = nullptr;
+	_storageSyncHint = nullptr;
+	_storageLastSyncDesc = nullptr;
+	_storageLastSync = nullptr;
+	_storageSyncSavesButton = nullptr;
+	_storageDownloadHint = nullptr;
+	_storageDownloadButton = nullptr;
+	_storageDisconnectHint = nullptr;
+	_storageDisconnectButton = nullptr;
 
 	_connectingStorage = false;
-	_storageWizardNotConnectedHint = 0;
-	_storageWizardOpenLinkHint = 0;
-	_storageWizardLink = 0;
-	_storageWizardCodeHint = 0;
-	_storageWizardCodeBox = 0;
-	_storageWizardPasteButton = 0;
-	_storageWizardConnectButton = 0;
-	_storageWizardConnectionStatusHint = 0;
+	_storageWizardNotConnectedHint = nullptr;
+	_storageWizardOpenLinkHint = nullptr;
+	_storageWizardLink = nullptr;
+	_storageWizardCodeHint = nullptr;
+	_storageWizardCodeBox = nullptr;
+	_storageWizardPasteButton = nullptr;
+	_storageWizardConnectButton = nullptr;
+	_storageWizardConnectionStatusHint = nullptr;
 	_redrawCloudTab = false;
 #endif
 #ifdef USE_SDL_NET
-	_runServerButton = 0;
-	_serverInfoLabel = 0;
-	_rootPathButton = 0;
-	_rootPath = 0;
-	_rootPathClearButton = 0;
-	_serverPortDesc = 0;
-	_serverPort = 0;
-	_serverPortClearButton = 0;
-	_featureDescriptionLine1 = 0;
-	_featureDescriptionLine2 = 0;
+	_runServerButton = nullptr;
+	_serverInfoLabel = nullptr;
+	_rootPathButton = nullptr;
+	_rootPath = nullptr;
+	_rootPathClearButton = nullptr;
+	_serverPortDesc = nullptr;
+	_serverPort = nullptr;
+	_serverPortClearButton = nullptr;
+	_featureDescriptionLine1 = nullptr;
+	_featureDescriptionLine2 = nullptr;
 	_serverWasRunning = false;
 #endif
 #endif
 #ifdef USE_TTS
 	_enableTTS = false;
-	_ttsCheckbox = 0;
-	_ttsVoiceSelectionPopUp = 0;
+	_ttsCheckbox = nullptr;
+	_ttsVoiceSelectionPopUp = nullptr;
 #endif
 }
 
@@ -1548,10 +1691,10 @@ void GlobalOptionsDialog::build() {
 	//
 	// 1) The graphics tab
 	//
-	_graphicsTabId = tab->addTab(g_system->getOverlayWidth() > 320 ? _("Graphics") : _("GFX"));
-	ScrollContainerWidget *graphicsContainer = new ScrollContainerWidget(tab, "GlobalOptions_Graphics.Container", kGraphicsTabContainerReflowCmd);
+	_graphicsTabId = tab->addTab(g_system->getOverlayWidth() > 320 ? _("Graphics") : _("GFX"), "GlobalOptions_Graphics");
+	ScrollContainerWidget *graphicsContainer = new ScrollContainerWidget(tab, "GlobalOptions_Graphics.Container", "GlobalOptions_Graphics_Container", kGraphicsTabContainerReflowCmd);
 	graphicsContainer->setTarget(this);
-	graphicsContainer->setBackgroundType(ThemeEngine::kDialogBackgroundNone);
+	graphicsContainer->setBackgroundType(ThemeEngine::kWidgetBackgroundNo);
 	addGraphicControls(graphicsContainer, "GlobalOptions_Graphics_Container.");
 
 	//
@@ -1559,7 +1702,7 @@ void GlobalOptionsDialog::build() {
 	//
 
 	if (g_system->hasFeature(OSystem::kFeatureShader)) {
-		tab->addTab(_("Shader"));
+		tab->addTab(_("Shader"), "GlobalOptions_Shader");
 		addShaderControls(tab, "GlobalOptions_Shader.");
 	}
 
@@ -1571,21 +1714,43 @@ void GlobalOptionsDialog::build() {
 		g_system->hasFeature(OSystem::kFeatureSwapMenuAndBackButtons) ||
 		g_system->hasFeature(OSystem::kFeatureKbdMouseSpeed) ||
 		g_system->hasFeature(OSystem::kFeatureJoystickDeadzone)) {
-		tab->addTab(_("Control"));
+		tab->addTab(_("Control"), "GlobalOptions_Control");
 		addControlControls(tab, "GlobalOptions_Control.");
+	}
+
+	//
+	// The Keymap tab
+	//
+	Common::KeymapArray keymaps;
+
+	Common::Keymap *primaryGlobalKeymap = g_system->getEventManager()->getGlobalKeymap();
+	if (primaryGlobalKeymap && !primaryGlobalKeymap->getActions().empty()) {
+		keymaps.push_back(primaryGlobalKeymap);
+	}
+
+	keymaps.push_back(g_system->getGlobalKeymaps());
+
+	Common::Keymap *guiKeymap = g_gui.getKeymap();
+	if (guiKeymap && !guiKeymap->getActions().empty()) {
+		keymaps.push_back(guiKeymap);
+	}
+
+	if (!keymaps.empty()) {
+		tab->addTab(_("Keymaps"), "GlobalOptions_KeyMapper");
+		addKeyMapperControls(tab, "GlobalOptions_KeyMapper.", keymaps, Common::ConfigManager::kKeymapperDomain);
 	}
 
 	//
 	// 2) The audio tab
 	//
-	tab->addTab(_("Audio"));
+	tab->addTab(_("Audio"), "GlobalOptions_Audio");
 	addAudioControls(tab, "GlobalOptions_Audio.");
 	addSubtitleControls(tab, "GlobalOptions_Audio.");
 
 	if (g_system->getOverlayWidth() > 320)
-		tab->addTab(_("Volume"));
+		tab->addTab(_("Volume"), "GlobalOptions_Volume");
 	else
-		tab->addTab(_c("Volume", "lowres"));
+		tab->addTab(_c("Volume", "lowres"), "GlobalOptions_Volume");
 	addVolumeControls(tab, "GlobalOptions_Volume.");
 
 	// TODO: cd drive setting
@@ -1593,168 +1758,35 @@ void GlobalOptionsDialog::build() {
 	//
 	// 3) The MIDI tab
 	//
-	_midiTabId = tab->addTab(_("MIDI"));
+	_midiTabId = tab->addTab(_("MIDI"), "GlobalOptions_MIDI");
 	addMIDIControls(tab, "GlobalOptions_MIDI.");
-
-#ifdef USE_FLUIDSYNTH
-	new ButtonWidget(tab, "GlobalOptions_MIDI.mcFluidSynthSettings", _("FluidSynth Settings"), 0, kFluidSynthSettingsCmd);
-#endif
 
 	//
 	// 4) The MT-32 tab
 	//
-	tab->addTab(_("MT-32"));
+	tab->addTab(_("MT-32"), "GlobalOptions_MT32");
 	addMT32Controls(tab, "GlobalOptions_MT32.");
 
 	//
 	// 5) The Paths tab
 	//
 	if (g_system->getOverlayWidth() > 320)
-		_pathsTabId = tab->addTab(_("Paths"));
+		_pathsTabId = tab->addTab(_("Paths"), "GlobalOptions_Paths");
 	else
-		_pathsTabId = tab->addTab(_c("Paths", "lowres"));
-
-#if !defined(__DC__)
-	// These two buttons have to be extra wide, or the text will be
-	// truncated in the small version of the GUI.
-
-	// Save game path
-	if (g_system->getOverlayWidth() > 320)
-		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _("Save Path:"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
-	else
-		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _c("Save Path:", "lowres"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
-	_savePath = new StaticTextWidget(tab, "GlobalOptions_Paths.SavePath", "/foo/bar", _("Specifies where your saved games are put"));
-
-	_savePathClearButton = addClearButton(tab, "GlobalOptions_Paths.SavePathClearButton", kSavePathClearCmd);
-
-	if (g_system->getOverlayWidth() > 320)
-		new ButtonWidget(tab, "GlobalOptions_Paths.ThemeButton", _("Theme Path:"), 0, kChooseThemeDirCmd);
-	else
-		new ButtonWidget(tab, "GlobalOptions_Paths.ThemeButton", _c("Theme Path:", "lowres"), 0, kChooseThemeDirCmd);
-	_themePath = new StaticTextWidget(tab, "GlobalOptions_Paths.ThemePath", _c("None", "path"));
-
-	_themePathClearButton = addClearButton(tab, "GlobalOptions_Paths.ThemePathClearButton", kThemePathClearCmd);
-
-	if (g_system->getOverlayWidth() > 320)
-		new ButtonWidget(tab, "GlobalOptions_Paths.ExtraButton", _("Extra Path:"), _("Specifies path to additional data used by all games or ScummVM"), kChooseExtraDirCmd);
-	else
-		new ButtonWidget(tab, "GlobalOptions_Paths.ExtraButton", _c("Extra Path:", "lowres"), _("Specifies path to additional data used by all games or ScummVM"), kChooseExtraDirCmd);
-	_extraPath = new StaticTextWidget(tab, "GlobalOptions_Paths.ExtraPath", _c("None", "path"), _("Specifies path to additional data used by all games or ScummVM"));
-
-	_extraPathClearButton = addClearButton(tab, "GlobalOptions_Paths.ExtraPathClearButton", kExtraPathClearCmd);
-
-#ifdef DYNAMIC_MODULES
-	if (g_system->getOverlayWidth() > 320)
-		new ButtonWidget(tab, "GlobalOptions_Paths.PluginsButton", _("Plugins Path:"), 0, kChoosePluginsDirCmd);
-	else
-		new ButtonWidget(tab, "GlobalOptions_Paths.PluginsButton", _c("Plugins Path:", "lowres"), 0, kChoosePluginsDirCmd);
-	_pluginsPath = new StaticTextWidget(tab, "GlobalOptions_Paths.PluginsPath", _c("None", "path"));
-#endif
-#endif
+		_pathsTabId = tab->addTab(_c("Paths", "lowres"), "GlobalOptions_Paths");
+	addPathsControls(tab, "GlobalOptions_Paths.", g_system->getOverlayWidth() <= 320);
 
 	//
 	// 6) The miscellaneous tab
 	//
 	if (g_system->getOverlayWidth() > 320)
-		tab->addTab(_("Misc"));
+		tab->addTab(_("Misc"), "GlobalOptions_Misc");
 	else
-		tab->addTab(_c("Misc", "lowres"));
-
-	new ButtonWidget(tab, "GlobalOptions_Misc.ThemeButton", _("Theme:"), 0, kChooseThemeCmd);
-	_curTheme = new StaticTextWidget(tab, "GlobalOptions_Misc.CurTheme", g_gui.theme()->getThemeName());
-
-
-	_rendererPopUpDesc = new StaticTextWidget(tab, "GlobalOptions_Misc.RendererPopupDesc", _("GUI renderer:"));
-	_rendererPopUp = new PopUpWidget(tab, "GlobalOptions_Misc.RendererPopup");
-
-	if (g_system->getOverlayWidth() > 320) {
-		for (uint i = 1; i < GUI::ThemeEngine::_rendererModesSize; ++i)
-			_rendererPopUp->appendEntry(_(GUI::ThemeEngine::_rendererModes[i].name), GUI::ThemeEngine::_rendererModes[i].mode);
-	} else {
-		for (uint i = 1; i < GUI::ThemeEngine::_rendererModesSize; ++i)
-			_rendererPopUp->appendEntry(_(GUI::ThemeEngine::_rendererModes[i].shortname), GUI::ThemeEngine::_rendererModes[i].mode);
-	}
-
-	if (g_system->getOverlayWidth() > 320)
-		_autosavePeriodPopUpDesc = new StaticTextWidget(tab, "GlobalOptions_Misc.AutosavePeriodPopupDesc", _("Autosave:"));
-	else
-		_autosavePeriodPopUpDesc = new StaticTextWidget(tab, "GlobalOptions_Misc.AutosavePeriodPopupDesc", _c("Autosave:", "lowres"));
-	_autosavePeriodPopUp = new PopUpWidget(tab, "GlobalOptions_Misc.AutosavePeriodPopup");
-
-	for (int i = 0; savePeriodLabels[i]; i++) {
-		_autosavePeriodPopUp->appendEntry(_(savePeriodLabels[i]), savePeriodValues[i]);
-	}
-
-#ifdef GUI_ENABLE_KEYSDIALOG
-	new ButtonWidget(tab, "GlobalOptions_Misc.KeysButton", _("Keys"), 0, kChooseKeyMappingCmd);
-#endif
-
-	// TODO: joystick setting
-
-
-#ifdef USE_TRANSLATION
-	_guiLanguagePopUpDesc = new StaticTextWidget(tab, "GlobalOptions_Misc.GuiLanguagePopupDesc", _("GUI language:"), _("Language of ScummVM GUI"));
-	_guiLanguagePopUp = new PopUpWidget(tab, "GlobalOptions_Misc.GuiLanguagePopup");
-#ifdef USE_DETECTLANG
-	_guiLanguagePopUp->appendEntry(_("<default>"), Common::kTranslationAutodetectId);
-#endif // USE_DETECTLANG
-	_guiLanguagePopUp->appendEntry("English", Common::kTranslationBuiltinId);
-	_guiLanguagePopUp->appendEntry("", 0);
-	Common::TLangArray languages = TransMan.getSupportedLanguageNames();
-	Common::TLangArray::iterator lang = languages.begin();
-	while (lang != languages.end()) {
-		_guiLanguagePopUp->appendEntry(lang->name, lang->id);
-		lang++;
-	}
-
-	// Select the currently configured language or default/English if
-	// nothing is specified.
-	if (ConfMan.hasKey("gui_language") && !ConfMan.get("gui_language").empty())
-		_guiLanguagePopUp->setSelectedTag(TransMan.parseLanguage(ConfMan.get("gui_language")));
-	else
-#ifdef USE_DETECTLANG
-		_guiLanguagePopUp->setSelectedTag(Common::kTranslationAutodetectId);
-#else // !USE_DETECTLANG
-		_guiLanguagePopUp->setSelectedTag(Common::kTranslationBuiltinId);
-#endif // USE_DETECTLANG
-
-	_guiLanguageUseGameLanguageCheckbox = new CheckboxWidget(tab, "GlobalOptions_Misc.GuiLanguageUseGameLanguage",
-			_("Switch the GUI language to the game language"),
-			_("When starting a game, change the GUI language to the game language."
-			"That way, if a game uses the ScummVM save and load dialogs, they are "
-			"in the same language as the game.")
-	);
-
-	if (ConfMan.hasKey("gui_use_game_language")) {
-		_guiLanguageUseGameLanguageCheckbox->setState(ConfMan.getBool("gui_use_game_language", _domain));
-	}
-
-#endif // USE_TRANSLATION
-
-	if (g_system->hasFeature(OSystem::kFeatureSystemBrowserDialog)) {
-		_useSystemDialogsCheckbox = new CheckboxWidget(tab, "GlobalOptions_Misc.UseSystemDialogs",
-			_("Use native system file browser"),
-			_("Use the native system file browser instead of the ScummVM one to select a file or directory.")
-		);
-
-		_useSystemDialogsCheckbox->setState(ConfMan.getBool("gui_browser_native", _domain));
-	}
-
-#ifdef USE_UPDATES
-	_updatesPopUpDesc = new StaticTextWidget(tab, "GlobalOptions_Misc.UpdatesPopupDesc", _("Update check:"), _("How often to check ScummVM updates"));
-	_updatesPopUp = new PopUpWidget(tab, "GlobalOptions_Misc.UpdatesPopup");
-
-	const int *vals = Common::UpdateManager::getUpdateIntervals();
-
-	while (*vals != -1) {
-		_updatesPopUp->appendEntry(Common::UpdateManager::updateIntervalToString(*vals), *vals);
-		vals++;
-	}
-
-	_updatesPopUp->setSelectedTag(Common::UpdateManager::normalizeInterval(ConfMan.getInt("updates_check")));
-
-	new ButtonWidget(tab, "GlobalOptions_Misc.UpdatesCheckManuallyButton", _("Check now"), 0, kUpdatesCheckCmd);
-#endif
+		tab->addTab(_c("Misc", "lowres"), "GlobalOptions_Misc");
+	ScrollContainerWidget *miscContainer = new ScrollContainerWidget(tab, "GlobalOptions_Misc.Container", "GlobalOptions_Misc_Container");
+	miscContainer->setTarget(this);
+	miscContainer->setBackgroundType(ThemeEngine::kWidgetBackgroundNo);
+	addMiscControls(miscContainer, "GlobalOptions_Misc_Container.", g_system->getOverlayWidth() <= 320);
 
 #ifdef USE_CLOUD
 #ifdef USE_LIBCURL
@@ -1762,13 +1794,13 @@ void GlobalOptionsDialog::build() {
 	// 7) The Cloud tab (remote storages)
 	//
 	if (g_system->getOverlayWidth() > 320)
-		tab->addTab(_("Cloud"));
+		tab->addTab(_("Cloud"), "GlobalOptions_Cloud");
 	else
-		tab->addTab(_c("Cloud", "lowres"));
+		tab->addTab(_c("Cloud", "lowres"), "GlobalOptions_Cloud");
 
-	ScrollContainerWidget *container = new ScrollContainerWidget(tab, "GlobalOptions_Cloud.Container", kCloudTabContainerReflowCmd);
+	ScrollContainerWidget *container = new ScrollContainerWidget(tab, "GlobalOptions_Cloud.Container", "GlobalOptions_Cloud_Container", kCloudTabContainerReflowCmd);
 	container->setTarget(this);
-	container->setBackgroundType(ThemeEngine::kDialogBackgroundNone);
+	container->setBackgroundType(ThemeEngine::kWidgetBackgroundNo);
 	setTarget(container);
 
 	addCloudControls(container, "GlobalOptions_Cloud_Container.", g_system->getOverlayWidth() <= 320);
@@ -1778,9 +1810,9 @@ void GlobalOptionsDialog::build() {
 	// 8) The LAN tab (local "cloud" webserver)
 	//
 	if (g_system->getOverlayWidth() > 320)
-		tab->addTab(_("LAN"));
+		tab->addTab(_("LAN"), "GlobalOptions_Network");
 	else
-		tab->addTab(_c("LAN", "lowres"));
+		tab->addTab(_c("LAN", "lowres"), "GlobalOptions_Network");
 	addNetworkControls(tab, "GlobalOptions_Network.", g_system->getOverlayWidth() <= 320);
 #endif // USE_SDL_NET
 #endif // USE_CLOUD
@@ -1788,33 +1820,10 @@ void GlobalOptionsDialog::build() {
 	//Accessibility
 #ifdef USE_TTS
 	if (g_system->getOverlayWidth() > 320)
-		tab->addTab(_("Accessibility"));
+		tab->addTab(_("Accessibility"), "GlobalOptions_Accessibility");
 	else
-		tab->addTab(_c("Accessibility", "lowres"));
-	_ttsCheckbox = new CheckboxWidget(tab, "GlobalOptions_Accessibility.TTSCheckbox",
-			_("Use Text to speech"), _("Will read text in gui on mouse over."));
-	if (ConfMan.hasKey("tts_enabled"))
-		_ttsCheckbox->setState(ConfMan.getBool("tts_enabled", _domain));
-	else
-		_ttsCheckbox->setState(false);
-
-	_ttsVoiceSelectionPopUp = new PopUpWidget(tab, "GlobalOptions_Accessibility.TTSVoiceSelection");
-	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
-	Common::Array<Common::TTSVoice> voices;
-	if (ttsMan != nullptr)
-		voices = ttsMan->getVoicesArray();
-
-	for(unsigned i = 0; i < voices.size(); i++) {
-		_ttsVoiceSelectionPopUp->appendEntry(voices[i].getDescription(), i);
-	}
-	if (voices.empty())
-		_ttsVoiceSelectionPopUp->appendEntry("None", 0);
-
-	if (ConfMan.hasKey("tts_voice") && (unsigned) ConfMan.getInt("tts_voice", _domain) < voices.size())
-		_ttsVoiceSelectionPopUp->setSelectedTag(ConfMan.getInt("tts_voice", _domain)) ;
-	else
-		_ttsVoiceSelectionPopUp->setSelectedTag(0);
-
+		tab->addTab(_c("Accessibility", "lowres"), "GlobalOptions_Accessibility");
+	addAccessibilityControls(tab, "GlobalOptions_Accessibility.");
 #endif // USE_TTS
 
 	// Activate the first tab
@@ -1822,9 +1831,9 @@ void GlobalOptionsDialog::build() {
 	_tabWidget = tab;
 
 	// Add OK & Cancel buttons
-	new ButtonWidget(this, "GlobalOptions.Cancel", _("Cancel"), 0, kCloseCmd);
-	new ButtonWidget(this, "GlobalOptions.Apply", _("Apply"), 0, kApplyCmd);
-	new ButtonWidget(this, "GlobalOptions.Ok", _("OK"), 0, kOKCmd);
+	new ButtonWidget(this, "GlobalOptions.Cancel", _("Cancel"), nullptr, kCloseCmd);
+	new ButtonWidget(this, "GlobalOptions.Apply", _("Apply"), nullptr, kApplyCmd);
+	new ButtonWidget(this, "GlobalOptions.Ok", _("OK"), nullptr, kOKCmd);
 
 #ifdef GUI_ENABLE_KEYSDIALOG
 	_keysDialog = new KeysDialog();
@@ -1898,15 +1907,163 @@ void GlobalOptionsDialog::build() {
 void GlobalOptionsDialog::clean() {
 #ifdef GUI_ENABLE_KEYSDIALOG
 	delete _keysDialog;
-	_keysDialog = 0;
+	_keysDialog = nullptr;
 #endif
 
 #ifdef USE_FLUIDSYNTH
 	delete _fluidSynthSettingsDialog;
-	_fluidSynthSettingsDialog = 0;
+	_fluidSynthSettingsDialog = nullptr;
 #endif
 
 	OptionsDialog::clean();
+}
+
+void GlobalOptionsDialog::addMIDIControls(GuiObject *boss, const Common::String &prefix) {
+	OptionsDialog::addMIDIControls(boss, prefix);
+
+#ifdef USE_FLUIDSYNTH
+	new ButtonWidget(boss, prefix + "mcFluidSynthSettings", _("FluidSynth Settings"), nullptr, kFluidSynthSettingsCmd);
+#endif
+}
+
+void GlobalOptionsDialog::addPathsControls(GuiObject *boss, const Common::String &prefix, bool lowres) {
+#if !defined(__DC__)
+	// These two buttons have to be extra wide, or the text will be
+	// truncated in the small version of the GUI.
+
+	// Save game path
+	if (!lowres)
+		new ButtonWidget(boss, prefix + "SaveButton", _("Save Path:"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
+	else
+		new ButtonWidget(boss, prefix + "SaveButton", _c("Save Path:", "lowres"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
+	_savePath = new StaticTextWidget(boss, prefix + "SavePath", "/foo/bar", _("Specifies where your saved games are put"));
+
+	_savePathClearButton = addClearButton(boss, prefix + "SavePathClearButton", kSavePathClearCmd);
+
+	if (!lowres)
+		new ButtonWidget(boss, prefix + "ThemeButton", _("Theme Path:"), nullptr, kChooseThemeDirCmd);
+	else
+		new ButtonWidget(boss, prefix + "ThemeButton", _c("Theme Path:", "lowres"), nullptr, kChooseThemeDirCmd);
+	_themePath = new StaticTextWidget(boss, prefix + "ThemePath", _c("None", "path"));
+
+	_themePathClearButton = addClearButton(boss, prefix + "ThemePathClearButton", kThemePathClearCmd);
+
+	if (!lowres)
+		new ButtonWidget(boss, prefix + "ExtraButton", _("Extra Path:"), _("Specifies path to additional data used by all games or ScummVM"), kChooseExtraDirCmd);
+	else
+		new ButtonWidget(boss, prefix + "ExtraButton", _c("Extra Path:", "lowres"), _("Specifies path to additional data used by all games or ScummVM"), kChooseExtraDirCmd);
+	_extraPath = new StaticTextWidget(boss, prefix + "ExtraPath", _c("None", "path"), _("Specifies path to additional data used by all games or ScummVM"));
+
+	_extraPathClearButton = addClearButton(boss, prefix + "ExtraPathClearButton", kExtraPathClearCmd);
+
+#ifdef DYNAMIC_MODULES
+	if (!lowres)
+		new ButtonWidget(boss, prefix + "PluginsButton", _("Plugins Path:"), nullptr, kChoosePluginsDirCmd);
+	else
+		new ButtonWidget(boss, prefix + "PluginsButton", _c("Plugins Path:", "lowres"), nullptr, kChoosePluginsDirCmd);
+	_pluginsPath = new StaticTextWidget(boss, prefix + "PluginsPath", _c("None", "path"));
+
+	_pluginsPathClearButton = addClearButton(boss, "GlobalOptions_Paths.PluginsPathClearButton", kPluginsPathClearCmd);
+#endif
+#endif
+}
+
+void GlobalOptionsDialog::addMiscControls(GuiObject *boss, const Common::String &prefix, bool lowres) {
+	new ButtonWidget(boss, prefix + "ThemeButton", _("Theme:"), nullptr, kChooseThemeCmd);
+	_curTheme = new StaticTextWidget(boss, prefix + "CurTheme", g_gui.theme()->getThemeName());
+
+
+	_rendererPopUpDesc = new StaticTextWidget(boss, prefix + "RendererPopupDesc", _("GUI renderer:"));
+	_rendererPopUp = new PopUpWidget(boss, prefix + "RendererPopup");
+
+	if (!lowres) {
+		for (uint i = 1; i < GUI::ThemeEngine::_rendererModesSize; ++i)
+			_rendererPopUp->appendEntry(_(GUI::ThemeEngine::_rendererModes[i].name), GUI::ThemeEngine::_rendererModes[i].mode);
+	} else {
+		for (uint i = 1; i < GUI::ThemeEngine::_rendererModesSize; ++i)
+			_rendererPopUp->appendEntry(_(GUI::ThemeEngine::_rendererModes[i].shortname), GUI::ThemeEngine::_rendererModes[i].mode);
+	}
+
+	if (!lowres)
+		_autosavePeriodPopUpDesc = new StaticTextWidget(boss, prefix + "AutosavePeriodPopupDesc", _("Autosave:"));
+	else
+		_autosavePeriodPopUpDesc = new StaticTextWidget(boss, prefix + "AutosavePeriodPopupDesc", _c("Autosave:", "lowres"));
+	_autosavePeriodPopUp = new PopUpWidget(boss, prefix + "AutosavePeriodPopup");
+
+	for (int i = 0; savePeriodLabels[i]; i++) {
+		_autosavePeriodPopUp->appendEntry(_(savePeriodLabels[i]), savePeriodValues[i]);
+	}
+
+#ifdef GUI_ENABLE_KEYSDIALOG
+	new ButtonWidget(boss, prefix + "KeysButton", _("Keys"), nullptr, kChooseKeyMappingCmd);
+#endif
+
+	// TODO: joystick setting
+
+
+#ifdef USE_TRANSLATION
+	_guiLanguagePopUpDesc = new StaticTextWidget(boss, prefix + "GuiLanguagePopupDesc", _("GUI language:"), _("Language of ScummVM GUI"));
+	_guiLanguagePopUp = new PopUpWidget(boss, prefix + "GuiLanguagePopup");
+#ifdef USE_DETECTLANG
+	_guiLanguagePopUp->appendEntry(_("<default>"), Common::kTranslationAutodetectId);
+#endif // USE_DETECTLANG
+	_guiLanguagePopUp->appendEntry("English", Common::kTranslationBuiltinId);
+	_guiLanguagePopUp->appendEntry("", 0);
+	Common::TLangArray languages = TransMan.getSupportedLanguageNames();
+	Common::TLangArray::iterator lang = languages.begin();
+	while (lang != languages.end()) {
+		_guiLanguagePopUp->appendEntry(lang->name, lang->id);
+		lang++;
+	}
+
+	// Select the currently configured language or default/English if
+	// nothing is specified.
+	if (ConfMan.hasKey("gui_language") && !ConfMan.get("gui_language").empty())
+		_guiLanguagePopUp->setSelectedTag(TransMan.parseLanguage(ConfMan.get("gui_language")));
+	else
+#ifdef USE_DETECTLANG
+		_guiLanguagePopUp->setSelectedTag(Common::kTranslationAutodetectId);
+#else // !USE_DETECTLANG
+		_guiLanguagePopUp->setSelectedTag(Common::kTranslationBuiltinId);
+#endif // USE_DETECTLANG
+
+	_guiLanguageUseGameLanguageCheckbox = new CheckboxWidget(boss, prefix + "GuiLanguageUseGameLanguage",
+			_("Switch the GUI language to the game language"),
+			_("When starting a game, change the GUI language to the game language."
+			"That way, if a game uses the ScummVM save and load dialogs, they are "
+			"in the same language as the game.")
+	);
+
+	if (ConfMan.hasKey("gui_use_game_language")) {
+		_guiLanguageUseGameLanguageCheckbox->setState(ConfMan.getBool("gui_use_game_language", _domain));
+	}
+
+#endif // USE_TRANSLATION
+
+	if (g_system->hasFeature(OSystem::kFeatureSystemBrowserDialog)) {
+		_useSystemDialogsCheckbox = new CheckboxWidget(boss, prefix + "UseSystemDialogs",
+			_("Use native system file browser"),
+			_("Use the native system file browser instead of the ScummVM one to select a file or directory.")
+		);
+
+		_useSystemDialogsCheckbox->setState(ConfMan.getBool("gui_browser_native", _domain));
+	}
+
+#ifdef USE_UPDATES
+	_updatesPopUpDesc = new StaticTextWidget(boss, prefix + "UpdatesPopupDesc", _("Update check:"), _("How often to check ScummVM updates"));
+	_updatesPopUp = new PopUpWidget(boss, prefix + "UpdatesPopup");
+
+	const int *vals = Common::UpdateManager::getUpdateIntervals();
+
+	while (*vals != -1) {
+		_updatesPopUp->appendEntry(Common::UpdateManager::updateIntervalToString(*vals), *vals);
+		vals++;
+	}
+
+	_updatesPopUp->setSelectedTag(Common::UpdateManager::normalizeInterval(ConfMan.getInt("updates_check")));
+
+	new ButtonWidget(boss, prefix + "UpdatesCheckManuallyButton", _("Check now"), nullptr, kUpdatesCheckCmd);
+#endif
 }
 
 #ifdef USE_CLOUD
@@ -1915,8 +2072,9 @@ void GlobalOptionsDialog::addCloudControls(GuiObject *boss, const Common::String
 	_storagePopUpDesc = new StaticTextWidget(boss, prefix + "StoragePopupDesc", _("Active storage:"), _("Active cloud storage"));
 	_storagePopUp = new PopUpWidget(boss, prefix + "StoragePopup");
 	Common::StringArray list = CloudMan.listStorages();
-	for (uint32 i = 0; i < list.size(); ++i)
-		_storagePopUp->appendEntry(list[i], i);
+	for (uint32 i = 0; i < list.size(); ++i) {
+		_storagePopUp->appendEntry(_(list[i]), i);
+	}
 	_storagePopUp->setSelected(_selectedStorageIndex);
 
 	if (lowres)
@@ -1961,7 +2119,7 @@ void GlobalOptionsDialog::addCloudControls(GuiObject *boss, const Common::String
 		_storageWizardCodeHint = new StaticTextWidget(boss, prefix + "StorageWizardCodeHint", _c("2. Get the code and enter it here:", "lowres"));
 	else
 		_storageWizardCodeHint = new StaticTextWidget(boss, prefix + "StorageWizardCodeHint", _("2. Get the code and enter it here:"));
-	_storageWizardCodeBox = new EditTextWidget(boss, prefix + "StorageWizardCodeBox", "", 0, 0, 0, ThemeEngine::kFontStyleConsole);
+	_storageWizardCodeBox = new EditTextWidget(boss, prefix + "StorageWizardCodeBox", "", nullptr, 0, 0, ThemeEngine::kFontStyleConsole);
 	_storageWizardPasteButton = new ButtonWidget(boss, prefix + "StorageWizardPasteButton", _("Paste"), _("Paste code from clipboard"), kPasteCodeStorageCmd);
 	_storageWizardConnectButton = new ButtonWidget(boss, prefix + "StorageWizardConnectButton", _("3. Connect"), _("Connect your cloud storage account"), kConnectStorageCmd);
 	_storageWizardConnectionStatusHint = new StaticTextWidget(boss, prefix + "StorageWizardConnectionStatusHint", "...");
@@ -1986,7 +2144,7 @@ void GlobalOptionsDialog::addNetworkControls(GuiObject *boss, const Common::Stri
 	uint32 port = Networking::LocalWebserver::getPort();
 
 	_serverPortDesc = new StaticTextWidget(boss, prefix + "ServerPortDesc", _("Server's port:"), _("Port for server to use"));
-	_serverPort = new EditTextWidget(boss, prefix + "ServerPortEditText", Common::String::format("%u", port), 0);
+	_serverPort = new EditTextWidget(boss, prefix + "ServerPortEditText", Common::String::format("%u", port), nullptr);
 	_serverPortClearButton = addClearButton(boss, prefix + "ServerPortClearButton", kServerPortClearCmd);
 
 	if (lowres) {
@@ -2002,6 +2160,34 @@ void GlobalOptionsDialog::addNetworkControls(GuiObject *boss, const Common::Stri
 }
 #endif // USE_SDL_NET
 #endif // USE_CLOUD
+
+#ifdef USE_TTS
+void GlobalOptionsDialog::addAccessibilityControls(GuiObject *boss, const Common::String &prefix) {
+	_ttsCheckbox = new CheckboxWidget(boss, prefix + "TTSCheckbox",
+			_("Use Text to speech"), _("Will read text in gui on mouse over."));
+	if (ConfMan.hasKey("tts_enabled"))
+		_ttsCheckbox->setState(ConfMan.getBool("tts_enabled", _domain));
+	else
+		_ttsCheckbox->setState(false);
+
+	_ttsVoiceSelectionPopUp = new PopUpWidget(boss, prefix + "TTSVoiceSelection");
+	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+	Common::Array<Common::TTSVoice> voices;
+	if (ttsMan != nullptr)
+		voices = ttsMan->getVoicesArray();
+
+	for(unsigned i = 0; i < voices.size(); i++) {
+		_ttsVoiceSelectionPopUp->appendEntry(voices[i].getDescription(), i);
+	}
+	if (voices.empty())
+		_ttsVoiceSelectionPopUp->appendEntry(_("None"), 0);
+
+	if (ConfMan.hasKey("tts_voice") && (unsigned) ConfMan.getInt("tts_voice", _domain) < voices.size())
+		_ttsVoiceSelectionPopUp->setSelectedTag(ConfMan.getInt("tts_voice", _domain)) ;
+	else
+		_ttsVoiceSelectionPopUp->setSelectedTag(0);
+}
+#endif
 
 void GlobalOptionsDialog::apply() {
 	OptionsDialog::apply();
@@ -2154,6 +2340,7 @@ void GlobalOptionsDialog::apply() {
 	}
 #ifdef USE_TTS
 	Common::TextToSpeechManager *ttsMan = g_system->getTextToSpeechManager();
+	if (ttsMan) {
 	if (newLang != oldLang) {
 		if (newLang == "C")
 			ttsMan->setLanguage("en");
@@ -2170,12 +2357,13 @@ void GlobalOptionsDialog::apply() {
 	int selectedVoice = _ttsVoiceSelectionPopUp->getSelectedTag();
 	ConfMan.setInt("tts_voice", selectedVoice, _domain);
 	ttsMan->setVoice(selectedVoice);
+	}
 #endif
 
 	if (isRebuildNeeded) {
-		rebuild();
-		if (_launcher != 0)
+		if (_launcher != nullptr)
 			_launcher->rebuild();
+		rebuild();
 	}
 
 	_newTheme.clear();
@@ -2269,6 +2457,11 @@ void GlobalOptionsDialog::handleCommand(CommandSender *sender, uint32 cmd, uint3
 	case kSavePathClearCmd:
 		_savePath->setLabel(_("Default"));
 		break;
+#ifdef DYNAMIC_MODULES
+	case kPluginsPathClearCmd:
+		_pluginsPath->setLabel(_c("None", "path"));
+		break;
+#endif
 #ifdef USE_CLOUD
 #ifdef USE_SDL_NET
 	case kRootPathClearCmd:
@@ -2347,6 +2540,8 @@ void GlobalOptionsDialog::handleCommand(CommandSender *sender, uint32 cmd, uint3
 			break;
 		case Cloud::kStorageBoxId:
 			url += "box";
+			break;
+		default:
 			break;
 		}
 
@@ -2518,7 +2713,7 @@ void GlobalOptionsDialog::reflowLayout() {
 		_tabWidget->setActiveTab(_midiTabId);
 
 		_tabWidget->removeWidget(_soundFontClearButton);
-		_soundFontClearButton->setNext(0);
+		_soundFontClearButton->setNext(nullptr);
 		delete _soundFontClearButton;
 		_soundFontClearButton = addClearButton(_tabWidget, "GlobalOptions_MIDI.mcFontClearButton", kClearSoundFontCmd);
 	}
@@ -2527,17 +2722,17 @@ void GlobalOptionsDialog::reflowLayout() {
 		_tabWidget->setActiveTab(_pathsTabId);
 
 		_tabWidget->removeWidget(_savePathClearButton);
-		_savePathClearButton->setNext(0);
+		_savePathClearButton->setNext(nullptr);
 		delete _savePathClearButton;
 		_savePathClearButton = addClearButton(_tabWidget, "GlobalOptions_Paths.SavePathClearButton", kSavePathClearCmd);
 
 		_tabWidget->removeWidget(_themePathClearButton);
-		_themePathClearButton->setNext(0);
+		_themePathClearButton->setNext(nullptr);
 		delete _themePathClearButton;
 		_themePathClearButton = addClearButton(_tabWidget, "GlobalOptions_Paths.ThemePathClearButton", kThemePathClearCmd);
 
 		_tabWidget->removeWidget(_extraPathClearButton);
-		_extraPathClearButton->setNext(0);
+		_extraPathClearButton->setNext(nullptr);
 		delete _extraPathClearButton;
 		_extraPathClearButton = addClearButton(_tabWidget, "GlobalOptions_Paths.ExtraPathClearButton", kExtraPathClearCmd);
 	}
@@ -2578,7 +2773,7 @@ void GlobalOptionsDialog::setupCloudTab() {
 
 	// calculate shift
 	int16 x, y;
-	uint16 w, h;
+	int16 w, h;
 	int16 shiftUp = 0;
 	if (!showingCurrentStorage || enabled) {
 		// "storage is disabled" hint is not shown, shift everything up
@@ -2707,7 +2902,7 @@ void GlobalOptionsDialog::shiftWidget(Widget *widget, const char *widgetName, in
 	if (!widget) return;
 
 	int16 x, y;
-	uint16 w, h;
+	int16 w, h;
 	if (!g_gui.xmlEval()->getWidgetData(widgetName, x, y, w, h))
 		warning("%s's position is undefined", widgetName);
 

@@ -452,7 +452,7 @@ int Room::demon6ShowCase(int visible) {
 	_vm->_gfx->fadeoutScreen();
 	_vm->_gfx->pushSprites();
 
-	_vm->_gfx->setBackgroundImage(_vm->_gfx->loadBitmap("stlcase"));
+	_vm->_gfx->setBackgroundImage("stlcase");
 	_vm->_gfx->copyBackgroundScreen();
 	_vm->_gfx->clearPri();
 
@@ -466,7 +466,7 @@ int Room::demon6ShowCase(int visible) {
 		sprites[i].pos.y = spritePositions[i].y;
 		sprites[i].drawPriority = 2;
 		sprites[i].bitmapChanged = true;
-		sprites[i].bitmap = _vm->_gfx->loadBitmap(Common::String::format("stlitem%d", i));
+		sprites[i].setBitmap(_vm->loadBitmapFile(Common::String::format("stlitem%d", i)));
 	}
 
 	Sprite buttonSprite;
@@ -478,7 +478,7 @@ int Room::demon6ShowCase(int visible) {
 	buttonSprite.pos.y = 0x19;
 	buttonSprite.drawPriority = 2;
 	buttonSprite.bitmapChanged = true;
-	buttonSprite.bitmap = _vm->_gfx->loadBitmap("donebutt");
+	buttonSprite.setBitmap(_vm->loadBitmapFile("donebutt"));
 
 	_vm->_gfx->addSprite(&buttonSprite);
 	_vm->_gfx->forceDrawAllSprites();
@@ -489,7 +489,7 @@ int Room::demon6ShowCase(int visible) {
 	_vm->_gfx->fadeoutScreen();
 	_vm->_gfx->popSprites();
 	_vm->_gfx->loadPri(_vm->getScreenName());
-	_vm->_gfx->setBackgroundImage(_vm->_gfx->loadBitmap(_vm->getScreenName()));
+	_vm->_gfx->setBackgroundImage(_vm->getScreenName());
 	_vm->_gfx->copyBackgroundScreen();
 	_vm->_gfx->forceDrawAllSprites();
 
@@ -579,8 +579,7 @@ int Room::demon6ShowCaseProcessSelection(Sprite *sprites, Sprite *clickedSprite,
 	_vm->_gfx->drawAllSprites();
 	_vm->_gfx->delSprite(clickedSprite);
 	clickedSprite->bitmap.reset();
-	int i = clickedSprite - sprites;
-	visible ^= (0x10 >> i);
+	visible ^= (0x10 >> (clickedSprite - sprites));
 	
 	return visible;
 }

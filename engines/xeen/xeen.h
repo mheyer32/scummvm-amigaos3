@@ -131,8 +131,8 @@ private:
 	void loadSettings();
 
 	// Engine APIs
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 
 	/**
 	 * Outer gameplay loop responsible for dispatching control to game-specific
@@ -198,7 +198,7 @@ public:
 	ExtendedOptions _extOptions;
 public:
 	XeenEngine(OSystem *syst, const XeenGameDescription *gameDesc);
-	virtual ~XeenEngine();
+	~XeenEngine() override;
 
 	/**
 	 * Returns the features
@@ -259,27 +259,32 @@ public:
 	/**
 	 * Load a savegame
 	 */
-	virtual Common::Error loadGameState(int slot);
+	Common::Error loadGameState(int slot) override;
 
 	/**
 	 * Save the game
 	 */
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 
 	/**
 	 * Updates sound settings
 	 */
-	virtual void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	/**
 	 * Returns true if a savegame can currently be loaded
 	 */
-	virtual bool canLoadGameStateCurrently();
+	bool canLoadGameStateCurrently() override;
 
 	/**
 	* Returns true if the game can currently be saved
 	*/
-	virtual bool canSaveGameStateCurrently();
+	bool canSaveGameStateCurrently() override;
+
+	/**
+	* Returns true if an autosave can be created
+	*/
+	virtual bool canSaveAutosaveCurrently() override;
 
 	/**
 	 * Show a cutscene
@@ -309,11 +314,6 @@ public:
 	 * Show an error message in a GUI dialog
 	 */
 	void GUIError(const Common::String &msg);
-
-	/**
-	 * Checks if an auto save should be done, and if so, takes care of it
-	 */
-	void autoSaveCheck(int &lastSaveTime);
 };
 
 extern XeenEngine *g_vm;

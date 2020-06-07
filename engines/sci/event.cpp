@@ -243,7 +243,7 @@ SciEvent EventManager::getScummVMEvent() {
 
 		return noEvent;
 	}
-	if (ev.type == Common::EVENT_QUIT || ev.type == Common::EVENT_RTL) {
+	if (ev.type == Common::EVENT_QUIT || ev.type == Common::EVENT_RETURN_TO_LAUNCHER) {
 		input.type = kSciEventQuit;
 		return input;
 	}
@@ -300,14 +300,6 @@ SciEvent EventManager::getScummVMEvent() {
 
 	// Handle keyboard events for the rest of the function
 	if (ev.type != Common::EVENT_KEYDOWN && ev.type != Common::EVENT_KEYUP) {
-		return noEvent;
-	}
-
-	// Check for Control-Shift-D (debug console)
-	if (ev.type == Common::EVENT_KEYDOWN && ev.kbd.hasFlags(Common::KBD_CTRL | Common::KBD_SHIFT) && ev.kbd.keycode == Common::KEYCODE_d) {
-		// Open debug console
-		Console *con = g_sci->getSciDebugger();
-		con->attach();
 		return noEvent;
 	}
 
@@ -383,6 +375,10 @@ SciEvent EventManager::getScummVMEvent() {
 					input.character = 0x80 + i;
 					break;
 				}
+		} else if (g_sci->getLanguage() == Common::HE_ISR) {
+			if (input.character >= 0x05d0 && input.character <= 0x05ea)
+				// convert to WIN-1255
+				input.character = input.character - 0x05d0 + 0xe0;
 		}
 	}
 
@@ -433,7 +429,7 @@ void EventManager::updateScreen() {
 		s->_screenUpdateTime = g_system->getMillis();
 		// Throttle the checking of shouldQuit() to 60fps as well, since
 		// Engine::shouldQuit() invokes 2 virtual functions
-		// (EventManager::shouldQuit() and EventManager::shouldRTL()),
+		// (EventManager::shouldQuit() and EventManager::shouldReturnToLauncher()),
 		// which is very expensive to invoke constantly without any
 		// throttling at all.
 		if (g_engine->shouldQuit())

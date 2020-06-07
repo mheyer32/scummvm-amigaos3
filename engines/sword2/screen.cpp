@@ -157,6 +157,8 @@ void Screen::setRenderLevel(int8 level) {
 		// edge-blending + improved stretching
 		_renderCaps = RDBLTFX_SPRITEBLEND | RDBLTFX_SHADOWBLEND | RDBLTFX_EDGEBLEND;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -554,7 +556,8 @@ void Screen::processImage(BuildUnit *build_unit) {
 	if ( (Sword2Engine::isPsx() &&  _vm->_logic->readVar(DEMO)) &&
 		 ((build_unit->anim_resource == 369 && build_unit->anim_pc == 0) ||
 		 (build_unit->anim_resource == 296 && build_unit->anim_pc == 5)  ||
-		 (build_unit->anim_resource == 534 && build_unit->anim_pc == 13)) )
+		 (build_unit->anim_resource == 534 && build_unit->anim_pc == 13) ||
+		 (build_unit->anim_resource == 416 && build_unit->anim_pc == 41)) )
 		return;
 
 	byte *file = _vm->_resman->openResource(build_unit->anim_resource);
@@ -608,6 +611,8 @@ void Screen::processImage(BuildUnit *build_unit) {
 			colTablePtr = _vm->fetchAnimHeader(file) + AnimHeader::size() + anim_head.noAnimFrames * CdtEntry::size();
 			if (Sword2Engine::isPsx())
 				colTablePtr++; // There is one additional byte to skip before the table in psx version
+			break;
+		default:
 			break;
 		}
 	}
@@ -1144,8 +1149,11 @@ void Screen::rollCredits() {
 						spriteInfo.x = (RENDERWIDE - logoWidth) / 2;
 						spriteInfo.w = logoWidth;
 						spriteInfo.h = logoHeight;
-					} else
+					} else {
 						spriteInfo.x = (RENDERWIDE - frame.width) / 2;
+					}
+					break;
+				default:
 					break;
 				}
 

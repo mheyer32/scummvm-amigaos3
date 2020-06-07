@@ -90,11 +90,9 @@ struct SmallAnim {
 class LilliputEngine : public Engine {
 public:
 	LilliputEngine(OSystem *syst, const LilliputGameDescription *gd);
-	~LilliputEngine();
+	~LilliputEngine() override;
 
 	OSystem *_system;
-
-	GUI::Debugger *getDebugger();
 
 	Common::RandomSource *_rnd;
 	LilliputScript *_scriptHandler;
@@ -323,11 +321,11 @@ public:
 	GameType getGameType() const;
 	Common::Platform getPlatform() const;
 
-	bool hasFeature(EngineFeature f) const;
+	bool hasFeature(EngineFeature f) const override;
 	const char *getCopyrightString() const;
 
 	Common::String getSavegameFilename(int slot);
-	void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	Common::Point _mousePos;
 	Common::Point _oldMousePos;
@@ -366,13 +364,12 @@ protected:
 	int _lastTime;
 
 	// Engine APIs
-	Common::Error run();
+	Common::Error run() override;
 	void handleMenu();
 
 private:
 	static LilliputEngine *s_Engine;
 
-	LilliputConsole *_console;
 	GameType _gameType;
 	Common::Platform _platform;
 

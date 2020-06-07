@@ -48,12 +48,24 @@ struct SavePoint;
 	void setup_##name(); \
 	void name(const SavePoint &savepoint);
 
+#define DECLARE_VFUNCTION(name) \
+	virtual void setup_##name() override; \
+	void name(const SavePoint &savepoint);
+
 #define DECLARE_FUNCTION_1(name, param1) \
 	void setup_##name(param1); \
 	void name(const SavePoint &savepoint);
 
+#define DECLARE_VFUNCTION_1(name, param1) \
+	virtual void setup_##name(param1) override; \
+	void name(const SavePoint &savepoint);
+
 #define DECLARE_FUNCTION_2(name, param1, param2) \
 	void setup_##name(param1, param2); \
+	void name(const SavePoint &savepoint);
+
+#define DECLARE_VFUNCTION_2(name, param1, param2) \
+	virtual void setup_##name(param1, param2) override; \
 	void name(const SavePoint &savepoint);
 
 #define DECLARE_FUNCTION_3(name, param1, param2, param3) \
@@ -290,12 +302,12 @@ class EntityData {
 public:
 
 	struct EntityParameters : Common::Serializable {
-		virtual ~EntityParameters() {}
+		~EntityParameters() override {}
 		virtual Common::String toString() = 0;
 
 		virtual void update(uint32 index) = 0;
 
-		virtual void saveLoadWithSerializer(Common::Serializer &s) = 0;
+		void saveLoadWithSerializer(Common::Serializer &s) override = 0;
 	};
 
 	struct EntityParametersIIII : EntityParameters {
@@ -323,11 +335,11 @@ public:
 			return param1 || param2 || param3 || param4 || param5 || param6 || param7 || param8;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("IIII: %d %d %d %d %d %d %d %d\n", param1, param2, param3, param4, param5, param6, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersIIII::update] Invalid index (was: %d)", index);
@@ -343,7 +355,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncAsUint32LE(param2);
 			s.syncAsUint32LE(param3);
@@ -372,11 +384,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("SIII: %s %d %d %d %d %d\n", seq, param4, param5, param6, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersSIII::update] Invalid index (was: %d)", index);
@@ -389,7 +401,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncBytes((byte *)&seq, 12);
 			s.syncAsUint32LE(param4);
 			s.syncAsUint32LE(param5);
@@ -412,11 +424,11 @@ public:
 			memset(&seq2, 0, 13);
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("SIIS: %s %d %d %s\n", seq1, param4, param5, seq2);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersSIIS::update] Invalid index (was: %d)", index);
@@ -426,7 +438,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncBytes((byte *)&seq1, 12);
 			s.syncAsUint32LE(param4);
 			s.syncAsUint32LE(param5);
@@ -447,11 +459,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("ISSI: %d %s %s %d\n", param1, seq1, seq2, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersISSI::update] Invalid index (was: %d)", index);
@@ -461,7 +473,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncBytes((byte *)&seq1, 12);
 			s.syncBytes((byte *)&seq2, 12);
@@ -486,11 +498,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("ISII: %d %s %d %d %d %d\n", param1, seq, param5, param6, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersISII::update] Invalid index (was: %d)", index);
@@ -503,7 +515,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncBytes((byte *)&seq, 12);
 			s.syncAsUint32LE(param5);
@@ -526,11 +538,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("SSII: %s %s %d %d\n", seq1, seq2, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersSSII::update] Invalid index (was: %d)", index);
@@ -540,7 +552,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncBytes((byte *)&seq1, 12);
 			s.syncBytes((byte *)&seq2, 12);
 			s.syncAsUint32LE(param7);
@@ -559,15 +571,15 @@ public:
 			memset(&seq3, 0, 9);
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("SSS: %s %s %s\n", seq1, seq2, seq3);
 		}
 
-		void update(uint32) {
+		void update(uint32) override {
 			error("[EntityParametersSSS::update] Cannot update this type of parameters");
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncBytes((byte *)&seq1, 12);
 			s.syncBytes((byte *)&seq2, 12);
 			s.syncBytes((byte *)&seq3, 8);
@@ -587,11 +599,11 @@ public:
 			memset(&seq2, 0, 13);
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("IISS: %d %d %s %s\n", param1, param2, seq1, seq2);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersIISS::update] Invalid index (was: %d)", index);
@@ -601,7 +613,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncAsUint32LE(param2);
 			s.syncBytes((byte *)&seq1, 12);
@@ -626,11 +638,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("IISI: %d %d %s %d %d %d\n", param1, param2, seq, param6, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersIISI::update] Invalid index (was: %d)", index);
@@ -643,7 +655,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncAsUint32LE(param2);
 			s.syncBytes((byte *)&seq, 12);
@@ -670,11 +682,11 @@ public:
 			param8 = 0;
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("IIIS: %d %d %d %s %d %d\n", param1, param2, param3, seq, param7, param8);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersIIIS::update] Invalid index (was: %d)", index);
@@ -687,7 +699,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncAsUint32LE(param2);
 			s.syncAsUint32LE(param3);
@@ -714,11 +726,11 @@ public:
 			memset(&seq, 0, 13);
 		}
 
-		Common::String toString() {
+		Common::String toString() override {
 			return Common::String::format("I5S: %d %d %d %d %d %s\n", param1, param2, param3, param4, param5, seq);
 		}
 
-		void update(uint32 index) {
+		void update(uint32 index) override {
 			switch (index) {
 			default:
 				error("[EntityParametersI5S::update] Invalid index (was: %d)", index);
@@ -731,7 +743,7 @@ public:
 			}
 		}
 
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			s.syncAsUint32LE(param1);
 			s.syncAsUint32LE(param2);
 			s.syncAsUint32LE(param3);
@@ -750,7 +762,7 @@ public:
 				parameters[i] = new EntityParametersIIII();
 		}
 
-		~EntityCallParameters() {
+		~EntityCallParameters() override {
 			clear();
 		}
 
@@ -760,7 +772,7 @@ public:
 		}
 
 		// Serializable
-		void saveLoadWithSerializer(Common::Serializer &s) {
+		void saveLoadWithSerializer(Common::Serializer &s) override {
 			for (uint i = 0; i < ARRAYSIZE(parameters); i++)
 				parameters[i]->saveLoadWithSerializer(s);
 		}
@@ -830,7 +842,7 @@ public:
 			sequence3 = NULL;
 		}
 
-		~EntityCallData();
+		~EntityCallData() override;
 
 		/**
 		 * Convert this object into a string representation.
@@ -868,7 +880,7 @@ public:
 		void syncString(Common::Serializer &s, Common::String &string, uint length) const;
 
 		// Serializable
-		void saveLoadWithSerializer(Common::Serializer &s);
+		void saveLoadWithSerializer(Common::Serializer &s) override;
 	};
 
 	EntityData() {}
@@ -908,7 +920,7 @@ private:
 class Entity : Common::Serializable {
 public:
 	Entity(LastExpressEngine *engine, EntityIndex index);
-	virtual ~Entity();
+	~Entity() override;
 
 	// Accessors
 	EntityData *getParamData() { return _data; }
@@ -934,7 +946,7 @@ public:
 	virtual void setup_playSound(const char*) { error("[Entity::setup_playSound] Trying to call the parent setup function. Use the specific entity function directly"); }
 
 	// Serializable
-	void saveLoadWithSerializer(Common::Serializer &ser) { _data->saveLoadWithSerializer(ser, &_paramsTypeSetters); }
+	void saveLoadWithSerializer(Common::Serializer &ser) override { _data->saveLoadWithSerializer(ser, &_paramsTypeSetters); }
 
 	void nullfunction(const SavePoint &savepoint) {}
 

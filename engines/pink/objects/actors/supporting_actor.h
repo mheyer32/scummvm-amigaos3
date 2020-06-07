@@ -33,14 +33,14 @@ class InventoryMgr;
 
 class SupportingActor : public Actor {
 public:
-	virtual void deserialize(Archive &archive) override;
+	void deserialize(Archive &archive) override;
 
-	virtual void toConsole() override;
+	void toConsole() const override;
 
-	bool isSupporting() override { return true; }
+	bool isSupporting() const override { return true; }
 
-	bool isLeftClickHandlers() override;
-	bool isUseClickHandlers(InventoryItem *item) override;
+	bool isLeftClickHandlers() const override;
+	bool isUseClickHandlers(InventoryItem *item) const override;
 
 	void onMouseOver(const Common::Point point, CursorMgr *mgr) override;
 	void onMouseOverWithItem(const Common::Point point, const Common::String &itemName, CursorMgr *cursorMgr) override;

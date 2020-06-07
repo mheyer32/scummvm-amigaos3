@@ -69,12 +69,11 @@ Sword25Engine::Sword25Engine(OSystem *syst, const ADGameDescription *gameDesc):
 	DebugMan.addDebugChannel(kDebugScript, "Scripts", "Script debug level");
 	DebugMan.addDebugChannel(kDebugSound, "Sound", "Sound debug level");
 
-	_console = new Sword25Console(this);
+	setDebugger(new Sword25Console(this));
 }
 
 Sword25Engine::~Sword25Engine() {
 	DebugMan.clearAllDebugChannels();
-	delete _console;
 }
 
 Common::Error Sword25Engine::run() {
@@ -196,12 +195,12 @@ bool Sword25Engine::loadPackages() {
 
 bool Sword25Engine::hasFeature(EngineFeature f) const {
 	return
-		(f == kSupportsRTL);
+		(f == kSupportsReturnToLauncher);
 	// TODO: Implement more of these features?!
 #if 0
 	return
 		(f == kSupportsSubtitleOptions) ||
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 		(f == kSupportsLoadingDuringRuntime) ||
 		(f == kSupportsSavingDuringRuntime);
 #endif

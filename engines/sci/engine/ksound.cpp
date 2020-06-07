@@ -71,13 +71,18 @@ CREATE_DOSOUND_FORWARD(DoSoundSetPriority)
 CREATE_DOSOUND_FORWARD(DoSoundSetLoop)
 
 #ifdef ENABLE_SCI32
-reg_t kDoSoundPhantasmagoriaMac(EngineState *s, int argc, reg_t *argv) {
-	// Phantasmagoria Mac (and seemingly no other game (!)) uses this
-	// cutdown version of kDoSound.
-
+reg_t kDoSoundMac32(EngineState *s, int argc, reg_t *argv) {
+	// Several SCI 2.1 Middle Mac games, but not all, contain a modified kDoSound
+	//  in which all but eleven subops were removed, changing their subop values to
+	//  zero through ten. PQSWAT then restored all of the subops, but kept the new
+	//  subop values that removing caused in the first place, and assigned new
+	//  values to the restored subops. It is the only game that does this and it
+	//  only uses two of them.
 	switch (argv[0].toUint16()) {
 	case 0:
 		return g_sci->_soundCmd->kDoSoundMasterVolume(s, argc - 1, argv + 1);
+	case 1:
+		return g_sci->_soundCmd->kDoSoundGetAudioCapability(s, argc - 1, argv + 1);
 	case 2:
 		return g_sci->_soundCmd->kDoSoundInit(s, argc - 1, argv + 1);
 	case 3:
@@ -86,15 +91,26 @@ reg_t kDoSoundPhantasmagoriaMac(EngineState *s, int argc, reg_t *argv) {
 		return g_sci->_soundCmd->kDoSoundPlay(s, argc - 1, argv + 1);
 	case 5:
 		return g_sci->_soundCmd->kDoSoundStop(s, argc - 1, argv + 1);
+	case 6:
+		return g_sci->_soundCmd->kDoSoundPause(s, argc - 1, argv + 1);
+	case 7:
+		return g_sci->_soundCmd->kDoSoundFade(s, argc - 1, argv + 1);
 	case 8:
 		return g_sci->_soundCmd->kDoSoundSetVolume(s, argc - 1, argv + 1);
 	case 9:
 		return g_sci->_soundCmd->kDoSoundSetLoop(s, argc - 1, argv + 1);
 	case 10:
 		return g_sci->_soundCmd->kDoSoundUpdateCues(s, argc - 1, argv + 1);
+	// PQSWAT only
+	case 12: // kDoSoundRestore
+		return kEmpty(s, argc - 1, argv + 1);
+	case 13:
+		return g_sci->_soundCmd->kDoSoundGetPolyphony(s, argc - 1, argv + 1);
+	default:
+		break;
 	}
 
-	error("Unknown kDoSound Phantasmagoria Mac subop %d", argv[0].toUint16());
+	error("Unknown kDoSoundMac32 subop %d", argv[0].toUint16());
 	return s->r_acc;
 }
 #endif
@@ -172,14 +188,6 @@ reg_t kDoAudio(EngineState *s, int argc, reg_t *argv) {
 			         ((argv[3].toUint16() & 0xff) << 16) |
 			         ((argv[4].toUint16() & 0xff) <<  8) |
 			          (argv[5].toUint16() & 0xff);
-			// Removed warning because of the high amount of console spam
-			/*if (argc == 8) {
-				// TODO: Handle the extra 2 SCI21 params
-				// argv[6] is always 1
-				// argv[7] is the contents of global 229 (0xE5)
-				warning("kDoAudio: Play called with SCI2.1 extra parameters: %04x:%04x and %04x:%04x",
-						PRINT_REG(argv[6]), PRINT_REG(argv[7]));
-			}*/
 		} else {
 			warning("kDoAudio: Play called with an unknown number of parameters (%d)", argc);
 			return NULL_REG;
@@ -277,7 +285,6 @@ reg_t kDoAudio(EngineState *s, int argc, reg_t *argv) {
 		// more explicit.
 
 		return make_reg(0, 1);
-		break;
 	case 13:
 		// SSCI returns a serial number for the played audio
 		// here, used in the PointsSound class. The reason is severalfold:
@@ -292,7 +299,6 @@ reg_t kDoAudio(EngineState *s, int argc, reg_t *argv) {
 		// return a constant here. This is equivalent to the
 		// old behavior, as above.
 		return make_reg(0, 1);
-		break;
 	case 17:
 		// Seems to be some sort of audio sync, used in SQ6. Silenced the
 		// warning due to the high level of spam it produces. (takes no params)
@@ -463,9 +469,14 @@ reg_t kDoAudioPanOff(EngineState *s, int argc, reg_t *argv) {
 
 reg_t kSetLanguage(EngineState *s, int argc, reg_t *argv) {
 	// Used by script 90 of MUMG Deluxe from the main menu to toggle between
-	// English and Spanish.
+	// English and Spanish in some versions and English and Spanish and
+	// French and German in others.
 	const Common::String audioDirectory = s->_segMan->getString(argv[0]);
-	g_sci->getResMan()->changeAudioDirectory(audioDirectory);
+	if (g_sci->getPlatform() == Common::kPlatformMacintosh) {
+		g_sci->getResMan()->changeMacAudioDirectory(audioDirectory);
+	} else {
+		g_sci->getResMan()->changeAudioDirectory(audioDirectory);
+	}
 	return s->r_acc;
 }
 

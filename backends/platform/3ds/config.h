@@ -26,12 +26,11 @@
 #include "common/str.h"
 
 namespace _3DS {
-	
+
 struct Config {
 	bool showCursor;
 	bool snapToBorder;
 	bool stretchToFit;
-	int sensitivity;
 	int screen;
 };
 

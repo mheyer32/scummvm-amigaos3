@@ -2,6 +2,56 @@ Umfangreichere Informationen über die Änderungen des aktuellen experimentellen
 Programmcodes finden Sie auf Englisch unter:
         https://github.com/scummvm/scummvm/commits/
 
+#### 2.2.0 (DD.MM.YYYY)
+
+ Allgemein:
+   - Alle Engines unterstützen nun automatisch gespeicherte Spielstände.
+   - Fehler starten nun den Debugger, anstatt ScummVM einfach abstürzen zu lassen.
+   - Artikel werden bei der Sortierung der Spiele im Launcher nicht mehr berücksichtigt.
+   - Hebräisch wird nun korrekt in der Benutzeroberfläche dargestellt (benötigt die FriBiDi-Bibliothek).
+
+ Dreamweb:
+   - Unterstützung für russische Fan-Übersetzung hinzugefügt.
+   - Animationsgeschwindigkeit korrigiert.
+
+ Kyra:
+   - Unterstützung für die PC-98-Version von Eye of the Beholder I hinzugefügt.
+
+ Prince:
+   - Fehlerhafte Anzeige der Item-Beschreibungen im Inventar korrigiert.
+   - Englischsprachige Übersetzung hinzugefügt.
+
+ Queen:
+   - Fehler beim Laden von Spielständen aus dem Launcher heraus korrigiert.
+
+ SCUMM:
+   - Fehlerhafte Farbpalette korrigiert, die zu falscher Darstellung in der NES-Version von Maniac Mansion führt.
+   - Darstellung der Taschenlampe in der NES-Version von Maniac Mansion entspricht nun dem Original.
+   - Bisherige NES-Farbpalette durch genauere NTSC-Palette von Mesen ersetzt.
+   - Neue Option zur Benutzeroberfläche hinzugefügt, welche die Auswahl einer Farbpalette basierend auf dem NES Classic erlaubt.
+   - Farbpalette in der Apple //gs-Version von Maniac Mansion verbessert.
+   - Absturz beim Betreten der Garage in der Apple //gs-Version von Maniac Mansion behoben.
+
+ Sky:
+   - Synchronisation der Musik-Lautstärke zwischen dem nativen Einstellungs-Dialog des Spiels und der ScummVM-Konfiguration korrigiert.
+
+ Sword1:
+   - Unterstützung für lokalisierte Menüs in der russischen Version der Novy Disk Trilogy hinzugefügt.
+
+ Wintermute:
+   - System zur Verfolgung von Errungenschaften hinzugefügt, für mehr als 10 Spiele verfügbar.
+
+ Xeen:
+   - Fehlendes Sprite hinzugefügt, welches dargestellt werden soll, wenn ein Gegner von einem Energie-Strahl getroffen wird.
+   - Das Spiel friert nun nicht mehr wegen fehlerhafter Mob-Daten an der Spitze des Hexenturms ein.
+   - Absturz beim Laden einige Spielstände aus dem Launcher heraus korrigiert.
+   - Die Quelle in Nightshadow kann nun geheilt werden.
+   - Fehler beim Laden einiger Items behoben.
+
+ Linux-Portierung:
+   - Anstelle des Datei-Browsers von ScummVM kann nun der Datei-Browser des Betriebssystems verwendet werden.
+
+
 #### 2.1.2 "Fixing Powerful Windows" (31.03.2020)
 
  Windows-Portierung:
@@ -12,7 +62,7 @@ Programmcodes finden Sie auf Englisch unter:
    - Anwendungs-Icon unter Mac OS X 10.5 und älter korrigiert.
 
 
-#### 2.1.1 ":More Sheep" (31.01.2020)
+#### 2.1.1 ":More sheep:" (31.01.2020)
 
  Allgemein:
    - Absturz beim Wechsel zwischen einigen Sprachen der Benutzeroberfläche korrigiert.
@@ -202,7 +252,7 @@ Programmcodes finden Sie auf Englisch unter:
    - Sound-Treiber für die Amiga-Versionen von Monkey Island 2 und Indiana Jones and the Fate of Atlantis hinzugefügt.
 
  Sherlock:
-   - Absturz in der spanischen Version behoben, der auftritt, wenn mit der Dame im Geschäft des 
+   - Absturz in der spanischen Version behoben, der auftritt, wenn mit der Dame im Geschäft des
      Schneiders gesprochen wird.
 
  SKY:
@@ -427,7 +477,7 @@ Programmcodes finden Sie auf Englisch unter:
      abgespielt werden.
    - Fehler behoben, der verursacht, dass sich die Caponier nicht tarnen, wenn der blaue
      Kristall in Zak McKracken verwendet wird.
-   - Fehler in Maniac Mansion behoben, der verursacht, dass Dr. Fred in der 
+   - Fehler in Maniac Mansion behoben, der verursacht, dass Dr. Fred in der
      Labor-Zwischensequenz in die falsche Richtung schaut.
    - Fehler behoben, der verursacht, dass in V0 und V1-Spielen die Charaktere eine Zeile
      zu hoch dargstellt werden.

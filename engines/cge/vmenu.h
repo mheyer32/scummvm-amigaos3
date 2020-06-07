@@ -22,7 +22,7 @@
 
 /*
  * This code is based on original Soltys source code
- * Copyright (c) 1994-1995 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1995 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE_VMENU_H
@@ -57,8 +57,8 @@ public:
 	static int _recent;
 	MenuBar *_bar;
 	Vmenu(CGEEngine *vm, Choice *list, int x, int y);
-	~Vmenu();
-	virtual void touch(uint16 mask, int x, int y, Common::KeyCode keyCode);
+	~Vmenu() override;
+	void touch(uint16 mask, int x, int y, Common::KeyCode keyCode) override;
 private:
 	char *_vmgt;
 	CGEEngine *_vm;

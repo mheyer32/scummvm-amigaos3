@@ -21,7 +21,7 @@
 
 /*
  * This code is based on original Sfinx source code
- * Copyright (c) 1994-1997 Janus B. Wisniewski and L.K. Avalon
+ * Copyright (c) 1994-1997 Janusz B. Wisniewski and L.K. Avalon
  */
 
 #ifndef CGE2_HERO_H
@@ -75,10 +75,10 @@ public:
 	int _maxDist;
 	bool _ignoreMap;
 	Hero(CGE2Engine *vm);
-	~Hero();
-	void tick();
-	Sprite *expand();
-	Sprite *contract();
+	~Hero() override;
+	void tick() override;
+	Sprite *expand() override;
+	Sprite *contract() override;
 	Sprite *setContact();
 	int stepSize() { return _ext->_seq[7]._dx; }
 	int distance(V3D pos);
@@ -104,7 +104,7 @@ public:
 	Action action() { return (Action)(_ref % 10); }
 	void reach(int mode);
 	void setCurrent();
-	void setScene(int c);
+	void setScene(int c) override;
 	void operator++();
 	void operator--();
 };

@@ -27,6 +27,7 @@
 #include <3ds.h>
 #include "osystem.h"
 
+#include "backends/platform/3ds/config.h"
 #include "backends/saves/default/default-saves.h"
 #include "backends/timer/default/default-timer.h"
 #include "backends/events/default/default-events.h"
@@ -34,7 +35,6 @@
 #include "common/scummsys.h"
 #include "common/config-manager.h"
 #include "common/str.h"
-#include "config.h"
 
 #include "backends/fs/posix-drives/posix-drives-fs-factory.h"
 #include "backends/fs/posix-drives/posix-drives-fs.h"
@@ -62,8 +62,10 @@ OSystem_3DS::OSystem_3DS():
 	_cursorPaletteEnabled(false),
 	_cursorVisible(false),
 	_cursorScalable(false),
-	_cursorX(0),
-	_cursorY(0),
+	_cursorScreenX(0),
+	_cursorScreenY(0),
+	_cursorOverlayX(0),
+	_cursorOverlayY(0),
 	_cursorHotspotX(0),
 	_cursorHotspotY(0),
 	_gameTopX(0),
@@ -76,6 +78,7 @@ OSystem_3DS::OSystem_3DS():
 	_magY(0),
 	_magWidth(400),
 	_magHeight(240),
+	_gameTextureDirty(false),
 	_overlayVisible(false),
 	_screenChangeId(0),
 	_magnifyMode(MODE_MAGOFF),
@@ -87,6 +90,20 @@ OSystem_3DS::OSystem_3DS():
 	DrivesPOSIXFilesystemFactory *fsFactory = new DrivesPOSIXFilesystemFactory();
 	fsFactory->addDrive("sdmc:");
 	fsFactory->addDrive("romfs:");
+
+	//
+	// Disable newlib's buffered IO, and use ScummVM's own buffering stream wrappers.
+	//
+	// The newlib version in use in devkitPro has performance issues
+	//  when seeking with a relative offset. See:
+	//  https://sourceware.org/git/gitweb.cgi?p=newlib-cygwin.git;a=commit;h=59362c80e3a02c011fd0ef3d7f07a20098d2a9d5
+	//
+	// devKitPro has a patch to newlib that can cause data corruption when
+	//  seeking back in files and then reading. See:
+	//  https://github.com/devkitPro/newlib/issues/16
+	//
+	fsFactory->configureBuffering(DrivePOSIXFilesystemNode::kBufferingModeScummVM, 2048);
+
 	_fsFactory = fsFactory;
 
 	Posix::assureDirectoryExists("/3ds/scummvm/saves/");
@@ -96,7 +113,7 @@ OSystem_3DS::~OSystem_3DS() {
 	exiting = true;
 	destroyEvents();
 	destroyAudio();
-	destroyGraphics();
+	destroy3DSGraphics();
 
 	delete _timerManager;
 	_timerManager = 0;
@@ -110,24 +127,27 @@ void OSystem_3DS::initBackend() {
 	loadConfig();
 	ConfMan.registerDefault("fullscreen", true);
 	ConfMan.registerDefault("aspect_ratio", true);
-	if (!ConfMan.hasKey("vkeybd_pack_name"))
+	if (!ConfMan.hasKey("vkeybd_pack_name")) {
 		ConfMan.set("vkeybd_pack_name", "vkeybd_small");
-	if (!ConfMan.hasKey("gui_theme"))
+	}
+	if (!ConfMan.hasKey("gui_theme")) {
 		ConfMan.set("gui_theme", "builtin");
+	}
 
 	_timerManager = new DefaultTimerManager();
 	_savefileManager = new DefaultSaveFileManager("sdmc:/3ds/scummvm/saves/");
 
-	initGraphics();
+	init3DSGraphics();
 	initAudio();
-	initEvents();
 	EventsBaseBackend::initBackend();
+	initEvents();
 }
 
 void OSystem_3DS::updateConfig() {
 	if (_gameScreen.getPixels()) {
 		updateSize();
-		warpMouse(_cursorX, _cursorY);
+		(!_overlayVisible) ? warpMouse(_cursorScreenX, _cursorScreenY) :
+		                     warpMouse(_cursorOverlayX, _cursorOverlayY);
 	}
 }
 
@@ -199,7 +219,7 @@ void OSystem_3DS::fatalError() {
 }
 
 void OSystem_3DS::logMessage(LogMessageType::Type type, const char *message) {
-	printf("3DS log: %s\n", message);
+	printf("%s", message);
 }
 
 } // namespace _3DS

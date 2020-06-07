@@ -133,7 +133,7 @@ protected:
 
 public:
 	MohawkEngine_CSTime(OSystem *syst, const MohawkGameDescription *gamedesc);
-	virtual ~MohawkEngine_CSTime();
+	~MohawkEngine_CSTime() override;
 
 	Common::RandomSource *_rnd;
 
@@ -142,7 +142,6 @@ public:
 	CSTimeGraphics *_gfx;
 	bool _needsUpdate;
 
-	GUI::Debugger *getDebugger() override { return _console; }
 	CSTimeView *getView() { return _view; }
 	CSTimeCase *getCase() { return _case; }
 	CSTimeInterface *getInterface() { return _interface; }
@@ -163,7 +162,6 @@ public:
 
 private:
 	CSTimeCase *_case;
-	CSTimeConsole *_console;
 	CSTimeInterface *_interface;
 	CSTimeView *_view;
 

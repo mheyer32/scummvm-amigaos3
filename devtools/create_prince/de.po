@@ -8,15 +8,16 @@ msgstr ""
 "Project-Id-Version: Prince\n"
 "Report-Msgid-Bugs-To: scummvm-devel@lists.scummvm.org\n"
 "POT-Creation-Date: 2018-04-17 19:53+0100\n"
-"PO-Revision-Date: 2018-04-17 18:01+0000\n"
-"Last-Translator: Eugene Sandulenko <sev@scummvm.org>\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-02-15 15:09+0000\n"
+"Last-Translator: George <Amb23@mail.com>\n"
+"Language-Team: German <https://translations.scummvm.org/projects/prince/"
+"prince/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: gen-po.pl v1.8.0-150-g1bb23d7\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: dialog0001.txt:1
 msgid "HERO: Przeppp... raszam..."
@@ -1028,7 +1029,7 @@ msgstr ""
 
 #: dialog0019.txt:100009
 msgid "HERO: Grhm."
-msgstr ""
+msgstr "HERO: Grhm."
 
 #: dialog0019.txt:100101
 msgid "OTHER: To nie takie trudne."
@@ -4695,18 +4696,22 @@ msgid "#E3"
 msgstr "#E3"
 
 #: dialog0146.txt:100401
-msgid "#X1"
-msgstr "#X1"
+msgid "#E3"
+msgstr "#E3"
 
 #: dialog0146.txt:100501
-msgid "#B1"
-msgstr "#B1"
+msgid "#X1"
+msgstr "#X1"
 
 #: dialog0146.txt:100601
 msgid "#B1"
 msgstr "#B1"
 
 #: dialog0146.txt:100701
+msgid "#B1"
+msgstr "#B1"
+
+#: dialog0146.txt:100801
 msgid "#B1"
 msgstr "#B1"
 
@@ -9234,6 +9239,10 @@ msgstr "P#OTHER: Hmm."
 msgid "OTHER: No, ale może jeszcze będą z ciebie ludzie."
 msgstr "OTHER: Naja, aber aus dir kann schon noch was werden."
 
+#: invtxt.txt:0
+msgid "homunkulus - Nie jest najmądrzejszy, ale przynajmniej|jest magiczny."
+msgstr "Homunkulus - Er ist nicht der Klügste,|aber wenigstens magisch."
+
 #: invtxt.txt:1
 msgid "eliksir nieśmiertelności - Aż trudno uwierzyć, że coś takiego|naprawdę istnieje."
 msgstr "Unsterblichkeitselixier - Schwer zu glauben, daß so etwas|wirklich existiert."
@@ -11004,7 +11013,7 @@ msgstr ""
 
 #: mob.lst:52002
 msgid "powrót - "
-msgstr ""
+msgstr "rückkehr - "
 
 #: variatxt.txt:10
 msgid "Nie mogę tego użyć."
@@ -11601,6 +11610,5 @@ msgstr "Drücke im richtigen Moment die linke oder rechte Maustaste,|um anzugrei
 #: variatxt.txt:5802
 msgid "Naciskaj szybko na przemian lewy i prawy przycisk myszki|lub klawisze 'Z' i 'X'."
 msgstr "Drücke schnell abwechselnd die linke und die|rechte Maustaste, oder die Tasten N und M."
-
 
 # Missing: 4  Extra: 3

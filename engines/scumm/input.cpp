@@ -41,9 +41,6 @@
 #include "scumm/sound.h"
 
 
-#ifdef _WIN32_WCE
-#define		KEY_ALL_SKIP	3457
-#endif
 
 namespace Scumm {
 
@@ -123,9 +120,6 @@ void ScummEngine::parseEvent(Common::Event event) {
 			_fastMode ^= 1;
 		} else if (event.kbd.hasFlags(Common::KBD_CTRL) && event.kbd.keycode == Common::KEYCODE_g) {
 			_fastMode ^= 2;
-		} else if ((event.kbd.hasFlags(Common::KBD_CTRL) && event.kbd.keycode == Common::KEYCODE_d)
-		        || event.kbd.ascii == '~' || event.kbd.ascii == '#') {
-			_debugger->attach();
 		} else if (event.kbd.hasFlags(Common::KBD_CTRL) && event.kbd.keycode == Common::KEYCODE_s) {
 			_res->resourceStats();
 		} else if (event.kbd.hasFlags(Common::KBD_ALT) && event.kbd.keycode == Common::KEYCODE_x) {
@@ -350,17 +344,6 @@ void ScummEngine::processInput() {
 	_leftBtnPressed &= ~msClicked;
 	_rightBtnPressed &= ~msClicked;
 
-#ifdef _WIN32_WCE
-	if (lastKeyHit.ascii == KEY_ALL_SKIP) {
-		// Skip talk
-		if (VAR_TALKSTOP_KEY != 0xFF && _talkDelay > 0) {
-			lastKeyHit = Common::KeyState(Common::KEYCODE_PERIOD);
-		} else {
-			lastKeyHit = Common::KeyState(Common::KEYCODE_ESCAPE);
-		}
-	}
-#endif
-
 	if (!lastKeyHit.ascii)
 		return;
 
@@ -439,6 +422,8 @@ void ScummEngine_v6::processKeyboard(Common::KeyState lastKeyHit) {
 		case 2:
 			ConfMan.setBool("speech_mute", true);
 			ConfMan.setBool("subtitles", true);
+			break;
+		default:
 			break;
 		}
 

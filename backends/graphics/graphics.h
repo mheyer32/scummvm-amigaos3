@@ -42,12 +42,16 @@ public:
 	virtual void setFeatureState(OSystem::Feature f, bool enable) = 0;
 	virtual bool getFeatureState(OSystem::Feature f) const = 0;
 
-	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const = 0;
-	virtual int getDefaultGraphicsMode() const = 0;
-	virtual bool setGraphicsMode(int mode) = 0;
-	virtual void resetGraphicsScale() = 0;
-	virtual int getGraphicsMode() const = 0;
+	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const {
+		static const OSystem::GraphicsMode noGraphicsModes[] = {{"NONE", "Normal", 0}, {nullptr, nullptr, 0 }};
+		return noGraphicsModes;
+	};
+	virtual int getDefaultGraphicsMode() const { return 0; }
+	virtual bool setGraphicsMode(int mode) { return (mode == 0); }
+	virtual void resetGraphicsScale() {}
+	virtual int getGraphicsMode() const { return 0; }
 	virtual const OSystem::GraphicsMode *getSupportedShaders() const;
+	virtual int getDefaultShader() const { return 0; }
 	virtual bool setShader(int id) { return false; }
 	virtual int getShader() const { return 0; }
 	virtual const OSystem::GraphicsMode *getSupportedStretchModes() const;

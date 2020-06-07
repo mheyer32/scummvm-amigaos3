@@ -45,7 +45,7 @@ struct MSGMAP {
 #define DECLARE_MESSAGE_MAP \
 protected: \
 	static const MSGMAP *getThisMessageMap(); \
-	virtual const MSGMAP *getMessageMap() const
+	virtual const MSGMAP *getMessageMap() const override
 
 #define BEGIN_MESSAGE_MAP(theClass, baseClass) \
 	const MSGMAP *theClass::getMessageMap() const \
@@ -84,19 +84,22 @@ protected: \
 	enum { DUMMY }
 
 class CMessageTarget: public CSaveableObject {
-	DECLARE_MESSAGE_MAP;
+protected:
+	static const MSGMAP *getThisMessageMap();
+	virtual const MSGMAP *getMessageMap() const;
+
 public:
 	CLASSDEF;
 
 	/**
 	 * Save the data for the class to file
 	 */
-	virtual void save(SimpleFile *file, int indent);
+	void save(SimpleFile *file, int indent) override;
 
 	/**
 	 * Load the data for the class from file
 	 */
-	virtual void load(SimpleFile *file);
+	void load(SimpleFile *file) override;
 };
 
 } // End of namespace Titanic

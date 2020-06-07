@@ -180,12 +180,21 @@ class SpriteDrawer {
 private:
 	byte *_data;
 	size_t _filesize;
+protected:
+	byte *_destTop, *_destBottom;
+	byte *_destLeft, *_destRight;
+	int _pitch;
 private:
 	/**
 	 * Scale a co-ordinate value based on the passed scaling mask
 	 */
 	static uint getScaledVal(int xy, uint16 &scaleMask);
 protected:
+	/**
+	 * Roll carry right opcode emulation
+	 */
+	void rcr(uint16 &val, bool &cf);
+
 	/**
 	 * Output a pixel
 	 */
@@ -215,12 +224,32 @@ protected:
 	/**
 	 * Output a pixel
 	 */
-	virtual void drawPixel(byte *dest, byte pixel) override;
+	void drawPixel(byte *dest, byte pixel) override;
 public:
 	/**
 	 * Constructor
 	 */
 	SpriteDrawer1(byte *data, size_t filesize, int index);
+};
+
+/**
+ * Scrambles up the sprite by drawing many of the pixels randomly
+ * at a horizontal or vertical offset
+ */
+class SpriteDrawer2 : public SpriteDrawer {
+private:
+	uint16 _mask1, _mask2;
+	uint16 _random1, _random2;
+private:
+	/**
+	 * Output a pixel
+	 */
+	void drawPixel(byte *dest, byte pixel) override;
+public:
+	/**
+	 * Constructor
+	 */
+	SpriteDrawer2(byte *data, size_t filesize, int index);
 };
 
 /**
@@ -235,7 +264,7 @@ private:
 	/**
 	 * Output a pixel
 	 */
-	virtual void drawPixel(byte *dest, byte pixel) override;
+	void drawPixel(byte *dest, byte pixel) override;
 public:
 	/**
 	 * Constructor
@@ -250,7 +279,7 @@ protected:
 	/**
 	 * Output a pixel
 	 */
-	virtual void drawPixel(byte *dest, byte pixel) override;
+	void drawPixel(byte *dest, byte pixel) override;
 public:
 	/**
 	 * Constructor
@@ -264,16 +293,11 @@ public:
 class SpriteDrawer5 : public SpriteDrawer {
 private:
 	uint16 _threshold, _random1, _random2;
-private:
-	/**
-	 * Roll carry right opcode emulation
-	 */
-	void rcr(uint16 &val, bool &cf);
 protected:
 	/**
 	 * Output a pixel
 	 */
-	virtual void drawPixel(byte *dest, byte pixel) override;
+	void drawPixel(byte *dest, byte pixel) override;
 public:
 	/**
 	 * Constructor
@@ -288,7 +312,7 @@ protected:
 	/**
 	 * Output a pixel
 	 */
-	virtual void drawPixel(byte *dest, byte pixel) override;
+	void drawPixel(byte *dest, byte pixel) override;
 public:
 	/**
 	 * Constructor

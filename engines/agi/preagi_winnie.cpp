@@ -372,6 +372,8 @@ int WinnieEngine::parser(int pc, int index, uint8 *buffer) {
 				dropObj(_room);
 				setTakeDrop(fCanSel);
 				break;
+			default:
+				break;
 			}
 		}
 
@@ -754,6 +756,8 @@ void WinnieEngine::drawMenu(char *szMenu, int iSel, int fCanSel[]) {
 		iRow = IDI_WTP_ROW_OPTION_4;
 		iCol = IDI_WTP_COL_DROP;
 		break;
+	default:
+		break;
 	}
 	drawStr(iRow, iCol - 1, IDA_DEFAULT, ">");
 	g_system->updateScreen();
@@ -788,6 +792,8 @@ void WinnieEngine::getMenuMouseSel(int *iSel, int fCanSel[], int x, int y) {
 		if (fCanSel[IDI_WTP_SEL_TAKE] && (x > IDI_WTP_COL_TAKE - 1) && (x < 33)) *iSel = IDI_WTP_SEL_TAKE;
 		if (fCanSel[IDI_WTP_SEL_DROP] && (x > IDI_WTP_COL_DROP - 1) && (x < 39)) *iSel = IDI_WTP_SEL_DROP;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -812,7 +818,7 @@ void WinnieEngine::getMenuSel(char *szMenu, int *iSel, int fCanSel[]) {
 	while (!shouldQuit()) {
 		while (_system->getEventManager()->pollEvent(event)) {
 			switch (event.type) {
-			case Common::EVENT_RTL:
+			case Common::EVENT_RETURN_TO_LAUNCHER:
 			case Common::EVENT_QUIT:
 				return;
 			case Common::EVENT_MOUSEMOVE:
@@ -900,12 +906,6 @@ void WinnieEngine::getMenuSel(char *szMenu, int *iSel, int fCanSel[]) {
 				incMenuSel(iSel, fCanSel);
 				break;
 			case Common::EVENT_KEYDOWN:
-				if (event.kbd.keycode == Common::KEYCODE_d && (event.kbd.flags & Common::KBD_CTRL) && _console) {
-					_console->attach();
-					_console->onFrame();
-					continue;
-				}
-
 				switch (event.kbd.keycode) {
 				case Common::KEYCODE_ESCAPE:
 					*iSel = IDI_WTP_SEL_HOME;
@@ -1316,15 +1316,14 @@ void WinnieEngine::printStrWinnie(char *szMsg) {
 // Console-related functions
 
 void WinnieEngine::debugCurRoom() {
-	_console->debugPrintf("Current Room = %d\n", _room);
+	getDebugger()->debugPrintf("Current Room = %d\n", _room);
 }
 
 WinnieEngine::WinnieEngine(OSystem *syst, const AGIGameDescription *gameDesc) : PreAgiEngine(syst, gameDesc) {
-	_console = new WinnieConsole(this);
+	setDebugger(new WinnieConsole(this));
 }
 
 WinnieEngine::~WinnieEngine() {
-	delete _console;
 }
 
 void WinnieEngine::init() {

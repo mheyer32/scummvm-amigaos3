@@ -55,7 +55,10 @@ class Config;
 class MidiDriver;
 class MidiMusicPlayer;
 class PCMMusicPlayer;
+class Music;
 class SoundManager;
+class Background;
+class Font;
 
 typedef Common::List<Common::Rect> RectList;
 
@@ -151,8 +154,6 @@ class TinselEngine : public Engine {
 	Graphics::Surface _screenSurface;
 	Common::Point _mousePos;
 	uint8 _dosPlayerDir;
-	Console *_console;
-	GUI::Debugger *getDebugger() { return _console; }
 
 	static const char *const _sampleIndices[][3];
 	static const char *const _sampleFiles[][3];
@@ -161,21 +162,21 @@ class TinselEngine : public Engine {
 protected:
 
 	// Engine APIs
-	virtual void initializePath(const Common::FSNode &gamePath);
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
-	Common::Error loadGameState(int slot);
+	void initializePath(const Common::FSNode &gamePath) override;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
+	Common::Error loadGameState(int slot) override;
 #if 0
-	Common::Error saveGameState(int slot, const Common::String &desc);
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false);
 #endif
-	bool canLoadGameStateCurrently();
+	bool canLoadGameStateCurrently() override;
 #if 0
 	bool canSaveGameStateCurrently();
 #endif
 
 public:
 	TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc);
-	virtual ~TinselEngine();
+	~TinselEngine() override;
 	int getGameId() {
 		return _gameId;
 	}
@@ -185,7 +186,6 @@ public:
 	uint32 getFeatures() const;
 	Common::Language getLanguage() const;
 	uint16 getVersion() const;
-	uint32 getFlags() const;
 	Common::Platform getPlatform() const;
 	bool getIsADGFDemo() const;
 	bool isV1CD() const;
@@ -198,7 +198,10 @@ public:
 	SoundManager *_sound;
 	MidiMusicPlayer *_midiMusic;
 	PCMMusicPlayer *_pcmMusic;
+	Music *_music;
 	BMVPlayer *_bmv;
+	Background* _bg;
+	Font *_font;
 
 	Config *_config;
 

@@ -36,7 +36,6 @@
 #include "access/bubble_box.h"
 #include "access/char.h"
 #include "access/data.h"
-#include "access/debugger.h"
 #include "access/events.h"
 #include "access/files.h"
 #include "access/font.h"
@@ -112,19 +111,13 @@ protected:
 	void doRoom();
 
 	/**
-	* Support method that generates a savegame name
-	* @param slot		Slot number
-	*/
-	Common::String generateSaveName(int slot);
-
-	/**
 	 * Play back an entire video
 	 */
 	void playVideo(int videoNum, const Common::Point &pt);
 
 	// Engine APIs
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 protected:
 	/**
 	 * Play the game
@@ -143,7 +136,6 @@ public:
 	BubbleBox *_invBox;
 	BubbleBox *_aboutBox;
 	CharManager *_char;
-	Debugger *_debugger;
 	EventsManager *_events;
 	FileManager *_files;
 	InventoryManager *_inventory;
@@ -239,7 +231,7 @@ public:
 
 public:
 	AccessEngine(OSystem *syst, const AccessGameDescription *gameDesc);
-	virtual ~AccessEngine();
+	~AccessEngine() override;
 
 	virtual void dead(int deathId) = 0;
 
@@ -286,22 +278,22 @@ public:
 	/**
 	 * Load a savegame
 	 */
-	virtual Common::Error loadGameState(int slot);
+	Common::Error loadGameState(int slot) override;
 
 	/**
 	 * Save the game
 	 */
-	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
 
 	/**
 	 * Returns true if a savegame can currently be loaded
 	 */
-	bool canLoadGameStateCurrently();
+	bool canLoadGameStateCurrently() override;
 
 	/**
 	* Returns true if the game can currently be saved
 	*/
-	bool canSaveGameStateCurrently();
+	bool canSaveGameStateCurrently() override;
 
 	/**
 	 * Read in a savegame header

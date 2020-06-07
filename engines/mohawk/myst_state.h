@@ -111,7 +111,6 @@ public:
 	void reset();
 	bool load(int slot);
 	bool save(int slot, const Common::String &desc, const Graphics::Surface *thumbnail, bool autosave);
-	bool isAutoSaveAllowed();
 	static void deleteSave(int slot);
 
 	void addZipDest(MystStack stack, uint16 view);
@@ -132,8 +131,8 @@ public:
 		ActiveAge currentAge;
 		HeldPage heldPage;
 		uint16 u1;
-		uint16 transitions;
-		uint16 zipMode;
+		uint16 transitions; // Unused in ScummVM
+		uint16 zipMode;     // Unused in ScummVM
 		uint16 redPagesInBook;
 		uint16 bluePagesInBook;
 		DniEnding ending;

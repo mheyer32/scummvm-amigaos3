@@ -22,9 +22,9 @@
 
 #define FORBIDDEN_SYMBOL_EXCEPTION_time_h
 
-#include "config.h"
-#include "osystem.h"
-#include "options-dialog.h"
+#include "backends/platform/3ds/config.h"
+#include "backends/platform/3ds/osystem.h"
+#include "backends/platform/3ds/options-dialog.h"
 #include "common/config-manager.h"
 
 namespace _3DS {
@@ -33,8 +33,9 @@ Config config;
 static Common::String prefix = "3ds_";
 
 static bool confGetBool(Common::String key, bool defaultVal) {
-	if (ConfMan.hasKey(prefix + key))
+	if (ConfMan.hasKey(prefix + key)) {
 		return ConfMan.getBool(prefix + key);
+	}
 	return defaultVal;
 }
 
@@ -43,8 +44,9 @@ static void confSetBool(Common::String key, bool val) {
 }
 
 static int confGetInt(Common::String key, int defaultVal) {
-	if (ConfMan.hasKey(prefix + key))
+	if (ConfMan.hasKey(prefix + key)) {
 		return ConfMan.getInt(prefix + key);
+	}
 	return defaultVal;
 }
 
@@ -56,9 +58,8 @@ void loadConfig() {
 	config.showCursor = confGetBool("showcursor", true);
 	config.snapToBorder = confGetBool("snaptoborder", true);
 	config.stretchToFit = confGetBool("stretchtofit", false);
-	config.sensitivity = confGetInt("sensitivity", -5);
 	config.screen = confGetInt("screen", kScreenBoth);
-	
+
 	// Turn off the backlight of any screen not used
 	if (R_SUCCEEDED(gspLcdInit())) {
 		if (config.screen == kScreenTop) {
@@ -67,11 +68,12 @@ void loadConfig() {
 		} else if (config.screen == kScreenBottom) {
 			GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTTOM);
 			GSPLCD_PowerOffBacklight(GSPLCD_SCREEN_TOP);
-		} else
+		} else {
 			GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);
+		}
 		gspLcdExit();
 	}
-	
+
 	OSystem_3DS *osys = (OSystem_3DS *)g_system;
 	osys->updateConfig();
 }
@@ -80,7 +82,6 @@ void saveConfig() {
 	confSetBool("showcursor", config.showCursor);
 	confSetBool("snaptoborder", config.snapToBorder);
 	confSetBool("stretchtofit", config.stretchToFit);
-	confSetInt("sensitivity", config.sensitivity);
 	confSetInt("screen", config.screen);
 	ConfMan.flushToDisk();
 }

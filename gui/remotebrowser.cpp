@@ -57,8 +57,8 @@ RemoteBrowserDialog::RemoteBrowserDialog(const char *title):
 		new ButtonWidget(this, "Browser.Up", _("Go up"), _("Go to previous directory level"), kGoUpCmd);
 	else
 		new ButtonWidget(this, "Browser.Up", _c("Go up", "lowres"), _("Go to previous directory level"), kGoUpCmd);
-	new ButtonWidget(this, "Browser.Cancel", _("Cancel"), 0, kCloseCmd);
-	new ButtonWidget(this, "Browser.Choose", _("Choose"), 0, kChooseCmd);
+	new ButtonWidget(this, "Browser.Cancel", _("Cancel"), nullptr, kCloseCmd);
+	new ButtonWidget(this, "Browser.Choose", _("Choose"), nullptr, kChooseCmd);
 }
 
 RemoteBrowserDialog::~RemoteBrowserDialog() {
@@ -186,7 +186,7 @@ void RemoteBrowserDialog::goUp() {
 	listDirectory(Cloud::StorageFile(path, 0, 0, true));
 }
 
-void RemoteBrowserDialog::listDirectory(Cloud::StorageFile node) {
+void RemoteBrowserDialog::listDirectory(const Cloud::StorageFile &node) {
 	if (_navigationLocked || _workingRequest)
 		return;
 

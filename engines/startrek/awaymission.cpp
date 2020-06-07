@@ -85,7 +85,7 @@ void StarTrekEngine::loadRoom(const Common::String &missionName, int roomIndex) 
 	_gfx->fadeoutScreen();
 	_sound->stopAllVocSounds();
 
-	_gfx->setBackgroundImage(_gfx->loadBitmap(getScreenName()));
+	_gfx->setBackgroundImage(getScreenName());
 	_gfx->loadPri(getScreenName());
 	_gfx->loadPalette("palette");
 	_gfx->copyBackgroundScreen();
@@ -153,7 +153,7 @@ void StarTrekEngine::initAwayCrewPositions(int warpEntryIndex) {
 		_kirkActor->triggerActionWhenAnimFinished = true;
 		_kirkActor->finishedAnimActionParam = 0xff;
 		_awayMission.disableInput = true;
-		playSoundEffectIndex(0x09);
+		_sound->playSoundEffectIndex(0x09);
 		_warpHotspotsActive = false;
 		break;
 	case 5: // Crew spawns in directly at a position.
@@ -356,6 +356,8 @@ void StarTrekEngine::awayMissionLeftClick() {
 		break;
 	}
 
+	default:
+		break;
 	}
 }
 
@@ -364,7 +366,7 @@ void StarTrekEngine::awayMissionSelectAction(bool openActionMenu) {
 		if (_awayMission.disableInput)
 			return;
 		hideInventoryIcons();
-		playSoundEffectIndex(SND_07);
+		_sound->playSoundEffectIndex(SND_07);
 		_awayMission.activeAction = showActionMenu();
 	}
 
@@ -467,6 +469,8 @@ void StarTrekEngine::unloadRoom() {
 	_room = nullptr;
 	delete _mapFile;
 	_mapFile = nullptr;
+	delete _iwFile;
+	_iwFile = nullptr;
 }
 
 int StarTrekEngine::loadActorAnimWithRoomScaling(int actorIndex, const Common::String &animName, int16 x, int16 y) {
@@ -602,7 +606,7 @@ void StarTrekEngine::handleAwayMissionAction() {
 				break;
 
 			case OBJECT_ICOMM:
-				if (!_room->handleAction(ACTION_USE, OBJECT_ICOMM, -1, 0))
+				if (!_room->handleAction(ACTION_USE, OBJECT_ICOMM, 0xff, 0))
 					showTextbox("Lt. Uhura", getLoadedText(GROUNDTX_USE_COMMUNICATOR), 20, 20, TEXTCOLOR_RED, 0);
 				break;
 
@@ -675,32 +679,11 @@ void StarTrekEngine::handleAwayMissionAction() {
 	}
 }
 
-bool StarTrekEngine::isPointInPolygon(int16 *data, int16 x, int16 y) {
-	int16 numVertices = data[1];
-	int16 *vertData = &data[2];
-
-	for (int i = 0; i < numVertices; i++) {
-		Common::Point p1(vertData[0], vertData[1]);
-		Common::Point p2;
-		if (i == numVertices - 1) // Loop to 1st vertex
-			p2 = Common::Point(data[2], data[3]);
-		else
-			p2 = Common::Point(vertData[2], vertData[3]);
-
-		if ((p2.x - p1.x) * (y - p1.y) - (p2.y - p1.y) * (x - p1.x) < 0)
-			return false;
-
-		vertData += 2;
-	}
-
-	return true;
-}
-
 void StarTrekEngine::checkTouchedLoadingZone(int16 x, int16 y) {
 	int16 offset = _room->getFirstDoorPolygonOffset();
 
 	while (offset != _room->getDoorPolygonEndOffset()) {
-		if (isPointInPolygon((int16 *)(_room->_rdfData + offset), x, y)) {
+		if (_room->isPointInPolygon(offset, x, y)) {
 			uint16 var = _room->readRdfWord(offset);
 			if (_activeDoorWarpHotspot != var) {
 				_activeDoorWarpHotspot = var;
@@ -718,7 +701,7 @@ void StarTrekEngine::checkTouchedLoadingZone(int16 x, int16 y) {
 		offset = _room->getFirstWarpPolygonOffset();
 
 		while (offset != _room->getWarpPolygonEndOffset()) {
-			if (isPointInPolygon((int16 *)(_room->_rdfData + offset), x, y)) {
+			if (_room->isPointInPolygon(offset, x, y)) {
 				uint16 var = _room->readRdfWord(offset);
 				if (_activeWarpHotspot != var) {
 					_activeWarpHotspot = var;

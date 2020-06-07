@@ -34,44 +34,79 @@ class MidiParser;
 
 namespace Tinsel {
 
-bool PlayMidiSequence(		// Plays the specified MIDI sequence through the sound driver
-	uint32 dwFileOffset,		// handle of MIDI sequence data
-	bool bLoop);			// Whether to loop the sequence
+class Music {
+public:
+	Music() : _currentMidi(0), _currentLoop(false) {
+		_midiBuffer.pDat = nullptr;
+		_midiBuffer.size = 0;
+	}
 
-bool MidiPlaying();		// Returns TRUE if a Midi tune is currently playing
+	bool PlayMidiSequence(		// Plays the specified MIDI sequence through the sound driver
+		uint32 dwFileOffset,		// handle of MIDI sequence data
+		bool bLoop);			// Whether to loop the sequence
 
-bool StopMidi();		// Stops any currently playing midi
+	bool MidiPlaying();		// Returns TRUE if a Midi tune is currently playing
 
-void SetMidiVolume(		// Sets the volume of the MIDI music. Returns the old volume
-	int vol);		// new volume - 0..MAXMIDIVOL
+	bool StopMidi();		// Stops any currently playing midi
 
-int GetMidiVolume();
+	void SetMidiVolume(		// Sets the volume of the MIDI music. Returns the old volume
+		int vol);		// new volume - 0..MAXMIDIVOL
 
-void OpenMidiFiles();
-void DeleteMidiBuffer();
+	int GetMidiVolume();
 
-void CurrentMidiFacts(SCNHANDLE	*pMidi, bool *pLoop);
-void RestoreMidiFacts(SCNHANDLE	Midi, bool Loop);
+	void OpenMidiFiles();
+	void DeleteMidiBuffer();
 
-int GetTrackNumber(SCNHANDLE hMidi);
-SCNHANDLE GetTrackOffset(int trackNumber);
+	void CurrentMidiFacts(SCNHANDLE	*pMidi, bool *pLoop);
+	void RestoreMidiFacts(SCNHANDLE	Midi, bool Loop);
 
-void dumpMusic();
+	int GetTrackNumber(SCNHANDLE hMidi);
+	SCNHANDLE GetTrackOffset(int trackNumber);
+
+	uint8 *GetMidiBuffer() { return _midiBuffer.pDat; }
+
+	uint8* ResizeMidiBuffer(uint32 newSize) {
+		if (_midiBuffer.size < newSize) {
+			_midiBuffer.pDat = (byte*)realloc(_midiBuffer.pDat, newSize);
+			assert(_midiBuffer.pDat);
+		}
+
+		return _midiBuffer.pDat;
+	}
+
+	void dumpMusic();
+
+private:
+	// sound buffer structure used for MIDI data and samples
+	struct SOUND_BUFFER {
+		uint8 *pDat;		// pointer to actual buffer
+		uint32 size;		// size of the buffer
+	};
+
+	// MIDI buffer
+	SOUND_BUFFER _midiBuffer;
+
+	SCNHANDLE	_currentMidi;
+	bool		_currentLoop;
+
+	// We allocate 155 entries because that's the maximum, used in the SCN version
+	SCNHANDLE _midiOffsets[155];
+};
 
 class MidiMusicPlayer : public Audio::MidiPlayer {
 public:
 	MidiMusicPlayer(TinselEngine *vm);
 
-	virtual void setVolume(int volume);
+	void setVolume(int volume) override;
 
 	void playMIDI(uint32 size, bool loop);
 
 //	void stop();
-	void pause();
-	void resume();
+	void pause() override;
+	void resume() override;
 
 	// MidiDriver_BASE interface implementation
-	virtual void send(uint32 b);
+	void send(uint32 b) override;
 
 	// The original sets the "sequence timing" to 109 Hz, whatever that
 	// means. The default is 120.
@@ -87,7 +122,7 @@ private:
 class PCMMusicPlayer : public Audio::AudioStream {
 public:
 	PCMMusicPlayer();
-	~PCMMusicPlayer();
+	~PCMMusicPlayer() override;
 
 	bool isPlaying() const;
 
@@ -111,11 +146,11 @@ public:
 	void startFadeOut(int ticks);
 	void fadeOutIteration();
 
-	int readBuffer(int16 *buffer, const int numSamples);
-	bool isStereo() const { return false; }
-	bool endOfData() const { return _end; }
-	bool endOfStream() const { return false; }
-	int getRate() const { return 22050; }
+	int readBuffer(int16 *buffer, const int numSamples) override;
+	bool isStereo() const override { return false; }
+	bool endOfData() const override { return _end; }
+	bool endOfStream() const override { return false; }
+	int getRate() const override { return 22050; }
 
 protected:
 	enum State {

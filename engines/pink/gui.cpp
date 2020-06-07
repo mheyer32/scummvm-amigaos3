@@ -20,6 +20,8 @@
  *
  */
 
+#include "common/config-manager.h"
+
 #include "graphics/macgui/macwindowmanager.h"
 #include "graphics/macgui/macmenu.h"
 
@@ -30,114 +32,120 @@
 namespace Pink {
 
 enum {
-	kNewGameAction = 0,
-	kLoadSave,
-	kSaveAction,
-	kSaveAsAction,
-	kSongsAction,
-	kSoundSettingsAction,
-	kLastSavesAction,
-	kPauseAction,
-	kExitAction
+	kNewGameAction			= 57600,
+	kLoadSave				= 57601,
+	kSaveAction				= 57603,
+	kSaveAsAction			= 57604,
+	kSongsAction			= 32865,
+	kSoundSettingsAction	= 32772,
+	kLastSavesAction		= 57616,
+	kPauseAction			= 32854,
+	kExitAction				= 57665
 };
 
 enum {
-	kShowContent = 9,
-	kShowGreece,
-	kShowIndonesia,
-	kShowIsrael,
-	kShowKenya,
-	kShowRussia
+	kShowContent	= 32771,
+	kShowGreece		= 32866,
+	kShowIndonesia  = 32867,
+	kShowIsrael		= 32868,
+	kShowKenya		= 32869,
+	kShowRussia		= 32870
 };
 
 enum {
-	kShowPDAAction = 15,
+	kShowPDAAction			= 32793,
 
-	kShowAustraliaArt = 16,
-	kShowAustraliaCloth,
-	kShowAustraliaFood,
-	kShowAustraliaHistory,
-	kShowAustraliaNature,
-	kShowAustraliaPeople,
-	kShowAustraliaPlaces,
-	kShowAustraliaReligion,
+	kShowAustraliaArt		= 32796,
+	kShowAustraliaCloth		= 32797,
+	kShowAustraliaFood		= 32798,
+	kShowAustraliaHistory	= 32799,
+	kShowAustraliaNature	= 32800,
+	kShowAustraliaPeople	= 32801,
+	kShowAustraliaPlaces	= 32802,
+	kShowAustraliaReligion	= 32803,
 
-	kShowBhutanArt = 24,
-	kShowBhutanCloth,
-	kShowBhutanFood,
-	kShowBhutanHistory,
-	kShowBhutanNature,
-	kShowBhutanPeople,
-	kShowBhutanPlaces,
-	kShowBhutanReligion,
+	kShowBhutanArt			= 32804,
+	kShowBhutanCloth		= 32805,
+	kShowBhutanFood			= 32806,
+	kShowBhutanHistory		= 32807,
+	kShowBhutanNature		= 32808,
+	kShowBhutanPeople		= 32809,
+	kShowBhutanPlaces		= 32810,
+	kShowBhutanReligion		= 32811,
 
-	kShowChinaArt = 32,
-	kShowChinaCloth,
-	kShowChinaFood,
-	kShowChinaHistory,
-	kShowChinaNature,
-	kShowChinaPeople,
-	kShowChinaPlaces,
-	kShowChinaReligion,
+	kShowChinaArt 			= 32812,
+	kShowChinaCloth			= 32813,
+	kShowChinaFood			= 32814,
+	kShowChinaHistory		= 32815,
+	kShowChinaNature		= 32816,
+	kShowChinaPeople		= 32817,
+	kShowChinaPlaces		= 32818,
+	kShowChinaReligion		= 32819,
 
-	kShowEnglandArt = 40,
-	kShowEnglandCloth,
-	kShowEnglandFood,
-	kShowEnglandHistory,
-	kShowEnglandNature,
-	kShowEnglandPeople,
-	kShowEnglandPlaces,
-	kShowEnglandReligion,
+	kShowEnglandArt			= 32820,
+	kShowEnglandCloth		= 32821,
+	kShowEnglandFood		= 32822,
+	kShowEnglandHistory		= 32823,
+	kShowEnglandNature		= 32824,
+	kShowEnglandPeople		= 32825,
+	kShowEnglandPlaces		= 32826,
+	kShowEnglandReligion	= 32827,
 
-	kShowEgyptArt = 48,
-	kShowEgyptCloth,
-	kShowEgyptFood,
-	kShowEgyptHistory,
-	kShowEgyptNature,
-	kShowEgyptPeople,
-	kShowEgyptPlaces,
-	kShowEgyptReligion,
+	kShowEgyptArt			= 32828,
+	kShowEgyptCloth			= 32829,
+	kShowEgyptFood			= 32830,
+	kShowEgyptHistory		= 32831,
+	kShowEgyptNature		= 32832,
+	kShowEgyptPeople		= 32833,
+	kShowEgyptPlaces		= 32834,
+	kShowEgyptReligion		= 32835,
 
-	kShowIndiaArt = 56,
-	kShowIndiaCloth,
-	kShowIndiaFood,
-	kShowIndiaHistory,
-	kShowIndiaNature,
-	kShowIndiaPeople,
-	kShowIndiaPlaces,
-	kShowIndiaReligion
+	kShowIndiaArt			= 32836,
+	kShowIndiaCloth			= 32837,
+	kShowIndiaFood			= 32838,
+	kShowIndiaHistory		= 32839,
+	kShowIndiaNature		= 32840,
+	kShowIndiaPeople		= 32841,
+	kShowIndiaPlaces		= 32842,
+	kShowIndiaReligion		= 32843
 };
 
 enum {
-	kShowGameWebPage = 64,
-	kShowTechSupport,
-	kShowWinnnerPage,
-	kShowWanderlustInteractive,
-	kShowMGM,
-	kShowDiagnostics,
-	kShowAbout
+	kShowGameWebPage			= 32844,
+	kShowTechSupport			= 32778,
+	kShowOnlineHints			= 32777,
+	kShowWanderLustWebPage		= 32775,
+	kShowHelp					= 32846,
+	kShowHints					= 32847,
+
+	kShowWinnnerPage			= 32779,
+	kShowWanderlustInteractive	= 32849,
+	kShowMGM					= 32848,
+	kShowDiagnostics			= 32850,
+	kShowAbout					= 57664
 };
 
 static void menuCommandsCallback(int action, Common::U32String &, void *data) {
 	PinkEngine *engine = (PinkEngine *)data;
-	bool isPeril = engine->isPeril();
-	if (!isPeril && action > 14) {
-		action += 49;
-	} else if (isPeril && action >= 9) {
-		action += 6;
-	}
+
 	engine->executeMenuCommand(action);
 }
 
-void PinkEngine::initMenu(Common::PEResources &exeResources) {
-	_director->getWndManager().setEnginePauseCallback(this, &pauseEngine);
+void PinkEngine::initMenu() {
+	_director->getWndManager().setEngine(this);
 
-	_menu = Graphics::MacMenu::createMenuFromPEexe(exeResources, &_director->getWndManager());
+	_menu = Graphics::MacMenu::createMenuFromPEexe(_exeResources, &_director->getWndManager());
+	if (getLanguage() == Common::HE_ISR) {
+		_menu->setAlignment(Graphics::kTextAlignRight);
+	}
 	_menu->calcDimensions();
 	_menu->setCommandsCallback(&menuCommandsCallback, this);
 }
 
 void PinkEngine::executeMenuCommand(uint id) {
+	if (executePageChangeCommand(id))
+		return;
+
 	switch (id) {
 	case kNewGameAction: {
 		const Common::String moduleName = _modules[0]->getName();
@@ -145,8 +153,14 @@ void PinkEngine::executeMenuCommand(uint id) {
 		break;
 	}
 	case kLoadSave:
+		loadGameDialog();
+		break;
+
 	case kSaveAction:
 	case kSaveAsAction:
+		saveGameDialog();
+		break;
+
 	case kSoundSettingsAction:
 	case kLastSavesAction:
 	case kPauseAction:
@@ -161,155 +175,7 @@ void PinkEngine::executeMenuCommand(uint id) {
 		_actor->loadPDA(kNavigatePage);
 		break;
 
-	case kShowAustraliaArt:
-		_actor->loadPDA("AUSART");
-		break;
-	case kShowAustraliaCloth:
-		_actor->loadPDA("AUSCLO");
-		break;
-	case kShowAustraliaFood:
-		_actor->loadPDA("AUSFOO");
-		break;
-	case kShowAustraliaHistory:
-		_actor->loadPDA("AUSHIS");
-		break;
-	case kShowAustraliaNature:
-		_actor->loadPDA("AUSNAT");
-		break;
-	case kShowAustraliaPeople:
-		_actor->loadPDA("AUSPEO");
-		break;
-	case kShowAustraliaPlaces:
-		_actor->loadPDA("AUSPLA");
-		break;
-	case kShowAustraliaReligion:
-		_actor->loadPDA("AUSREL");
-		break;
-
-	case kShowBhutanArt:
-		_actor->loadPDA("BHUART");
-		break;
-	case kShowBhutanCloth:
-		_actor->loadPDA("BHUCLO");
-		break;
-	case kShowBhutanFood:
-		_actor->loadPDA("BHUFOO");
-		break;
-	case kShowBhutanHistory:
-		_actor->loadPDA("BHUHIS");
-		break;
-	case kShowBhutanNature:
-		_actor->loadPDA("BHUNAT");
-		break;
-	case kShowBhutanPeople:
-		_actor->loadPDA("BHUPEO");
-		break;
-	case kShowBhutanPlaces:
-		_actor->loadPDA("BHUPLA");
-		break;
-	case kShowBhutanReligion:
-		_actor->loadPDA("BHUREL");
-		break;
-
-	case kShowChinaArt:
-		_actor->loadPDA("CHIART");
-		break;
-	case kShowChinaCloth:
-		_actor->loadPDA("CHICLO");
-		break;
-	case kShowChinaFood:
-		_actor->loadPDA("CHIFOO");
-		break;
-	case kShowChinaHistory:
-		_actor->loadPDA("CHIHIS");
-		break;
-	case kShowChinaNature:
-		_actor->loadPDA("CHINAT");
-		break;
-	case kShowChinaPeople:
-		_actor->loadPDA("CHIPEO");
-		break;
-	case kShowChinaPlaces:
-		_actor->loadPDA("CHIPLA");
-		break;
-	case kShowChinaReligion:
-		_actor->loadPDA("CHIREL");
-		break;
-
-	case kShowEnglandArt:
-		_actor->loadPDA("BRIART");
-		break;
-	case kShowEnglandCloth:
-		_actor->loadPDA("BRICLO");
-		break;
-	case kShowEnglandFood:
-		_actor->loadPDA("BRIFOO");
-		break;
-	case kShowEnglandHistory:
-		_actor->loadPDA("BRIHIS");
-		break;
-	case kShowEnglandNature:
-		_actor->loadPDA("BRINAT");
-		break;
-	case kShowEnglandPeople:
-		_actor->loadPDA("BRIPEO");
-		break;
-	case kShowEnglandPlaces:
-		_actor->loadPDA("BRIPLA");
-		break;
-	case kShowEnglandReligion:
-		_actor->loadPDA("BRIREL");
-		break;
-
-	case kShowEgyptArt:
-		_actor->loadPDA("BRIART");
-		break;
-	case kShowEgyptCloth:
-		_actor->loadPDA("BRICLO");
-		break;
-	case kShowEgyptFood:
-		_actor->loadPDA("BRIFOO");
-		break;
-	case kShowEgyptHistory:
-		_actor->loadPDA("BRIHIS");
-		break;
-	case kShowEgyptNature:
-		_actor->loadPDA("BRINAT");
-		break;
-	case kShowEgyptPeople:
-		_actor->loadPDA("BRIPEO");
-		break;
-	case kShowEgyptPlaces:
-		_actor->loadPDA("BRIPLA");
-		break;
-	case kShowEgyptReligion:
-		_actor->loadPDA("BRIREL");
-		break;
-
-	case kShowIndiaArt:
-		_actor->loadPDA("INDART");
-		break;
-	case kShowIndiaCloth:
-		_actor->loadPDA("INDCLO");
-		break;
-	case kShowIndiaFood:
-		_actor->loadPDA("INDFOO");
-		break;
-	case kShowIndiaHistory:
-		_actor->loadPDA("INDHIS");
-		break;
-	case kShowIndiaNature:
-		_actor->loadPDA("INDNAT");
-		break;
-	case kShowIndiaPeople:
-		_actor->loadPDA("INDPEO");
-		break;
-	case kShowIndiaPlaces:
-		_actor->loadPDA("INDPLA");
-		break;
-	case kShowIndiaReligion:
-		_actor->loadPDA("INDREL");
-		break;
+	// Cases kShowAustraliaArt - kShowIndiaReligion are handled in executePageChangeCommand()
 
 	case kShowContent:
 		_actor->loadPDA("TOC");
@@ -330,8 +196,50 @@ void PinkEngine::executeMenuCommand(uint id) {
 		_actor->loadPDA("SIBOVER");
 		break;
 
-	default:
+	case kShowGameWebPage:
+		openLocalWebPage("PINK.HTM");
 		break;
+	case kShowTechSupport:
+		openLocalWebPage("SUPPORT.HTM");
+		break;
+	case kShowWinnnerPage:
+		openLocalWebPage("WINNER.HTM");
+		break;
+	case kShowWanderLustWebPage:
+		openLocalWebPage("LUST.HTM");
+		break;
+	case kShowOnlineHints:
+		openLocalWebPage("HINTS.HTM");
+		break;
+
+	default:
+		warning("Unprocessed command id %d", id);
+		break;
+	}
+}
+
+// Australia, Bhutan, China, Britain, Egypt, India
+static const char *pageChangePrefixes[] = { "AUS", "BHU", "CHI", "BRI", "EGY", "IND" };
+// Art, Cloth, Food, History, Nature, People, Places, Religion
+static const char *pageChangeSuffixes[] = { "ART", "CLO", "FOO", "HIS", "NAT", "PEO", "PLA", "REL" };
+
+bool PinkEngine::executePageChangeCommand(uint id) {
+	if (id >= kShowAustraliaArt && id <= kShowIndiaReligion) {
+		Common::String prefix = pageChangePrefixes[(id - kShowAustraliaArt) / 8];
+		Common::String suffix = pageChangeSuffixes[(id - kShowAustraliaArt) % 8];
+		_actor->loadPDA(prefix + suffix);
+		return true;
+	}
+
+	return false;
+}
+
+void PinkEngine::openLocalWebPage(const Common::String &pageName) const {
+	Common::FSNode gameFolder = Common::FSNode(ConfMan.get("path"));
+	Common::FSNode filePath = gameFolder.getChild("INSTALL").getChild(pageName);
+	if (filePath.exists()) {
+		Common::String fullUrl = Common::String::format("file:///%s", filePath.getPath().c_str());
+		_system->openUrl(fullUrl);
 	}
 }
 

@@ -261,8 +261,17 @@ Console::Console(SciEngine *engine) : GUI::Debugger(),
 Console::~Console() {
 }
 
+void Console::attach(const char *entry) {
+	if (entry) {
+		// Attaching to display a severe error, let the engine know
+		_engine->severeError();
+	}
+
+	GUI::Debugger::attach(entry);
+}
+
 void Console::preEnter() {
-	_engine->pauseEngine(true);
+	GUI::Debugger::preEnter();
 }
 
 extern void playVideo(Video::VideoDecoder &videoDecoder);
@@ -290,7 +299,7 @@ void Console::postEnter() {
 		_videoFrameDelay = 0;
 	}
 
-	_engine->pauseEngine(false);
+	GUI::Debugger::postEnter();
 }
 
 bool Console::cmdHelp(int argc, const char **argv) {
@@ -424,6 +433,9 @@ bool Console::cmdHelp(int argc, const char **argv) {
 	debugPrintf("\n");
 	debugPrintf("VM:\n");
 	debugPrintf(" script_steps - Shows the number of executed SCI operations\n");
+	debugPrintf(" script_objects / scro - Shows all objects inside a specified script\n");
+	debugPrintf(" script_strings / scrs - Shows all strings inside a specified script\n");
+	debugPrintf(" script_said - Shows all said - strings inside a specified script\n");
 	debugPrintf(" vm_varlist / vmvarlist / vl - Shows the addresses of variables in the VM\n");
 	debugPrintf(" vm_vars / vmvars / vv - Displays or changes variables in the VM\n");
 	debugPrintf(" stack - Lists the specified number of stack elements\n");
@@ -2708,24 +2720,22 @@ bool Console::cmdIsSample(int argc, const char **argv) {
 		return true;
 	}
 
-	SoundResource *soundRes = new SoundResource(number, _engine->getResMan(), _engine->_features->detectDoSoundType());
+	SoundResource soundRes(number, _engine->getResMan(), _engine->_features->detectDoSoundType());
 
-	if (!soundRes) {
+	if (!soundRes.exists()) {
 		debugPrintf("Not a sound resource!\n");
 		return true;
 	}
 
-	SoundResource::Track *track = soundRes->getDigitalTrack();
+	SoundResource::Track *track = soundRes.getDigitalTrack();
 	if (!track || track->digitalChannelNr == -1) {
 		debugPrintf("Valid song, but not a sample.\n");
-		delete soundRes;
 		return true;
 	}
 
 	debugPrintf("Sample size: %d, sample rate: %d, channels: %d, digital channel number: %d\n",
 			track->digitalSampleSize, track->digitalSampleRate, track->channelCount, track->digitalChannelNr);
 
-	delete soundRes;
 	return true;
 }
 
@@ -3539,12 +3549,14 @@ bool Console::cmdDisassemble(int argc, const char **argv) {
 		debugPrintf("Valid options are:\n");
 		debugPrintf(" bwt  : Print byte/word tag\n");
 		debugPrintf(" bc   : Print bytecode\n");
+		debugPrintf(" bcc  : Print bytecode, formatted to use in C code\n");
 		return true;
 	}
 
 	reg_t objAddr = NULL_REG;
 	bool printBytecode = false;
 	bool printBWTag = false;
+	bool printCSyntax = false;
 
 	if (parse_reg_t(_engine->_gamestate, argv[1], &objAddr)) {
 		debugPrintf("Invalid address passed.\n");
@@ -3576,6 +3588,10 @@ bool Console::cmdDisassemble(int argc, const char **argv) {
 			printBWTag = true;
 		else if (!scumm_stricmp(argv[i], "bc"))
 			printBytecode = true;
+		else if (!scumm_stricmp(argv[i], "bcc")) {
+			printBytecode = true;
+			printCSyntax = true;
+		}
 	}
 
 	reg_t farthestTarget = addr;
@@ -3586,7 +3602,7 @@ bool Console::cmdDisassemble(int argc, const char **argv) {
 			if (jumpTarget > farthestTarget)
 				farthestTarget = jumpTarget;
 		}
-		addr = disassemble(_engine->_gamestate, make_reg32(addr.getSegment(), addr.getOffset()), obj, printBWTag, printBytecode);
+		addr = disassemble(_engine->_gamestate, make_reg32(addr.getSegment(), addr.getOffset()), obj, printBWTag, printBytecode, printCSyntax);
 		if (addr.isNull() && prevAddr < farthestTarget)
 			addr = prevAddr + 1; // skip past the ret
 	} while (addr.getOffset() > 0);
@@ -3602,6 +3618,7 @@ bool Console::cmdDisassembleAddress(int argc, const char **argv) {
 		debugPrintf(" bwt  : Print byte/word tag\n");
 		debugPrintf(" c<x> : Disassemble <x> bytes\n");
 		debugPrintf(" bc   : Print bytecode\n");
+		debugPrintf(" bcc  : Print bytecode, formatted to use in C code\n");
 		return true;
 	}
 
@@ -3609,6 +3626,7 @@ bool Console::cmdDisassembleAddress(int argc, const char **argv) {
 	uint opCount = 1;
 	bool printBWTag = false;
 	bool printBytes = false;
+	bool printCSyntax = false;
 	uint32 size;
 
 	if (parse_reg_t(_engine->_gamestate, argv[1], &vpc)) {
@@ -3625,7 +3643,10 @@ bool Console::cmdDisassembleAddress(int argc, const char **argv) {
 			printBWTag = true;
 		else if (!scumm_stricmp(argv[i], "bc"))
 			printBytes = true;
-		else if (toupper(argv[i][0]) == 'C')
+		else if (!scumm_stricmp(argv[i], "bcc")) {
+			printBytes = true;
+			printCSyntax = true;
+		} else if (toupper(argv[i][0]) == 'C')
 			opCount = atoi(argv[i] + 1);
 		else {
 			debugPrintf("Invalid option '%s'\n", argv[i]);
@@ -3634,7 +3655,7 @@ bool Console::cmdDisassembleAddress(int argc, const char **argv) {
 	}
 
 	do {
-		vpc = disassemble(_engine->_gamestate, make_reg32(vpc.getSegment(), vpc.getOffset()), nullptr, printBWTag, printBytes);
+		vpc = disassemble(_engine->_gamestate, make_reg32(vpc.getSegment(), vpc.getOffset()), nullptr, printBWTag, printBytes, printCSyntax);
 	} while ((vpc.getOffset() > 0) && (vpc.getOffset() + 6 < size) && (--opCount));
 
 	return true;
@@ -3938,6 +3959,10 @@ void Console::printBreakpoint(int index, const Breakpoint &bp) {
 		break;
 	case BREAK_KERNEL:
 		debugPrintf("Kernel call k%s%s\n", bp._name.c_str(), bpaction);
+		break;
+	default:
+		debugPrintf("UNKNOWN TYPE\n");
+		break;
 	}
 }
 

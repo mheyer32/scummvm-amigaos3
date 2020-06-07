@@ -45,24 +45,6 @@ struct CryOmni3DGameDescription {
 	uint32 features;
 };
 
-/**
- * The fallback game descriptor used by the meta engine's fallbackDetector.
- * Contents of this struct are overwritten by the fallbackDetector.
- */
-static CryOmni3DGameDescription s_fallbackDesc = {
-	{
-		"",
-		"",
-		AD_ENTRY1(0, 0), // This should always be AD_ENTRY1(0, 0) in the fallback descriptor
-		Common::UNK_LANG,
-		Common::kPlatformUnknown,
-		ADGF_UNSTABLE,
-		GUIO0()
-	},
-	0,
-	0
-};
-
 const char *CryOmni3DEngine::getGameId() const {
 	return _gameDescription->desc.gameId;
 }
@@ -85,8 +67,8 @@ Common::Language CryOmni3DEngine::getLanguage() const {
 
 bool CryOmni3DEngine::hasFeature(EngineFeature f) const {
 	return
-	    (f == kSupportsRTL)
-	    || (f == kSupportsSubtitleOptions);
+		(f == kSupportsReturnToLauncher)
+		|| (f == kSupportsSubtitleOptions);
 }
 
 static const PlainGameDescriptor cryomni3DGames[] = {
@@ -103,163 +85,41 @@ static const ADExtraGuiOptionsMap optionsList[] = {
 class CryOmni3DMetaEngine : public AdvancedMetaEngine {
 public:
 	CryOmni3DMetaEngine() : AdvancedMetaEngine(CryOmni3D::gameDescriptions,
-		        sizeof(CryOmni3DGameDescription), cryomni3DGames, optionsList) {
-		//_singleId = "cryomni3d";
-		_maxScanDepth = 1;
+				sizeof(CryOmni3DGameDescription), cryomni3DGames, optionsList) {
+		_directoryGlobs = directoryGlobs;
+		_maxScanDepth = 5;
 	}
 
 	ADDetectedGame fallbackDetect(const FileMap &allFiles,
-	                              const Common::FSList &fslist) const override {
-
-		ADDetectedGame game;
-
-		SearchMan.addDirectory("CryOmni3DMetaEngine::fallbackDetect", fslist.begin()->getParent());
-		debug("Adding to SearchMan: %s", fslist.begin()->getParent().getPath().c_str());
-
-		// Detect Versailles
-		game = fallbackDetectVersailles(fslist.begin()->getParent());
-		if (game.desc) {
-			SearchMan.remove("CryOmni3DMetaEngine::fallbackDetect");
-			return game;
-		}
-
-		SearchMan.remove("CryOmni3DMetaEngine::fallbackDetect");
-
-		// Fallback to standard fallback detection
-		return detectGameFilebased(allFiles, fslist, CryOmni3D::fileBased);
+								  const Common::FSList &fslist) const override {
+		return detectGameFilebased(allFiles, fslist, fileBased);
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "cryomni3d";
+	}
+
+	const char *getName() const override {
 		return "Cryo Omni3D";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Cryo game Engine (C) 1997-2002 Cryo Interactive";
 	}
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
-	virtual SaveStateList listSaves(const char *target) const;
-	virtual int getMaximumSaveSlot() const { return 999; }
-	virtual void removeSaveState(const char *target, int slot) const;
-
-	bool addUnknownFile(const Common::FSNode &node, ADDetectedGame &game) const;
-
-	ADDetectedGame fallbackDetectVersailles(const Common::FSNode &root) const;
+	bool hasFeature(MetaEngineFeature f) const override;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
+	SaveStateList listSaves(const char *target) const override;
+	int getMaximumSaveSlot() const override { return 999; }
+	void removeSaveState(const char *target, int slot) const override;
 };
-
-bool CryOmni3DMetaEngine::addUnknownFile(const Common::FSNode &node, ADDetectedGame &game) const {
-	Common::File testFile;
-	FileProperties fileProps;
-
-	if (!testFile.open(node)) {
-		return false;
-	}
-
-	fileProps.size = (int32)testFile.size();
-	fileProps.md5 = Common::computeStreamMD5AsString(testFile, _md5Bytes);
-
-	game.hasUnknownFiles = true;
-	game.matchedFiles[node.getName()] = fileProps;
-
-	return true;
-}
-
-ADDetectedGame CryOmni3DMetaEngine::fallbackDetectVersailles(const Common::FSNode &root) const {
-	debug("Checking for OBJETS/VS1.HLZ");
-	if (!root.getChild("OBJETS").getChild("VS1.HLZ").exists()) {
-		debug("not found");
-		return ADDetectedGame();
-	}
-	debug("found !");
-
-	Common::FSNode node;
-	const ADGameDescription *gameDesc = &s_fallbackDesc.desc;
-	ADDetectedGame game(gameDesc);
-
-	s_fallbackDesc.desc.gameId = "versailles";
-	s_fallbackDesc.desc.extra = "fallback";
-	s_fallbackDesc.desc.language = Common::UNK_LANG;
-	s_fallbackDesc.desc.flags = ADGF_UNSTABLE;
-	s_fallbackDesc.desc.platform = Common::kPlatformUnknown;
-	s_fallbackDesc.desc.guiOptions = GUI_OPTIONS_VERSAILLES;
-
-	s_fallbackDesc.gameType = GType_VERSAILLES;
-
-	// Sounds good, determine platform
-	node = root.getChild("VERSAILL.PGM");
-	if (node.exists()) {
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.desc.platform = Common::kPlatformDOS;
-	}
-	node = root.getChild("VERSAILL.EXE");
-	if (node.exists()) {
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.desc.platform = Common::kPlatformWindows;
-	}
-	node = root.getChild("PROGRAM.Z");
-	if (node.exists()) {
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.desc.platform = Common::kPlatformWindows;
-	}
-	node = root.getChild("Versailles");
-	if (node.exists()) {
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.desc.platform = Common::kPlatformMacintosh;
-	}
-
-	// Determine language
-	// Use fonts set C as helvet12 contains more characters than fruitL
-	uint8 fontsSet = GF_VERSAILLES_FONTS_SET_B;
-	node = root.getChild("GTO").getChild("DIALOG1.GTO");
-	if (node.getChild("DIALOG1.GTO").exists()) {
-		s_fallbackDesc.desc.language = Common::FR_FRA;
-	} else if (node.getChild("DIALOG1.ALM").exists()) {
-		s_fallbackDesc.desc.language = Common::DE_DEU;
-	} else if (node.getChild("DIALOG1.GB").exists()) {
-		s_fallbackDesc.desc.language = Common::EN_ANY;
-	} else if (node.getChild("DIALOG1.SP").exists()) {
-		s_fallbackDesc.desc.language = Common::ES_ESP;
-	} else if (node.getChild("DIALOG1.ITA").exists()) {
-		s_fallbackDesc.desc.language = Common::IT_ITA;
-		fontsSet = GF_VERSAILLES_FONTS_SET_C;
-	}
-
-	// Determine game flags
-	s_fallbackDesc.features = 0;
-	node = root.getChild("FONTS").getChild("FONT01.CRF");
-	if (node.exists()) {
-		// Add file to report to let developers set appropriate game flags
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.features |= GF_VERSAILLES_FONTS_NUMERIC;
-	} else {
-		s_fallbackDesc.features |= fontsSet;
-	}
-
-	node = root.getChild("DIAL").getChild("VOIX").getChild("ALI001__.WAV");
-	if (node.exists()) {
-		// Add file to report to let developers set appropriate game flags
-		addUnknownFile(node, game);
-
-		s_fallbackDesc.features |= GF_VERSAILLES_AUDIOPADDING_YES;
-	} else {
-		s_fallbackDesc.features |= GF_VERSAILLES_AUDIOPADDING_NO;
-	}
-
-	return game;
-}
 
 bool CryOmni3DMetaEngine::hasFeature(MetaEngineFeature f) const {
 	return
-	    (f == kSupportsListSaves)
-	    || (f == kSupportsLoadingDuringStartup)
-	    || (f == kSupportsDeleteSave)
-	    || (f == kSimpleSavesNames);
+		(f == kSupportsListSaves)
+		|| (f == kSupportsLoadingDuringStartup)
+		|| (f == kSupportsDeleteSave)
+		|| (f == kSimpleSavesNames);
 }
 
 SaveStateList CryOmni3DMetaEngine::listSaves(const char *target) const {
@@ -278,7 +138,7 @@ SaveStateList CryOmni3DMetaEngine::listSaves(const char *target) const {
 	int slotNum;
 
 	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end();
-	        ++file) {
+			++file) {
 		// Obtain the last 4 digits of the filename, since they correspond to the save slot
 		slotNum = atoi(file->c_str() + file->size() - 4);
 
@@ -303,7 +163,7 @@ void CryOmni3DMetaEngine::removeSaveState(const char *target, int slot) const {
 }
 
 bool CryOmni3DMetaEngine::createInstance(OSystem *syst, Engine **engine,
-        const ADGameDescription *desc) const {
+		const ADGameDescription *desc) const {
 	const CryOmni3DGameDescription *gd = (const CryOmni3DGameDescription *)desc;
 
 	if (gd) {

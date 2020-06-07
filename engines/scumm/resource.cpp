@@ -278,6 +278,9 @@ void ScummEngine::readIndexFile() {
 				_numSounds = _fileHandle->readUint16LE();
 				itemsize -= 2;
 				break;
+
+			default:
+				break;
 			}
 			_fileHandle->seek(itemsize - 8, SEEK_CUR);
 		}
@@ -650,8 +653,14 @@ int ScummEngine::loadResource(ResType type, ResId idx) {
 		if ((_game.version == 3) && !(_game.platform == Common::kPlatformAmiga) && (type == rtSound)) {
 			return readSoundResourceSmallHeader(idx);
 		} else {
+			// WORKAROUND: Apple //gs MM has malformed sound resource #68
+			if (_fileHandle->pos() + 2 > _fileHandle->size()) {
+				warning("loadResource(%s,%d): resource is too short", nameOfResType(type), idx);
+				size = 0;
+			} else {
 			size = _fileHandle->readUint16LE();
 			_fileHandle->seek(-2, SEEK_CUR);
+		}
 		}
 	} else if (_game.features & GF_SMALL_HEADER) {
 		if (_game.version == 4)

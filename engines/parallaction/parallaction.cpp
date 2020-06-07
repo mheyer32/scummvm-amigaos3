@@ -67,7 +67,6 @@ Parallaction::Parallaction(OSystem *syst, const PARALLACTIONGameDescription *gam
 	_gfx = 0;
 	_disk = 0;
 	_input = 0;
-	_debugger = 0;
 	_saveLoad = 0;
 	_menuHelper = 0;
 	_soundMan = 0;
@@ -91,7 +90,6 @@ Parallaction::Parallaction(OSystem *syst, const PARALLACTIONGameDescription *gam
 }
 
 Parallaction::~Parallaction() {
-	delete _debugger;
 	delete _globalFlagsNames;
 	delete _callableNames;
 	delete _cmdExec;
@@ -141,7 +139,7 @@ Common::Error Parallaction::init() {
 
 	_gfx = new Gfx(this);
 
-	_debugger = new Debugger(this);
+	setDebugger(new Debugger(this));
 
 	_menuHelper = 0;
 
@@ -152,10 +150,6 @@ void Parallaction::pauseEngineIntern(bool pause) {
 	if (_soundMan) {
 		_soundMan->execute(SC_PAUSE, (int)pause);
 	}
-}
-
-GUI::Debugger *Parallaction::getDebugger() {
-	return _debugger;
 }
 
 void Parallaction::updateView() {
@@ -321,6 +315,9 @@ void Parallaction::runGame() {
 	case Input::kInputModeGame:
 		runGameFrame(event);
 		break;
+
+	default:
+		break;
 	}
 
 	if (shouldQuit())
@@ -422,6 +419,9 @@ void Parallaction::drawAnimation(AnimationPtr anim) {
 		if (anim->_flags & (kFlagsScaled | kFlagsCharacter)) {
 			scale = _location.getScale(anim->getZ());
 		}
+		break;
+
+	default:
 		break;
 	}
 
@@ -599,6 +599,9 @@ void Parallaction::runZone(ZonePtr z) {
 			enterDialogueMode(z);
 			return;
 		}
+		break;
+
+	default:
 		break;
 	}
 
@@ -850,6 +853,9 @@ void Location::freeZones(bool removeAll) {
 	case GType_BRA:
 		freeList(_zones, removeAll, Common::mem_fun(&Location::keepZone_br));
 		freeList(_animations, removeAll, Common::mem_fun(&Location::keepAnimation_br));
+		break;
+
+	default:
 		break;
 	}
 }

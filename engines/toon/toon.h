@@ -99,7 +99,7 @@ class PathFinding;
 class ToonEngine : public Engine {
 public:
 	ToonEngine(OSystem *syst, const ADGameDescription *gameDescription);
-	~ToonEngine();
+	~ToonEngine() override;
 
 	const ADGameDescription *_gameDescription;
 	Common::Language _language;
@@ -109,8 +109,7 @@ public:
 	char **_locationDirVisited;
 	char **_specialInfoLine;
 
-	Common::Error run();
-	GUI::Debugger *getDebugger() { return _console; }
+	Common::Error run() override;
 	bool showMainmenu(bool &loadedGame);
 	bool showOptions();
 	void init();
@@ -211,10 +210,10 @@ public:
 	void playRoomMusic();
 	void waitForScriptStep();
 	void doMagnifierEffect();
-
-	bool canSaveGameStateCurrently();
-	bool canLoadGameStateCurrently();
-	void pauseEngineIntern(bool pause);
+	void drawCustomText(int16 x, int16 y, const char *line, Graphics::Surface *frame, byte color);
+	bool canSaveGameStateCurrently() override;
+	bool canLoadGameStateCurrently() override;
+	void pauseEngineIntern(bool pause) override;
 
 	Resources *resources() {
 		return _resources;
@@ -318,17 +317,17 @@ public:
 		return _shouldQuit;
 	}
 
-	Common::Error saveGameState(int slot, const Common::String &desc) {
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override {
 		return (saveGame(slot, desc) ? Common::kNoError : Common::kWritingFailed);
 	}
 
-	Common::Error loadGameState(int slot) {
+	Common::Error loadGameState(int slot) override {
 		return (loadGame(slot) ? Common::kNoError : Common::kReadingFailed);
 	}
 
-	bool hasFeature(EngineFeature f) const {
+	bool hasFeature(EngineFeature f) const override {
 		return
-			(f == kSupportsRTL) ||
+			(f == kSupportsReturnToLauncher) ||
 			(f == kSupportsLoadingDuringRuntime) ||
 			(f == kSupportsSavingDuringRuntime);
 	}
@@ -437,8 +436,6 @@ protected:
 	bool _showConversationText;
 	bool _useAlternativeFont;
 	bool _needPaletteFlush;
-private:
-	ToonConsole *_console;
 };
 
 } // End of namespace Toon

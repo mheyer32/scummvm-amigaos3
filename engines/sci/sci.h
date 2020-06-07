@@ -130,7 +130,7 @@ enum kDebugLevels {
 	kDebugLevelResMan        = 1 << 19,
 	kDebugLevelOnStartup     = 1 << 20,
 	kDebugLevelDebugMode     = 1 << 21,
-	kDebugLevelScriptPatcher = 1 << 22,
+	kDebugLevelPatcher       = 1 << 22,
 	kDebugLevelWorkarounds   = 1 << 23,
 	kDebugLevelVideo         = 1 << 24,
 	kDebugLevelGame          = 1 << 25
@@ -231,27 +231,27 @@ class SciEngine : public Engine {
 	friend class Console;
 public:
 	SciEngine(OSystem *syst, const ADGameDescription *desc, SciGameId gameId);
-	~SciEngine();
+	~SciEngine() override;
 
 	// Engine APIs
-	virtual Common::Error run();
-	bool hasFeature(EngineFeature f) const;
-	void pauseEngineIntern(bool pause);
-	virtual GUI::Debugger *getDebugger();
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
+	void pauseEngineIntern(bool pause) override;
+	void severeError();
 	Console *getSciDebugger();
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	bool canLoadGameStateCurrently();
-	bool canSaveGameStateCurrently();
-	void syncSoundSettings(); ///< from ScummVM to the game
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
+	void syncSoundSettings() override; ///< from ScummVM to the game
 	void updateSoundMixerVolumes();
 	uint32 getTickCount();
 	void setTickCount(const uint32 ticks);
 
 	const SciGameId &getGameId() const { return _gameId; }
 	const char *getGameIdStr() const;
-	int getResourceVersion() const;
 	Common::Language getLanguage() const;
+	bool isLanguageRTL() const;		// true if language's direction is from Right To Left
 	inline Common::Platform getPlatform() const {
 		return _gameDescription->platform;
 	}
@@ -272,6 +272,7 @@ public:
 
 	bool hasParser() const;
 	bool hasMacIconBar() const;
+	bool hasMacSaveRestoreDialogs() const;
 
 	inline ResourceManager *getResMan() const { return _resMan; }
 	inline ScriptPatcher *getScriptPatcher() const { return _scriptPatcher; }
@@ -339,6 +340,10 @@ public:
 
 	// Initializes ports and paint16 for non-sci32 games, also sets default palette
 	void initGraphics();
+
+	// Suggest to download the GK2 subtitles patch
+	// in the future, we might refactor it to something more generic, if needed
+	void suggestDownloadGK2SubTitlesPatch();
 
 public:
 	GfxAnimate *_gfxAnimate; // Animate for 16-bit gfx

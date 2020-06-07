@@ -214,7 +214,16 @@ void SceneScriptRC01::SceneLoaded() {
 		Actor_Voice_Over(1830, kActorVoiceOver);
 		Actor_Voice_Over(1850, kActorVoiceOver);
 		if (!Game_Flag_Query(kFlagDirectorsCut)) {
+#if BLADERUNNER_ORIGINAL_BUGS
 			Actor_Voice_Over(1860, kActorVoiceOver);
+#else
+			// Quote 1860 is muted in the DEU version
+			// The quote "No self-respecting human would own one of those frauds."
+			// is completely missing from the DEU sound files (it's not part of the previous quote)
+			if (_vm->_language != Common::DE_DEU) {
+				Actor_Voice_Over(1860, kActorVoiceOver);
+			}
+#endif // BLADERUNNER_ORIGINAL_BUGS
 			I_Sez("MG: Is David Leary a self-respecting human or is he powered by rechargeable");
 			I_Sez("batteries?\n");
 		}
@@ -336,7 +345,17 @@ bool SceneScriptRC01::ClickedOnActor(int actorId) {
 				Game_Flag_Set(kFlagRC01McCoyAndOfficerLearyTalking);
 				if (Actor_Clue_Query(kActorOfficerLeary, kClueCrowdInterviewA) && !Actor_Clue_Query(kActorMcCoy, kClueCrowdInterviewA)) {
 					Actor_Face_Object(kActorOfficerLeary, "70_1", true);
-					Actor_Says(kActorOfficerLeary, 100, 15);
+					if (_vm->_cutContent
+					    && (_vm->_language == Common::ES_ESP
+					        || _vm->_language == Common::IT_ITA)
+					) {
+						// Quote 110 is the second half of the sentence about Lucy hanging around with Zuben ("a fat guy")
+						// in ENG, DEU and FRA it is redundant, but it's needed in ESP and ITA
+						Actor_Says_With_Pause(kActorOfficerLeary, 100, 0.0f, 15);
+						Actor_Says(kActorOfficerLeary, 110, kAnimationModeTalk);
+					} else {
+						Actor_Says(kActorOfficerLeary, 100, 15);
+					}
 					Actor_Face_Actor(kActorOfficerLeary, kActorMcCoy, true);
 					Actor_Clue_Acquire(kActorMcCoy, kClueCrowdInterviewA, true, kActorOfficerLeary);
 					Game_Flag_Reset(kFlagRC01McCoyAndOfficerLearyTalking);
@@ -632,7 +651,7 @@ void SceneScriptRC01::interrogateCrowd() {
 		    || (Actor_Clue_Query(kActorMcCoy, kClueCrowdInterviewA)
 		        && Actor_Clue_Query(kActorMcCoy, kClueCrowdInterviewB) )
 		) {
-			Actor_Says(kActorMcCoy, 8525, 3); // generic "hmph"
+			Actor_Says(kActorMcCoy, 8525, kAnimationModeTalk); // generic "hmph"
 			return;
 		}
 #endif // BLADERUNNER_ORIGINAL_BUGS

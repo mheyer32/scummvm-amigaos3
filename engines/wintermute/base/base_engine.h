@@ -78,13 +78,50 @@ enum WMETargetExecutable {
 	WME_1_8_8,  // DEAD:CODE 2008, released as "1.8.8 beta"
 	WME_1_8_9,  // DEAD:CODE 2008, released as "1.8.9 beta"
 	WME_1_8_10, // DEAD:CODE 2009
+
+	// fork of WME_1_8_10
+	WME_ANDISHE_VARAN, // Andishe Varan Engine 1.0.0.0
+
 	WME_1_8_11, // DEAD:CODE 2009
 	WME_1_9_0,  // DEAD:CODE 2009, released as "1.9.0 beta"
+
+	// fork of WME_1_9_0
+	WME_KINJAL_1_0,
+	WME_KINJAL_1_1,
+	WME_KINJAL_1_2,
+	WME_KINJAL_1_3,
+	WME_KINJAL_1_4,
+
+	// fork of WME_KINJAL_1_4
+	WME_HEROCRAFT,
+
 	WME_1_9_1,  // DEAD:CODE 2010
+
+	// fork of WME_1_9_1
+	WME_KINJAL_1_5,
+	WME_KINJAL_1_6,
+	WME_KINJAL_1_7,
+	WME_KINJAL_1_7a,
+	WME_KINJAL_1_7b,
+	WME_KINJAL_1_8,
+	WME_KINJAL_1_9,
+	WME_KINJAL_2_0,
+
 	WME_1_9_2,  // DEAD:CODE 2010
 	WME_1_9_3,  // DEAD:CODE 2012, released as "1.10.1 beta"
 	WME_LITE,
-	LATEST_VERSION
+	LATEST_VERSION,
+
+	// fork of WME_LITE
+	FOXTAIL_OLDEST_VERSION,
+	FOXTAIL_1_2_227,
+	FOXTAIL_1_2_230,
+	FOXTAIL_1_2_304,
+	FOXTAIL_1_2_362,
+	FOXTAIL_1_2_527,
+	FOXTAIL_1_2_896,
+	FOXTAIL_1_2_902,
+	FOXTAIL_LATEST_VERSION
 };
 
 class BaseFileManager;
@@ -105,10 +142,11 @@ class BaseEngine : public Common::Singleton<Wintermute::BaseEngine> {
 	SystemClassRegistry *_classReg;
 	Common::Language _language;
 	WMETargetExecutable _targetExecutable;
+	uint32 _flags;
 public:
 	BaseEngine();
-	~BaseEngine();
-	static void createInstance(const Common::String &targetName, const Common::String &gameId, Common::Language lang, WMETargetExecutable targetExecutable = LATEST_VERSION);
+	~BaseEngine() override;
+	static void createInstance(const Common::String &targetName, const Common::String &gameId, Common::Language lang, WMETargetExecutable targetExecutable, uint32 flags);
 
 	void setGameRef(BaseGame *gameRef) { _gameRef = gameRef; }
 
@@ -126,8 +164,15 @@ public:
 	Common::String getGameTargetName() const { return _targetName; }
 	Common::String getGameId() const { return _gameId; }
 	Common::Language getLanguage() const { return _language; }
+	uint32 getFlags() const { return _flags; }
 	WMETargetExecutable getTargetExecutable() const {
 		return _targetExecutable;
+	}
+	static bool isFoxTailCheck(WMETargetExecutable t, WMETargetExecutable v1=FOXTAIL_OLDEST_VERSION, WMETargetExecutable v2=FOXTAIL_LATEST_VERSION) {
+		return t >= v1 && t <= v2;
+	}
+	bool isFoxTail(WMETargetExecutable v1=FOXTAIL_OLDEST_VERSION, WMETargetExecutable v2=FOXTAIL_LATEST_VERSION) const {
+		return isFoxTailCheck(_targetExecutable, v1, v2);
 	}
 };
 

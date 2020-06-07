@@ -284,18 +284,14 @@ class PreAgiEngine;
 class WinnieEngine : public PreAgiEngine {
 public:
 	WinnieEngine(OSystem *syst, const AGIGameDescription *gameDesc);
-	~WinnieEngine();
+	~WinnieEngine() override;
 
 	void init();
-	Common::Error go();
+	Common::Error go() override;
 
 	void debugCurRoom();
 
-	GUI::Debugger *getDebugger() { return _console; }
-
 private:
-	WinnieConsole *_console;
-
 	WTP_SAVE_GAME _gameStateWinnie;
 	int _room;
 	int _mist;

@@ -158,7 +158,6 @@ private:
 	void bitsSaveDisplayScreen(Common::Rect rect, byte *&memoryPtr);
 
 	void setShakePos(uint16 shakeXOffset, uint16 shakeYOffset);
-
 	void  REGPARM putPixel320(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
 	void  REGPARM putPixelGeneric(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
 	void  REGPARM putPixel480x300(int16 x, int16 y, byte drawMask, byte color, byte priority, byte control) const;
@@ -169,7 +168,6 @@ private:
 	byte REGPARM getPixel320(const byte *screen, int16 x, int16 y) const {
 		return screen[((uint)y  << 8)  + ((uint)y << 6) + x];
 	}
-
 
 	/**
 	 * If this flag is true, undithering is enabled, otherwise disabled.

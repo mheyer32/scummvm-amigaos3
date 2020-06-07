@@ -60,13 +60,14 @@ class DCCDManager : public DefaultAudioCDManager {
 public:
 	// Poll cdrom status
 	// Returns true if cd audio is playing
-	bool isPlaying() const;
+	bool isPlaying() const override;
 
 	// Play cdrom audio track
-	bool play(int track, int numLoops, int startFrame, int duration, bool onlyEmulate = false);
+	bool play(int track, int numLoops, int startFrame, int duration, bool onlyEmulate = false,
+		Audio::Mixer::SoundType soundType = Audio::Mixer::kMusicSoundType) override;
 
 	// Stop cdrom audio track
-	void stop();
+	void stop() override;
 };
 
 class OSystem_Dreamcast : private DCHardware, public EventsBaseBackend, public PaletteManager, public FilesystemFactory
@@ -88,18 +89,6 @@ class OSystem_Dreamcast : private DCHardware, public EventsBaseBackend, public P
 
   // Query the state of the specified feature.
   bool getFeatureState(Feature f);
-
-  // Retrieve a list of all graphics modes supported by this backend.
-  const GraphicsMode *getSupportedGraphicsModes() const;
-
-  // Return the ID of the 'default' graphics mode.
-  int getDefaultGraphicsMode() const;
-
-  // Switch to the specified graphics mode.
-  bool setGraphicsMode(int mode);
-
-  // Determine which graphics mode is currently active.
-  int getGraphicsMode() const;
 
   // Set colors of the palette
   PaletteManager *getPaletteManager() { return this; }
@@ -262,7 +251,7 @@ public:
 extern int handleInput(struct mapledev *pad,
 		       int &mouse_x, int &mouse_y,
 		       byte &shiftFlags, Interactive *inter = NULL);
-extern bool selectGame(char *&, char *&, Common::Language &, Common::Platform &, class Icon &);
+extern bool selectGame(char *&, char *&, char *&, Common::Language &, Common::Platform &, class Icon &);
 #ifdef DYNAMIC_MODULES
 extern bool selectPluginDir(Common::String &selection, const Common::FSNode &base);
 #endif

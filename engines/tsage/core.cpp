@@ -1184,6 +1184,8 @@ void PaletteRotation::signal() {
 			}
 		}
 		break;
+	default:
+		break;
 	}
 
 	if (flag) {
@@ -2434,6 +2436,8 @@ void SceneObject::animate(int animMode, ...) {
 			if (_frame == _endFrame)
 				setFrame(getNewFrame());
 		}
+		break;
+	default:
 		break;
 	}
 	va_end(va);
@@ -4347,14 +4351,6 @@ void SceneHandler::process(Event &event) {
 			g_globals->_events.setCursorFromFlag();
 		}
 
-		// Check for debugger
-		if ((event.eventType == EVENT_KEYPRESS) && (event.kbd.keycode == Common::KEYCODE_d) &&
-			(event.kbd.flags & Common::KBD_CTRL)) {
-			// Attach to the debugger
-			g_vm->_debugger->attach();
-			g_vm->_debugger->onFrame();
-		}
-
 		if ((event.eventType == EVENT_KEYPRESS) && g_globals->_player._enabled) {
 			// Keyboard shortcuts for different actions
 			switch (event.kbd.keycode) {
@@ -4489,9 +4485,6 @@ void SceneHandler::dispatch() {
 
 	// Check to see if any scene change is required
 	g_globals->_sceneManager.checkScene();
-
-	// Signal the ScummVM debugger
-	g_vm->_debugger->onFrame();
 
 	// Delay between frames
 	g_globals->_events.delay(_delayTicks);

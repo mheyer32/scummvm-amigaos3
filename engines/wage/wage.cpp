@@ -83,11 +83,9 @@ WageEngine::WageEngine(OSystem *syst, const ADGameDescription *desc) : Engine(sy
 
 	_gui = NULL;
 	_world = NULL;
-	_console = NULL;
 	_offer = NULL;
 
 	_resManager = NULL;
-	_debugger = NULL;
 
 	debug("WageEngine::WageEngine()");
 }
@@ -100,7 +98,6 @@ WageEngine::~WageEngine() {
 	delete _resManager;
 	delete _gui;
 	delete _rnd;
-	delete _console;
 }
 
 Common::Error WageEngine::run() {
@@ -108,10 +105,7 @@ Common::Error WageEngine::run() {
 
 	initGraphics(512, 342);
 
-	// Create debugger console. It requires GFX to be initialized
-	_console = new Console(this);
-
-	_debugger = new Debugger(this);
+	setDebugger(new Debugger(this));
 
 	// Your main event loop should be (invoked from) here.
 	_resManager = new Common::MacResManager();
@@ -143,8 +137,6 @@ Common::Error WageEngine::run() {
 	_temporarilyHidden = false;
 
 	while (!_shouldQuit) {
-		_debugger->onFrame();
-
 		processEvents();
 
 		_gui->draw();
@@ -170,7 +162,7 @@ void WageEngine::processEvents() {
 		case Common::EVENT_KEYDOWN:
 			switch (event.kbd.keycode) {
 			case Common::KEYCODE_RETURN: {
-					_inputText = _gui->_consoleWindow->getInput();
+					_inputText = Common::convertFromU32String(_gui->_consoleWindow->getInput());
 					Common::String inp = _inputText + '\n';
 
 					_gui->appendText(inp.c_str());
@@ -185,11 +177,6 @@ void WageEngine::processEvents() {
 					break;
 				}
 			default:
-				if (event.kbd.ascii == '~') {
-					_debugger->attach();
-					break;
-				}
-
 				break;
 			}
 			break;

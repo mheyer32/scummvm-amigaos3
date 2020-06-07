@@ -23,20 +23,32 @@
 #include "glk/glk.h"
 #include "glk/detection.h"
 #include "glk/quetzal.h"
+#include "glk/adrift/detection.h"
+#include "glk/adrift/adrift.h"
 #include "glk/advsys/detection.h"
 #include "glk/advsys/advsys.h"
+#include "glk/agt/detection.h"
+#include "glk/agt/agt.h"
 #include "glk/alan2/detection.h"
 #include "glk/alan2/alan2.h"
 #include "glk/alan3/detection.h"
 #include "glk/alan3/alan3.h"
+#include "glk/archetype/archetype.h"
+#include "glk/archetype/detection.h"
 #include "glk/frotz/detection.h"
 #include "glk/frotz/frotz.h"
 #include "glk/glulxe/detection.h"
 #include "glk/glulxe/glulxe.h"
 #include "glk/hugo/detection.h"
 #include "glk/hugo/hugo.h"
+#include "glk/jacl/detection.h"
+#include "glk/jacl/jacl.h"
+#include "glk/level9/detection.h"
+#include "glk/level9/level9.h"
 #include "glk/magnetic/detection.h"
 #include "glk/magnetic/magnetic.h"
+#include "glk/quest/detection.h"
+#include "glk/quest/quest.h"
 #include "glk/scott/detection.h"
 #include "glk/scott/scott.h"
 #include "glk/tads/detection.h"
@@ -57,20 +69,27 @@
 namespace Glk {
 
 GlkDetectedGame::GlkDetectedGame(const char *id, const char *desc, const Common::String &filename) :
-		DetectedGame(id, desc, Common::EN_ANY, Common::kPlatformUnknown) {
+		DetectedGame("glk", id, desc, Common::EN_ANY, Common::kPlatformUnknown) {
 	setGUIOptions(GUIO3(GUIO_NOSPEECH, GUIO_NOMUSIC, GUIO_NOSUBTITLES));
 	addExtraEntry("filename", filename);
 }
 
 GlkDetectedGame::GlkDetectedGame(const char *id, const char *desc, const Common::String &filename,
-		Common::Language lang) : DetectedGame(id, desc, lang, Common::kPlatformUnknown) {
+		Common::Language lang) : DetectedGame("glk", id, desc, lang, Common::kPlatformUnknown) {
+	setGUIOptions(GUIO3(GUIO_NOSPEECH, GUIO_NOMUSIC, GUIO_NOSUBTITLES));
+	addExtraEntry("filename", filename);
+}
+
+GlkDetectedGame::GlkDetectedGame(const char *id, const char *desc, const char *xtra,
+		const Common::String &filename, Common::Language lang) :
+		DetectedGame("glk", id, desc, lang, Common::kPlatformUnknown, xtra) {
 	setGUIOptions(GUIO3(GUIO_NOSPEECH, GUIO_NOMUSIC, GUIO_NOSUBTITLES));
 	addExtraEntry("filename", filename);
 }
 
 GlkDetectedGame::GlkDetectedGame(const char *id, const char *desc, const Common::String &filename,
 		const Common::String &md5, size_t filesize) :
-		DetectedGame(id, desc, Common::UNK_LANG, Common::kPlatformUnknown) {
+		DetectedGame("glk", id, desc, Common::UNK_LANG, Common::kPlatformUnknown) {
 	setGUIOptions(GUIO3(GUIO_NOSPEECH, GUIO_NOMUSIC, GUIO_NOSUBTITLES));
 	addExtraEntry("filename", filename);
 
@@ -98,7 +117,7 @@ bool GlkMetaEngine::hasFeature(MetaEngineFeature f) const {
 
 bool Glk::GlkEngine::hasFeature(EngineFeature f) const {
 	return
-	    (f == kSupportsRTL) ||
+	    (f == kSupportsReturnToLauncher) ||
 	    (f == kSupportsLoadingDuringRuntime) ||
 	    (f == kSupportsSavingDuringRuntime);
 }
@@ -147,23 +166,26 @@ Common::Error GlkMetaEngine::createInstance(OSystem *syst, Engine **engine) cons
 
 	// Create the correct engine
 	*engine = nullptr;
-	if ((*engine = create<Glk::AdvSys::AdvSysMetaEngine, Glk::AdvSys::AdvSys>(syst, gameDesc)) != nullptr) {}
+	if ((*engine = create<Glk::Adrift::AdriftMetaEngine, Glk::Adrift::Adrift>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::AdvSys::AdvSysMetaEngine, Glk::AdvSys::AdvSys>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::AGT::AGTMetaEngine, Glk::AGT::AGT>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Alan2::Alan2MetaEngine, Glk::Alan2::Alan2>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Alan3::Alan3MetaEngine, Glk::Alan3::Alan3>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::Archetype::ArchetypeMetaEngine, Glk::Archetype::Archetype>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Frotz::FrotzMetaEngine, Glk::Frotz::Frotz>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Glulxe::GlulxeMetaEngine, Glk::Glulxe::Glulxe>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Hugo::HugoMetaEngine, Glk::Hugo::Hugo>(syst, gameDesc)) != nullptr) {}
-	else if ((*engine = create<Glk::Scott::ScottMetaEngine, Glk::Scott::Scott>(syst, gameDesc)) != nullptr) {}
-#ifndef RELEASE_BUILD
+	else if ((*engine = create<Glk::JACL::JACLMetaEngine, Glk::JACL::JACL>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::Level9::Level9MetaEngine, Glk::Level9::Level9>(syst, gameDesc)) != nullptr) {}
 	else if ((*engine = create<Glk::Magnetic::MagneticMetaEngine, Glk::Magnetic::Magnetic>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::Quest::QuestMetaEngine, Glk::Quest::Quest>(syst, gameDesc)) != nullptr) {}
+	else if ((*engine = create<Glk::Scott::ScottMetaEngine, Glk::Scott::Scott>(syst, gameDesc)) != nullptr) {}
 	else if ((td = Glk::TADS::TADSMetaEngine::findGame(gameDesc._gameId.c_str()))._description) {
 		if (td._options & Glk::TADS::OPTION_TADS3)
 			*engine = new Glk::TADS::TADS3::TADS3(syst, gameDesc);
 		else
 			*engine = new Glk::TADS::TADS2::TADS2(syst, gameDesc);
-	} 
-#endif	
-	else {
+	} else {
 		return Common::kNoGameDataFoundError;
 	}
 
@@ -175,7 +197,7 @@ Common::String GlkMetaEngine::findFileByGameId(const Common::String &gameId) con
 	Common::FSNode folder = Common::FSNode(ConfMan.get("path"));
 	Common::FSList fslist;
 	folder.getChildren(fslist, Common::FSNode::kListFilesOnly);
-	
+
 	// Iterate over the files
 	for (Common::FSList::iterator i = fslist.begin(); i != fslist.end(); ++i) {
 		// Run a detection on each file in the folder individually
@@ -194,88 +216,92 @@ Common::String GlkMetaEngine::findFileByGameId(const Common::String &gameId) con
 
 PlainGameList GlkMetaEngine::getSupportedGames() const {
 	PlainGameList list;
+	Glk::Adrift::AdriftMetaEngine::getSupportedGames(list);
 	Glk::AdvSys::AdvSysMetaEngine::getSupportedGames(list);
+	Glk::AGT::AGTMetaEngine::getSupportedGames(list);
 	Glk::Alan2::Alan2MetaEngine::getSupportedGames(list);
 	Glk::Alan3::Alan3MetaEngine::getSupportedGames(list);
+	Glk::Archetype::ArchetypeMetaEngine::getSupportedGames(list);
 	Glk::Frotz::FrotzMetaEngine::getSupportedGames(list);
 	Glk::Glulxe::GlulxeMetaEngine::getSupportedGames(list);
 	Glk::Hugo::HugoMetaEngine::getSupportedGames(list);
-	Glk::Scott::ScottMetaEngine::getSupportedGames(list);
-#ifndef RELEASE_BUILD
+	Glk::JACL::JACLMetaEngine::getSupportedGames(list);
+	Glk::Level9::Level9MetaEngine::getSupportedGames(list);
 	Glk::Magnetic::MagneticMetaEngine::getSupportedGames(list);
+	Glk::Quest::QuestMetaEngine::getSupportedGames(list);
+	Glk::Scott::ScottMetaEngine::getSupportedGames(list);
 	Glk::TADS::TADSMetaEngine::getSupportedGames(list);
-#endif
 
 	return list;
 }
 
+#define FIND_GAME(SUBENGINE) \
+	Glk::GameDescriptor gd##SUBENGINE = Glk::SUBENGINE::SUBENGINE##MetaEngine::findGame(gameId); \
+	if (gd##SUBENGINE._description) return gd##SUBENGINE
+
 PlainGameDescriptor GlkMetaEngine::findGame(const char *gameId) const {
-	Glk::GameDescriptor gd = Glk::AdvSys::AdvSysMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
+	FIND_GAME(Adrift);
+	FIND_GAME(AdvSys);
+	FIND_GAME(Alan2);
+	FIND_GAME(AGT);
+	FIND_GAME(Alan3);
+	FIND_GAME(Archetype);
+	FIND_GAME(Frotz);
+	FIND_GAME(Glulxe);
+	FIND_GAME(Hugo);
+	FIND_GAME(JACL);
+	FIND_GAME(Level9);
+	FIND_GAME(Magnetic);
+	FIND_GAME(Quest);
+	FIND_GAME(Scott);
+	FIND_GAME(TADS);
 
-	gd = Glk::Alan2::Alan2MetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::Alan3::Alan3MetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::Frotz::FrotzMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::Glulxe::GlulxeMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::Hugo::HugoMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::Scott::ScottMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-#ifndef RELEASE_BUILD
-	gd = Glk::Magnetic::MagneticMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-
-	gd = Glk::TADS::TADSMetaEngine::findGame(gameId);
-	if (gd._description) return gd;
-#endif
 	return PlainGameDescriptor();
 }
+
+#undef FIND_GAME
 
 DetectedGames GlkMetaEngine::detectGames(const Common::FSList &fslist) const {
 	// This is as good a place as any to detect multiple sub-engines using the same Ids
 	detectClashes();
 
 	DetectedGames detectedGames;
+	Glk::Adrift::AdriftMetaEngine::detectGames(fslist, detectedGames);
 	Glk::AdvSys::AdvSysMetaEngine::detectGames(fslist, detectedGames);
+	Glk::AGT::AGTMetaEngine::detectGames(fslist, detectedGames);
 	Glk::Alan2::Alan2MetaEngine::detectGames(fslist, detectedGames);
 	Glk::Alan3::Alan3MetaEngine::detectGames(fslist, detectedGames);
+	Glk::Archetype::ArchetypeMetaEngine::detectGames(fslist, detectedGames);
 	Glk::Frotz::FrotzMetaEngine::detectGames(fslist, detectedGames);
 	Glk::Glulxe::GlulxeMetaEngine::detectGames(fslist, detectedGames);
 	Glk::Hugo::HugoMetaEngine::detectGames(fslist, detectedGames);
-	Glk::Scott::ScottMetaEngine::detectGames(fslist, detectedGames);
-
-#ifndef RELEASE_BUILD
+	Glk::JACL::JACLMetaEngine::detectGames(fslist, detectedGames);
+	Glk::Level9::Level9MetaEngine::detectGames(fslist, detectedGames);
 	Glk::Magnetic::MagneticMetaEngine::detectGames(fslist, detectedGames);
+	Glk::Quest::QuestMetaEngine::detectGames(fslist, detectedGames);
+	Glk::Scott::ScottMetaEngine::detectGames(fslist, detectedGames);
 	Glk::TADS::TADSMetaEngine::detectGames(fslist, detectedGames);
-#endif
 
 	return detectedGames;
 }
 
 void GlkMetaEngine::detectClashes() const {
 	Common::StringMap map;
+	Glk::Adrift::AdriftMetaEngine::detectClashes(map);
 	Glk::AdvSys::AdvSysMetaEngine::detectClashes(map);
+	Glk::AGT::AGTMetaEngine::detectClashes(map);
 	Glk::Alan2::Alan2MetaEngine::detectClashes(map);
 	Glk::Alan3::Alan3MetaEngine::detectClashes(map);
+	Glk::Archetype::ArchetypeMetaEngine::detectClashes(map);
 	Glk::Frotz::FrotzMetaEngine::detectClashes(map);
 	Glk::Glulxe::GlulxeMetaEngine::detectClashes(map);
 	Glk::Hugo::HugoMetaEngine::detectClashes(map);
-	Glk::Scott::ScottMetaEngine::detectClashes(map);
-
-#ifndef RELEASE_BUILD
+	Glk::JACL::JACLMetaEngine::detectClashes(map);
+	Glk::Level9::Level9MetaEngine::detectClashes(map);
 	Glk::Magnetic::MagneticMetaEngine::detectClashes(map);
+	Glk::Quest::QuestMetaEngine::detectClashes(map);
+	Glk::Scott::ScottMetaEngine::detectClashes(map);
 	Glk::TADS::TADSMetaEngine::detectClashes(map);
-#endif
 }
 
 SaveStateList GlkMetaEngine::listSaves(const char *target) const {

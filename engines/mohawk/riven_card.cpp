@@ -88,6 +88,7 @@ void RivenCard::applyPatches(uint16 id) {
 	applyPropertiesPatch22118(globalId);
 	applyPropertiesPatchE2E(globalId);
 	applyPropertiesPatch1518D(globalId);
+	applyPropertiesPatch2B414(globalId);
 }
 
 void RivenCard::applyPropertiesPatch8EB7(uint32 globalId, const Common::String &var, uint16 hotspotId) {
@@ -218,7 +219,7 @@ void RivenCard::applyPropertiesPatch2E76(uint32 globalId) {
 	//     }
 	//   break;
 	// }
-	if (globalId == 0x2E76 && !(_vm->getFeatures() & GF_DVD)) {
+	if (globalId == 0x2E76 && !_vm->isGameVariant(GF_DVD)) {
 		uint16 aGehnVariable = _vm->getStack()->getIdFromName(kVariableNames, "agehn");
 		uint16 aTrapBookVariable = _vm->getStack()->getIdFromName(kVariableNames, "atrapbook");
 		uint16 patchData[] = {
@@ -397,7 +398,7 @@ void RivenCard::applyPropertiesPatch22118(uint32 globalId) {
 }
 
 void RivenCard::applyPropertiesPatchE2E(uint32 globalId) {
-	if (!(_vm->getFeatures() & GF_25TH))
+	if (!_vm->isGameVariant(GF_25TH))
 		return;
 
 	// The main menu in the Myst 25th anniversary version is patched to include new items:
@@ -467,6 +468,100 @@ void RivenCard::applyPropertiesPatch1518D(uint32 globalId) {
 		loadScript += patchScript;
 
 		debugC(kRivenDebugPatches, "Applied jungle book close loop to card %x", globalId);
+	}
+}
+
+void RivenCard::applyPropertiesPatch2B414(uint32 globalId) {
+	//
+	// When seated in the Jungle Island's gallows control throne,
+	// the right lever opens or closes the gallows' floor.
+	// The issue is that it is possible to click on the position
+	// where the lever would be when the gallow's floor in the
+	// opposite state as it currently is. And thus to trigger the
+	// corresponding sequence. That is to say for example closing
+	// the floor when it is already closed.
+	//
+	// We simply add the missing script instructions to make
+	// the open and close hotspots mutually exclusive.
+	//
+	// Added script part:
+	//   == Script 0 ==
+	//     type: CardLoad
+	//     [...]
+	//   switch (jgallows) {
+	//     case 0:
+	//       activateBLST(1);
+	//       activateBLST(4);
+	//       break;
+	//     case 1:
+	//       activateBLST(2);
+	//       activateBLST(3);
+	//       break;
+	//   }
+	if (globalId == 0x2B414) {
+		HotspotEnableRecord openGallowsEnabled;
+		openGallowsEnabled.index = 1;
+		openGallowsEnabled.hotspotId = 8;
+		openGallowsEnabled.enabled = 1;
+		_hotspotEnableList.push_back(openGallowsEnabled);
+
+		HotspotEnableRecord openGallowsDisabled;
+		openGallowsDisabled.index = 2;
+		openGallowsDisabled.hotspotId = 8;
+		openGallowsDisabled.enabled = 0;
+		_hotspotEnableList.push_back(openGallowsDisabled);
+
+		HotspotEnableRecord closeGallowsEnabled;
+		closeGallowsEnabled.index = 3;
+		closeGallowsEnabled.hotspotId = 9;
+		closeGallowsEnabled.enabled = 1;
+		_hotspotEnableList.push_back(closeGallowsEnabled);
+
+		HotspotEnableRecord closeGallowsDisabled;
+		closeGallowsDisabled.index = 4;
+		closeGallowsDisabled.hotspotId = 9;
+		closeGallowsDisabled.enabled = 0;
+		_hotspotEnableList.push_back(closeGallowsDisabled);
+
+		uint16 jGallowsVariable = _vm->getStack()->getIdFromName(kVariableNames, "jgallows");
+		uint16 patchData[] = {
+		        1, // Command count in script
+		        kRivenCommandSwitch,
+		        2, // Unused
+		        jGallowsVariable,
+		        2, // Branches count
+
+		        0, // jgallows == 0 branch
+		        2, // Command count in sub-script
+
+		        kRivenCommandActivateBLST,
+		        1, // Argument count
+		        openGallowsEnabled.index,
+
+		        kRivenCommandActivateBLST,
+		        1, // Argument count
+		        closeGallowsDisabled.index,
+
+		        1, // jgallows == 1 branch
+		        2, // Command count in sub-script
+
+		        kRivenCommandActivateBLST,
+		        1, // Argument count
+		        openGallowsDisabled.index,
+
+		        kRivenCommandActivateBLST,
+		        1, // Argument count
+		        closeGallowsEnabled.index,
+
+		};
+
+		RivenScriptPtr patchScript = _vm->_scriptMan->readScriptFromData(patchData, ARRAYSIZE(patchData));
+
+		// Append the patch to the existing script
+		RivenScriptPtr loadScript = getScript(kCardLoadScript);
+		loadScript += patchScript;
+
+		debugC(kRivenDebugPatches, "Applied missing jgallows hotspot enable / disable to card %x", globalId);
 	}
 }
 
@@ -833,6 +928,7 @@ RivenHotspot *RivenCard::getCurHotspot() const {
 
 RivenScriptPtr RivenCard::onMouseDown(const Common::Point &mouse) {
 	RivenScriptPtr script = onMouseMove(mouse);
+	updateMouseCursor();
 
 	_pressedHotspot = _hoveredHotspot;
 
@@ -892,14 +988,22 @@ RivenScriptPtr RivenCard::onFrame() {
 }
 
 RivenScriptPtr RivenCard::onMouseUpdate() {
-	RivenScriptPtr script;
+	RivenScriptPtr script(new RivenScript());
+
 	if (_hoveredHotspot) {
-		script = _hoveredHotspot->getScript(kMouseInsideScript);
+		script += _hoveredHotspot->getScript(kMouseInsideScript);
 	}
 
-	if (!script || script->empty()) {
+	if (script->empty()) {
 		updateMouseCursor();
 	}
+
+	// Clear the pressed hotspot, in case we missed the mouse up event
+	// because we were running a script when it fired.
+	if (_pressedHotspot && _pressedHotspot == _hoveredHotspot) {
+		script += _pressedHotspot->getScript(kMouseUpScript);
+	}
+	_pressedHotspot = nullptr;
 
 	return script;
 }
@@ -1068,7 +1172,11 @@ void RivenCard::playMovie(uint16 index, bool queue) {
 	}
 }
 
-RivenScriptPtr RivenCard::onKeyAction(RivenKeyAction keyAction) {
+RivenScriptPtr RivenCard::onKeyAction(RivenAction keyAction) {
+	if (_pressedHotspot) {
+		return RivenScriptPtr(new RivenScript());
+	}
+
 	static const char *forwardNames[] = {
 			"forward", "forward1", "forward2", "forward3",
 			"opendoor", "openhatch", "opentrap", "opengate", "opengrate",
@@ -1086,28 +1194,28 @@ RivenScriptPtr RivenCard::onKeyAction(RivenKeyAction keyAction) {
 
 	const char **hotspotNames = nullptr;
 	switch (keyAction) {
-		case kKeyActionMoveForward:
+		case kRivenActionMoveForward:
 			hotspotNames = forwardNames;
 			break;
-		case kKeyActionMoveForwardLeft:
+		case kRivenActionMoveForwardLeft:
 			hotspotNames = forwardLeftNames;
 			break;
-		case kKeyActionMoveForwardRight:
+		case kRivenActionMoveForwardRight:
 			hotspotNames = forwardRightNames;
 			break;
-		case kKeyActionMoveLeft:
+		case kRivenActionMoveLeft:
 			hotspotNames = leftNames;
 			break;
-		case kKeyActionMoveRight:
+		case kRivenActionMoveRight:
 			hotspotNames = rightNames;
 			break;
-		case kKeyActionMoveBack:
+		case kRivenActionMoveBack:
 			hotspotNames = backNames;
 			break;
-		case kKeyActionLookUp:
+		case kRivenActionLookUp:
 			hotspotNames = upNames;
 			break;
-		case kKeyActionLookDown:
+		case kRivenActionLookDown:
 			hotspotNames = downNames;
 			break;
 		default:

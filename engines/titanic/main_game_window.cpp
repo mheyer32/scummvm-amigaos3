@@ -345,12 +345,7 @@ void CMainGameWindow::mouseWheel(const Point &mousePos, bool wheelUp) {
 }
 
 void CMainGameWindow::keyDown(Common::KeyState keyState) {
-	if (keyState.keycode == Common::KEYCODE_d && (keyState.flags & Common::KBD_CTRL)) {
-		// Attach to the debugger
-		_vm->_debugger->attach();
-		_vm->_debugger->onFrame();
-
-	} else if (keyState.keycode == Common::KEYCODE_c && (keyState.flags & Common::KBD_CTRL)) {
+	if (keyState.keycode == Common::KEYCODE_c && (keyState.flags & Common::KBD_CTRL)) {
 		// Cheat action
 		if (_project && g_vm->canLoadGameStateCurrently()) {
 			CViewItem *newView = _project->parseView("Cheat Room.Node 1.Cheat Rooms View");
@@ -359,10 +354,10 @@ void CMainGameWindow::keyDown(Common::KeyState keyState) {
 
 	} else if (keyState.keycode == Common::KEYCODE_F5) {
 		// Show the GMM save dialog
-		g_vm->showScummVMSaveDialog();
+		g_vm->saveGameDialog();
 	} else if (keyState.keycode == Common::KEYCODE_F7) {
 		// Show the GMM load dialog
-		g_vm->showScummVMRestoreDialog();
+		g_vm->loadGameDialog();
 	} else if (_inputAllowed) {
 		_gameManager->_inputTranslator.keyDown(keyState);
 	}

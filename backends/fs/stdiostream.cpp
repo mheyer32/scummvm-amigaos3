@@ -26,9 +26,6 @@
 #define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #include "backends/fs/stdiostream.h"
-#ifdef _WIN32_WCE
-#include "backends/platform/wince/missing/fopen.h"
-#endif
 
 StdioStream::StdioStream(void *handle) : _handle(handle) {
 	assert(handle);
@@ -71,6 +68,14 @@ uint32 StdioStream::read(void *ptr, uint32 len) {
 	return fread((byte *)ptr, 1, len, (FILE *)_handle);
 }
 
+bool StdioStream::setBufferSize(uint32 bufferSize) {
+	if (bufferSize != 0) {
+		return setvbuf((FILE *)_handle, nullptr, _IOFBF, bufferSize) == 0;
+	} else {
+		return setvbuf((FILE *)_handle, nullptr, _IONBF, 0) == 0;
+	}
+}
+
 uint32 StdioStream::write(const void *ptr, uint32 len) {
 	return fwrite(ptr, 1, len, (FILE *)_handle);
 }
@@ -91,14 +96,8 @@ StdioStream *StdioStream::makeFromPath(const Common::String &path, bool writeMod
 	// using "newlib" compile on SFS.
 	//
 	if (handle && !writeMode) {
-		setvbuf(handle, NULL, _IOFBF, 8192);
+		setBufferSize(8192);
 	}
-#endif
-
-#if defined(__WII__)
-	// disable newlib's buffering, the device libraries handle caching
-	if (handle)
-		setvbuf(handle, NULL, _IONBF, 0);
 #endif
 
 	if (handle)

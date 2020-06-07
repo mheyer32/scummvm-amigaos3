@@ -20,10 +20,18 @@
  *
  */
 
-#include "common/scummsys.h"
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 
 #ifdef USE_FLUIDSYNTH
 
+// Fluidsynth v2.1+ uses printf in one of it's headers,
+// include/fluidsynth/log.h around line 82 so need to include this
+// prior scummsys.h inclusion and thus forbidden.h
+#include <fluidsynth.h>
+
+#include "common/scummsys.h"
 #include "common/config-manager.h"
 #include "common/error.h"
 #include "common/system.h"
@@ -34,8 +42,6 @@
 #if defined(IPHONE_IOS7) && defined(IPHONE_SANDBOXED)
 #include "backends/platform/ios7/ios7_common.h"
 #endif
-
-#include <fluidsynth.h>
 
 class MidiDriver_FluidSynth : public MidiDriver_Emulated {
 private:
@@ -51,21 +57,21 @@ protected:
 	void setNum(const char *name, double num);
 	void setStr(const char *name, const char *str);
 
-	void generateSamples(int16 *buf, int len);
+	void generateSamples(int16 *buf, int len) override;
 
 public:
 	MidiDriver_FluidSynth(Audio::Mixer *mixer);
 
-	int open();
-	void close();
-	void send(uint32 b);
+	int open() override;
+	void close() override;
+	void send(uint32 b) override;
 
-	MidiChannel *allocateChannel();
-	MidiChannel *getPercussionChannel();
+	MidiChannel *allocateChannel() override;
+	MidiChannel *getPercussionChannel() override;
 
 	// AudioStream API
-	bool isStereo() const { return true; }
-	int getRate() const { return _outputRate; }
+	bool isStereo() const override { return true; }
+	int getRate() const override { return _outputRate; }
 };
 
 // MidiDriver method implementations
@@ -94,14 +100,14 @@ void MidiDriver_FluidSynth::setInt(const char *name, int val) {
 	char *name2 = scumm_strdup(name);
 
 	fluid_settings_setint(_settings, name2, val);
-	delete[] name2;
+	free(name2);
 }
 
 void MidiDriver_FluidSynth::setNum(const char *name, double val) {
 	char *name2 = scumm_strdup(name);
 
 	fluid_settings_setnum(_settings, name2, val);
-	delete[] name2;
+	free(name2);
 }
 
 void MidiDriver_FluidSynth::setStr(const char *name, const char *val) {
@@ -109,8 +115,8 @@ void MidiDriver_FluidSynth::setStr(const char *name, const char *val) {
 	char *val2 = scumm_strdup(val);
 
 	fluid_settings_setstr(_settings, name2, val2);
-	delete[] name2;
-	delete[] val2;
+	free(name2);
+	free(val2);
 }
 
 int MidiDriver_FluidSynth::open() {
@@ -221,6 +227,8 @@ void MidiDriver_FluidSynth::close() {
 }
 
 void MidiDriver_FluidSynth::send(uint32 b) {
+	midiDriverCommonSend(b);
+
 	//byte param3 = (byte) ((b >> 24) & 0xFF);
 	uint param2 = (byte) ((b >> 16) & 0xFF);
 	uint param1 = (byte) ((b >>  8) & 0xFF);

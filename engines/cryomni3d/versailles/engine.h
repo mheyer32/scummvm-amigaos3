@@ -27,6 +27,7 @@
 #include "common/random.h"
 #include "common/array.h"
 #include "common/hashmap.h"
+#include "common/hash-str.h"
 #include "common/str.h"
 
 #include "cryomni3d/cryomni3d.h"
@@ -219,6 +220,11 @@ struct MsgBoxParameters {
 	uint timeoutChar;
 };
 
+struct SubtitleEntry {
+	uint32 frameStart;
+	Common::String text;
+};
+
 class CryOmni3DEngine_Versailles : public CryOmni3DEngine {
 	friend class Versailles_DialogsManager;
 protected:
@@ -226,27 +232,30 @@ protected:
 
 public:
 	CryOmni3DEngine_Versailles(OSystem *syst, const CryOmni3DGameDescription *gamedesc);
-	virtual ~CryOmni3DEngine_Versailles();
+	~CryOmni3DEngine_Versailles() override;
+
+	void initializePath(const Common::FSNode &gamePath) override;
 
 	bool hasFeature(EngineFeature f) const override;
-	virtual Common::Error loadGameState(int slot) override;
-	virtual Common::Error saveGameState(int slot, const Common::String &desc) override;
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	Common::String getSaveStateName(int slot) const override;
 
 	Common::String prepareFileName(const Common::String &baseName, const char *extension) const {
 		const char *const extensions[] = { extension, nullptr };
 		return prepareFileName(baseName, extensions);
 	}
-	virtual Common::String prepareFileName(const Common::String &baseName,
+	Common::String prepareFileName(const Common::String &baseName,
 	                                       const char *const *extensions) const override;
 
 	void setupPalette(const byte *colors, uint start, uint num) override { setupPalette(colors, start, num, true); }
 	void makeTranslucent(Graphics::Surface &dst, const Graphics::Surface &src) const override;
 
-	virtual bool displayToolbar(const Graphics::Surface *original) override { return _toolbar.displayToolbar(original); };
-	virtual bool hasPlaceDocumentation() override;
-	virtual bool displayPlaceDocumentation() override;
-	virtual uint displayOptions() override;
-	virtual bool shouldAbort() override;
+	bool displayToolbar(const Graphics::Surface *original) override { return _toolbar.displayToolbar(original); };
+	bool hasPlaceDocumentation() override;
+	bool displayPlaceDocumentation() override;
+	uint displayOptions() override;
+	bool shouldAbort() override;
 
 private:
 	void setupFonts();
@@ -259,7 +268,7 @@ private:
 	void loadStaticData();
 
 	void syncOmni3DSettings();
-	void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	void playTransitionEndLevel(int level);
 	void changeLevel(int level);
@@ -321,7 +330,7 @@ private:
 
 	bool canVisit() const;
 	Common::String getSaveFileName(bool visit, uint saveNum) const;
-	void getSavesList(bool visit, Common::Array<Common::String> &saveNames);
+	void getSavesList(bool visit, Common::Array<Common::String> &saveNames, int &nextSaveNum);
 	void saveGame(bool visit, uint saveNum, const Common::String &saveName);
 	bool loadGame(bool visit, uint saveNum);
 
@@ -339,6 +348,7 @@ private:
 	bool showSubtitles() const;
 
 	void playInGameVideo(const Common::String &filename, bool restoreCursorPalette = true);
+	void playSubtitledVideo(const Common::String &filename);
 
 	void loadBMPs(const char *pattern, Graphics::Surface *bmps, uint count);
 
@@ -425,6 +435,12 @@ private:
 	bool doCountDown();
 	void doDrawCountdown(Graphics::ManagedSurface *surface);
 
+	// Video subtitles
+	Common::HashMap<Common::String, Common::Array<SubtitleEntry> > _subtitles;
+	const Common::Array<SubtitleEntry> *_currentSubtitleSet;
+	Common::Array<SubtitleEntry>::const_iterator _currentSubtitle;
+	void drawVideoSubtitles(uint frameNum);
+
 	// Objects
 	template<uint ID>
 	void genericDisplayObject();
@@ -436,6 +452,8 @@ private:
 	void obj_125();
 	void obj_126();
 	void obj_126hk(Graphics::ManagedSurface &surface);
+	void obj_129();
+	void obj_129hk(Graphics::ManagedSurface &surface);
 	void obj_142();
 	void obj_142hk(Graphics::ManagedSurface &surface);
 
@@ -542,15 +560,17 @@ private:
 	IMG_CB(88003d);
 	IMG_CB(88003e);
 	IMG_CB(88003f);
-	Common::String _bombPassword;
+	Common::U32String _bombAlphabet; // For Japanese edition
+	Common::U32String _bombPassword;
 	static const uint kBombPasswordSmallLength = 40;
 	static const uint kBombPasswordMaxLength = 60;
 	static const uint16 kBombLettersPos[2][kBombPasswordMaxLength][2];
 	bool handleBomb(ZonFixedImage *fimg);
+	void handleBombTranslation(Graphics::ManagedSurface &surface);
 	void drawBombLetters(Graphics::ManagedSurface &surface, const Graphics::Surface(&bmpLetters)[28],
 	                     const uint bombPasswordLength,
-	                     const unsigned char (&bombPossibilites)[kBombPasswordMaxLength][5],
-	                     const unsigned char (&bombCurrentLetters)[kBombPasswordMaxLength]);
+	                     const uint32(&bombPossibilites)[kBombPasswordMaxLength][5],
+	                     const byte(&bombCurrentLetters)[kBombPasswordMaxLength]);
 	IMG_CB(88004);
 	IMG_CB(88004b);
 #undef IMG_CB

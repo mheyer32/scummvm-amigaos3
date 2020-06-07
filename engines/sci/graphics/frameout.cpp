@@ -234,7 +234,9 @@ void GfxFrameout::kernelUpdateScreenItem(const reg_t object) {
 		const reg_t planeObject = readSelector(_segMan, object, SELECTOR(plane));
 		Plane *plane = _planes.findByObject(planeObject);
 		if (plane == nullptr) {
-			error("kUpdateScreenItem: Plane %04x:%04x not found for screen item %04x:%04x", PRINT_REG(planeObject), PRINT_REG(object));
+			// Script bug in PQ:SWAT, when skipping the Tactics Training
+			warning("kUpdateScreenItem: Plane %04x:%04x not found for screen item %04x:%04x", PRINT_REG(planeObject), PRINT_REG(object));
+			return;
 		}
 
 		ScreenItem *screenItem = plane->_screenItemList.findByObject(object);
@@ -340,6 +342,58 @@ void GfxFrameout::deletePlane(Plane &planeToFind) {
 		plane->_created = 0;
 		plane->_moved = 0;
 		plane->_deleted = getScreenCount();
+	}
+}
+
+void GfxFrameout::deletePlanesForMacRestore() {
+	// SCI32 PC games delete planes and screen items from
+	//  their Game:restore script before calling kRestore.
+	//  In Mac this work was moved into the interpreter
+	//  for some games, while others added it back to
+    //  Game:restore or used their own scripts that took
+	//  care of this in both PC and Mac versions.
+	if (!(g_sci->getGameId() == GID_GK1 ||
+		  g_sci->getGameId() == GID_PQ4 ||
+		  g_sci->getGameId() == GID_LSL6 ||
+		  g_sci->getGameId() == GID_KQ7)) {
+		return;
+	}
+
+	for (PlaneList::size_type i = 0; i < _planes.size(); ) {
+		Plane *plane = _planes[i];
+
+		// don't delete the default plane
+		if (plane->isDefaultPlane()) {
+			i++;
+			continue;
+		}
+
+		// delete all inserted screen items from the plane
+		for (ScreenItemList::size_type j = 0; j < plane->_screenItemList.size(); ++j) {
+			ScreenItem *screenItem = plane->_screenItemList[j];
+			if (screenItem != nullptr &&
+				!screenItem->_object.isNumber() &&
+				_segMan->getObject(screenItem->_object)->isInserted()) {
+
+				// delete the screen item
+				if (screenItem->_created) {
+					plane->_screenItemList.erase_at(j);
+				} else {
+					screenItem->_updated = 0;
+					screenItem->_deleted = getScreenCount();
+				}
+			}
+		}
+		plane->_screenItemList.pack();
+
+		// delete the plane
+		if (plane->_created) {
+			_planes.erase(plane);
+		} else {
+			plane->_moved = 0;
+			plane->_deleted = getScreenCount();
+			i++;
+		}
 	}
 }
 

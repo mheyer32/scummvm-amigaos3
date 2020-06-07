@@ -49,11 +49,11 @@ namespace Common {
  */
 void debug(int level, const char *s, ...) {}
 
-char *SeekableReadStream::readLine(char *buf, size_t bufSize) {
+char *SeekableReadStream::readLine(char *buf, size_t bufSize, bool handleCR) {
 	return nullptr;
 }
 
-String SeekableReadStream::readLine() {
+String SeekableReadStream::readLine(bool handleCR) {
 	return String();
 }
 
@@ -260,6 +260,8 @@ public:
 	bool seek(int32 offset, int whence = SEEK_SET) {
 		int32 newPos = 0;
 		switch (whence) {
+		default:
+			// fallthrough intended
 		case SEEK_SET:
 			newPos = offset;
 			break;

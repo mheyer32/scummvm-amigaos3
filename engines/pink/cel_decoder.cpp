@@ -54,22 +54,22 @@ bool CelDecoder::loadStream(Common::SeekableReadStream *stream) {
 }
 
 
-uint16 CelDecoder::getTransparentColourIndex() {
-	CelVideoTrack *track = (CelVideoTrack *)getTrack(0);
+uint16 CelDecoder::getTransparentColourIndex() const {
+	const CelVideoTrack *track = (const CelVideoTrack *)getTrack(0);
 	if (!track)
 		return 0;
 	return track->getTransparentColourIndex();
 }
 
-const Graphics::Surface *CelDecoder::getCurrentFrame() {
-	CelVideoTrack *track = (CelVideoTrack *)getTrack(0);
+const Graphics::Surface *CelDecoder::getCurrentFrame() const {
+	const CelVideoTrack *track = (const CelVideoTrack *)getTrack(0);
 	if (!track)
 		return 0;
 	return track->getCurrentFrame();
 }
 
-Common::Point CelDecoder::getCenter() {
-	CelVideoTrack *track = (CelVideoTrack *)getTrack(0);
+Common::Point CelDecoder::getCenter() const {
+	const CelVideoTrack *track = (const CelVideoTrack *)getTrack(0);
 	if (!track)
 		return Common::Point(0, 0);
 	return track->getCenter();
@@ -135,15 +135,15 @@ void CelDecoder::CelVideoTrack::readHeader() {
 	_fileStream->seek(_offsetFrame1);
 }
 
-uint16 CelDecoder::CelVideoTrack::getTransparentColourIndex() {
+uint16 CelDecoder::CelVideoTrack::getTransparentColourIndex() const {
 	return _transparentColourIndex;
 }
 
-const Graphics::Surface *CelDecoder::CelVideoTrack::getCurrentFrame() {
+const Graphics::Surface *CelDecoder::CelVideoTrack::getCurrentFrame() const {
 	return _surface;
 }
 
-Common::Point CelDecoder::CelVideoTrack::getCenter() {
+Common::Point CelDecoder::CelVideoTrack::getCenter() const {
 	return _center;
 }
 

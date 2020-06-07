@@ -69,6 +69,14 @@ static const ADGameDescription gameDescriptions[] = {
 		},
 		Common::RU_RUS, Common::kPlatformWindows, ADGF_NO_FLAGS, GUIO0()
 	},
+	{
+		"gnap", "",
+		{
+			{"stock_n.dat", 0, "9729e1c77a74f2f23c53596fae385bfa", 13428133},
+			AD_LISTEND
+		},
+		Common::PL_POL, Common::kPlatformWindows, ADGF_NO_FLAGS, GUIO0()
+	},
 
 	AD_TABLE_END_MARKER
 };
@@ -78,24 +86,27 @@ static const ADGameDescription gameDescriptions[] = {
 class GnapMetaEngine : public AdvancedMetaEngine {
 public:
 	GnapMetaEngine() : AdvancedMetaEngine(Gnap::gameDescriptions, sizeof(ADGameDescription), gnapGames) {
-		_singleId = "gnap";
 		_maxScanDepth = 3;
 	}
 
-	virtual const char *getName() const {
+	const char *getEngineId() const override {
+		return "gnap";
+	}
+
+	const char *getName() const override {
 		return "Gnap";
 	}
 
-	virtual const char *getOriginalCopyright() const {
+	const char *getOriginalCopyright() const override {
 		return "Gnap (C) Artech Digital Entertainment 1997";
 	}
 
-	virtual bool hasFeature(MetaEngineFeature f) const;
-	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
-	virtual int getMaximumSaveSlot() const;
-	virtual SaveStateList listSaves(const char *target) const;
-	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
-	virtual void removeSaveState(const char *target, int slot) const;
+	bool hasFeature(MetaEngineFeature f) const override;
+	bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
+	int getMaximumSaveSlot() const override;
+	SaveStateList listSaves(const char *target) const override;
+	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const override;
+	void removeSaveState(const char *target, int slot) const override;
 };
 
 bool GnapMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -111,7 +122,7 @@ bool GnapMetaEngine::hasFeature(MetaEngineFeature f) const {
 
 bool Gnap::GnapEngine::hasFeature(EngineFeature f) const {
 	return
-		(f == kSupportsRTL) ||
+		(f == kSupportsReturnToLauncher) ||
 		(f == kSupportsLoadingDuringRuntime) ||
 		(f == kSupportsSavingDuringRuntime);
 }

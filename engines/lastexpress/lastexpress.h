@@ -70,13 +70,12 @@ class SoundManager;
 class LastExpressEngine : public Engine {
 protected:
 	// Engine APIs
-	Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
-	virtual Debugger *getDebugger() { return _debugger; }
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 
 public:
 	LastExpressEngine(OSystem *syst, const ADGameDescription *gd);
-	~LastExpressEngine();
+	~LastExpressEngine() override;
 
 	// Misc
 	Common::RandomSource& getRandom() {return _random; }

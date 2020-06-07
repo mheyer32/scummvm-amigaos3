@@ -140,6 +140,9 @@ void StarTrekEngine::chooseMousePositionFromSprites(Sprite *sprites, int numSpri
 				mouseY2 = vCenter;
 			}
 			break;
+
+		default:
+			break;
 		}
 	}
 
@@ -156,7 +159,7 @@ void StarTrekEngine::chooseMousePositionFromSprites(Sprite *sprites, int numSpri
 
 }
 
-void StarTrekEngine::drawMenuButtonOutline(SharedPtr<Bitmap> bitmap, byte color) {
+void StarTrekEngine::drawMenuButtonOutline(Bitmap *bitmap, byte color) {
 	int lineWidth = bitmap->width - 2;
 	int offsetToBottom = (bitmap->height - 3) * bitmap->width;
 
@@ -185,9 +188,7 @@ void StarTrekEngine::showOptionsMenu(int x, int y) {
 	_mouseControllingShip = false;
 
 	Common::Point oldMousePos = _gfx->getMousePos();
-	SharedPtr<Bitmap> oldMouseBitmap = _gfx->getMouseBitmap();
-
-	_gfx->setMouseBitmap(_gfx->loadBitmap("options"));
+	_gfx->setMouseBitmap("options");
 	loadMenuButtons("options", x, y);
 
 	uint32 disabledButtons = 0;
@@ -213,7 +214,7 @@ void StarTrekEngine::showOptionsMenu(int x, int y) {
 
 	unloadMenuButtons();
 	_mouseControllingShip = tmpMouseControllingShip;
-	_gfx->setMouseBitmap(oldMouseBitmap);
+	_gfx->popMouseBitmap();
 
 	if (event != MENUEVENT_LCLICK_OFFBUTTON && event != MENUEVENT_RCLICK_OFFBUTTON)
 		_gfx->warpMouse(oldMousePos.x, oldMousePos.y);
@@ -306,7 +307,7 @@ int StarTrekEngine::showActionMenu() {
 	bool addEventBack = false;
 	int action = ACTION_WALK;
 
-	menuSprite.bitmap = _gfx->loadBitmap("action");
+	menuSprite.setBitmap(loadBitmapFile("action"));
 	int menuWidth = menuSprite.bitmap->width;
 	int menuHeight = menuSprite.bitmap->height;
 
@@ -375,7 +376,7 @@ mousePosChanged: {
 					bitmapName = "walk";
 				}
 
-				_gfx->setMouseBitmap(_gfx->loadBitmap(bitmapName));
+				_gfx->setMouseBitmap(bitmapName);
 
 				if (lockMousePoint.x != -1)
 					_gfx->lockMousePosition(lockMousePoint.x, lockMousePoint.y);
@@ -471,7 +472,7 @@ lookupNextAction:
 		}
 	}
 
-	playSoundEffectIndex(SND_SELECTION);
+	_sound->playSoundEffectIndex(SND_SELECTION);
 
 	menuSprite.dontDrawNextFrame();
 	_gfx->drawAllSprites();
@@ -522,7 +523,7 @@ void StarTrekEngine::loadMenuButtons(String mnuFilename, int xpos, int ypos) {
 		}
 		bitmapBasename[10] = '\0';
 
-		_activeMenu->sprites[i].bitmap = _gfx->loadBitmap(bitmapBasename);
+		_activeMenu->sprites[i].setBitmap(loadBitmapFile(bitmapBasename));
 		_activeMenu->sprites[i].pos.x = stream->readUint16() + xpos;
 		_activeMenu->sprites[i].pos.y = stream->readUint16() + ypos;
 		_activeMenu->retvals[i] = stream->readUint16();
@@ -554,7 +555,7 @@ void StarTrekEngine::setVisibleMenuButtons(uint32 bits) {
 		if ((bits & spriteBitmask) == 0 || sprite->drawMode != 0) {
 			if ((bits & spriteBitmask) == 0 && sprite->drawMode == 2) {
 				if (i == _activeMenu->selectedButton) {
-					drawMenuButtonOutline(sprite->bitmap, 0x00);
+					drawMenuButtonOutline(sprite->bitmap.get(), 0x00);
 					_activeMenu->selectedButton = -1;
 				}
 
@@ -591,7 +592,7 @@ void StarTrekEngine::disableMenuButtons(uint32 bits) {
 	if (_activeMenu->selectedButton != -1
 	        && (_activeMenu->disabledButtons & (1 << _activeMenu->selectedButton))) {
 		Sprite *sprite = &_activeMenu->sprites[_activeMenu->selectedButton];
-		drawMenuButtonOutline(sprite->bitmap, 0x00);
+		drawMenuButtonOutline(sprite->bitmap.get(), 0x00);
 
 		sprite->bitmapChanged = true;
 		_activeMenu->selectedButton = -1;
@@ -621,12 +622,12 @@ int StarTrekEngine::handleMenuEvents(uint32 ticksUntilClickingEnabled, bool inTe
 				if (buttonIndex != _activeMenu->selectedButton) {
 					if (_activeMenu->selectedButton != -1) {
 						Sprite &spr = _activeMenu->sprites[_activeMenu->selectedButton];
-						drawMenuButtonOutline(spr.bitmap, 0x00);
+						drawMenuButtonOutline(spr.bitmap.get(), 0x00);
 						spr.bitmapChanged = true;
 					}
 					if (buttonIndex != -1) {
 						Sprite &spr = _activeMenu->sprites[buttonIndex];
-						drawMenuButtonOutline(spr.bitmap, 0xda);
+						drawMenuButtonOutline(spr.bitmap.get(), 0xda);
 						spr.bitmapChanged = true;
 					}
 					_activeMenu->selectedButton = buttonIndex;
@@ -658,12 +659,12 @@ int StarTrekEngine::handleMenuEvents(uint32 ticksUntilClickingEnabled, bool inTe
 			case TREKEVENT_LBUTTONDOWN:
 lclick:
 				if (_activeMenu->selectedButton != -1) {
-					playSoundEffectIndex(SND_SELECTION);
+					_sound->playSoundEffectIndex(SND_SELECTION);
 					return _activeMenu->retvals[_activeMenu->selectedButton];
 				} else {
 					Common::Point mouse = _gfx->getMousePos();
 					if (getMenuButtonAt(_activeMenu->sprites, _activeMenu->numButtons, mouse.x, mouse.y) == -1) {
-						playSoundEffectIndex(SND_SELECTION);
+						_sound->playSoundEffectIndex(SND_SELECTION);
 						return MENUEVENT_LCLICK_OFFBUTTON;
 					}
 				}
@@ -671,7 +672,7 @@ lclick:
 
 			case TREKEVENT_RBUTTONDOWN:
 rclick:
-				playSoundEffectIndex(SND_SELECTION);
+				_sound->playSoundEffectIndex(SND_SELECTION);
 				if (_activeMenu->selectedButton == -1)
 					return MENUEVENT_RCLICK_OFFBUTTON;
 				else
@@ -688,13 +689,13 @@ rclick:
 					case Common::KEYCODE_RETURN:
 					case Common::KEYCODE_KP_ENTER:
 					case Common::KEYCODE_F1:
-						playSoundEffectIndex(SND_SELECTION);
+						_sound->playSoundEffectIndex(SND_SELECTION);
 						return TEXTBUTTON_CONFIRM;
 
 					case Common::KEYCODE_SPACE:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_NEXTCHOICE))
 						        && _activeMenu->sprites[TEXTBUTTON_NEXTCHOICE].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_NEXTCHOICE;
 						}
 						break;
@@ -703,7 +704,7 @@ rclick:
 					case Common::KEYCODE_KP7:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLUP))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLUP].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_GOTO_TOP;
 						}
 						break;
@@ -712,7 +713,7 @@ rclick:
 					case Common::KEYCODE_KP8:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLUP))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLUP].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_SCROLLUP_ONELINE;
 						}
 						break;
@@ -721,7 +722,7 @@ rclick:
 					case Common::KEYCODE_KP9:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLUP))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLUP].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_SCROLLUP;
 						}
 						break;
@@ -730,7 +731,7 @@ rclick:
 					case Common::KEYCODE_KP4:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_PREVCHOICE))
 						        && _activeMenu->sprites[TEXTBUTTON_PREVCHOICE].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_PREVCHOICE;
 						}
 						break;
@@ -739,7 +740,7 @@ rclick:
 					case Common::KEYCODE_KP6:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_NEXTCHOICE))
 						        && _activeMenu->sprites[TEXTBUTTON_NEXTCHOICE].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_NEXTCHOICE;
 						}
 						break;
@@ -748,7 +749,7 @@ rclick:
 					case Common::KEYCODE_KP1:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLDOWN))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLDOWN].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_GOTO_BOTTOM;
 						}
 						break;
@@ -757,7 +758,7 @@ rclick:
 					case Common::KEYCODE_KP2:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLDOWN))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLDOWN].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_SCROLLDOWN_ONELINE;
 						}
 						break;
@@ -766,7 +767,7 @@ rclick:
 					case Common::KEYCODE_KP3:
 						if (!(_activeMenu->disabledButtons & (1 << TEXTBUTTON_SCROLLDOWN))
 						        && _activeMenu->sprites[TEXTBUTTON_SCROLLDOWN].drawMode == 2) {
-							playSoundEffectIndex(SND_SELECTION);
+							_sound->playSoundEffectIndex(SND_SELECTION);
 							return TEXTBUTTON_SCROLLDOWN;
 						}
 						break;
@@ -834,7 +835,7 @@ rclick:
 
 void StarTrekEngine::unloadMenuButtons() {
 	if (_activeMenu->selectedButton != -1)
-		drawMenuButtonOutline(_activeMenu->sprites[_activeMenu->selectedButton].bitmap, 0x00);
+		drawMenuButtonOutline(_activeMenu->sprites[_activeMenu->selectedButton].bitmap.get(), 0x00);
 
 	for (int i = 0; i < _activeMenu->numButtons; i++) {
 		Sprite *sprite = &_activeMenu->sprites[i];
@@ -920,7 +921,7 @@ void StarTrekEngine::chooseMouseBitmapForAction(int action, bool withRedOutline)
 		break;
 	}
 
-	_gfx->setMouseBitmap(_gfx->loadBitmap(bitmapName));
+	_gfx->setMouseBitmap(bitmapName);
 }
 
 void StarTrekEngine::showQuitGamePrompt(int x, int y) {
@@ -1004,6 +1005,8 @@ void StarTrekEngine::showTextConfigurationMenu(bool fromOptionMenu) {
 	case 2:
 		_textDisplayMode = TEXTDISPLAY_NONE;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -1025,7 +1028,7 @@ void StarTrekEngine::showRepublicMap(int16 arg0, int16 turbolift) {
 	_gfx->pushSprites();
 
 	if (!_awayMission.veng.showedRepublicMapFirstTime) {
-		_gfx->setBackgroundImage(_gfx->loadBitmap("veng9b"));
+		_gfx->setBackgroundImage("veng9b");
 		_gfx->copyBackgroundScreen();
 		_system->updateScreen();
 		_system->delayMillis(10);
@@ -1082,7 +1085,7 @@ void StarTrekEngine::showRepublicMap(int16 arg0, int16 turbolift) {
 		_gfx->fadeoutScreen();
 	}
 
-	_gfx->setBackgroundImage(_gfx->loadBitmap("veng9"));
+	_gfx->setBackgroundImage("veng9");
 	_gfx->copyBackgroundScreen();
 	_system->updateScreen();
 	_system->delayMillis(10);
@@ -1131,7 +1134,7 @@ lclick:
 				if (!spriteLoaded) {
 					_gfx->addSprite(&someSprite);
 					someSprite.setXYAndPriority(3, 168, 15);
-					someSprite.bitmap = _gfx->loadBitmap(Common::String::format("turbo%d", clickedArea));
+					someSprite.setBitmap(loadBitmapFile(Common::String::format("turbo%d", clickedArea)));
 					spriteLoaded = true;
 				}
 			} else {
@@ -1168,7 +1171,7 @@ lclick:
 	_gfx->popSprites();
 
 	_gfx->loadPri(getScreenName());
-	_gfx->setBackgroundImage(_gfx->loadBitmap(getScreenName()));
+	_gfx->setBackgroundImage(getScreenName());
 	_gfx->copyBackgroundScreen();
 	_system->updateScreen();
 	_system->delayMillis(10);

@@ -94,11 +94,6 @@ void BasePlatform::handleEvent(Common::Event *event) {
 		}
 		break;
 	case Common::EVENT_KEYDOWN:
-		if (event->kbd.flags & Common::KBD_CTRL) {
-			if (event->kbd.keycode == Common::KEYCODE_d) {
-				_engineRef->trigDebugger();
-			}
-		}
 		if (_gameRef) {
 			_gameRef->handleKeypress(event);
 		}
@@ -111,11 +106,16 @@ void BasePlatform::handleEvent(Common::Event *event) {
 	case Common::EVENT_WHEELUP:
 	case Common::EVENT_WHEELDOWN:
 		if (_gameRef) {
-			_gameRef->handleMouseWheel(event->mouse.y);
+			_gameRef->handleMouseWheel(event->type == Common::EVENT_WHEELUP ? 1 : -1);
+		}
+		break;
+	case Common::EVENT_SCREEN_CHANGED:
+		if (_gameRef) {
+			_gameRef->_renderer->onWindowChange();
 		}
 		break;
 // Focus-events have been removed (_gameRef->onActivate originally)
-	case Common::EVENT_RTL:
+	case Common::EVENT_RETURN_TO_LAUNCHER:
 		_gameRef->_quitting = true;
 		break;
 	case Common::EVENT_QUIT:

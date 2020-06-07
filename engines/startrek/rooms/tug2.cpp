@@ -605,7 +605,7 @@ void Room::tug2TalkToSpock() {
 }
 
 void Room::tug2UseCommunicator() {
-	showText(TX_SPEAKER_SPOCK, TX_TUG1_011);
+	showText(TX_SPEAKER_SPOCK, COMMON_MESSAGE_OFFSET + 11, true);
 }
 
 void Room::tug2DetermineElasiShooter() {
@@ -693,6 +693,9 @@ void Room::tug2Timer0Expired() {
 			_awayMission->timers[2] = 40;
 			tug2GuardShootsCrewman();
 		}
+		break;
+
+	default:
 		break;
 	}
 }

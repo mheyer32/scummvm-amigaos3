@@ -147,11 +147,11 @@ void Debugger::debugPrintColumns(const Common::StringArray &list) {
 }
 
 void Debugger::preEnter() {
-	g_engine->pauseEngine(true);
+	_debugPauseToken = g_engine->pauseEngine();
 }
 
 void Debugger::postEnter() {
-	g_engine->pauseEngine(false);
+	_debugPauseToken.clear();
 }
 
 void Debugger::attach(const char *entry) {
@@ -403,6 +403,8 @@ void Debugger::splitCommand(Common::String &input, int &argc, const char **argv)
 		c = (byte)*p;
 
 		switch (state) {
+		default:
+			// fallthrough intended
 		case DULL:
 			// not in a word, not in a double quoted string
 			if (isspace(c))

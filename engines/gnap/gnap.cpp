@@ -30,6 +30,9 @@
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
 #include "common/timer.h"
+#include "common/winexe_pe.h"
+
+#include "graphics/wincursor.h"
 
 #include "engines/util.h"
 
@@ -249,6 +252,7 @@ Common::Error GnapEngine::run() {
 	_gameSys = new GameSys(this);
 	_soundMan = new SoundMan(this);
 	_debugger = new Debugger();
+	setDebugger(_debugger);
 	_gnap = new PlayerGnap(this);
 	_plat = new PlayerPlat(this);
 
@@ -265,7 +269,7 @@ Common::Error GnapEngine::run() {
 	delete _soundCache;
 	delete _spriteCache;
 	delete _dat;
-	delete _debugger;
+	//delete _debugger; Debugger is deleted by Engine
 	delete _font;
 	delete _exe;
 
@@ -278,13 +282,6 @@ void GnapEngine::updateEvents() {
 	while (_eventMan->pollEvent(event)) {
 		switch (event.type) {
 		case Common::EVENT_KEYDOWN:
-			// Check for debugger
-			if (event.kbd.keycode == Common::KEYCODE_d && (event.kbd.flags & Common::KBD_CTRL)) {
-				// Attach to the debugger
-				_debugger->attach();
-				_debugger->onFrame();
-			}
-
 			_keyPressState[event.kbd.keycode] = true;
 			_keyDownState[event.kbd.keycode] = true;
 			break;
@@ -544,7 +541,7 @@ void GnapEngine::setVerbCursor(int verbCursor) {
 void GnapEngine::setCursor(int cursorIndex) {
 	if (_cursorIndex != cursorIndex) {
 		const char *cursorName = kCursorNames[cursorIndex];
-		Graphics::WinCursorGroup *cursorGroup = Graphics::WinCursorGroup::createCursorGroup(*_exe, Common::WinResourceID(cursorName));
+		Graphics::WinCursorGroup *cursorGroup = Graphics::WinCursorGroup::createCursorGroup(_exe, Common::WinResourceID(cursorName));
 		if (cursorGroup) {
 			Graphics::Cursor *cursor = cursorGroup->cursors[0].cursor;
 			CursorMan.replaceCursor(cursor);
@@ -756,6 +753,8 @@ void GnapEngine::initGameFlags(int num) {
 		setFlag(kGFKeysTaken);
 		setFlag(kGFGrassTaken);
 		setFlag(kGFBarnPadlockOpen);
+		break;
+	default:
 		break;
 	}
 }
@@ -1054,6 +1053,8 @@ void GnapEngine::doCallback(int callback) {
 	case 10:
 	case 20:
 		_scene->updateAnimationsCb();
+		break;
+	default:
 		break;
 	}
 }

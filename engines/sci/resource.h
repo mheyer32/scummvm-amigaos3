@@ -147,6 +147,7 @@ enum ResVersion {
 
 class ResourceManager;
 class ResourceSource;
+class ResourcePatcher;
 
 class ResourceId {
 	static inline ResourceType fixupType(ResourceType type) {
@@ -247,6 +248,7 @@ struct ResourceIdHash : public Common::UnaryFunction<ResourceId, uint> {
 /** Class for storing resources in memory */
 class Resource : public SciSpan<const byte> {
 	friend class ResourceManager;
+	friend class ResourcePatcher;
 
 	// FIXME: These 'friend' declarations are meant to be a temporary hack to
 	// ease transition to the ResourceSource class system.
@@ -327,6 +329,7 @@ class ResourceManager {
 	friend class ExtAudioMapResourceSource;
 	friend class WaveResourceSource;
 	friend class MacResourceForkResourceSource;
+	friend class ResourcePatcher;
 #ifdef ENABLE_SCI32
 	friend class ChunkResourceSource;
 #endif
@@ -392,9 +395,15 @@ public:
 	 */
 	Common::List<ResourceId> listResources(ResourceType type, int mapNumber = -1);
 
+	/**
+	 * Returns if there are any resources of the specified type.
+	 */
+	bool hasResourceType(ResourceType type);
+
 	void setAudioLanguage(int language);
 	int getAudioLanguage() const;
 	void changeAudioDirectory(Common::String path);
+	void changeMacAudioDirectory(Common::String path);
 	bool isGMTrackIncluded();
 	bool isSci11Mac() const { return _volVersion == kResVersionSci11Mac; }
 	ViewType getViewType() const { return _viewType; }
@@ -489,6 +498,7 @@ protected:
 	ResourceSource *_audioMapSCI1; ///< Currently loaded audio map for SCI1
 	ResVersion _volVersion; ///< resource.0xx version
 	ResVersion _mapVersion; ///< resource.map version
+	bool _isSci2Mac;
 
 	/**
 	 * Add a path to the resource manager's list of sources.
@@ -553,6 +563,9 @@ protected:
 	/**--- Resource map decoding functions ---*/
 	ResVersion detectMapVersion();
 	ResVersion detectVolVersion();
+#ifdef ENABLE_SCI32
+	bool detectSci2Mac();
+#endif
 
 	/**
 	 * Reads the SCI0 resource.map file from a local directory.
@@ -628,6 +641,9 @@ protected:
 	void detectSciVersion();
 
 private:
+	// For better or worse, because the patcher is added as a ResourceSource,
+	// its destruction is managed by freeResourceSources.
+	ResourcePatcher *_patcher;
 	bool _hasBadResources;
 };
 
@@ -677,15 +693,18 @@ public:
 	int getChannelFilterMask(int hardwareMask, bool wantsRhythm);
 	byte getInitialVoiceCount(byte channel);
 	byte getSoundPriority() const { return _soundPriority; }
+	bool exists() const { return _resource != nullptr; }
 
 private:
 	SciVersion _soundVersion;
 	int _trackCount;
 	Track *_tracks;
-	Resource *_innerResource;
+	Resource *_resource;
 	ResourceManager *_resMan;
 	byte _soundPriority;
 };
+
+ResourceId convertPatchNameBase36(ResourceType type, const Common::String &filename);
 
 } // End of namespace Sci
 

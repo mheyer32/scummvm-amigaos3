@@ -43,9 +43,9 @@
 #ifdef ENABLE_SCI32
 #include "graphics/thumbnail.h"
 #include "sci/engine/guest_additions.h"
+#endif
 #include "sci/engine/message.h"
 #include "sci/resource.h"
-#endif
 
 namespace Sci {
 
@@ -209,6 +209,9 @@ reg_t kCD(EngineState *s, int argc, reg_t *argv) {
 }
 
 reg_t kCheckCD(EngineState *s, int argc, reg_t *argv) {
+	// Mac interpreters would display a dialog prompting for the disc.
+	//  kCheckCD took an optional second boolean parameter, which we
+	//  ignore, that affected the dialog's text.
 	const int16 cdNo = argc > 0 ? argv[0].toSint16() : 0;
 
 	if (cdNo) {
@@ -400,7 +403,7 @@ reg_t kFileIOOpen(EngineState *s, int argc, reg_t *argv) {
 			// of the filename
 			const int skip = name.firstChar() < '0' || name.firstChar() > '9';
 
-			if (sscanf(name.c_str() + skip, "%i.DTA", &saveNo) != 1) {
+			if (sscanf(name.c_str() + skip, "%d.DTA", &saveNo) != 1) {
 				warning("Could not parse game filename %s", name.c_str());
 			}
 
@@ -453,7 +456,7 @@ reg_t kFileIOOpen(EngineState *s, int argc, reg_t *argv) {
 		int saveNo = -1;
 		if (name == "911.sg" || name == "autorama.sg") {
 			saveNo = kAutoSaveId;
-		} else if (sscanf(name.c_str(), "ramasg.%i", &saveNo) == 1) {
+		} else if (sscanf(name.c_str(), "ramasg.%d", &saveNo) == 1) {
 			saveNo += kSaveIdShift;
 		}
 
@@ -568,12 +571,8 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 	uint16 handle = argv[0].toUint16();
 
 	if (handle >= kVirtualFileHandleStart) {
-#ifdef ENABLE_SCI32
 		// it's a virtual handle? ignore it
 		return TRUE_REG;
-#else
-		return SIGNAL_REG;
-#endif
 	}
 
 	FileHandle *f = getFileFromHandle(s, handle);
@@ -581,11 +580,7 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 		f->close();
 		if (getSciVersion() <= SCI_VERSION_0_LATE)
 			return s->r_acc;	// SCI0 semantics: no value returned
-#ifdef ENABLE_SCI32
 		return TRUE_REG;
-#else
-		return SIGNAL_REG;
-#endif
 	}
 
 	if (getSciVersion() <= SCI_VERSION_0_LATE)
@@ -595,17 +590,33 @@ reg_t kFileIOClose(EngineState *s, int argc, reg_t *argv) {
 
 reg_t kFileIOReadRaw(EngineState *s, int argc, reg_t *argv) {
 	uint16 handle = argv[0].toUint16();
+	reg_t dest = argv[1];
 	uint16 size = argv[2].toUint16();
 	int bytesRead = 0;
 	byte *buf = new byte[size];
 	debugC(kDebugLevelFile, "kFileIO(readRaw): %d, %d", handle, size);
 
 	FileHandle *f = getFileFromHandle(s, handle);
-	if (f)
+	if (f) {
+#ifdef ENABLE_SCI32
+		SegmentRef destReference = s->_segMan->dereference(dest);
+		SegmentObj *destObject = s->_segMan->getSegmentObj(dest.getSegment());
+
+		if (destReference.maxSize == size - 4 && destObject->getType() == SEG_TYPE_ARRAY) {
+			// This is an array structure, which starts with the number of
+			// elements in the array and the size of each element. Skip
+			// these bytes. These structures are stored in the ARC files of
+			// the Behind the Developer's Shield and Inside the Chest demos.
+			f->_in->skip(4);
+			size -= 4;
+		}
+#endif
+
 		bytesRead = f->_in->read(buf, size);
+	}
 
 	if (bytesRead > 0)
-		s->_segMan->memcpy(argv[1], buf, bytesRead);
+		s->_segMan->memcpy(dest, buf, bytesRead);
 
 	delete[] buf;
 	return make_reg(0, bytesRead);
@@ -675,8 +686,8 @@ reg_t kFileIOUnlink(EngineState *s, int argc, reg_t *argv) {
 		// Special cases for KQ7 & RAMA, basically identical to the SQ4 case
 		// above, where the game hardcodes its save game names
 		int saveNo;
-		if (sscanf(name.c_str(), "kq7cdsg.%i", &saveNo) == 1 ||
-			sscanf(name.c_str(), "ramasg.%i", &saveNo) == 1) {
+		if (sscanf(name.c_str(), "kq7cdsg.%d", &saveNo) == 1 ||
+			sscanf(name.c_str(), "ramasg.%d", &saveNo) == 1) {
 
 			name = g_sci->getSavegameName(saveNo + kSaveIdShift);
 		} else if (g_sci->getGameId() == GID_RAMA && (name == "911.sg" || name == "autorama.sg")) {
@@ -837,7 +848,7 @@ reg_t kFileIOExists(EngineState *s, int argc, reg_t *argv) {
 		// the native save/load dialogue
 		if (name == "autorama.sg") {
 			findSaveNo = kAutoSaveId;
-		} else if (sscanf(name.c_str(), "ramasg.%i", &findSaveNo) == 1) {
+		} else if (sscanf(name.c_str(), "ramasg.%d", &findSaveNo) == 1) {
 			findSaveNo += kSaveIdShift;
 		}
 	}
@@ -1107,6 +1118,20 @@ reg_t kSaveGame(EngineState *s, int argc, reg_t *argv) {
 				// Jones has one save slot only
 				savegameId = 0;
 				break;
+			case GID_QFG3: {
+				// Auto-save system used by QFG3
+				reg_t autoSaveNameId;
+				s->_segMan->allocDynmem(kMaxSaveNameLength, "kSaveGame", &autoSaveNameId);
+				MessageTuple autoSaveNameTuple(0, 0, 16, 1);
+				s->_msgState->getMessage(0, autoSaveNameTuple, autoSaveNameId);
+				Common::String autoSaveName = s->_segMan->getString(autoSaveNameId);
+				if (game_description == autoSaveName) {
+					savegameId = kAutoSaveId;
+				}
+
+				s->_segMan->freeDynmem(autoSaveNameId);
+				break;
+			}
 			case GID_FANMADE: {
 				// Fanmade game, try to identify the game
 				const char *gameName = g_sci->getGameObjectName();
@@ -1153,31 +1178,10 @@ reg_t kSaveGame(EngineState *s, int argc, reg_t *argv) {
 		s->_lastSaveNewId = savegameId;
 	}
 
-	s->r_acc = NULL_REG;
-
-	Common::String filename = g_sci->getSavegameName(savegameId);
-	Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
-	Common::OutSaveFile *out;
-
-	out = saveFileMan->openForSaving(filename);
-	if (!out) {
-		warning("Error opening savegame \"%s\" for writing", filename.c_str());
-	} else {
-		if (!gamestate_save(s, out, game_description, version)) {
-			warning("Saving the game failed");
-		} else {
-			s->r_acc = TRUE_REG; // save successful
-		}
-
-		out->finalize();
-		if (out->err()) {
-			warning("Writing the savegame failed");
-			s->r_acc = NULL_REG; // write failure
-		}
-		delete out;
+	if (gamestate_save(s, savegameId, game_description, version)) {
+		return TRUE_REG;
 	}
-
-	return s->r_acc;
+	return NULL_REG;
 }
 
 reg_t kRestoreGame(EngineState *s, int argc, reg_t *argv) {
@@ -1223,23 +1227,8 @@ reg_t kRestoreGame(EngineState *s, int argc, reg_t *argv) {
 	if (findSavegame(saves, savegameId) == -1) {
 		s->r_acc = TRUE_REG;
 		warning("Savegame ID %d not found", savegameId);
-	} else {
-		Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
-		Common::String filename = g_sci->getSavegameName(savegameId);
-		Common::SeekableReadStream *in;
-
-		in = saveFileMan->openForLoading(filename);
-		if (in) {
-			// found a savegame file
-			gamestate_restore(s, in);
-			delete in;
-
-			gamestate_afterRestoreFixUp(s, savegameId);
-
-		} else {
-			s->r_acc = TRUE_REG;
-			warning("Savegame #%d not found", savegameId);
-		}
+	} else if (!gamestate_restore(s, savegameId)) {
+		s->r_acc = TRUE_REG; // signals failure
 	}
 
 	if (!s->r_acc.isNull()) {
@@ -1340,12 +1329,29 @@ reg_t kGetSaveFiles(EngineState *s, int argc, reg_t *argv) {
 #ifdef ENABLE_SCI32
 
 reg_t kSaveGame32(EngineState *s, int argc, reg_t *argv) {
+	// fix bug #9752 - make sure that control panel (in case of QFG4),
+	// keyboard (in case of Shivers), or any other obstacle (in other unknown SCI32 games...)
+	// will be hidden before saving
+	kFrameOut(s, 0, NULL);
+
 	const Common::String gameName = s->_segMan->getString(argv[0]);
 	int16 saveNo = argv[1].toSint16();
-	const Common::String saveDescription = argv[2].isNull() ? "" : s->_segMan->getString(argv[2]);
+	Common::String saveDescription = argv[2].isNull() ? "" : s->_segMan->getString(argv[2]);
 	const Common::String gameVersion = (argc <= 3 || argv[3].isNull()) ? "" : s->_segMan->getString(argv[3]);
 
 	debugC(kDebugLevelFile, "Game name %s save %d desc %s ver %s", gameName.c_str(), saveNo, saveDescription.c_str(), gameVersion.c_str());
+
+	// Display the save prompt for Mac games with native dialogs. Passing
+	//  zero for the save number would trigger these, but we can't act solely
+	//  on that since we shift save numbers around to accommodate autosave
+	//  slots, causing some games to pass zero that normally wouldn't.
+	if (g_sci->hasMacSaveRestoreDialogs() && saveNo == 0) {
+		saveNo = g_sci->_guestAdditions->runSaveRestore(true, argv[2]);
+		if (saveNo == -1) {
+			return NULL_REG;
+		}
+		saveDescription = s->_segMan->getString(argv[2]);
+	}
 
 	// Auto-save system used by Torin and LSL7
 	if (gameName == "Autosave" || gameName == "Autosv") {
@@ -1355,10 +1361,8 @@ reg_t kSaveGame32(EngineState *s, int argc, reg_t *argv) {
 			// Autosave slot 1 is a "new game" save
 			saveNo = kNewGameId;
 		}
-	} else if (saveNo == kMaxShiftedSaveId) {
-		saveNo = 0;
 	} else {
-		saveNo += kSaveIdShift;
+		saveNo = shiftSciToScummVMSaveId(saveNo);
 	}
 
 	if (g_sci->getGameId() == GID_PHANTASMAGORIA2 && s->callInStack(g_sci->getGameObject(), SELECTOR(bookMark))) {
@@ -1379,37 +1383,27 @@ reg_t kSaveGame32(EngineState *s, int argc, reg_t *argv) {
 		s->_segMan->freeArray(autoSaveNameId);
 	}
 
-	Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
-	const Common::String filename = g_sci->getSavegameName(saveNo);
-	Common::OutSaveFile *saveStream = saveFileMan->openForSaving(filename);
-
-	if (saveStream == nullptr) {
-		warning("Error opening savegame \"%s\" for writing", filename.c_str());
-		return NULL_REG;
+	if (gamestate_save(s, saveNo, saveDescription, gameVersion)) {
+		return TRUE_REG;
 	}
-
-	if (!gamestate_save(s, saveStream, saveDescription, gameVersion)) {
-		warning("Saving the game failed");
-		saveStream->finalize();
-		delete saveStream;
-		return NULL_REG;
-	}
-
-	saveStream->finalize();
-	if (saveStream->err()) {
-		warning("Writing the savegame failed");
-		delete saveStream;
-		return NULL_REG;
-	}
-
-	delete saveStream;
-	return TRUE_REG;
+	return NULL_REG;
 }
 
 reg_t kRestoreGame32(EngineState *s, int argc, reg_t *argv) {
 	const Common::String gameName = s->_segMan->getString(argv[0]);
 	int16 saveNo = argv[1].toSint16();
 	const Common::String gameVersion = argv[2].isNull() ? "" : s->_segMan->getString(argv[2]);
+
+	// Display the restore prompt for Mac games with native dialogs. Passing
+	//  zero for the save number would trigger these, but we can't act solely
+	//  on that since we shift save numbers around to accommodate autosave
+	//  slots, causing some games to pass zero that normally wouldn't.
+	if (g_sci->hasMacSaveRestoreDialogs() && saveNo == 0) {
+		saveNo = g_sci->_guestAdditions->runSaveRestore(false, NULL_REG, s->_delayedRestoreGameId);
+		if (saveNo == -1) {
+			return NULL_REG;
+		}
+	}
 
 	if (gameName == "Autosave" || gameName == "Autosv") {
 		if (saveNo == 0) {
@@ -1418,26 +1412,14 @@ reg_t kRestoreGame32(EngineState *s, int argc, reg_t *argv) {
 			// Autosave slot 1 is a "new game" save
 			saveNo = kNewGameId;
 		}
-	} else if (saveNo == kMaxShiftedSaveId) {
-		saveNo = 0;
 	} else {
-		saveNo += kSaveIdShift;
+		saveNo = shiftSciToScummVMSaveId(saveNo);
 	}
 
-	Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
-	const Common::String filename = g_sci->getSavegameName(saveNo);
-	Common::SeekableReadStream *saveStream = saveFileMan->openForLoading(filename);
-
-	if (saveStream == nullptr) {
-		warning("Savegame #%d not found", saveNo);
-		return NULL_REG;
+	if (gamestate_restore(s, saveNo)) {
+		return TRUE_REG;
 	}
-
-	gamestate_restore(s, saveStream);
-	delete saveStream;
-
-	gamestate_afterRestoreFixUp(s, saveNo);
-	return TRUE_REG;
+	return NULL_REG;
 }
 
 reg_t kCheckSaveGame32(EngineState *s, int argc, reg_t *argv) {
@@ -1449,10 +1431,8 @@ reg_t kCheckSaveGame32(EngineState *s, int argc, reg_t *argv) {
 		if (saveNo == 1) {
 			saveNo = kNewGameId;
 		}
-	} else if (saveNo == kMaxShiftedSaveId) {
-		saveNo = 0;
 	} else {
-		saveNo += kSaveIdShift;
+		saveNo = shiftSciToScummVMSaveId(saveNo);
 	}
 
 	SavegameDesc save;

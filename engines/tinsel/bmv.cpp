@@ -440,8 +440,8 @@ void BMVPlayer::FettleMovieText() {
 	for (i = 0; i < 2; i++) {
 		if (texts[i].pText) {
 			if (currentFrame > texts[i].dieFrame) {
-				MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), texts[i].pText);
-				texts[i].pText = NULL;
+				MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), texts[i].pText);
+				texts[i].pText = nullptr;
 			} else {
 				MultiForceRedraw(texts[i].pText);
 				bIsText = true;
@@ -480,7 +480,7 @@ void BMVPlayer::BmvDrawText(bool bDraw) {
 				rcPlayClip.top = y;
 				rcPlayClip.right = x+w;
 				rcPlayClip.bottom = y+h;
-				UpdateClipRect(GetPlayfieldList(FIELD_STATUS), &ptWin,	&rcPlayClip);
+				UpdateClipRect(_vm->_bg->GetPlayfieldList(FIELD_STATUS), &ptWin,	&rcPlayClip);
 			}
 		}
 	}
@@ -497,25 +497,25 @@ void BMVPlayer::MovieText(CORO_PARAM, int stringId, int x, int y, int fontId, CO
 	if (fontId == 1) {
 		// It's a 'print'
 
-		hFont = GetTagFontHandle();
+		hFont = _vm->_font->GetTagFontHandle();
 		index = 0;
 	} else {
 		// It's a 'talk'
 
 		if (pTalkColor != NULL)
 			SetTextPal(*pTalkColor);
-		hFont = GetTalkFontHandle();
+		hFont = _vm->_font->GetTalkFontHandle();
 		index = 1;
 	}
 
 	if (texts[index].pText)
-		MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), texts[index].pText);
+		MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), texts[index].pText);
 
-	LoadSubString(stringId, 0, TextBufferAddr(), TBUFSZ);
+	LoadSubString(stringId, 0, _vm->_font->TextBufferAddr(), TBUFSZ);
 
 	texts[index].dieFrame = currentFrame + duration;
-	texts[index].pText = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
-						TextBufferAddr(),
+	texts[index].pText = ObjectTextOut(_vm->_bg->GetPlayfieldList(FIELD_STATUS),
+						_vm->_font->TextBufferAddr(),
 						0,
 						x, y,
 						hFont,
@@ -725,17 +725,17 @@ void BMVPlayer::FinishBMV() {
 
 	// Release the data buffer
 	free(bigBuffer);
-	bigBuffer = NULL;
+	bigBuffer = nullptr;
 
 	// Release the screen buffer
 	free(screenBuffer);
-	screenBuffer = NULL;
+	screenBuffer = nullptr;
 
 	// Ditch any text objects
 	for (i = 0; i < 2; i++) {
 		if (texts[i].pText) {
-			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), texts[i].pText);
-			texts[i].pText = NULL;
+			MultiDeleteObject(_vm->_bg->GetPlayfieldList(FIELD_STATUS), texts[i].pText);
+			texts[i].pText = nullptr;
 		}
 	}
 	bMovieOn = false;
@@ -1025,7 +1025,7 @@ bool BMVPlayer::DoSoundFrame() {
 void BMVPlayer::CopyMovieToScreen() {
 	// Not if not up and running yet!
 	if (!screenBuffer || (currentFrame == 0)) {
-		DrawBackgnd();
+		_vm->_bg->DrawBackgnd();
 		return;
 	}
 

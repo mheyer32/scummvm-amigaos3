@@ -424,22 +424,43 @@ void EngineState::saveLoadWithSerializer(Common::Serializer &s) {
 	if (getSciVersion() >= SCI_VERSION_2) {
 		g_sci->_video32->beforeSaveLoadWithSerializer(s);
 	}
+
+	if (getSciVersion() >= SCI_VERSION_2 &&
+		s.isLoading() &&
+		g_sci->getPlatform() == Common::kPlatformMacintosh) {
+		g_sci->_gfxFrameout->deletePlanesForMacRestore();
+	}
 #endif
 
 	_segMan->saveLoadWithSerializer(s);
 
 	g_sci->_soundCmd->syncPlayList(s);
 
-#ifdef ENABLE_SCI32
 	if (getSciVersion() >= SCI_VERSION_2) {
+#ifdef ENABLE_SCI32
 		g_sci->_gfxPalette32->saveLoadWithSerializer(s);
 		g_sci->_gfxRemap32->saveLoadWithSerializer(s);
 		g_sci->_gfxCursor32->saveLoadWithSerializer(s);
 		g_sci->_audio32->saveLoadWithSerializer(s);
 		g_sci->_video32->saveLoadWithSerializer(s);
-	} else
 #endif
+	} else {
 		g_sci->_gfxPalette16->saveLoadWithSerializer(s);
+}
+
+	// Stop any currently playing audio when loading.
+	// Loading is not normally allowed while audio is being played in SCI games.
+	// Stopping sounds is needed in ScummVM, as the player may load via
+	// Control - F5 at any point, even while a sound is playing.
+	if (s.isLoading()) {
+		if (getSciVersion() >= SCI_VERSION_2) {
+#ifdef ENABLE_SCI32
+			g_sci->_audio32->stop(kAllChannels);
+#endif
+		} else {
+			g_sci->_audio->stopAllAudio();
+		}
+	}
 }
 
 void Vocabulary::saveLoadWithSerializer(Common::Serializer &s) {
@@ -693,6 +714,7 @@ void MusicEntry::saveLoadWithSerializer(Common::Serializer &s) {
 	s.syncAsSint16LE(fadeStep);
 	s.syncAsSint32LE(fadeTicker);
 	s.syncAsSint32LE(fadeTickerStep);
+	s.syncAsByte(stopAfterFading, VER(45));
 	s.syncAsByte(status);
 	if (s.getVersion() >= 32)
 		s.syncAsByte(playBed);
@@ -755,7 +777,7 @@ void SoundCommandParser::reconstructPlayList() {
 			if (_soundVersion >= SCI_VERSION_1_EARLY)
 				writeSelectorValue(_segMan, entry->soundObj, SELECTOR(vol), entry->volume);
 
-			processPlaySound(entry->soundObj, entry->playBed);
+			processPlaySound(entry->soundObj, entry->playBed, true);
 		}
 	}
 }
@@ -1199,6 +1221,33 @@ void SegManager::reconstructClones() {
 
 #pragma mark -
 
+bool gamestate_save(EngineState *s, int saveId, const Common::String &savename, const Common::String &version) {
+	Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
+	const Common::String filename = g_sci->getSavegameName(saveId);
+
+	Common::OutSaveFile *saveStream = saveFileMan->openForSaving(filename);
+	if (saveStream == nullptr) {
+		warning("Error opening savegame \"%s\" for writing", filename.c_str());
+		return false;
+	}
+
+	if (!gamestate_save(s, saveStream, savename, version)) {
+		warning("Saving the game failed");
+		saveStream->finalize();
+		delete saveStream;
+		return false;
+	}
+
+	saveStream->finalize();
+	if (saveStream->err()) {
+		warning("Writing the savegame failed");
+		delete saveStream;
+		return false;
+	}
+
+	delete saveStream;
+	return true;
+}
 
 bool gamestate_save(EngineState *s, Common::WriteStream *fh, const Common::String &savename, const Common::String &version) {
 	Common::Serializer ser(nullptr, fh);
@@ -1215,7 +1264,7 @@ bool gamestate_save(EngineState *s, Common::WriteStream *fh, const Common::Strin
 	return true;
 }
 
-extern void showScummVMDialog(const Common::String &message);
+extern int showScummVMDialog(const Common::String& message, const char* altButton = nullptr, bool alignCenter = true);
 
 void gamestate_afterRestoreFixUp(EngineState *s, int savegameId) {
 	switch (g_sci->getGameId()) {
@@ -1346,6 +1395,23 @@ void gamestate_afterRestoreFixUp(EngineState *s, int savegameId) {
 	default:
 		break;
 	}
+}
+
+bool gamestate_restore(EngineState *s, int saveId) {
+	Common::SaveFileManager *saveFileMan = g_sci->getSaveFileManager();
+	const Common::String filename = g_sci->getSavegameName(saveId);
+	Common::SeekableReadStream *saveStream = saveFileMan->openForLoading(filename);
+
+	if (saveStream == nullptr) {
+		warning("Savegame #%d not found", saveId);
+		return false;
+	}
+
+	gamestate_restore(s, saveStream);
+	delete saveStream;
+
+	gamestate_afterRestoreFixUp(s, saveId);
+	return true;
 }
 
 void gamestate_restore(EngineState *s, Common::SeekableReadStream *fh) {

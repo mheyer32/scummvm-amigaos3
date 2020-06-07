@@ -32,7 +32,7 @@
 #include "common/translation.h"
 #endif
 
-OpenGLSdlGraphicsManager::OpenGLSdlGraphicsManager(uint desktopWidth, uint desktopHeight, SdlEventSource *eventSource, SdlWindow *window)
+OpenGLSdlGraphicsManager::OpenGLSdlGraphicsManager(SdlEventSource *eventSource, SdlWindow *window)
     : SdlGraphicsManager(eventSource, window), _lastRequestedHeight(0),
 #if SDL_VERSION_ATLEAST(2, 0, 0)
       _glContext(),
@@ -175,10 +175,12 @@ OpenGLSdlGraphicsManager::OpenGLSdlGraphicsManager(uint desktopWidth, uint deskt
 		}
 	}
 
+	Common::Rect desktopRes = _window->getDesktopResolution();
+
 	// In case SDL is fine with every mode we will force the desktop mode.
 	// TODO? We could also try to add some default resolutions here.
-	if (_fullscreenVideoModes.empty() && desktopWidth && desktopHeight) {
-		_fullscreenVideoModes.push_back(VideoMode(desktopWidth, desktopHeight));
+	if (_fullscreenVideoModes.empty() && !desktopRes.isEmpty()) {
+		_fullscreenVideoModes.push_back(VideoMode(desktopRes.width(), desktopRes.height()));
 	}
 
 	// Get information about display sizes from the previous runs.
@@ -187,8 +189,8 @@ OpenGLSdlGraphicsManager::OpenGLSdlGraphicsManager(uint desktopWidth, uint deskt
 		_desiredFullscreenHeight = ConfMan.getInt("last_fullscreen_mode_height", Common::ConfigManager::kApplicationDomain);
 	} else {
 		// Use the desktop resolutions when no previous default has been setup.
-		_desiredFullscreenWidth  = desktopWidth;
-		_desiredFullscreenHeight = desktopHeight;
+		_desiredFullscreenWidth  = desktopRes.width();
+		_desiredFullscreenHeight = desktopRes.height();
 	}
 }
 
@@ -197,22 +199,6 @@ OpenGLSdlGraphicsManager::~OpenGLSdlGraphicsManager() {
 	notifyContextDestroy();
 	SDL_GL_DeleteContext(_glContext);
 #endif
-}
-
-void OpenGLSdlGraphicsManager::activateManager() {
-	SdlGraphicsManager::activateManager();
-
-	// Register the graphics manager as a event observer
-	g_system->getEventManager()->getEventDispatcher()->registerObserver(this, 10, false);
-}
-
-void OpenGLSdlGraphicsManager::deactivateManager() {
-	// Unregister the event observer
-	if (g_system->getEventManager()->getEventDispatcher()) {
-		g_system->getEventManager()->getEventDispatcher()->unregisterObserver(this);
-	}
-
-	SdlGraphicsManager::deactivateManager();
 }
 
 bool OpenGLSdlGraphicsManager::hasFeature(OSystem::Feature f) const {
@@ -526,19 +512,14 @@ bool OpenGLSdlGraphicsManager::setupMode(uint width, uint height) {
 }
 
 bool OpenGLSdlGraphicsManager::notifyEvent(const Common::Event &event) {
-	switch (event.type) {
-	case Common::EVENT_KEYUP:
-		if (isHotkey(event))
-			return true;
+	if (event.type != Common::EVENT_CUSTOM_BACKEND_ACTION_START) {
+		return SdlGraphicsManager::notifyEvent(event);
+	}
 
-		break;
-
-	case Common::EVENT_KEYDOWN:
-		if (event.kbd.hasFlags(Common::KBD_CTRL | Common::KBD_ALT)) {
-			if (   event.kbd.keycode == Common::KEYCODE_PLUS || event.kbd.keycode == Common::KEYCODE_MINUS
-			    || event.kbd.keycode == Common::KEYCODE_KP_PLUS || event.kbd.keycode == Common::KEYCODE_KP_MINUS) {
-				// Ctrl+Alt+Plus/Minus Increase/decrease the size
-				const int direction = (event.kbd.keycode == Common::KEYCODE_PLUS || event.kbd.keycode == Common::KEYCODE_KP_PLUS) ? +1 : -1;
+	switch ((CustomEventAction) event.customType) {
+	case kActionIncreaseScaleFactor:
+	case kActionDecreaseScaleFactor: {
+		const int direction = event.customType == kActionIncreaseScaleFactor ? +1 : -1;
 
 				if (getFeatureState(OSystem::kFeatureFullscreenMode)) {
 					// In case we are in fullscreen we will choose the previous
@@ -607,12 +588,14 @@ bool OpenGLSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 #endif
 
 				return true;
-			} else if (event.kbd.keycode == Common::KEYCODE_a) {
+	}
+
+	case kActionToggleAspectRatioCorrection:
 				// In case the user changed the window size manually we will
 				// not change the window size again here.
 				_ignoreLoadVideoMode = _gotResize;
 
-				// Ctrl+Alt+a toggles the aspect ratio correction state.
+		// Toggles the aspect ratio correction state.
 				beginGFXTransaction();
 					setFeatureState(OSystem::kFeatureAspectRatioCorrection, !getFeatureState(OSystem::kFeatureAspectRatioCorrection));
 				endGFXTransaction();
@@ -629,7 +612,8 @@ bool OpenGLSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 #endif
 
 				return true;
-			} else if (event.kbd.keycode == Common::KEYCODE_f) {
+
+	case kActionToggleFilteredScaling:
 				// Never ever try to resize the window when we simply want to enable or disable filtering.
 				// This assures that the window size does not change.
 				_ignoreLoadVideoMode = true;
@@ -652,7 +636,8 @@ bool OpenGLSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 #endif
 
 				return true;
-			} else if (event.kbd.keycode == Common::KEYCODE_s) {
+
+	case kActionCycleStretchMode: {
 				// Never try to resize the window when changing the scaling mode.
 				_ignoreLoadVideoMode = true;
 
@@ -680,26 +665,11 @@ bool OpenGLSdlGraphicsManager::notifyEvent(const Common::Event &event) {
 					);
 				displayMessageOnOSD(message.c_str());
 #endif
+
 				return true;
 			}
-		}
-		// Fall through
 
 	default:
-		break;
-	}
-
 	return SdlGraphicsManager::notifyEvent(event);
 }
-
-bool OpenGLSdlGraphicsManager::isHotkey(const Common::Event &event) const {
-	if (event.kbd.hasFlags(Common::KBD_CTRL | Common::KBD_ALT)) {
-		return    event.kbd.keycode == Common::KEYCODE_PLUS || event.kbd.keycode == Common::KEYCODE_MINUS
-		       || event.kbd.keycode == Common::KEYCODE_KP_PLUS || event.kbd.keycode == Common::KEYCODE_KP_MINUS
-		       || event.kbd.keycode == Common::KEYCODE_a
-		       || event.kbd.keycode == Common::KEYCODE_f
-		       || event.kbd.keycode == Common::KEYCODE_s;
-	}
-
-	return false;
 }

@@ -11,3 +11,16 @@ if z1 contains "MeÍW" then
 else
 	put "Doesn't contain"
 end if
+if "meow" = "MeÍW" then
+	put "Equals"
+else
+	put "Doesn't equal"
+end if
+
+put "That is the last line of the file." & return & "Click Done to exit." && return && "foo"
+
+if the key = Return then
+	dontPassEvent
+end if
+
+when keydown then if the key=return then set the stagecolor to random (256)

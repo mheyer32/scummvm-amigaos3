@@ -22,6 +22,7 @@
 
 #include "common/util.h"
 #include "common/stack.h"
+#include "common/unicode-bidi.h"
 #include "graphics/primitives.h"
 
 #include "sci/sci.h"
@@ -163,6 +164,91 @@ reg_t GfxText32::createFontBitmap(const CelInfo32 &celInfo, const Common::Rect &
 	return _bitmap;
 }
 
+reg_t GfxText32::createTitledFontBitmap(int16 width, int16 height, const Common::Rect &textRect, const Common::String &text, const uint8 foreColor, const uint8 backColor, const uint8 skipColor, const GuiResourceId fontId, const TextAlign alignment, const int16 borderColor, const Common::String &title, const uint8 titleForeColor, const uint8 titleBackColor, const GuiResourceId titleFontId, const bool doScaling, const bool gc) {
+
+	_borderColor = borderColor;
+	_width = width;
+	_height = height;
+	_skipColor = skipColor;
+
+	setFont(titleFontId);
+
+	int16 scriptWidth = g_sci->_gfxFrameout->getScriptWidth();
+	int16 scriptHeight = g_sci->_gfxFrameout->getScriptHeight();
+	Ratio scaleX(_xResolution, scriptWidth);
+	Ratio scaleY(_yResolution, scriptHeight);
+
+	if (doScaling) {
+		_width = (_width * scaleX).toInt();
+		_height = (_height * scaleY).toInt();
+	}
+
+	_text = title;
+	int16 titleWidth;
+	int16 titleHeight;
+	getTextDimensions(0, 10000, titleWidth, titleHeight);
+	if (getSciVersion() < SCI_VERSION_3) {
+		GfxFont *titleFont = _cache->getFont(titleFontId);
+		titleHeight = titleFont->getHeight();
+	}
+	titleWidth += 2;
+	titleHeight += 1;
+	if (borderColor != -1) {
+		titleWidth += 2;
+		titleHeight += 2;
+	}
+
+	// allocate memory for the bitmap
+	_segMan->allocateBitmap(&_bitmap, _width, _height, _skipColor, 0, 0, _xResolution, _yResolution, 0, false, gc);
+
+	// draw background
+	_backColor = backColor;
+	_textRect = Common::Rect(0, 0, width, height);
+	erase(_textRect, false);
+
+	// draw title background
+	_foreColor = titleForeColor;
+	_backColor = titleBackColor;
+	_alignment = kTextAlignCenter;
+	_dimmed = false;
+	_textRect.setHeight(titleHeight);
+	erase(_textRect, false);
+
+	// draw title border
+	if (borderColor != -1) {
+		drawFrame(_textRect, 1, borderColor, false);
+		_textRect.grow(-2);
+	}
+
+	// draw title text
+	drawTextBox();
+
+	setFont(fontId);
+	_text = text;
+	_foreColor = foreColor;
+	_backColor = backColor;
+	_alignment = alignment;
+	_textRect = textRect;
+	if (doScaling) {
+		mulinc(_textRect, scaleX, scaleY);
+	}
+
+	// draw text border
+	Common::Rect textBorderRect(0, titleHeight - 1, _width, _height);
+	_textRect.clip(textBorderRect);
+	if (borderColor != -1) {
+		drawFrame(textBorderRect, 1, borderColor, false);
+	}
+
+	// draw text
+	GfxFont *font = _cache->getFont(fontId);
+	if (_textRect.height() >= font->getHeight()) {
+		drawTextBox();
+	}
+
+	return _bitmap;
+}
+
 void GfxText32::setFont(const GuiResourceId fontId) {
 	// In SSCI, this calls FontMgr::BuildFontTable, and then a font table is
 	// built on the FontMgr directly; instead, because we already have GfxFont
@@ -255,10 +341,18 @@ void GfxText32::drawTextBox() {
 		uint length = getLongest(&nextCharIndex, textRectWidth);
 		int16 textWidth = getTextWidth(charIndex, length);
 
-		if (_alignment == kTextAlignCenter) {
-			_drawPosition.x += (textRectWidth - textWidth) / 2;
-		} else if (_alignment == kTextAlignRight) {
-			_drawPosition.x += textRectWidth - textWidth;
+		if (!g_sci->isLanguageRTL()) {
+			if (_alignment == kTextAlignCenter) {
+				_drawPosition.x += (textRectWidth - textWidth) / 2;
+			} else if (_alignment == kTextAlignRight) {
+				_drawPosition.x += textRectWidth - textWidth;
+			}
+		} else {
+			if (_alignment == kTextAlignCenter) {
+				_drawPosition.x += (textRectWidth - textWidth) / 2;
+			} else if (_alignment == kTextAlignLeft) {
+				_drawPosition.x += textRectWidth - textWidth;
+			}
 		}
 
 		drawText(charIndex, length);
@@ -279,7 +373,18 @@ void GfxText32::drawText(const uint index, uint length) {
 	// This draw loop implementation is somewhat different than the
 	// implementation in SSCI, but is accurate. Primarily the changes revolve
 	// around eliminating some extra temporaries and fixing the logic to match.
-	const char *text = _text.c_str() + index;
+
+	Common::String textString;
+	const char *text;
+	if (!g_sci->isLanguageRTL()) {
+		text = _text.c_str() + index;
+	} else {
+		const char *textOrig = _text.c_str() + index;
+		Common::String textLogical = Common::String(textOrig, (uint32)length);
+		textString = Common::convertBiDiString(textLogical, g_sci->getLanguage());
+		text = textString.c_str();
+	}
+
 	while (length-- > 0) {
 		char currentChar = *text++;
 
@@ -495,7 +600,15 @@ uint GfxText32::getLongest(uint *charIndex, const int16 width) {
 }
 
 int16 GfxText32::getTextWidth(const uint index, uint length) const {
-	int16 width = 0;
+	int16 width;
+	int16 height;
+	getTextDimensions(index, length, width, height);
+	return width;
+}
+
+void GfxText32::getTextDimensions(const uint index, uint length, int16 &width, int16& height) const {
+	width = 0;
+	height = 0;
 
 	const char *text = _text.c_str() + index;
 
@@ -540,6 +653,10 @@ int16 GfxText32::getTextWidth(const uint index, uint length) const {
 			}
 		} else {
 			width += font->getCharWidth((unsigned char)currentChar);
+			byte charHeight = font->getCharHeight((unsigned char)currentChar);
+			if (height < charHeight) {
+				height = charHeight;
+			}
 		}
 
 		if (length > 0) {
@@ -547,8 +664,6 @@ int16 GfxText32::getTextWidth(const uint index, uint length) const {
 			--length;
 		}
 	}
-
-	return width;
 }
 
 int16 GfxText32::getTextWidth(const Common::String &text, const uint index, const uint length) {

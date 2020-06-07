@@ -40,9 +40,9 @@ KyraEngine_v1::KyraEngine_v1(OSystem *system, const GameFlags &flags)
 	_staticres = 0;
 	_timer = 0;
 	_emc = 0;
-	_debugger = 0;
 
 	_configRenderMode = Common::kRenderDefault;
+	_configNullSound = false;
 
 	if (_flags.platform == Common::kPlatformAmiga)
 		_gameSpeed = 50;
@@ -54,6 +54,7 @@ KyraEngine_v1::KyraEngine_v1(OSystem *system, const GameFlags &flags)
 	_trackMapSize = 0;
 	_lastMusicCommand = -1;
 	_curSfxFile = _curMusicTheme = -1;
+	_preventScriptSfx = false;
 
 	_gameToLoad = -1;
 
@@ -79,10 +80,6 @@ KyraEngine_v1::KyraEngine_v1(OSystem *system, const GameFlags &flags)
 	DebugMan.addDebugChannel(kDebugLevelSequence, "Sequence", "Sequence debug level");
 	DebugMan.addDebugChannel(kDebugLevelMovie, "Movie", "Movie debug level");
 	DebugMan.addDebugChannel(kDebugLevelTimer, "Timer", "Timer debug level");
-}
-
-::GUI::Debugger *KyraEngine_v1::getDebugger() {
-	return _debugger;
 }
 
 void KyraEngine_v1::pauseEngineIntern(bool pause) {
@@ -119,22 +116,22 @@ Common::Error KyraEngine_v1::init() {
 			// Users who want PC speaker sound always have to select this individually for all
 			// Kyra games.
 			MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_PCSPK | MDT_MIDI | MDT_ADLIB | ((_flags.gameID == GI_KYRA2 || _flags.gameID == GI_LOL) ? MDT_PREFER_GM : MDT_PREFER_MT32));
-			if (MidiDriver::getMusicType(dev) == MT_ADLIB) {
-				_sound = new SoundAdLibPC(this, _mixer);
+			const MusicType musicType = MidiDriver::getMusicType(dev);
+			if (musicType == MT_ADLIB) {
+				_sound = new SoundPC_v1(this, _mixer, Sound::kAdLib);
 			} else {
 				Sound::kType type;
-				const MusicType midiType = MidiDriver::getMusicType(dev);
 
-				if (midiType == MT_PCSPK || midiType == MT_NULL)
+				if (musicType == MT_PCSPK || musicType == MT_NULL)
 					type = Sound::kPCSpkr;
-				else if (midiType == MT_MT32 || ConfMan.getBool("native_mt32"))
+				else if (musicType == MT_MT32 || ConfMan.getBool("native_mt32"))
 					type = Sound::kMidiMT32;
 				else
 					type = Sound::kMidiGM;
 
 				MidiDriver *driver = 0;
 
-				if (MidiDriver::getMusicType(dev) == MT_PCSPK) {
+				if (musicType == MT_PCSPK) {
 					driver = new MidiDriver_PCSpeaker(_mixer);
 				} else {
 					driver = MidiDriver::createMidi(dev);
@@ -152,7 +149,7 @@ Common::Error KyraEngine_v1::init() {
 				// missing. It's just that at least at the time of writing they
 				// are decidedly inferior to the AdLib ones.
 				if (ConfMan.getBool("multi_midi")) {
-					SoundAdLibPC *adlib = new SoundAdLibPC(this, _mixer);
+					SoundPC_v1 *adlib = new SoundPC_v1(this, _mixer, Sound::kAdLib);
 					assert(adlib);
 
 					_sound = new MixedSoundDriver(this, _mixer, soundMidiPc, adlib);
@@ -197,9 +194,6 @@ Common::Error KyraEngine_v1::init() {
 
 	setupKeyMap();
 
-	// Prevent autosave on game startup
-	_lastAutosave = _system->getMillis();
-
 	return Common::kNoError;
 }
 
@@ -215,7 +209,6 @@ KyraEngine_v1::~KyraEngine_v1() {
 	delete _text;
 	delete _timer;
 	delete _emc;
-	delete _debugger;
 }
 
 Common::Point KyraEngine_v1::getMousePos() {
@@ -255,9 +248,6 @@ int KyraEngine_v1::checkInput(Button *buttonList, bool mainLoop, int eventFlag) 
 	updateInput();
 	_isSaveAllowed = false;
 
-	if (mainLoop)
-		checkAutosave();
-
 	int keys = 0;
 	int8 mouseWheel = 0;
 
@@ -282,11 +272,7 @@ int KyraEngine_v1::checkInput(Button *buttonList, bool mainLoop, int eventFlag) 
 					saveGameStateIntern(saveLoadSlot, savegameName, 0);
 				}
 			} else if (event.kbd.hasFlags(Common::KBD_CTRL)) {
-				if (event.kbd.keycode == Common::KEYCODE_d) {
-					if (_debugger)
-						_debugger->attach();
-					breakLoop = true;
-				} else if (event.kbd.keycode == Common::KEYCODE_q) {
+				if (event.kbd.keycode == Common::KEYCODE_q) {
 					quitGame();
 				}
 			} else {
@@ -343,9 +329,6 @@ int KyraEngine_v1::checkInput(Button *buttonList, bool mainLoop, int eventFlag) 
 		default:
 			break;
 		}
-
-		if (_debugger)
-			_debugger->onFrame();
 
 		if (breakLoop)
 			break;
@@ -457,7 +440,7 @@ void KyraEngine_v1::setupKeyMap() {
 		return;
 
 	for (int i = 0; i < ARRAYSIZE(keys); i++)
-		_keyMap[keys[i].kcScummVM] = (_flags.platform == Common::kPlatformPC98) ? keys[i].kcPC98 : ((_flags.platform == Common::kPlatformFMTowns) ? keys[i].kcFMTowns : keys[i].kcDOS);
+		_keyMap[keys[i].kcScummVM] = (_flags.gameID != GI_EOB1 && _flags.platform == Common::kPlatformPC98) ? keys[i].kcPC98 : ((_flags.platform == Common::kPlatformFMTowns) ? keys[i].kcFMTowns : keys[i].kcDOS);
 }
 
 void KyraEngine_v1::updateInput() {
@@ -594,16 +577,16 @@ void KyraEngine_v1::readSettings() {
 	_configSounds = ConfMan.getBool("sfx_mute") ? 0 : 1;
 
 	if (_sound) {
-		_sound->enableMusic(_configMusic);
-		_sound->enableSFX(_configSounds);
+		_sound->enableMusic(_configNullSound ? false : _configMusic);
+		_sound->enableSFX(_configNullSound ? false : _configSounds);
 	}
 
 	bool speechMute = ConfMan.getBool("speech_mute");
 	bool subtitles = ConfMan.getBool("subtitles");
 
-	if (!speechMute && subtitles)
+	if (!_configNullSound && !speechMute && subtitles)
 		_configVoice = 2;   // Voice & Text
-	else if (!speechMute && !subtitles)
+	else if (!_configNullSound && !speechMute && !subtitles)
 		_configVoice = 1;   // Voice only
 	else
 		_configVoice = 0;   // Text only
@@ -637,8 +620,8 @@ void KyraEngine_v1::writeSettings() {
 	if (_sound) {
 		if (!_configMusic)
 			_sound->beginFadeOut();
-		_sound->enableMusic(_configMusic);
-		_sound->enableSFX(_configSounds);
+		_sound->enableMusic(_configNullSound ? false : _configMusic);
+		_sound->enableSFX(_configNullSound ? false : _configSounds);
 	}
 
 	ConfMan.setBool("speech_mute", speechMute);
@@ -677,6 +660,9 @@ void KyraEngine_v1::setVolume(kVolumeEntry vol, uint8 value) {
 	case kVolumeSpeech:
 		ConfMan.setInt("speech_volume", convertVolumeToMixer(value));
 		break;
+
+	default:
+		break;
 	}
 
 	// Resetup mixer
@@ -700,6 +686,9 @@ uint8 KyraEngine_v1::getVolume(kVolumeEntry vol) {
 			return convertVolumeFromMixer(ConfMan.getInt("speech_volume"));
 		else
 			return 2;
+		break;
+
+	default:
 		break;
 	}
 

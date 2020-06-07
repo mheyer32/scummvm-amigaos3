@@ -24,20 +24,49 @@
 
 #include "common/scummsys.h"
 #include "common/config-manager.h"
+#include "common/translation.h"
 #include "backends/platform/sdl/switch/switch.h"
 #include "backends/events/switchsdl/switchsdl-events.h"
 #include "backends/saves/posix/posix-saves.h"
-#include "backends/fs/posix/posix-fs-factory.h"
-#include "backends/fs/posix/posix-fs.h"
+#include "backends/fs/posix-drives/posix-drives-fs-factory.h"
+#include "backends/fs/posix-drives/posix-drives-fs.h"
+#include "backends/keymapper/hardware-input.h"
 
-OSystem_Switch::OSystem_Switch(Common::String baseConfigName)
-	: _baseConfigName(baseConfigName) {
-}
+static const Common::HardwareInputTableEntry switchJoystickButtons[] = {
+    { "JOY_A",              Common::JOYSTICK_BUTTON_A,              _s("B")           },
+    { "JOY_B",              Common::JOYSTICK_BUTTON_B,              _s("A")           },
+    { "JOY_X",              Common::JOYSTICK_BUTTON_X,              _s("Y")           },
+    { "JOY_Y",              Common::JOYSTICK_BUTTON_Y,              _s("X")           },
+    { "JOY_BACK",           Common::JOYSTICK_BUTTON_BACK,           _s("Minus")       },
+    { "JOY_START",          Common::JOYSTICK_BUTTON_START,          _s("Plus")        },
+    { "JOY_LEFT_STICK",     Common::JOYSTICK_BUTTON_LEFT_STICK,     _s("L3")          },
+    { "JOY_RIGHT_STICK",    Common::JOYSTICK_BUTTON_RIGHT_STICK,    _s("R3")          },
+    { "JOY_LEFT_SHOULDER",  Common::JOYSTICK_BUTTON_LEFT_SHOULDER,  _s("L")           },
+    { "JOY_RIGHT_SHOULDER", Common::JOYSTICK_BUTTON_RIGHT_SHOULDER, _s("R")           },
+    { "JOY_UP",             Common::JOYSTICK_BUTTON_DPAD_UP,        _s("D-pad Up")    },
+    { "JOY_DOWN",           Common::JOYSTICK_BUTTON_DPAD_DOWN,      _s("D-pad Down")  },
+    { "JOY_LEFT",           Common::JOYSTICK_BUTTON_DPAD_LEFT,      _s("D-pad Left")  },
+    { "JOY_RIGHT",          Common::JOYSTICK_BUTTON_DPAD_RIGHT,     _s("D-pad Right") },
+    { nullptr,              0,                                      nullptr           }
+};
+
+static const Common::AxisTableEntry switchJoystickAxes[] = {
+    { "JOY_LEFT_TRIGGER",  Common::JOYSTICK_AXIS_LEFT_TRIGGER,  Common::kAxisTypeHalf, _s("ZL")            },
+    { "JOY_RIGHT_TRIGGER", Common::JOYSTICK_AXIS_RIGHT_TRIGGER, Common::kAxisTypeHalf, _s("ZR")            },
+    { "JOY_LEFT_STICK_X",  Common::JOYSTICK_AXIS_LEFT_STICK_X,  Common::kAxisTypeFull, _s("Left Stick X")  },
+    { "JOY_LEFT_STICK_Y",  Common::JOYSTICK_AXIS_LEFT_STICK_Y,  Common::kAxisTypeFull, _s("Left Stick Y")  },
+    { "JOY_RIGHT_STICK_X", Common::JOYSTICK_AXIS_RIGHT_STICK_X, Common::kAxisTypeFull, _s("Right Stick X") },
+    { "JOY_RIGHT_STICK_Y", Common::JOYSTICK_AXIS_RIGHT_STICK_Y, Common::kAxisTypeFull, _s("Right Stick Y") },
+    { nullptr,             0,                                   Common::kAxisTypeFull, nullptr             }
+};
 
 void OSystem_Switch::init() {
 	
-	// Initialze File System Factory
-	_fsFactory = new POSIXFilesystemFactory();
+	DrivesPOSIXFilesystemFactory *fsFactory = new DrivesPOSIXFilesystemFactory();
+	fsFactory->addDrive("sdmc:");
+	fsFactory->configureBuffering(DrivePOSIXFilesystemNode::kBufferingModeScummVM, 2048);
+
+	_fsFactory = fsFactory;
 
 	// Invoke parent implementation of this method
 	OSystem_SDL::init();
@@ -45,7 +74,6 @@ void OSystem_Switch::init() {
 
 void OSystem_Switch::initBackend() {
 
-	ConfMan.registerDefault("joystick_num", 0);
 	ConfMan.registerDefault("fullscreen", true);
 	ConfMan.registerDefault("aspect_ratio", false);
 	ConfMan.registerDefault("gfx_mode", "2x");
@@ -54,10 +82,8 @@ void OSystem_Switch::initBackend() {
 	ConfMan.registerDefault("touchpad_mouse_mode", false);
 
 	ConfMan.setBool("fullscreen", true);
+	ConfMan.setInt("joystick_num", 0);
 
-	if (!ConfMan.hasKey("joystick_num")) {
-		ConfMan.setInt("joystick_num", 0);
-	}
 	if (!ConfMan.hasKey("aspect_ratio")) {
 		ConfMan.setBool("aspect_ratio", false);
 	}
@@ -100,8 +126,6 @@ void OSystem_Switch::setFeatureState(Feature f, bool enable) {
 	case kFeatureTouchpadMode:
 		ConfMan.setBool("touchpad_mouse_mode", enable);
 		break;
-	case kFeatureFullscreenMode:
-		break;
 	default:
 		OSystem_SDL::setFeatureState(f, enable);
 		break;
@@ -113,9 +137,6 @@ bool OSystem_Switch::getFeatureState(Feature f) {
 	case kFeatureTouchpadMode:
 		return ConfMan.getBool("touchpad_mouse_mode");
 		break;
-	case kFeatureFullscreenMode:
-		return true;
-		break;
 	default:
 		return OSystem_SDL::getFeatureState(f);
 		break;
@@ -126,10 +147,19 @@ void OSystem_Switch::logMessage(LogMessageType::Type type, const char *message) 
 	printf("%s\n", message);
 }
 
-Common::String OSystem_Switch::getDefaultConfigFileName() {
-	return _baseConfigName;
-}
-
 Common::String OSystem_Switch::getDefaultLogFileName() {
 	return "scummvm.log";
+}
+
+Common::HardwareInputSet *OSystem_Switch::getHardwareInputSet() {
+	using namespace Common;
+
+	CompositeHardwareInputSet *inputSet = new CompositeHardwareInputSet();
+
+	// Users may use USB / bluetooth mice and keyboards
+	inputSet->addHardwareInputSet(new MouseHardwareInputSet(defaultMouseButtons));
+	inputSet->addHardwareInputSet(new KeyboardHardwareInputSet(defaultKeys, defaultModifiers));
+	inputSet->addHardwareInputSet(new JoystickHardwareInputSet(switchJoystickButtons, switchJoystickAxes));
+
+	return inputSet;
 }

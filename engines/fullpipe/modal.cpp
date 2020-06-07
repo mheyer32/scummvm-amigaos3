@@ -372,7 +372,7 @@ static bool checkSkipVideo(const Common::Event &event) {
 			return false;
 		}
 	case Common::EVENT_QUIT:
-	case Common::EVENT_RTL:
+	case Common::EVENT_RETURN_TO_LAUNCHER:
 		return true;
 	default:
 		return false;
@@ -867,6 +867,8 @@ PictureObject *ModalMap::getScenePicture(int sceneId) {
 	case SC_FINAL1:
 		picId = PIC_MAP_S38;
 		break;
+	default:
+		break;
 	}
 
 	if (picId)
@@ -998,6 +1000,10 @@ bool ModalMap::checkScenePass(PreloadItem *item) {
 		if (g_fp->getObjectState(sO_Board_25) != g_fp->getObjectEnumState(sO_Board_25, sO_NearDudesStairs)) {
 			res = false;
 		}
+		break;
+
+	default:
+		break;
 	}
 
 	switch (item->sceneId) {
@@ -1026,6 +1032,9 @@ bool ModalMap::checkScenePass(PreloadItem *item) {
 			break;
 		}
 		item->param = TrubaUp;
+		break;
+
+	default:
 		break;
 	}
 

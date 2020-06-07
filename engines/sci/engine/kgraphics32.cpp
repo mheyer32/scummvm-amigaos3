@@ -62,7 +62,7 @@
 namespace Sci {
 #ifdef ENABLE_SCI32
 
-extern void showScummVMDialog(const Common::String &message);
+extern int showScummVMDialog(const Common::String& message, const char* altButton = nullptr, bool alignCenter = true);
 
 reg_t kBaseSetter32(EngineState *s, int argc, reg_t *argv) {
 	reg_t object = argv[0];
@@ -808,6 +808,10 @@ reg_t kBitmapGetInfo(EngineState *s, int argc, reg_t *argv) {
 
 reg_t kEditText(EngineState *s, int argc, reg_t *argv) {
 	return g_sci->_gfxControls32->kernelEditText(argv[0]);
+}
+
+reg_t kInputText(EngineState *s, int argc, reg_t *argv) {
+	return g_sci->_gfxControls32->kernelInputText(argv[0], argv[1], argv[2].toSint16());
 }
 
 reg_t kAddLine(EngineState *s, int argc, reg_t *argv) {

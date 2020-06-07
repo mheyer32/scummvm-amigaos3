@@ -103,8 +103,8 @@ class CineEngine : public Engine {
 
 protected:
 	// Engine APIs
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Common::Error run() override;
+	bool hasFeature(EngineFeature f) const override;
 
 	void shutdown();
 
@@ -112,9 +112,9 @@ protected:
 
 public:
 	CineEngine(OSystem *syst, const CINEGameDescription *gameDesc);
-	virtual ~CineEngine();
+	~CineEngine() override;
 
-	virtual void syncSoundSettings();
+	void syncSoundSettings() override;
 
 	int getGameType() const;
 	uint32 getFeatures() const;
@@ -126,10 +126,11 @@ public:
 	int scummVMSaveLoadDialog(bool isSave);
 	int modifyGameSpeed(int speedChange);
 	int getTimerDelay() const;
-	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const Common::String &desc);
-	bool canLoadGameStateCurrently();
-	bool canSaveGameStateCurrently();
+	Common::Error loadGameState(int slot) override;
+	Common::Error saveGameState(int slot, const Common::String &desc, bool isAutosave = false) override;
+	virtual Common::String getSaveStateName(int slot) const override;
+	bool canLoadGameStateCurrently() override;
+	bool canSaveGameStateCurrently() override;
 
 	const CINEGameDescription *_gameDescription;
 	Common::File _partFileHandle;
@@ -139,8 +140,6 @@ public:
 	Common::StringArray _volumeResourceFiles;
 	StringPtrHashMap _volumeEntriesMap;
 	TextHandler _textHandler;
-
-	GUI::Debugger *getDebugger() { return _console; }
 
 	bool _restartRequested;
 
@@ -157,7 +156,6 @@ private:
 	void mainLoop(int bootScriptIdx);
 	void readVolCnf();
 
-	CineConsole *_console;
 	bool _preLoad;
 	int _timerDelayMultiplier;
 

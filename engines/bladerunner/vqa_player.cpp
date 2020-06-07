@@ -48,7 +48,20 @@ bool VQAPlayer::open() {
 	// TB05 has wrong end of a loop and this will load empty zbuffer from next loop, which will lead to broken pathfinding
 	if (_name.equals("TB05_2.VQA")) {
 		_decoder._loopInfo.loops[1].end = 60;
+	} else if (_name.equals("DR04OVER.VQA")) {
+		// smoke (overlay) after explosion of Dermo Labs in DR04
+		// This has still frames in the end that so it looked as if the smoke was "frozen"
+		_decoder._loopInfo.loops[0].end  = 58; // 59 up to 74 are still frames
 	}
+//	else if (_name.equals("MA05_3.VQA")) {
+//		// loops[1] 60 up to 90 (it will be followed by loops[2] which will play from 30 to 90
+//		// this is to address the issue of non-aligned headlight rotation in the
+//		// InShot transition in Act 5. However, this is still glitchy
+//		// and results in bad z-buffer for the duration of the truncated loop 1
+//		// TODO is there a way to get and use the z-buffering info from start frame without displaying it?
+//		_decoder._loopInfo.loops[1].begin = 60;
+//		_decoder._loopInfo.loops[2].begin = 30;
+//	}
 #endif
 
 	_hasAudio = _decoder.hasAudio();
@@ -102,7 +115,7 @@ int VQAPlayer::update(bool forceDraw, bool advanceFrame, bool useTime, Graphics:
 
 		if (loopEndQueued == -1) {
 			if (_repeatsCount != -1) {
-				_repeatsCount--;
+				--_repeatsCount;
 			}
 			//callback for repeat, it is not used in the blade runner
 		} else {
@@ -129,13 +142,16 @@ int VQAPlayer::update(bool forceDraw, bool advanceFrame, bool useTime, Graphics:
 		if (_hasAudio) {
 			int audioPreloadFrames = 14;
 			if (!_audioStarted) {
-				for (int i = 0; i < audioPreloadFrames; i++) {
+				for (int i = 0; i < audioPreloadFrames; ++i) {
 					if (_frameNext + i < _frameEnd) {
 						_decoder.readFrame(_frameNext + i, kVQAReadAudio);
 						queueAudioFrame(_decoder.decodeAudioFrame());
 					}
 				}
-				_vm->_mixer->playStream(Audio::Mixer::kSFXSoundType, &_soundHandle, _audioStream);
+				if (_vm->_mixer->isReady()) {
+					// Use speech sound type as in original engine
+					_vm->_mixer->playStream(Audio::Mixer::kSpeechSoundType, &_soundHandle, _audioStream);
+				}
 				_audioStarted = true;
 			}
 			if (_frameNext + audioPreloadFrames < _frameEnd) {
@@ -153,7 +169,7 @@ int VQAPlayer::update(bool forceDraw, bool advanceFrame, bool useTime, Graphics:
 				_frameNextTime = now + 60000 / 15;
 			}
 		}
-		_frameNext++;
+		++_frameNext;
 		result = _frame;
 	}
 
