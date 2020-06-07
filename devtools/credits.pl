@@ -808,6 +808,12 @@ begin_credits("Credits");
 				add_person("Eric Fry", "yuv422", "");
 			end_section();
 
+			begin_section("Kingdom");
+				add_person("Arnaud Boutonn&eacute;", "Strangerke", "");
+				add_person("Thomas Fach-Pedersen", "madmoose", "");
+				add_person("Hein-Pieter van Braam-Stewart", "TMM", "");
+			end_section();
+
 			begin_section("Kyra");
 				add_person("Torbj&ouml;rn Andersson", "eriktorbjorn", "VQA Player");
 				add_person("Oystein Eftevaag", "vinterstum", "");
@@ -883,6 +889,11 @@ begin_credits("Credits");
 
 			begin_section("Pegasus");
 				add_person("Matthew Hoops", "clone2727", "(retired)");
+			end_section();
+
+            begin_section("Petka");
+				add_person("Andrei Prykhodko", "whiterandrek", "");
+				add_person("Eugene Sandulenko", "sev", "");
 			end_section();
 
 			begin_section("Pink");
@@ -1017,6 +1028,7 @@ begin_credits("Credits");
 			begin_section("Ultima");
 				add_person("Paul Gilbert", "dreammaster", "");
 				add_person("Matthew Duggan", "stauff", "");
+				add_person("Matthew Jimenez", "OMGPizzaGuy", "");
 
 				add_person("Daniel c. W&uuml;rl", "dwuerl", "(Nuvie)");
 				add_person("Eric Fry", "yuv422", "(Nuvie)");
@@ -1033,7 +1045,6 @@ begin_credits("Credits");
 
 				add_person("Brian Tietz", "btietz", "(Pentagram)");
 				add_person("Dominik Reichardt", "Dominus Dragon", "(Pentagram)");
-				add_person("Matthew Jimenez", "mjimenez", "(Pentagram)");
 				add_person("Max Horn", "Fingolfin", "(Pentagram)");
 				add_person("Patrick Burke", "takhisis", "(Pentagram)");
 				add_person("Ryan Nunn", "Colourless Dragon", "(Pentagram)");

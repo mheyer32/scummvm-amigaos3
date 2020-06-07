@@ -20,44 +20,43 @@
  *
  */
 
-#ifndef PINK_HANDLER_TIMER_H
-#define PINK_HANDLER_TIMER_H
+#include "glk/comprehend/charset.h"
+#include "common/file.h"
+#include "graphics/surface.h"
 
-#include "pink/objects/handlers/handler.h"
+namespace Glk {
+namespace Comprehend {
 
-namespace Pink {
+CharSet::CharSet() : Graphics::Font() {
+	Common::File f;
+	if (!f.open("charset.gda"))
+		error("Could not open char set");
 
-class LeadActor;
+	uint version = f.readUint16LE();
+	if (version != 0x1100)
+		error("Unknown char set version");
 
-/*
-// This class has differences in games
-class HandlerTimer : public Handler {
+	f.seek(4);
+	for (int idx = 0; idx < 128 - 32; ++idx)
+		f.read(&_data[idx][0], 8);
 
-};
-*/
+	f.close();
+}
 
-//in Peril this is HandlerTimer
-class HandlerTimerActions : public Handler {
-public:
-	void toConsole() const override;
-	void deserialize(Archive &archive) override;
-	void handle(Actor *actor) override;
+void CharSet::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y, uint32 color) const {
+	assert(dst->format.bytesPerPixel == 4);
+	assert(chr >= 32 && chr < 128);
 
-private:
-	StringArray _actions;
-};
+	for (uint yp = 0; yp < 8; ++yp) {
+		uint32 *lineP = (uint32 *)dst->getBasePtr(x, y + yp);
+		byte bits = _data[chr - 32][yp];
 
-//appear in HokusPokus
-class HandlerTimerSequences : public HandlerSequences { //originally it was inherited from HandlerTimer
-public:
-	void toConsole() const override;
+		for (uint xp = 0; xp < 8; ++xp, ++lineP, bits >>= 1) {
+			if (bits & 1)
+				*lineP = color;
+		}
+	}
+}
 
-	void handle(Actor *actor) override;
-
-protected:
-	void execute(Sequence *sequence) override {};
-};
-
-} // End of namespace Pink
-
-#endif
+} // namespace Comprehend
+} // namespace Glk

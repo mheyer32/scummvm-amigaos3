@@ -49,6 +49,7 @@ const Game kyra1Games[] = {
 	{ kKyra1, kPlatformDOS, kTalkieVersion, DE_DEU },
 	{ kKyra1, kPlatformDOS, kTalkieVersion, FR_FRA },
 	{ kKyra1, kPlatformDOS, kTalkieVersion, IT_ITA },
+	{ kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP },
 
 	{ kKyra1, kPlatformFMTowns, kNoSpecial, EN_ANY },
 	{ kKyra1, kPlatformFMTowns, kNoSpecial, JA_JPN },
@@ -70,12 +71,14 @@ const Game kyra2Games[] = {
 	{ kKyra2, kPlatformDOS, kNoSpecial, DE_DEU },
 	{ kKyra2, kPlatformDOS, kNoSpecial, IT_ITA },
 	{ kKyra2, kPlatformDOS, kNoSpecial, RU_RUS },
+	{ kKyra2, kPlatformDOS, kNoSpecial, ES_ESP },
 
 	{ kKyra2, kPlatformDOS, kTalkieVersion, EN_ANY },
 	{ kKyra2, kPlatformDOS, kTalkieVersion, FR_FRA },
 	{ kKyra2, kPlatformDOS, kTalkieVersion, DE_DEU },
 	{ kKyra2, kPlatformDOS, kTalkieVersion, IT_ITA },
 	{ kKyra2, kPlatformDOS, kTalkieVersion, RU_RUS },
+	{ kKyra2, kPlatformDOS, kTalkieVersion, ES_ESP },
 
 	{ kKyra2, kPlatformFMTowns, kNoSpecial, EN_ANY },
 	{ kKyra2, kPlatformFMTowns, kNoSpecial, JA_JPN },
@@ -132,12 +135,14 @@ const Game lolGames[] = {
 	{ kLoL, kPlatformDOS, kNoSpecial, RU_RUS },
 	{ kLoL, kPlatformDOS, kNoSpecial, DE_DEU },
 	{ kLoL, kPlatformDOS, kNoSpecial, FR_FRA },
+	{ kLoL, kPlatformDOS, kNoSpecial, ES_ESP },
 
 	{ kLoL, kPlatformDOS, kTalkieVersion, EN_ANY },
 	{ kLoL, kPlatformDOS, kTalkieVersion, FR_FRA },
 	{ kLoL, kPlatformDOS, kTalkieVersion, DE_DEU },
 	{ kLoL, kPlatformDOS, kTalkieVersion, IT_ITA },
 	{ kLoL, kPlatformDOS, kTalkieVersion, RU_RUS },
+	{ kLoL, kPlatformDOS, kTalkieVersion, ES_ESP },
 
 	{ kLoL, kPlatformPC98, kNoSpecial, JA_JPN },
 

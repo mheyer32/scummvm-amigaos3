@@ -162,7 +162,7 @@ static struct BuiltinProto {
 		// when mouseUp													// D2
 		// when timeOut													// D2
 	// Types
-	{ "factory",		LB::b_factoryP,		1, 1, true,  3, FBLTIN },	//		D3
+	{ "factory",		LB::b_factory,		1, 1, true,  3, FBLTIN },	//		D3
 	{ "floatP",			LB::b_floatP,		1, 1, true,  3, FBLTIN },	//		D3
 	{ "ilk",	 		LB::b_ilk,			1, 2, false, 4, FBLTIN },	//			D4 f
 	{ "integerp",		LB::b_integerp,		1, 1, true,  2, FBLTIN },	// D2 f
@@ -244,35 +244,19 @@ static struct BuiltinProto {
 	// References
 	{ "cast",			LB::b_cast,			1, 1, false, 4, RBLTIN },	//			D4 f
 	{ "field",			LB::b_field,		1, 1, false, 3, RBLTIN },	//		D3 f
-//	{ "me",				LB::b_me,			-1,0, false, 3, FBLTIN },	//		D3				// works as normal ID, see c_varpush
 	{ "script",			LB::b_script,		1, 1, false, 4, RBLTIN },	//			D4 f
 	{ "window",			LB::b_window,		1, 1, false, 4, RBLTIN },	//			D4 f
 	// Chunk operations
-	{ "numberOfChars",	LB::b_numberofchars,1, 1, false, 4, FBLTIN },	//			D4 f
-	{ "numberOfItems",	LB::b_numberofitems,1, 1, false, 4, FBLTIN },	//			D4 f
-	{ "numberOfLines",	LB::b_numberoflines,1, 1, false, 4, FBLTIN },	//			D4 f
-	{ "numberOfWords",	LB::b_numberofwords,1, 1, false, 4, FBLTIN },	//			D4 f
+	{ "numberOfChars",	LB::b_numberofchars,1, 1, false, 3, FBLTIN },	//			D3 f
+	{ "numberOfItems",	LB::b_numberofitems,1, 1, false, 3, FBLTIN },	//			D3 f
+	{ "numberOfLines",	LB::b_numberoflines,1, 1, false, 3, FBLTIN },	//			D3 f
+	{ "numberOfWords",	LB::b_numberofwords,1, 1, false, 3, FBLTIN },	//			D3 f
 	{ "lastCharOf",		LB::b_lastcharof,	1, 1, false, 4, FBLTIN },	//			D4 f
 	{ "lastItemOf",		LB::b_lastitemof,	1, 1, false, 4, FBLTIN },	//			D4 f
 	{ "lastLineOf",		LB::b_lastlineof,	1, 1, false, 4, FBLTIN },	//			D4 f
 	{ "lastWordOf",		LB::b_lastwordof,	1, 1, false, 4, FBLTIN },	//			D4 f
 
 	{ 0, 0, 0, 0, false, 0, 0 }
-};
-
-static const char *predefinedMethods[] = {
-	"mAtFrame",				// D3
-	"mDescribe",			// D3
-	"mDispose",				// D3
-	"mGet",					// D3
-	"mInstanceRespondsTo",	// D3
-	"mMessageList",			// D3
-	"mName",				// D3
-	"mNew",					// D3
-	"mPerform",				// D3
-	"mPut",					// D3
-	"mRespondsTo",			// D3
-	0
 };
 
 void Lingo::initBuiltIns() {
@@ -292,17 +276,6 @@ void Lingo::initBuiltIns() {
 		_builtins[blt->name] = sym;
 
 		_functions[(void *)sym.u.s] = new FuncDesc(blt->name, "");
-	}
-
-	// Set predefined methods
-	for (const char **b = predefinedMethods; *b; b++) {
-		Common::String name(*b);
-		Datum target(name);
-		target.type = VAR;
-		Datum source(name);
-		source.type = SYMBOL;
-		g_lingo->varCreate(name, true);
-		g_lingo->varAssign(target, source, true);
 	}
 }
 
@@ -1293,7 +1266,12 @@ void LB::b_quit(int nargs) {
 }
 
 void LB::b_return(int nargs) {
-	// We do not touch the top of the stack, it will be returned
+	CFrame *fp = g_lingo->_callstack.back();
+	// Do not allow a factory's mNew method to return a value
+	// Otherwise do not touch the top of the stack, it will be returned
+	if (g_lingo->_currentMeObj && g_lingo->_currentMeObj->type == kFactoryObj && fp->sp.name->equalsIgnoreCase("mNew")) {
+		g_lingo->pop();
+	}
 	LC::c_procret();
 }
 
@@ -1316,12 +1294,16 @@ void LB::b_startTimer(int nargs) {
 ///////////////////
 // Types
 ///////////////////
-void LB::b_factoryP(int nargs) {
-	Datum d = g_lingo->pop();
-	Datum res(d.asInt());
-	g_lingo->push(res);
-
-	warning("STUB: b_factoryP");
+void LB::b_factory(int nargs) {
+	Datum factoryName = g_lingo->pop();
+	factoryName.type = VAR;
+	Datum o = g_lingo->varFetch(factoryName, true);
+	if (o.type == OBJECT && o.u.obj->type == kFactoryObj
+			&& o.u.obj->name->equalsIgnoreCase(*factoryName.u.s) && o.u.obj->inheritanceLevel == 1) {
+		g_lingo->push(o);
+	} else {
+		g_lingo->push(Datum(0));
+	}
 }
 
 void LB::b_floatP(int nargs) {
@@ -1344,7 +1326,12 @@ void LB::b_integerp(int nargs) {
 
 void LB::b_objectp(int nargs) {
 	Datum d = g_lingo->pop();
-	Datum res ((d.type == OBJECT) ? 1 : 0);
+	Datum res;
+	if (d.type == OBJECT) {
+		res = !d.u.obj->disposed;
+	} else {
+		res = 0;
+	}
 	g_lingo->push(res);
 }
 
@@ -1679,53 +1666,35 @@ void LB::b_puppetPalette(int nargs) {
 }
 
 void LB::b_puppetSound(int nargs) {
-	if (nargs != 1) {
-		warning("STUB: b_puppetSound: more than 1 argument, got %d", nargs);
-		g_lingo->dropStack(nargs);
-		return;
-	}
-	Score *score = g_director->getCurrentScore();
+	ARGNUMCHECK(1);
 
 	DirectorSound *sound = g_director->getSoundManager();
 	Datum castMember = g_lingo->pop();
+	Score *score = g_director->getCurrentScore();
 
 	if (!score) {
 		warning("b_puppetSound(): no score");
-
 		return;
 	}
 
 	int castId = g_lingo->castIdFetch(castMember);
-
-	if (castId == 0) {
-		sound->stopSound(1);
-	} else {
-		Cast *cast = g_director->getCastMember(castId);
-		if (!cast) {
-			warning("b_puppetSound: attempted to play a NULL cast member");
-			return;
-		} else if (cast->_type != kCastSound) {
-			error("b_puppetSound: attempted to play a non-SoundCast cast member");
-			return;
-		}
-		bool looping = ((SoundCast *)cast)->_looping;
-		SNDDecoder *sd = ((SoundCast *)cast)->_audio;
-		if (!sd) {
-			warning("b_puppetSound: no audio data attached to cast");
-			return;
-		}
-		if (looping)
-			sound->playStream(*sd->getLoopingAudioStream(), 1);
-		else
-			sound->playStream(*sd->getAudioStream(), 1);
-	}
-
+	sound->playCastMember(castId, 1);
 }
 
 void LB::b_puppetSprite(int nargs) {
-	g_lingo->printSTUBWithArglist("b_puppetSprite", nargs);
+	if (!g_director->getCurrentScore()) {
+		warning("b_puppetSprite: no score");
 
-	g_lingo->dropStack(nargs);
+		return;
+	}
+
+	Frame *frame = g_director->getCurrentScore()->_frames[g_director->getCurrentScore()->getCurrentFrame()];
+
+	if (g_lingo->_currentChannelId == -1) {
+		warning("b_puppetSprite: channel Id is missing");
+		return;
+	}
+	frame->_sprites[g_lingo->_currentChannelId]->_puppet = true;
 }
 
 void LB::b_puppetTempo(int nargs) {
@@ -1844,6 +1813,12 @@ void LB::b_zoomBox(int nargs) {
 
 void LB::b_updateStage(int nargs) {
 	ARGNUMCHECK(0);
+
+	if (g_director->getGameGID() == GID_TEST) {
+		warning("b_updateStage: Skipping due to tests");
+
+		return;
+	}
 
 	Score *score = g_director->getCurrentScore();
 
@@ -2108,41 +2083,6 @@ void LB::b_version(int nargs) {
 	default:
 		error("Unsupported Director for 'version'");
 		break;
-	}
-}
-
-///////////////////
-// Factory
-///////////////////
-void LB::b_factory(int nargs) {
-	// This is intentionally empty
-}
-
-void Lingo::factoryCall(const Common::String &name, int nargs) {
-	Common::String s("factoryCall: ");
-
-	s += name;
-
-	convertVOIDtoString(0, nargs);
-
-	printSTUBWithArglist(s.c_str(), nargs);
-
-	Datum method = _stack[_stack.size() - nargs + 0];
-
-	drop(nargs - 1);
-
-	s = name + "-" + *method.u.s;
-
-	debugC(3, kDebugLingoExec, "Stack size before call: %d, nargs: %d", _stack.size(), nargs);
-	LC::call(s, 1);
-	debugC(3, kDebugLingoExec, "Stack size after call: %d", _stack.size());
-
-	if (!method.u.s->compareToIgnoreCase("mNew")) {
-		Datum d(name);
-
-		d.type = OBJECT;
-
-		g_lingo->push(d);
 	}
 }
 

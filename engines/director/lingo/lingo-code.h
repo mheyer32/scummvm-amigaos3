@@ -82,6 +82,7 @@ namespace LC {
 	void c_assign();
 	bool verify(const Symbol &s);
 	void c_eval();
+	void c_lazyeval();
 	void c_setImmediate();
 
 	void c_swap();
@@ -96,7 +97,6 @@ namespace LC {
 
 	void c_nextRepeat();
 	void c_whencode();
-	void c_tellcode();
 	void c_tell();
 	void c_telldone();
 	void c_exitRepeat();
@@ -117,7 +117,7 @@ namespace LC {
 	void c_jumpifz();
 	void c_call();
 
-	void call(const Symbol &sym, int nargs);
+	void call(const Symbol &targetSym, int nargs, Object *target = nullptr);
 	void call(const Common::String &name, int nargs);
 
 	void c_procret();
@@ -128,9 +128,6 @@ namespace LC {
 	void c_gotoloop();
 	void c_gotonext();
 	void c_gotoprevious();
-	void c_global();
-	void c_instance();
-	void c_factory();
 	void c_property();
 
 	void c_play();
@@ -155,6 +152,7 @@ namespace LC {
 	void cb_objectfieldassign();
 	void cb_objectfieldpush();
 	void cb_objectpush();
+	void cb_tellcall();
 	void cb_theassign();
 	void cb_theassign2();
 	void cb_thepush();

@@ -94,6 +94,19 @@ ScriptType Lingo::event2script(LEvent ev) {
 	return kNoneScript;
 }
 
+int Lingo::getEventCount() {
+	return _eventQueue.size();
+}
+
+void Lingo::setPrimaryEventHandler(LEvent event, const Common::String &code) {
+	debugC(3, kDebugLingoExec, "setting primary event handler (%s)", _eventHandlerTypes[event]);
+	_archives[_archiveIndex].primaryEventHandlers[event] = code;
+	pushContext();
+	g_lingo->_localvars = new SymbolHash;
+	addCode(code.c_str(), kGlobalScript, event);
+	popContext();
+}
+
 void Lingo::primaryEventHandler(LEvent event) {
 	/* When an event occurs the message [...] is first sent to a
 	 * primary event handler: [... if exists it is executed] and the
@@ -101,14 +114,14 @@ void Lingo::primaryEventHandler(LEvent event) {
 	 * the message by including the dontPassEventCommand in the script
 	 * [D4 docs page 77]
 	 */
-	debugC(3, kDebugLingoExec, "STUB: primary event handler (%s) not implemented", _eventHandlerTypes[event]);
+	debugC(3, kDebugLingoExec, "calling primary event handler (%s)", _eventHandlerTypes[event]);
 	switch (event) {
 	case kEventMouseDown:
 	case kEventMouseUp:
 	case kEventKeyUp:
 	case kEventKeyDown:
 	case kEventTimeout:
-		// TODO
+		executeScript(kGlobalScript, event, 0);
 		break;
 	default:
 		/* N.B.: No primary event handlers for events other than
@@ -118,13 +131,6 @@ void Lingo::primaryEventHandler(LEvent event) {
 		 */
 		warning("primaryEventHandler() on event other than mouseDown, mouseUp, keyUp, keyDown, timeout");
 	}
-#ifdef DEBUG_DONTPASSEVENT
-	// #define DEBUG_DONTPASSEVENT to simulate raising of the dontPassEvent flag
-	_dontPassEvent = true;
-	debugC(3, kDebugLingoExec, "STUB: primaryEventHandler raising dontPassEvent");
-#else
-	debugC(3, kDebugLingoExec, "STUB: primaryEventHandler not raising dontPassEvent");
-#endif
 }
 
 void Lingo::registerInputEvent(LEvent event) {
@@ -142,6 +148,7 @@ void Lingo::registerInputEvent(LEvent event) {
 	Frame *currentFrame = score->_frames[score->getCurrentFrame()];
 	assert(currentFrame != nullptr);
 	uint16 spriteId = score->_currentMouseDownSpriteId;
+	Sprite *sprite = score->getSpriteById(spriteId);
 
 	primaryEventHandler(event);
 
@@ -154,25 +161,29 @@ void Lingo::registerInputEvent(LEvent event) {
 	if (_vm->getVersion() > 3) {
 		if (true) {
 			// TODO: Check whether occurring over a sprite
-			_eventQueue.push(LingoEvent(event, kSpriteScript, currentFrame->_sprites[spriteId]->_scriptId));
+			_eventQueue.push(LingoEvent(event, kSpriteScript, sprite->_scriptId));
 		}
-		_eventQueue.push(LingoEvent(event, kCastScript, currentFrame->_sprites[spriteId]->_castId));
-		_eventQueue.push(LingoEvent(event, kFrameScript, score->_frames[score->getCurrentFrame()]->_actionId));
+		_eventQueue.push(LingoEvent(event, kCastScript, sprite->_castId));
+		_eventQueue.push(LingoEvent(event, kFrameScript, currentFrame->_actionId));
 		// TODO: Is the kFrameScript call above correct?
-	} else if (event == kEventMouseUp) {
-		// Frame script overrides sprite script
-		if (!currentFrame->_sprites[spriteId]->_scriptId) {
-			_eventQueue.push(LingoEvent(kEventNone, kSpriteScript, currentFrame->_sprites[spriteId]->_castId + score->_castIDoffset));
-			_eventQueue.push(LingoEvent(event, kSpriteScript, currentFrame->_sprites[spriteId]->_castId + score->_castIDoffset));
-		} else {
-			_eventQueue.push(LingoEvent(kEventNone, kFrameScript, currentFrame->_sprites[spriteId]->_scriptId, spriteId));
+	} else if (event == kEventMouseDown || event == kEventMouseUp) {
+		// If sprite is immediate, its script is run on mouseDown, otherwise on mouseUp
+		bool queueEventNone = false;
+		if (event == kEventMouseDown && sprite->_immediate) {
+			queueEventNone = true;
+		} else if (event == kEventMouseUp && !sprite->_immediate) {
+			queueEventNone = true;
 		}
-	} else if (event == kEventMouseDown) {
-		_eventQueue.push(LingoEvent(event, kSpriteScript, currentFrame->_sprites[spriteId]->_castId + score->_castIDoffset));
-	}
-	if (event == kEventKeyDown) {
-		// TODO: is the above condition necessary or useful?
-		_eventQueue.push(LingoEvent(event, kGlobalScript, 0));
+	
+		// Frame script overrides sprite script
+		if (sprite->_scriptId) {
+			if (queueEventNone)
+				_eventQueue.push(LingoEvent(kEventNone, kFrameScript, sprite->_scriptId, spriteId));
+		} else {
+			if (queueEventNone)
+				_eventQueue.push(LingoEvent(kEventNone, kSpriteScript, sprite->_castId + score->_castIDoffset));
+			_eventQueue.push(LingoEvent(event, kSpriteScript, sprite->_castId + score->_castIDoffset));
+		}
 	}
 
 	runMovieScript(event);

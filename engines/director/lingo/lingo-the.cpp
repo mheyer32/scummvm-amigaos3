@@ -26,6 +26,7 @@
 #include "director/director.h"
 #include "director/cast.h"
 #include "director/frame.h"
+#include "director/sound.h"
 #include "director/sprite.h"
 #include "director/score.h"
 #include "director/lingo/lingo.h"
@@ -228,6 +229,7 @@ TheEntityField fields[] = {
 	{ kTheCast,		"text",			kTheText,		2 },// D2 p
 
 	// Field fields
+	{ kTheField,	"text",			kTheText,		3 },// 		D3 p undocumented
 	{ kTheField,	"textAlign",	kTheTextAlign,	3 },//		D3 p
 	{ kTheField,	"textFont",		kTheTextFont,	3 },//		D3 p
 	{ kTheField,	"textHeight",	kTheTextHeight,	3 },//		D3 p
@@ -371,6 +373,20 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		d.type = INT;
 		d.u.i = _vm->_keyCode;
 		break;
+	case kTheKeyDownScript:
+		d.type = STRING;
+		if (_archives[_archiveIndex].primaryEventHandlers.contains(kEventKeyDown))
+			d.u.s = new Common::String(_archives[_archiveIndex].primaryEventHandlers[kEventKeyDown]);
+		else
+			d.u.s = new Common::String();
+		break;
+	case kTheKeyUpScript:
+		d.type = STRING;
+		if (_archives[_archiveIndex].primaryEventHandlers.contains(kEventKeyUp))
+			d.u.s = new Common::String(_archives[_archiveIndex].primaryEventHandlers[kEventKeyUp]);
+		else
+			d.u.s = new Common::String();
+		break;
 	case kTheLastClick:
 		d.type = INT;
 		d.u.i = _vm->getMacTicks() - _vm->getCurrentScore()->_lastClickTime;
@@ -434,6 +450,10 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		d.type = INT;
 		d.u.i = _vm->_machineType;
 		break;
+	case kTheMovie:
+		d.type = STRING;
+		d.u.s = new Common::String(_vm->getCurrentScore()->getArchive()->getFileName());
+		break;
 	case kTheMouseCast:
 		{
 			Common::Point pos = g_system->getEventManager()->getMousePos();
@@ -449,6 +469,13 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		d.type = INT;
 		d.u.i = g_system->getEventManager()->getButtonState() & (1 << Common::MOUSE_BUTTON_LEFT | 1 << Common::MOUSE_BUTTON_RIGHT) ? 1 : 0;
 		break;
+	case kTheMouseDownScript:
+		d.type = STRING;
+		if (_archives[_archiveIndex].primaryEventHandlers.contains(kEventMouseDown))
+			d.u.s = new Common::String(_archives[_archiveIndex].primaryEventHandlers[kEventMouseDown]);
+		else
+			d.u.s = new Common::String();
+		break;
 	case kTheMouseH:
 		d.type = INT;
 		d.u.i = g_system->getEventManager()->getMousePos().x;
@@ -461,8 +488,15 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		d.type = INT;
 		d.u.i = g_system->getEventManager()->getButtonState() & (1 << Common::MOUSE_BUTTON_LEFT | 1 << Common::MOUSE_BUTTON_RIGHT) ? 0 : 1;
 		break;
+	case kTheMouseUpScript:
+		d.type = STRING;
+		if (_archives[_archiveIndex].primaryEventHandlers.contains(kEventMouseUp))
+			d.u.s = new Common::String(_archives[_archiveIndex].primaryEventHandlers[kEventMouseUp]);
+		else
+			d.u.s = new Common::String();
+		break;
 	case kThePerFrameHook:
-		warning("STUB: Lingo::getTheEntity(): getting the perframehook");
+		d = _perFrameHook;
 		break;
 	case kThePi:
 		d.type = FLOAT;
@@ -472,6 +506,24 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		// QuickTime is always present for scummvm
 		d.type = INT;
 		d.u.i = 1;
+		break;
+	case kTheSoundEntity:
+		{
+			switch (field) {
+			case kTheVolume:
+				{
+					SoundChannel *chan = _vm->getSoundManager()->getChannel(id.asInt());
+					if (chan) {
+						d.type = INT;
+						d.u.i = (int)chan->volume;
+					}
+				}
+				break;
+			default:
+				warning("Lingo::getTheEntity(): Unprocessed getting field \"%s\" of entity %s", field2str(field), entity2str(entity));
+				break;
+			}
+		}
 		break;
 	case kTheSprite:
 		d = getTheSprite(id, field);
@@ -500,9 +552,16 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		d.type = INT;
 		d.u.i = _vm->getMacTicks() - _vm->getCurrentScore()->_lastTimerReset;
 		break;
+	case kTheTimeoutScript:
+		d.type = STRING;
+		if (_archives[_archiveIndex].primaryEventHandlers.contains(kEventTimeout))
+			d.u.s = new Common::String(_archives[_archiveIndex].primaryEventHandlers[kEventTimeout]);
+		else
+			d.u.s = new Common::String();
+		break;
 	default:
 		warning("Lingo::getTheEntity(): Unprocessed getting field \"%s\" of entity %s", field2str(field), entity2str(entity));
-		d.type = VOID;
+		break;
 	}
 
 	return d;
@@ -528,11 +587,43 @@ void Lingo::setTheEntity(int entity, Datum &id, int field, Datum &d) {
 		_floatPrecision = MAX(0, MIN(_floatPrecision, 19)); // 0 to 19
 		_floatPrecisionFormat = Common::String::format("%%.%df", _floatPrecision);
 		break;
+	case kTheKeyDownScript:
+		setPrimaryEventHandler(kEventKeyDown, d.asString());
+		break;
+	case kTheKeyUpScript:
+		setPrimaryEventHandler(kEventKeyUp, d.asString());
+		break;
+	case kTheMouseDownScript:
+		setPrimaryEventHandler(kEventMouseDown, d.asString());
+		break;
+	case kTheMouseUpScript:
+		setPrimaryEventHandler(kEventMouseUp, d.asString());
+		break;
 	case kThePerFrameHook:
-		warning("STUB: Lingo::setTheEntity(): setting the perframehook");
+		_perFrameHook = d;
+		break;
+	case kTheSoundEntity:
+		{
+			switch (field) {
+			case kTheVolume:
+				{
+					SoundChannel *chan = _vm->getSoundManager()->getChannel(id.asInt());
+					if (chan) {
+						chan->volume = (byte)d.asInt();
+					}
+				}
+				break;
+			default:
+				warning("Lingo::setTheEntity(): Unprocessed getting field \"%s\" of entity %s", field2str(field), entity2str(entity));
+				break;
+			}
+		}
 		break;
 	case kTheSprite:
 		setTheSprite(id, field, d);
+		break;
+	case kTheTimeoutScript:
+		setPrimaryEventHandler(kEventTimeout, d.asString());
 		break;
 	default:
 		warning("Lingo::setTheEntity(): Unprocessed setting field \"%s\" of entity %s", field2str(field), entity2str(entity));
@@ -599,6 +690,9 @@ Datum Lingo::getTheSprite(Datum &id1, int field) {
 		break;
 	case kTheHeight:
 		d.u.i = sprite->_height;
+		break;
+	case kTheImmediate:
+		d.u.i = sprite->_immediate;
 		break;
 	case kTheInk:
 		d.u.i = sprite->_ink;
@@ -711,6 +805,9 @@ void Lingo::setTheSprite(Datum &id1, int field, Datum &d) {
 		break;
 	case kTheHeight:
 		sprite->_height = d.asInt();
+		break;
+	case kTheImmediate:
+		sprite->_immediate = d.asInt();
 		break;
 	case kTheInk:
 		sprite->_ink = static_cast<InkType>(d.asInt());
@@ -904,7 +1001,7 @@ void Lingo::setTheCast(Datum &id1, int field, Datum &d) {
 
 	Cast *member = _vm->getCastMember(id);
 	if (!member) {
-		error("Lingo::setTheCast(): Cast id %d doesn't exist", id);
+		warning("Lingo::setTheCast(): Cast id %d doesn't exist", id);
 		return;
 	}
 	CastType castType = member->_type;

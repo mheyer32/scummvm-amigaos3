@@ -194,12 +194,16 @@ private:
 
 	Common::StringArray _movieQueue;
 
+
+	// tests.cpp
 private:
 	void testFontScaling();
 	void testFonts();
 
 	void enqueueAllMovies();
 	MovieReference getNextMovieFromQueue();
+
+	void runTests();
 };
 
 extern DirectorEngine *g_director;

@@ -149,6 +149,7 @@ Lingo::Lingo(DirectorEngine *vm) : _vm(vm) {
 	_currentScriptType = kMovieScript;
 	_currentScriptContext = nullptr;
 	_currentScriptFunction = 0;
+	_currentMeObj = nullptr;
 
 	_currentEntityId = 0;
 	_currentChannelId = -1;
@@ -156,7 +157,6 @@ Lingo::Lingo(DirectorEngine *vm) : _vm(vm) {
 	_abort = false;
 	_nextRepeat = false;
 	_indef = kStateNone;
-	_ignoreMe = false;
 	_immediateMode = false;
 
 	_linenumber = _colnumber = _bytenumber = _lastbytenumber = _errorbytenumber = 0;
@@ -180,12 +180,15 @@ Lingo::Lingo(DirectorEngine *vm) : _vm(vm) {
 
 	_archiveIndex = 0;
 
+	_perFrameHook = Datum();
+
 	initEventHandlerTypes();
 
 	initBuiltIns();
 	initFuncs();
 	initBytecode();
 	initTheEntities();
+	initMethods();
 
 	warning("Lingo Inited");
 }
@@ -518,6 +521,15 @@ int Lingo::getAlignedType(Datum &d1, Datum &d2) {
 	return opType;
 }
 
+Datum Datum::eval() {
+	if (type != VAR) { // It could be cast ref
+		lazy = false;
+		return *this;
+	}
+
+	return g_lingo->varFetch(*this);
+}
+
 int Datum::asInt() {
 	int res = 0;
 
@@ -619,9 +631,9 @@ Common::String Datum::asString(bool printonly) {
 		break;
 	case OBJECT:
 		if (!printonly) {
-			s = Common::String::format("#%s", u.s->c_str());
+			s = Common::String::format("#%s", u.obj->name->c_str());
 		} else {
-			s = Common::String::format("object: #%s", u.s->c_str());
+			s = Common::String::format("object: #%s %d", u.obj->name->c_str(), u.obj->inheritanceLevel);
 		}
 		break;
 	case VOID:
@@ -675,6 +687,10 @@ Common::String Datum::asString(bool printonly) {
 		break;
 	default:
 		warning("Incorrect operation asString() for type: %s", type2str());
+	}
+
+	if (printonly && lazy) {
+		s += " (lazy)";
 	}
 
 	return s;
@@ -814,12 +830,33 @@ void Lingo::executeImmediateScripts(Frame *frame) {
 	}
 }
 
+void Lingo::executePerFrameHook(int frame, int subframe) {
+	if (_perFrameHook.type == OBJECT) {
+		Symbol method = _perFrameHook.u.obj->getMethod("mAtFrame");
+		if (method.type != VOID) {
+			debugC(1, kDebugLingoExec, "Executing perFrameHook : <%s>(mAtFrame, %d, %d)", _perFrameHook.asString(true).c_str(), frame, subframe);
+			push(Datum(frame));
+			push(Datum(subframe));
+			LC::call(method, 2, _perFrameHook.u.obj);
+			execute(_pc);
+		}
+	}
+}
+
 void Lingo::printAllVars() {
 	debugN("  Local vars: ");
 	for (SymbolHash::iterator i = _localvars->begin(); i != _localvars->end(); ++i) {
 		debugN("%s, ", (*i)._key.c_str());
 	}
 	debugN("\n");
+
+	if (_currentMeObj) {
+		debugN("  Instance/property vars: ");
+		for (SymbolHash::iterator i = _currentMeObj->properties.begin(); i != _currentMeObj->properties.end(); ++i) {
+			debugN("%s, ", (*i)._key.c_str());
+		}
+		debugN("\n");
+	}
 
 	debugN("  Global vars: ");
 	for (SymbolHash::iterator i = _globalvars.begin(); i != _globalvars.end(); ++i) {

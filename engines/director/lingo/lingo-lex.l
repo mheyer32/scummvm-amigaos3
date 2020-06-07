@@ -39,8 +39,6 @@
 #include "director/lingo/lingo-gr.h"
 #include "director/lingo/lingo-the.h"
 
-#define register
-
 using namespace Director;
 
 int yyparse();
@@ -391,9 +389,6 @@ word			{ count(); return varCheck(tWORD, "word"); }
 {identifier}		{
 		count();
 		yylval.s = new Common::String(yytext);
-
-		if (g_lingo->_ignoreMe && yylval.s->equalsIgnoreCase("me"))
-			return ID;
 
 		// When we are defining arguments, allow any string
 		if (g_lingo->_indef == kStateInArgs)

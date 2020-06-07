@@ -45,6 +45,7 @@
 #include "resources/lok_dos_cd_french.h"
 #include "resources/lok_dos_cd_german.h"
 #include "resources/lok_dos_cd_italian.h"
+#include "resources/lok_dos_cd_spanish.h"
 
 #include "resources/lok_dos_cddemo.h"
 #include "resources/lok_dos_cddemo_english.h"
@@ -65,6 +66,7 @@
 #include "resources/hof_dos_german.h"
 #include "resources/hof_dos_italian.h"
 #include "resources/hof_dos_russian.h"
+#include "resources/hof_dos_spanish.h"
 
 #include "resources/hof_dos_cddemo.h"
 #include "resources/hof_dos_cddemo_english.h"
@@ -77,6 +79,7 @@
 #include "resources/hof_dos_cd_german.h"
 #include "resources/hof_dos_cd_italian.h"
 #include "resources/hof_dos_cd_russian.h"
+#include "resources/hof_dos_cd_spanish.h"
 
 #include "resources/hof_fmtowns.h"
 #include "resources/hof_fmtowns_english.h"
@@ -123,6 +126,7 @@
 #include "resources/lol_dos_french.h"
 #include "resources/lol_dos_german.h"
 #include "resources/lol_dos_russian.h"
+#include "resources/lol_dos_spanish.h"
 
 #include "resources/lol_dos_cd.h"
 #include "resources/lol_dos_cd_english.h"
@@ -130,6 +134,7 @@
 #include "resources/lol_dos_cd_german.h"
 #include "resources/lol_dos_cd_italian.h"
 #include "resources/lol_dos_cd_russian.h"
+#include "resources/lol_dos_cd_spanish.h"
 
 #include "resources/lol_pc98.h"
 #include "resources/lol_pc98_japanese.h"
@@ -361,7 +366,7 @@ static const ResourceProvider resourceProviders[] = {
 	{ k1GUIStrings, kKyra1, kPlatformDOS, kNoSpecial, FR_FRA, &k1GUIStringsDOSFrenchProvider },
 	{ k1NewGameString, kKyra1, kPlatformDOS, kNoSpecial, FR_FRA, &k1NewGameStringDOSFrenchProvider },
 	{ k1ConfigStrings, kKyra1, kPlatformDOS, kNoSpecial, FR_FRA, &k1ConfigStringsDOSFrenchProvider },
-	
+
 	{ k1IntroStrings, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1IntroStringsDOSItalianProvider },
 	{ k1ItemNames, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1ItemNamesDOSItalianProvider },
 	{ k1TakenStrings, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1TakenStringsDOSItalianProvider },
@@ -384,7 +389,7 @@ static const ResourceProvider resourceProviders[] = {
 	{ k1GUIStrings, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1GUIStringsDOSItalianProvider },
 	{ k1NewGameString, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1NewGameStringDOSItalianProvider },
 	{ k1ConfigStrings, kKyra1, kPlatformDOS, kNoSpecial, IT_ITA, &k1ConfigStringsDOSItalianProvider },
-	
+
 	{ k1IntroStrings, kKyra1, kPlatformDOS, kNoSpecial, ES_ESP, &k1IntroStringsDOSSpanishProvider },
 	{ k1ItemNames, kKyra1, kPlatformDOS, kNoSpecial, ES_ESP, &k1ItemNamesDOSSpanishProvider },
 	{ k1TakenStrings, kKyra1, kPlatformDOS, kNoSpecial, ES_ESP, &k1TakenStringsDOSSpanishProvider },
@@ -638,6 +643,28 @@ static const ResourceProvider resourceProviders[] = {
 	{ k1GUIStrings, kKyra1, kPlatformDOS, kTalkieVersion, IT_ITA, &k1GUIStringsDOSCDItalianProvider },
 	{ k1NewGameString, kKyra1, kPlatformDOS, kTalkieVersion, IT_ITA, &k1NewGameStringDOSCDItalianProvider },
 	{ k1ConfigStrings, kKyra1, kPlatformDOS, kTalkieVersion, IT_ITA, &k1ConfigStringsDOSCDItalianProvider },
+	{ k1IntroStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1IntroStringsDOSCDSpanishProvider },
+	{ k1ItemNames, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1ItemNamesDOSCDSpanishProvider },
+	{ k1TakenStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1TakenStringsDOSCDSpanishProvider },
+	{ k1PlacedStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1PlacedStringsDOSCDSpanishProvider },
+	{ k1DroppedStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1DroppedStringsDOSCDSpanishProvider },
+	{ k1NoDropStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1NoDropStringsDOSCDSpanishProvider },
+	{ k1PutDownString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1PutDownStringDOSCDSpanishProvider },
+	{ k1WaitAmuletString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1WaitAmuletStringDOSCDSpanishProvider },
+	{ k1BlackJewelString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1BlackJewelStringDOSCDSpanishProvider },
+	{ k1HealingTipString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1HealingTipStringDOSCDSpanishProvider },
+	{ k1PoisonGoneString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1PoisonGoneStringDOSCDSpanishProvider },
+	{ k1ThePoisonStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1ThePoisonStringsDOSCDSpanishProvider },
+	{ k1FluteStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1FluteStringsDOSCDSpanishProvider },
+	{ k1WispJewelStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1WispJewelStringsDOSCDSpanishProvider },
+	{ k1MagicJewelStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1MagicJewelStringsDOSCDSpanishProvider },
+	{ k1FlaskFullString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1FlaskFullStringDOSCDSpanishProvider },
+	{ k1FullFlaskString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1FullFlaskStringDOSCDSpanishProvider },
+	{ k1OutroHomeString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1OutroHomeStringDOSCDSpanishProvider },
+	{ k1VeryCleverString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1VeryCleverStringDOSCDSpanishProvider },
+	{ k1GUIStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1GUIStringsDOSCDSpanishProvider },
+	{ k1NewGameString, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1NewGameStringDOSCDSpanishProvider },
+	{ k1ConfigStrings, kKyra1, kPlatformDOS, kTalkieVersion, ES_ESP, &k1ConfigStringsDOSCDSpanishProvider },
 	{ k1KallakWritingSeq, kKyra1, kPlatformFMTowns, kNoSpecial, UNK_LANG, &k1KallakWritingSeqFMTownsProvider },
 	{ k1MalcolmTreeSeq, kKyra1, kPlatformFMTowns, kNoSpecial, UNK_LANG, &k1MalcolmTreeSeqFMTownsProvider },
 	{ k1WestwoodLogoSeq, kKyra1, kPlatformFMTowns, kNoSpecial, UNK_LANG, &k1WestwoodLogoSeqFMTownsProvider },
@@ -871,9 +898,10 @@ static const ResourceProvider resourceProviders[] = {
 	{ k2IngameTalkObjIndex, kKyra2, kPlatformDOS, kNoSpecial, UNK_LANG, &k2IngameTalkObjIndexDOSProvider },
 	{ k2IngameShapeAnimData, kKyra2, kPlatformDOS, kNoSpecial, UNK_LANG, &k2IngameShapeAnimDataDOSProvider },
 	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, FR_FRA, &k2SeqplayStringsDOSFrenchProvider },
-	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, DE_DEU, &k2SeqplayStringsDOSGermanProvider },	
-	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, IT_ITA, &k2SeqplayStringsDOSItalianProvider },	
+	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, DE_DEU, &k2SeqplayStringsDOSGermanProvider },
+	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, IT_ITA, &k2SeqplayStringsDOSItalianProvider },
 	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, RU_RUS, &k2SeqplayStringsDOSRussianProvider },
+	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kNoSpecial, ES_ESP, &k2SeqplayStringsDOSSpanishProvider },
 	{ k2SeqplayPakFiles, kKyra2, kPlatformDOS, kTalkieVersion, UNK_LANG, &k2SeqplayPakFilesDOSCDProvider },
 	{ k2SeqplayCredits, kKyra2, kPlatformDOS, kTalkieVersion, UNK_LANG, &k2SeqplayCreditsDOSCDProvider },
 	{ k2SeqplayCreditsSpecial, kKyra2, kPlatformDOS, kTalkieVersion, UNK_LANG, &k2SeqplayCreditsSpecialDOSCDProvider },
@@ -896,6 +924,10 @@ static const ResourceProvider resourceProviders[] = {
 	{ k2SeqplayTlkFiles, kKyra2, kPlatformDOS, kTalkieVersion, IT_ITA, &k2SeqplayTlkFilesDOSCDItalianProvider },
 	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kTalkieVersion, RU_RUS, &k2SeqplayStringsDOSCDRussianProvider },
 	{ k2SeqplayTlkFiles, kKyra2, kPlatformDOS, kTalkieVersion, RU_RUS, &k2SeqplayTlkFilesDOSCDRussianProvider },
+
+	{ k2SeqplayStrings, kKyra2, kPlatformDOS, kTalkieVersion, ES_ESP, &k2SeqplayStringsDOSCDSpanishProvider },
+	{ k2SeqplayTlkFiles, kKyra2, kPlatformDOS, kTalkieVersion, ES_ESP, &k2SeqplayTlkFilesDOSCDSpanishProvider },
+
 	{ k2SeqplayPakFiles, kKyra2, kPlatformFMTowns, kNoSpecial, UNK_LANG, &k2SeqplayPakFilesFMTownsProvider },
 	{ k2SeqplayStrings, kKyra2, kPlatformFMTowns, kNoSpecial, EN_ANY, &k2SeqplayStringsFMTownsEnglishProvider },
 	{ k2SeqplaySfxFiles, kKyra2, kPlatformFMTowns, kNoSpecial, UNK_LANG, &k2SeqplaySfxFilesFMTownsProvider },
@@ -3683,6 +3715,7 @@ static const ResourceProvider resourceProviders[] = {
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kNoSpecial, RU_RUS, &kLoLCharacterDefsDOSRussianProvider },
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kNoSpecial, DE_DEU, &kLoLCharacterDefsDOSGermanProvider },
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kNoSpecial, FR_FRA, &kLoLCharacterDefsDOSFrenchProvider },
+	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kNoSpecial, ES_ESP, &kLoLCharacterDefsDOSSpanishProvider },
 	{ kLoLIngamePakFiles, kLoL, kPlatformPC98, kNoSpecial, UNK_LANG, &kLoLIngamePakFilesPC98Provider },
 	{ kLoLCharacterDefs, kLoL, kPlatformPC98, kNoSpecial, JA_JPN, &kLoLCharacterDefsPC98JapaneseProvider },
 	{ kLoLIngameSfxFiles, kLoL, kPlatformPC98, kNoSpecial, UNK_LANG, &kLoLIngameSfxFilesPC98Provider },
@@ -3909,6 +3942,7 @@ static const ResourceProvider resourceProviders[] = {
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kTalkieVersion, DE_DEU, &kLoLCharacterDefsDOSCDGermanProvider },
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kTalkieVersion, IT_ITA, &kLoLCharacterDefsDOSCDItalianProvider },
 	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kTalkieVersion, RU_RUS, &kLoLCharacterDefsDOSCDRussianProvider },
+	{ kLoLCharacterDefs, kLoL, kPlatformDOS, kTalkieVersion, ES_ESP, &kLoLCharacterDefsDOSCDSpanishProvider },
 	{ kMaxResIDs, kKyra1, kPlatformDOS, kNoSpecial, UNK_LANG, NULL }
 };
 

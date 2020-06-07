@@ -13,10 +13,12 @@ MODULE_OBJS = \
 	ink.o \
 	movie.o \
 	resource.o \
+	score-loading.o \
 	score.o \
 	sound.o \
 	sprite.o \
 	stxt.o \
+	tests.o \
 	transitions.o \
 	util.o \
 	lingo/lingo-gr.o \
@@ -28,6 +30,7 @@ MODULE_OBJS = \
 	lingo/lingo-events.o \
 	lingo/lingo-funcs.o \
 	lingo/lingo-lex.o \
+	lingo/lingo-object.o \
 	lingo/lingo-patcher.o \
 	lingo/lingo-preprocessor.o \
 	lingo/lingo-the.o

@@ -30,18 +30,19 @@
 #include "audio/decoders/aiff.h"
 
 #include "director/director.h"
+#include "director/cast.h"
 #include "director/sound.h"
 
 namespace Director {
 
-DirectorSound::DirectorSound() {
+DirectorSound::DirectorSound(DirectorEngine *vm) : _vm(vm) {
 	uint numChannels = 2;
 	if (g_director->getVersion() >= 4) {
 		numChannels = 4;
 	}
 
 	for (uint i = 0; i < numChannels; i++) {
-		_channels.push_back(new Audio::SoundHandle());
+		_channels.push_back(SoundChannel());
 	}
 
 	_scriptSound = new Audio::SoundHandle();
@@ -54,10 +55,15 @@ DirectorSound::DirectorSound() {
 }
 
 DirectorSound::~DirectorSound() {
-	for (uint i = 0; i < _channels.size(); i++) {
-		delete _channels[i];
-	}
 	delete _scriptSound;
+}
+
+SoundChannel *DirectorSound::getChannel(uint8 soundChannel) {
+	if (soundChannel == 0 || soundChannel > _channels.size()) {
+		warning("Invalid sound channel %d", soundChannel);
+		return nullptr;
+	}
+	return &_channels[soundChannel - 1];
 }
 
 void DirectorSound::playFile(Common::String filename, uint8 soundChannel) {
@@ -96,6 +102,7 @@ void DirectorSound::playWAV(Common::String filename, uint8 soundChannel) {
 
 		return;
 	}
+	_channels[soundChannel - 1].lastPlayingCast = 0;
 
 	Common::File *file = new Common::File();
 
@@ -109,8 +116,8 @@ void DirectorSound::playWAV(Common::String filename, uint8 soundChannel) {
 
 	Audio::RewindableAudioStream *sound = Audio::makeWAVStream(file, DisposeAfterUse::YES);
 
-	_mixer->stopHandle(*_channels[soundChannel - 1]);
-	_mixer->playStream(Audio::Mixer::kSFXSoundType, _channels[soundChannel - 1], sound);
+	_mixer->stopHandle(_channels[soundChannel - 1].handle);
+	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_channels[soundChannel - 1].handle, sound, -1, _channels[soundChannel - 1].volume);
 }
 
 void DirectorSound::playAIFF(Common::String filename, uint8 soundChannel) {
@@ -118,6 +125,7 @@ void DirectorSound::playAIFF(Common::String filename, uint8 soundChannel) {
 		warning("Invalid sound channel %d", soundChannel);
 		return;
 	}
+	_channels[soundChannel - 1].lastPlayingCast = 0;
 
 	Common::File *file = new Common::File();
 
@@ -129,8 +137,8 @@ void DirectorSound::playAIFF(Common::String filename, uint8 soundChannel) {
 
 	Audio::RewindableAudioStream *sound = Audio::makeAIFFStream(file, DisposeAfterUse::YES);
 
-	_mixer->stopHandle(*_channels[soundChannel - 1]);
-	_mixer->playStream(Audio::Mixer::kSFXSoundType, _channels[soundChannel - 1], sound);
+	_mixer->stopHandle(_channels[soundChannel - 1].handle);
+	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_channels[soundChannel - 1].handle, sound, -1, _channels[soundChannel - 1].volume);
 }
 
 void DirectorSound::playMCI(Audio::AudioStream &stream, uint32 from, uint32 to) {
@@ -147,8 +155,43 @@ void DirectorSound::playStream(Audio::AudioStream &stream, uint8 soundChannel) {
 		return;
 	}
 
-	_mixer->stopHandle(*_channels[soundChannel - 1]);
-	_mixer->playStream(Audio::Mixer::kSFXSoundType, _channels[soundChannel - 1], &stream);
+	_mixer->stopHandle(_channels[soundChannel - 1].handle);
+	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_channels[soundChannel - 1].handle, &stream, -1, _channels[soundChannel - 1].volume);
+}
+
+void DirectorSound::playCastMember(int castId, uint8 soundChannel, bool allowRepeat) {
+	if (castId == 0) {
+		stopSound(soundChannel);
+	} else {
+		Cast *soundCast = _vm->getCastMember(castId);
+		if (soundCast) {
+			if (soundCast->_type != kCastSound) {
+				warning("DirectorSound::playCastMember: attempted to play a non-SoundCast cast member %d", castId);
+			} else {
+				if (!allowRepeat && lastPlayingCast(soundChannel) == castId)
+					return;
+				bool looping = ((SoundCast *)soundCast)->_looping;
+				SNDDecoder *sd = ((SoundCast *)soundCast)->_audio;
+				if (!sd) {
+					warning("DirectorSound::playCastMember: no audio data attached to cast member %d", castId);
+					return;
+				}
+				Audio::AudioStream *as;
+				if (looping)
+					as = sd->getLoopingAudioStream();
+				else
+					as = sd->getAudioStream();
+				if (!as) {
+					warning("DirectorSound::playCastMember: audio data failed to load from cast");
+					return;
+				}
+				playStream(*as, soundChannel);
+				_channels[soundChannel - 1].lastPlayingCast = castId;
+			}
+		} else {
+			warning("DirectorSound::playCastMember: couldn't find cast member %d", castId);
+		}
+	}
 }
 
 bool DirectorSound::isChannelActive(uint8 soundChannel) {
@@ -157,7 +200,16 @@ bool DirectorSound::isChannelActive(uint8 soundChannel) {
 	return false;
 }
 
-	return _mixer->isSoundHandleActive(*_channels[soundChannel - 1]);
+	return _mixer->isSoundHandleActive(_channels[soundChannel - 1].handle);
+}
+
+int DirectorSound::lastPlayingCast(uint8 soundChannel) {
+	if (soundChannel == 0 || soundChannel > _channels.size()) {
+		warning("Invalid sound channel %d", soundChannel);
+		return false;
+	}
+
+	return _channels[soundChannel - 1].lastPlayingCast;
 }
 
 void DirectorSound::stopSound(uint8 soundChannel) {
@@ -166,13 +218,15 @@ void DirectorSound::stopSound(uint8 soundChannel) {
 		return;
 	}
 
-	_mixer->stopHandle(*_channels[soundChannel - 1]);
+	_mixer->stopHandle(_channels[soundChannel - 1].handle);
+	_channels[soundChannel - 1].lastPlayingCast = 0;
 	return;
 }
 
 void DirectorSound::stopSound() {
 	for (uint i = 0; i < _channels.size(); i++) {
-		_mixer->stopHandle(*_channels[i]);
+		_mixer->stopHandle(_channels[i].handle);
+		_channels[i].lastPlayingCast = 0;
 	}
 	_mixer->stopHandle(*_scriptSound);
 	_mixer->stopHandle(*_pcSpeakerHandle);
@@ -252,10 +306,14 @@ bool SNDDecoder::loadStream(Common::SeekableSubReadStreamEndian &stream) {
 }
 
 Audio::SeekableAudioStream *SNDDecoder::getAudioStream() {
+	if (!_data)
+		return nullptr;
 	return Audio::makeRawStream(_data, _size, _rate, _flags, DisposeAfterUse::NO);
 }
 
 Audio::AudioStream *SNDDecoder::getLoopingAudioStream() {
+	if (!_data)
+		return nullptr;
 	return new Audio::LoopingAudioStream(Audio::makeRawStream(_data, _size, _rate, _flags, DisposeAfterUse::NO), 0);
 }
 

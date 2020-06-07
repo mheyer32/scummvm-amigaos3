@@ -166,6 +166,22 @@ MODULE_OBJS := \
 	archetype/sys_object.o \
 	archetype/timestamp.o \
 	archetype/token.o \
+	comprehend/charset.o \
+	comprehend/comprehend.o \
+	comprehend/debugger.o \
+	comprehend/debugger_dumper.o \
+	comprehend/detection.o \
+	comprehend/dictionary.o \
+	comprehend/draw_surface.o \
+	comprehend/file_buf.o \
+	comprehend/game.o \
+	comprehend/game_cc.o \
+	comprehend/game_data.o \
+	comprehend/game_oo.o \
+	comprehend/game_tm.o \
+	comprehend/game_tr.o \
+	comprehend/opcode_map.o \
+	comprehend/pics.o \
 	frotz/bitmap_font.o \
 	frotz/config.o \
 	frotz/detection.o \

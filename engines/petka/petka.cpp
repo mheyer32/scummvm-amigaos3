@@ -90,8 +90,8 @@ Common::Error PetkaEngine::run() {
 
 	_console.reset(new Console(this));
 	_fileMgr.reset(new FileMgr());
-	_soundMgr.reset(new SoundMgr());
-	_vsys.reset(new VideoSystem());
+	_soundMgr.reset(new SoundMgr(*this));
+	_vsys.reset(new VideoSystem(*this));
 
 	loadPart(2);
 
@@ -237,8 +237,8 @@ void PetkaEngine::loadPart(byte part) {
 
 	_resMgr.reset(new QManager(*this));
 	_resMgr->init();
-	_dialogMan.reset(new BigDialogue());
-	_qsystem.reset(new QSystem());
+	_dialogMan.reset(new BigDialogue(*this));
+	_qsystem.reset(new QSystem(*this));
 	_qsystem->init();
 }
 
@@ -266,8 +266,8 @@ void PetkaEngine::loadChapter(byte chapter) {
 
 	_fileMgr->openStore(_chapterStoreName);
 
-	Common::ScopedPtr<Common::SeekableReadStream> namesStream(g_vm->openFile("Names.ini", true));
-	Common::ScopedPtr<Common::SeekableReadStream> castStream(g_vm->openFile("Cast.ini", true));
+	Common::ScopedPtr<Common::SeekableReadStream> namesStream(openFile("Names.ini", true));
+	Common::ScopedPtr<Common::SeekableReadStream> castStream(openFile("Cast.ini", true));
 
 	Common::INIFile namesIni;
 	Common::INIFile castIni;

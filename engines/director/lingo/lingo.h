@@ -42,6 +42,7 @@ struct TheEntity;
 struct TheEntityField;
 struct LingoV4Bytecode;
 struct LingoV4TheEntity;
+struct Object;
 struct ScriptContext;
 class DirectorEngine;
 class Frame;
@@ -87,6 +88,7 @@ struct Symbol {	/* symbol table entry */
 		Common::String	*s;	/* STRING */
 		DatumArray *farr;	/* ARRAY, POINT, RECT */
 		PropertyArray *parr;
+		Object *obj;
 	} u;
 
 	int *refCount;
@@ -110,6 +112,7 @@ struct Symbol {	/* symbol table entry */
 
 struct Datum {	/* interpreter stack type */
 	int type;
+	bool lazy; // evaluate when popped off stack
 
 	union {
 		int	i;				/* INT, ARGC, ARGCNORET */
@@ -117,6 +120,7 @@ struct Datum {	/* interpreter stack type */
 		Common::String *s;	/* STRING, VAR, OBJECT */
 		DatumArray *farr;	/* ARRAY, POINT, RECT */
 		PropertyArray *parr; /* PARRAY */
+		Object *obj;
 	} u;
 
 	int *refCount;
@@ -124,11 +128,13 @@ struct Datum {	/* interpreter stack type */
 	Datum() {
 		u.s = nullptr;
 		type = VOID;
+		lazy = false;
 		refCount = new int;
 		*refCount = 1;
 	}
 	Datum(const Datum &d) {
 		type = d.type;
+		lazy = d.lazy;
 		u = d.u;
 		refCount = d.refCount;
 		*refCount += 1;
@@ -146,18 +152,21 @@ struct Datum {	/* interpreter stack type */
 	Datum(int val) {
 		u.i = val;
 		type = INT;
+		lazy = false;
 		refCount = new int;
 		*refCount = 1;
 	}
 	Datum(double val) {
 		u.f = val;
 		type = FLOAT;
+		lazy = false;
 		refCount = new int;
 		*refCount = 1;
 	}
 	Datum(const Common::String &val) {
 		u.s = new Common::String(val);
 		type = STRING;
+		lazy = false;
 		refCount = new int;
 		*refCount = 1;
 	}
@@ -198,6 +207,7 @@ struct Datum {	/* interpreter stack type */
 		reset();
 	}
 
+	Datum eval();
 	double asFloat();
 	int asInt();
 	Common::String asString(bool printonly = false);
@@ -235,6 +245,31 @@ typedef Common::HashMap<Common::String, Builtin *, Common::IgnoreCase_Hash, Comm
 typedef Common::HashMap<Common::String, TheEntity *, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> TheEntityHash;
 typedef Common::HashMap<Common::String, TheEntityField *, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> TheEntityFieldHash;
 
+enum ObjectType {
+	kFactoryObj = 0,
+	kScriptObj = 1
+};
+
+struct Object {
+	Common::String *name;
+	ObjectType type;
+	bool disposed;
+
+	Object *prototype;
+	SymbolHash properties;
+	SymbolHash methods;
+	int inheritanceLevel; // 1 for original object
+	ScriptContext *scriptContext;
+
+	// used only for factories
+	Common::HashMap<uint32, Datum> *objArray;
+
+	Object *clone();
+	Symbol getMethod(const Common::String &methodName);
+	bool hasVar(const Common::String &varName);
+	Symbol &getVar(const Common::String &varName);
+};
+
 struct CFrame {	/* proc/func call stack frame */
 	Symbol	sp;	/* symbol table entry */
 	int		retpc;	/* where to resume after return */
@@ -242,6 +277,7 @@ struct CFrame {	/* proc/func call stack frame */
 	ScriptContext	*retctx;   /* which script context to use after return */
 	int 	retarchive;	/* which archive to use after return */
 	SymbolHash *localvars;
+	Object *retMeObj; /* which me obj to use after return */
 };
 
 struct LingoEvent {
@@ -263,6 +299,7 @@ struct LingoArchive {
 	ScriptContextHash scriptContexts[kMaxScriptType + 1];
 	Common::Array<Common::String> names;
 	Common::HashMap<uint32, Symbol> eventHandlers;
+	Common::HashMap<uint32, Common::String> primaryEventHandlers;
 	SymbolHash functionHandlers;
 };
 
@@ -287,6 +324,7 @@ public:
 	void cleanupBuiltins();
 	void initFuncs();
 	void initBytecode();
+	void initMethods();
 
 	void runTests();
 
@@ -304,6 +342,7 @@ private:
 	// lingo-events.cpp
 private:
 	void initEventHandlerTypes();
+	void setPrimaryEventHandler(LEvent event, const Common::String &code);
 	void primaryEventHandler(LEvent event);
 	void registerInputEvent(LEvent event);
 	void registerFrameEvent(LEvent event);
@@ -320,22 +359,23 @@ public:
 	ScriptType event2script(LEvent ev);
 	Symbol getHandler(const Common::String &name);
 
+	int getEventCount();
 	void processEvent(LEvent event);
 	void processEvents();
 	void registerEvent(LEvent event);
 
 public:
 	void execute(uint pc);
-	void pushContext();
+	void pushContext(const Symbol *funcSym = nullptr);
 	void popContext();
 	void cleanLocalVars();
-	Symbol define(Common::String &s, int nargs, ScriptData *code, Common::Array<Common::String> *argNames = nullptr, Common::Array<Common::String> *varNames = nullptr);
-	Symbol codeDefine(Common::String &s, int start, int nargs, Common::String *prefix = NULL, int end = -1, bool removeCode = true);
+	Symbol define(Common::String &s, int nargs, ScriptData *code, Common::Array<Common::String> *argNames = nullptr, Common::Array<Common::String> *varNames = nullptr, Object *obj = nullptr);
+	Symbol codeDefine(Common::String &s, int start, int nargs, Object *obj = nullptr, int end = -1, bool removeCode = true);
 	void processIf(int toplabel, int endlabel);
 	int castIdFetch(Datum &var);
-	void varCreate(const Common::String &name, bool global);
-	void varAssign(Datum &var, Datum &value, bool global = false);
-	Datum varFetch(Datum &var, bool global = false);
+	void varCreate(const Common::String &name, bool global, SymbolHash *localvars = nullptr);
+	void varAssign(Datum &var, Datum &value, bool global = false, SymbolHash *localvars = nullptr);
+	Datum varFetch(Datum &var, bool global = false, SymbolHash *localvars = nullptr);
 
 	int getAlignedType(Datum &d1, Datum &d2);
 
@@ -360,7 +400,7 @@ public:
 	void codeArg(Common::String *s);
 	int codeSetImmediate(bool state);
 	int codeFunc(Common::String *s, int numpar);
-	int codeMe(Common::String *method, int numpar);
+	// int codeMe(Common::String *method, int numpar);
 	int codeFloat(double f);
 	void codeFactory(Common::String &s);
 
@@ -426,11 +466,11 @@ public:
 	ScriptContext *_currentScriptContext;
 	uint16 _currentScriptFunction;
 	ScriptData *_currentScript;
+	Object *_currentMeObj;
 
 	bool _abort;
 	bool _nextRepeat;
 	LexerDefineState _indef;
-	bool _ignoreMe;
 	bool _immediateMode;
 	Common::HashMap<Common::String, VarType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> *_methodVars;
 	Common::HashMap<Common::String, VarType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> *_methodVarsStash;
@@ -445,6 +485,7 @@ public:
 	Common::Array<int> _labelstack;
 
 	SymbolHash _builtins;
+	SymbolHash _methods;
 
 	int _linenumber;
 	int _colnumber;
@@ -460,7 +501,7 @@ public:
 	bool _hadError;
 
 	bool _inFactory;
-	Common::String _currentFactory;
+	Object *_currentFactory;
 	bool _inCond;
 
 	bool _exitRepeat;
@@ -505,8 +546,11 @@ public:
 
 	bool _dontPassEvent;
 
+	Datum _perFrameHook;
+
 public:
 	void executeImmediateScripts(Frame *frame);
+	void executePerFrameHook(int frame, int subframe);
 };
 
 extern Lingo *g_lingo;
