@@ -1,4 +1,4 @@
-# ScummVM 2.0.0 AmigaOS 3 Port
+# ScummVM 2.2.0 AmigaOS 3 Port
 
 The basis for this ScummVM port for classic Amigas is a ScummVM 1.8.1 port obtained form:
 https://github.com/mntmn/scummvm-amigaos3

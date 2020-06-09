@@ -28,13 +28,7 @@
 namespace Glk {
 namespace Comprehend {
 
-#define RENDER_X_MAX 278
-#define RENDER_Y_MAX 162
-
-#define RENDERER_SCREEN 0
-#define RENDERER_PIXEL_DATA 1
-
-const uint32 DrawSurface::PEN_COLORS[8] = {
+const uint32 Surface::PEN_COLORS[8] = {
 	G_COLOR_BLACK,
 	RGB(0x00, 0x66, 0x00),
 	RGB(0x00, 0xff, 0x00),
@@ -46,7 +40,7 @@ const uint32 DrawSurface::PEN_COLORS[8] = {
 };
 
 /* Used by Transylvania and Crimson Crown */
-const uint32 DrawSurface::DEFAULT_COLOR_TABLE[256] = {
+const uint32 Surface::DEFAULT_COLOR_TABLE[256] = {
 	G_COLOR_WHITE,     // 00
 	G_COLOR_DARK_BLUE, // 01
 	G_COLOR_GRAY1,     // 02
@@ -92,7 +86,7 @@ const uint32 DrawSurface::DEFAULT_COLOR_TABLE[256] = {
 
 /* Used by OO-topos */
 /* FIXME - incomplete */
-const uint32 DrawSurface::COLOR_TABLE_1[256] = {
+const uint32 Surface::COLOR_TABLE_1[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -170,19 +164,19 @@ const uint32 DrawSurface::COLOR_TABLE_1[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-const uint32 *DrawSurface::COLOR_TABLES[2] = {
+const uint32 *Surface::COLOR_TABLES[2] = {
 	DEFAULT_COLOR_TABLE,
 	COLOR_TABLE_1,
 };
 
 /*-------------------------------------------------------*/
 
-void DrawSurface::reset() {
+void Surface::reset() {
 	create(G_RENDER_WIDTH, G_RENDER_HEIGHT,
 	       Graphics::PixelFormat(4, 8, 8, 8, 8, 24, 16, 8, 0));
 }
 
-void DrawSurface::setColorTable(uint index) {
+void Surface::setColorTable(uint index) {
 	if (index >= ARRAY_SIZE(COLOR_TABLES)) {
 		warning("Bad color table %d - using default", index);
 		_colorTable = DEFAULT_COLOR_TABLE;
@@ -191,11 +185,11 @@ void DrawSurface::setColorTable(uint index) {
 	_colorTable = COLOR_TABLES[index];
 }
 
-uint DrawSurface::getPenColor(uint8 param) const {
+uint Surface::getPenColor(uint8 param) const {
 	return PEN_COLORS[param];
 }
 
-uint32 DrawSurface::getFillColor(uint8 index) {
+uint32 Surface::getFillColor(uint8 index) {
 	unsigned color;
 
 	color = _colorTable[index];
@@ -208,14 +202,9 @@ uint32 DrawSurface::getFillColor(uint8 index) {
 	return color;
 }
 
-void DrawSurface::setColor(uint32 color) {
-	_renderColor = color;
-}
-
-void DrawSurface::drawLine(int16 x1, int16 y1, int16 x2, int16 y2, uint32 color) {
-	setColor(color);
+void Surface::drawLine(int16 x1, int16 y1, int16 x2, int16 y2, uint32 color) {
 #if 1
-	Graphics::ManagedSurface::drawLine(x1, y1, x2, y2, _renderColor);
+	Graphics::ManagedSurface::drawLine(x1, y1, x2, y2, color);
 #else
 	bool swapped = false;
 	int deltaX = -1, deltaY = -1;
@@ -265,21 +254,17 @@ void DrawSurface::drawLine(int16 x1, int16 y1, int16 x2, int16 y2, uint32 color)
 #endif
 }
 
-void DrawSurface::drawBox(int16 x1, int16 y1, int16 x2, int16 y2,
-                          uint32 color) {
-	setColor(color);
+void Surface::drawBox(int16 x1, int16 y1, int16 x2, int16 y2, uint32 color) {
 	Common::Rect r(x1, y1, x2 + 1, y2 + 1);
-	frameRect(r, _renderColor);
+	frameRect(r, color);
 }
 
-void DrawSurface::drawFilledBox(int16 x1, int16 y1,
-                                int16 x2, int16 y2, uint32 color) {
-	setColor(color);
+void Surface::drawFilledBox(int16 x1, int16 y1, int16 x2, int16 y2, uint32 color) {
 	Common::Rect r(x1, y1, x2 + 1, y2 + 1);
-	fillRect(r, _renderColor);
+	fillRect(r, color);
 }
 
-void DrawSurface::drawShape(int16 x, int16 y, int shape_type, uint32 fill_color) {
+void Surface::drawShape(int16 x, int16 y, int shape_type, uint32 fill_color) {
 	int i, j;
 
 	switch (shape_type) {
@@ -385,71 +370,37 @@ void DrawSurface::drawShape(int16 x, int16 y, int shape_type, uint32 fill_color)
 	}
 }
 
-void DrawSurface::floodFill(int16 x, int16 y, uint32 fill_color, uint32 old_color) {
-	int x1, x2, i;
-
-	if (getPixelColor(x, y) != old_color || fill_color == old_color)
-		return;
-
-	/* Left end of scanline */
-	for (x1 = x; x1 > 0; x1--)
-		if (getPixelColor(x1 - 1, y) != old_color)
-			break;
-
-	/* Right end of scanline */
-	for (x2 = x; x2 < RENDER_X_MAX; x2++)
-		if (getPixelColor(x2 + 1, y) != old_color)
-			break;
-
-	drawLine(x1, y, x2, y, fill_color);
-
-	/* Scanline above */
-	for (i = x1; i < x2; i++)
-		if (y > 0 && getPixelColor(i, y - 1) == old_color)
-			floodFill(i, y - 1, fill_color, old_color);
-
-	/* Scanline below */
-	for (i = x1; i < x2; i++)
-		if (y < RENDER_Y_MAX && getPixelColor(i, y + 1) == old_color)
-			floodFill(i, y + 1, fill_color, old_color);
-}
-
-void DrawSurface::drawPixel(int16 x, int16 y, uint32 color) {
-	setColor(color);
-	drawPixel(x, y);
-}
-
-void DrawSurface::drawPixel(int16 x, int16 y) {
+void Surface::drawPixel(int16 x, int16 y, uint32 color) {
 	if (x >= 0 && y >= 0 && x < this->w && y < this->h) {
 		uint32 *ptr = (uint32 *)getBasePtr(x, y);
-		*ptr = _renderColor;
+		*ptr = color;
 	}
 }
 
-uint32 DrawSurface::getPixelColor(int16 x, int16 y) {
-	uint32 *ptr = (uint32 *)getBasePtr(x, y);
+uint32 Surface::getPixelColor(int16 x, int16 y) const {
+	assert(x >= 0 && y >= 0 && x < this->w && y < this->h);
+	const uint32 *ptr = (uint32 *)getBasePtr(x, y);
 	return *ptr;
 }
 
-void DrawSurface::clearScreen(uint32 color) {
-	setColor(color);
-	fillRect(Common::Rect(0, 0, this->w, this->h), _renderColor);
+void Surface::clearScreen(uint32 color) {
+	fillRect(Common::Rect(0, 0, this->w, this->h), color);
 }
 
-void DrawSurface::drawCircle(int16 x, int16 y, int16 diameter) {
+void Surface::drawCircle(int16 x, int16 y, int16 diameter, uint32 color) {
 	int invert = -diameter;
 	int delta = 0;
 
 	do {
-		drawCirclePoint(x - delta, y - diameter);
-		drawCirclePoint(x + delta, y - diameter);
-		drawCirclePoint(x + delta, y + diameter);
-		drawCirclePoint(x - delta, y + diameter);
+		drawPixel(x - delta, y - diameter, color);
+		drawPixel(x + delta, y - diameter, color);
+		drawPixel(x + delta, y + diameter, color);
+		drawPixel(x - delta, y + diameter, color);
 
-		drawCirclePoint(x + diameter, y - delta);
-		drawCirclePoint(x - diameter, y - delta);
-		drawCirclePoint(x - diameter, y + delta);
-		drawCirclePoint(x + diameter, y + delta);
+		drawPixel(x + diameter, y - delta, color);
+		drawPixel(x - diameter, y - delta, color);
+		drawPixel(x - diameter, y + delta, color);
+		drawPixel(x + diameter, y + delta, color);
 
 		invert += (delta * 2) + 1;
 		++delta;
@@ -463,9 +414,54 @@ void DrawSurface::drawCircle(int16 x, int16 y, int16 diameter) {
 	} while (diameter >= delta);
 }
 
-void DrawSurface::drawCirclePoint(int16 x, int16 y) {
-	if (x < 280 && y < 160)
-		drawPixel(x, y);
+/*--------------------------------------------------------------------------*/
+
+bool FloodFillSurface::isPixelWhite(int16 x, int16 y) const {
+	if (x < 0 || y < 0 || x >= this->w || y >= this->h) {
+		return false;
+	} else {
+		byte r, g, b;
+		format.colorToRGB(getPixelColor(x, y), r, g, b);
+		return r == 255 && g == 255 && b == 255;
+	}
+}
+
+void FloodFillSurface::floodFill(int16 x, int16 y, uint32 fillColor) {
+	int x1, x2, i;
+
+	if (y == this->h)
+		y = this->h - 1;
+	else if (y > this->h)
+		return;
+
+	if (!isPixelWhite(x, y))
+		return;
+
+	// Left end of scanline
+	for (x1 = x; x1 > 0; x1--)
+		if (!isPixelWhite(x1 - 1, y))
+			break;
+
+	// Right end of scanline
+	for (x2 = x; x2 < this->w; x2++)
+		if (!isPixelWhite(x2 + 1, y))
+			break;
+
+	drawLine(x1, y, x2, y, fillColor);
+
+	// Scanline above
+	if (y > 0) {
+		for (i = x1; i < x2; i++)
+			if (isPixelWhite(i, y - 1))
+				floodFill(i, y - 1, fillColor);
+	}
+
+	// Scanline below
+	if (y < (this->h - 1)) {
+		for (i = x1; i < x2; i++)
+			if (isPixelWhite(i, y + 1))
+				floodFill(i, y + 1, fillColor);
+	}
 }
 
 } // namespace Comprehend

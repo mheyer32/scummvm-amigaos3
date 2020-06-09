@@ -20,58 +20,15 @@
  *
  */
 
-<<<<<<< HEAD:backends/platform/sdl/morphos/morphos.h
-#ifndef PLATFORM_SDL_MORPHOS_H
-#define PLATFORM_SDL_MORPHOS_H
-||||||| 6cf52b515dc:backends/platform/openpandora/op-options.h
-/*
- * OpenPandora: Options, custom code and hardware stuff.
- *
- */
-=======
 #include "ultima/ultima0/game.h"
->>>>>>> scummvm/master:engines/ultima/ultima0/game.cpp
 
-<<<<<<< HEAD:backends/platform/sdl/morphos/morphos.h
-#include "backends/platform/sdl/sdl.h"
-||||||| 6cf52b515dc:backends/platform/openpandora/op-options.h
-#ifndef OP_OPTIONS_H
-#define OP_OPTIONS_H
-=======
 namespace Ultima {
 namespace Ultima0 {
->>>>>>> scummvm/master:engines/ultima/ultima0/game.cpp
 
-<<<<<<< HEAD:backends/platform/sdl/morphos/morphos.h
-class OSystem_MorphOS : public OSystem_SDL {
-public:
-	OSystem_MorphOS() {}
-	virtual ~OSystem_MorphOS() {}
-||||||| 6cf52b515dc:backends/platform/openpandora/op-options.h
-namespace OP {
-=======
 EMPTY_MESSAGE_MAP(Ultima0Game, Shared::Game);
->>>>>>> scummvm/master:engines/ultima/ultima0/game.cpp
 
-<<<<<<< HEAD:backends/platform/sdl/morphos/morphos.h
-	virtual void init();
-};
-||||||| 6cf52b515dc:backends/platform/openpandora/op-options.h
-extern int tapmodeLevel;
-=======
 Ultima0Game::Ultima0Game() : Shared::Game() {
 }
->>>>>>> scummvm/master:engines/ultima/ultima0/game.cpp
 
-<<<<<<< HEAD:backends/platform/sdl/morphos/morphos.h
-#endif
-||||||| 6cf52b515dc:backends/platform/openpandora/op-options.h
-extern void ToggleTapMode();
-
-} /* namespace OP */
-
-#endif //OP_OPTIONS_H
-=======
 } // End of namespace Ultima0
 } // End of namespace Ultima
->>>>>>> scummvm/master:engines/ultima/ultima0/game.cpp
