@@ -564,6 +564,7 @@ String toPrintable(const String &src, bool keepNewLines = true);
 extern int scumm_stricmp(const char *s1, const char *s2);
 extern int scumm_strnicmp(const char *s1, const char *s2, uint n);
 extern char *scumm_strdup(const char *in);
+extern STDCALL int scumm_stricmp_wrapper(const void *s1, const void *s2);
 
 extern int scumm_compareDictionary(const char *s1, const char *s2);
 extern const char *scumm_skipArticle(const char *s1);
