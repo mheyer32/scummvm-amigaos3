@@ -334,7 +334,7 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 	return true;
 }
 
-struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
+struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint16 width, uint16 height) {
 	// Create the hardware screen.
 	struct Screen *screen = NULL;
 	ULONG modeId = INVALID_ID;
@@ -387,7 +387,7 @@ struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
 	return screen;
 }
 
-struct Window *OSystem_AmigaOS3::createHardwareWindow(uint width, uint height, struct Screen *screen) {
+struct Window *OSystem_AmigaOS3::createHardwareWindow(uint16 width, uint16 height, struct Screen *screen) {
 	return OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, width, WA_Height, height, SA_AutoScroll, FALSE,
 						  WA_CustomScreen, (ULONG)screen, WA_Backdrop, TRUE, WA_Borderless, TRUE, WA_DragBar, FALSE,
 						  WA_Activate, TRUE, WA_SimpleRefresh, TRUE, WA_NoCareRefresh, TRUE, WA_ReportMouse, TRUE,
@@ -446,7 +446,7 @@ void OSystem_AmigaOS3::setPalette(const byte *colors, uint start, uint num) {
 	}
 }
 
-void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) {
+void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) const {
 #ifndef NDEBUG
 	assert(colors);
 #endif
@@ -618,12 +618,12 @@ void OSystem_AmigaOS3::updateScreen() {
 	}
 }
 
-void OSystem_AmigaOS3::setShakePos(int shakeOffset) {
+void OSystem_AmigaOS3::setShakePos(int shakeX, int shakeY) {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
 
-	_newShakePos = shakeOffset;
+	_newShakePos = shakeX;
 }
 
 #pragma mark -
@@ -892,7 +892,7 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 	CopyMem((void *)buf, _mouseCursor.surface.getPixels(), w * h);
 }
 
-void OSystem_AmigaOS3::setMouseCursorPosition(uint x, uint y) {
+void OSystem_AmigaOS3::setMouseCursorPosition(uint16 x, uint16 y) {
 	MouseCursor oldMouseCursor = _mouseCursor;
 
 	_mouseCursor.x = x;
