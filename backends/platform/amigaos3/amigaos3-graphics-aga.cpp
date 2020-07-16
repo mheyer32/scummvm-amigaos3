@@ -916,3 +916,11 @@ _newShakePos));
 
 		return (UBYTE*)_tmpscreen.getPixels();
 }*/
+
+struct Window *OSystem_AmigaOS3::getHardwareWindow() {
+	return _hardwareWindow;
+}
+
+void OSystem_AmigaOS3::displayActivityIconOnOSD(const Graphics::Surface *icon) {
+	// TODO - UNIMPLEMENTED
+}
