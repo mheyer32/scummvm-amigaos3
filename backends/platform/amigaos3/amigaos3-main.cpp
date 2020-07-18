@@ -39,7 +39,7 @@
 static int wbClosed = 0;
 
 struct CxBase* CxBase = NULL;
-extern struct Library* CyberGfxBase;
+struct Library* CyberGfxBase = NULL;
 struct GfxBase* GfxBase = NULL;
 struct Library* IconBase = NULL;
 struct IntuitionBase* IntuitionBase = NULL;
@@ -58,10 +58,10 @@ static void unload_libraries(void) {
 		CxBase = NULL;
 	}
 
-	//    if (CyberGfxBase != NULL) {
-	//        CloseLibrary((struct Library*) CyberGfxBase);
-	//        CyberGfxBase = NULL;
-	//    }
+	if (CyberGfxBase != NULL) {
+	    CloseLibrary((struct Library*) CyberGfxBase);
+	    CyberGfxBase = NULL;
+	}
 
 	if (GfxBase != NULL) {
 		CloseLibrary((struct Library*)GfxBase);
@@ -116,8 +116,7 @@ static void load_libraries(void) {
 
 	CyberGfxBase = (struct Library*) OpenLibrary("cybergraphics.library", 0);
 	if (CyberGfxBase == NULL) {
-	    fprintf(stderr, "Unable to load cybergraphics.library!\n");
-	    exit(EXIT_FAILURE);
+	    fprintf(stderr, "Unable to load cybergraphics.library, CGX not available.\n");
 	}
 
 	GfxBase = (struct GfxBase*)OpenLibrary("graphics.library", 0);
@@ -219,7 +218,13 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 	// Create our OSystem instance
 	OSystem_AmigaOS3_Modular *sys;
-	sys = new OSystemAGA();
+	if (CyberGfxBase != NULL) {
+		sys = new OSystemCGX();
+	}
+	else {
+		sys = new OSystemAGA();
+	}
+	g_system = sys;
 	assert(g_system);
 
 	// Pre initialize the backend
