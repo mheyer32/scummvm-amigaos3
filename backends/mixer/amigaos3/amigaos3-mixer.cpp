@@ -258,11 +258,28 @@ void AmigaOS3MixerManager::init(int priority) {
 	// at least 1/16th of a second (though at most 8192 samples). Note
 	// that it must be a power of two. So e.g. at 22050 Hz, we request a
 	// sample buffer size of 2048.
-	_sampleCount = 8192;
-	while ((_sampleCount * 4) > (_mixingFrequency * 2)) {
-		_sampleCount >>= 1;
+	switch(_mixingFrequency) {
+		case 4000:
+			_sampleCount = 1024;
+			break;
+		case 8000:
+		case 11025:
+			_sampleCount = 2048;
+			break;
+		default:
+		case 22050:
+			_sampleCount = 4096;
+			break;
+		case 44100:
+		case 48000:
+		case 96000:
+			_sampleCount = 8192;
+			break;
 	}
 
+	/*while ((_sampleCount * 4) > (_mixingFrequency * 2)) {
+		_sampleCount >>= 1;
+	}*/
 
 	if (!check_scummvm_sound())
 		return;
