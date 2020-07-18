@@ -38,7 +38,7 @@
 #define SAMPLES_PER_SEC 11025
 
 static struct MsgPort *ahiPort = NULL;
-;
+
 static struct AHIRequest *ahiReq[2] = {NULL, NULL};
 static bool ahiReqSent[2] = {false, FALSE};
 
@@ -78,49 +78,6 @@ AmigaOS3MixerManager::~AmigaOS3MixerManager() {
 	}
 }
 
-bool init_scummvm_sound() {
-	ahiPort = (struct MsgPort *)CreateMsgPort();
-	if (!ahiPort) {
-		error("Could not create a Message Port for AHI");
-	}
-
-	ahiReq[0] = (struct AHIRequest *)CreateIORequest(ahiPort, sizeof(struct AHIRequest));
-	if (!ahiReq[0]) {
-		error("Could not create an IO Request for AHI");
-	}
-
-	// Open at least version 4.
-	ahiReq[0]->ahir_Version = 4;
-
-	BYTE deviceError = OpenDevice(AHINAME, AHI_DEFAULT_UNIT, (struct IORequest *)ahiReq[0], 0);
-	if (deviceError) {
-		error("Unable to open AHI Device");
-	}
-
-	// 32 bits (4 bytes) are required per sample for storage (16bit stereo).
-	_sampleBufferSize = (_sampleCount * 4);
-
-	soundBuffer[0] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
-	soundBuffer[1] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
-
-	if (!soundBuffer[0] || !soundBuffer[1]) {
-		error("Could not create soundbuffers for AHI");
-	}
-	// Make a copy of the request (for double buffering)
-	ahiReq[1] = (struct AHIRequest *)AllocVec(sizeof(struct AHIRequest), MEMF_PUBLIC);
-	if (!ahiReq[1]) {
-		error("Could not create IO request copy for AHI");
-	}
-
-	CopyMem(ahiReq[0], ahiReq[1], sizeof(struct AHIRequest));
-
-	_currentSoundBuffer = 0;
-	ahiReqSent[0] = false;
-	ahiReqSent[1] = false;
-
-	return true;
-}
-
 void exit_scummvm_sound() {
 	if (ahiReq[1]) {
 		FreeVec(ahiReq[1]);
@@ -139,6 +96,81 @@ void exit_scummvm_sound() {
 
 	if (ahiPort)
 		DeleteMsgPort(ahiPort);
+}
+
+#define SOUND_CHECK_FAILED \
+	exit_scummvm_sound(); \
+	return false;
+
+bool check_scummvm_sound() {
+	ahiPort = (struct MsgPort *)CreateMsgPort();
+	if (!ahiPort) {
+		error("check_scummvm_sound: Could not create a Message Port for AHI");
+		SOUND_CHECK_FAILED
+	}
+
+	ahiReq[0] = (struct AHIRequest *)CreateIORequest(ahiPort, sizeof(struct AHIRequest));
+	if (!ahiReq[0]) {
+		error("check_scummvm_sound: Could not create an IO Request for AHI");
+		SOUND_CHECK_FAILED
+	}
+
+	ahiReq[0]->ahir_Version = 4;
+	BYTE deviceError = OpenDevice(AHINAME, AHI_DEFAULT_UNIT, (struct IORequest *)ahiReq[0], 0);
+	if (deviceError) {
+		error("check_scummvm_sound: Unable to open AHI Device");
+		SOUND_CHECK_FAILED
+	}
+
+	return true;
+}
+
+bool init_scummvm_sound() {
+	ahiPort = (struct MsgPort *)CreateMsgPort();
+	if (!ahiPort) {
+		error("Could not create a Message Port for AHI");
+		return false;
+	}
+
+	ahiReq[0] = (struct AHIRequest *)CreateIORequest(ahiPort, sizeof(struct AHIRequest));
+	if (!ahiReq[0]) {
+		error("Could not create an IO Request for AHI");
+		return false;
+	}
+
+	// Open at least version 4.
+	ahiReq[0]->ahir_Version = 4;
+
+	BYTE deviceError = OpenDevice(AHINAME, AHI_DEFAULT_UNIT, (struct IORequest *)ahiReq[0], 0);
+	if (deviceError) {
+		error("Unable to open AHI Device");
+		return false;
+	}
+
+	// 32 bits (4 bytes) are required per sample for storage (16bit stereo).
+	_sampleBufferSize = (_sampleCount * 4);
+
+	soundBuffer[0] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
+	soundBuffer[1] = (BYTE *)AllocVec(_sampleBufferSize, MEMF_PUBLIC | MEMF_CLEAR);
+
+	if (!soundBuffer[0] || !soundBuffer[1]) {
+		error("Could not create soundbuffers for AHI");
+		return false;
+	}
+	// Make a copy of the request (for double buffering)
+	ahiReq[1] = (struct AHIRequest *)AllocVec(sizeof(struct AHIRequest), MEMF_PUBLIC);
+	if (!ahiReq[1]) {
+		error("Could not create IO request copy for AHI");
+		return false;
+	}
+
+	CopyMem(ahiReq[0], ahiReq[1], sizeof(struct AHIRequest));
+
+	_currentSoundBuffer = 0;
+	ahiReqSent[0] = false;
+	ahiReqSent[1] = false;
+
+	return true;
 }
 
 void __stdargs __saveds scummvm_sound_thread() {
@@ -231,6 +263,10 @@ void AmigaOS3MixerManager::init(int priority) {
 		_sampleCount >>= 1;
 	}
 
+
+	if (!check_scummvm_sound())
+		return;
+
 	// Create the mixer instance and start the sound processing.
 	assert(!g_mixer);
 	g_mixer = new Audio::MixerImpl(_mixingFrequency);
@@ -246,10 +282,12 @@ void AmigaOS3MixerManager::init(int priority) {
 	if (!g_soundThread) {
 		error("Could not create the sound thread");
 	}
+	else {
 #ifndef NDEBUG
-	debug(1, "Setting audio thread priority to %d", priority);
+		debug(1, "Setting audio thread priority to %d", priority);
 #endif
-	SetTaskPri(g_soundThread, priority);
+		SetTaskPri(g_soundThread, priority);
+	}
 }
 
 Audio::Mixer *AmigaOS3MixerManager::getMixer() {
