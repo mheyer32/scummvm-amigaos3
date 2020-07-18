@@ -28,7 +28,7 @@
 #include "base/main.h"
 #include "common/scummsys.h"
 
-#include "backends/platform/amigaos3/amigaos3-aga.h"
+#include "backends/platform/amigaos3/amigaos3-modular.h"
 
 #include <proto/icon.h>
 #include <proto/timer.h>
@@ -218,12 +218,13 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 	}
 
 	// Create our OSystem instance
-	OSystem_AmigaOS3 *amigaOsSystem = new OSystem_AmigaOS3();
-	g_system = amigaOsSystem;
+	OSystem_AmigaOS3_Modular *sys;
+	sys = new OSystemAGA();
 	assert(g_system);
 
 	// Pre initialize the backend
-	amigaOsSystem->init(audioThreadPriority);
+	sys->audioThreadPriority = audioThreadPriority;
+	sys->init();
 
 	if (closeWb) {
 		wbClosed = CloseWorkBench();
@@ -234,7 +235,7 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 	// Delete OSystem
 	if (g_system) {
-		delete amigaOsSystem;
+		delete sys;
 	}
 
 	if (wbClosed) {

@@ -29,6 +29,7 @@
 #include <time.h>
 
 #include "audio/mixer_intern.h"
+#include "backends/modular-backend.h"
 #include "backends/events/amigaos3/amigaos3-events.h"
 #include "backends/log/log.h"
 #include "backends/mixer/amigaos3/amigaos3-mixer.h"
@@ -48,101 +49,46 @@
 
 enum { GFX_NORMAL = 0 };
 
-class OSystem_AmigaOS3 : public OSystem, PaletteManager {
+class OSystem_AmigaOS3_Modular : public ModularBackend, PaletteManager {
 public:
-	OSystem_AmigaOS3();
+	OSystem_AmigaOS3_Modular();
+	virtual ~OSystem_AmigaOS3_Modular();
 
-	~OSystem_AmigaOS3();
+	int audioThreadPriority;
 
 	/**
 	 * Pre-initialize backend. It should be called after
 	 * instantiating the backend. Early needed managers are
 	 * created here.
-	 */
-	void init(int audioThreadPriority);
+	**/
+	virtual void init();
 
 	// Override functions from ModularBackend and OSystem
-	virtual void initBackend();
-
-	virtual void quit();
-
+	virtual void initBackend() override;
+	
+	virtual void quit() override;
+	
 	// Logging
-	virtual void logMessage(LogMessageType::Type type, const char *message);
+	virtual void logMessage(LogMessageType::Type type, const char *message) override;
 
 	virtual Common::SeekableReadStream *createConfigReadStream();
 	virtual Common::WriteStream *createConfigWriteStream();
 
-	virtual uint32 getMillis(bool skipRecord = false);
-
-	virtual void delayMillis(uint msecs);
-
-	virtual void getTimeAndDate(TimeDate &td) const;
-
-	virtual bool hasFeature(OSystem::Feature f);
-	virtual void setFeatureState(OSystem::Feature f, bool enable);
-	virtual bool getFeatureState(OSystem::Feature f);
-
-	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const;
-	virtual int getDefaultGraphicsMode() const;
-	virtual bool setGraphicsMode(int mode);
-	virtual void resetGraphicsScale();
-	virtual int getGraphicsMode() const;
-
-	virtual void initSize(uint width, uint height, const Graphics::PixelFormat *format = NULL);
-
-	virtual int getScreenChangeID() const { return _screenChangeCount; }
-
-	virtual void beginGFXTransaction();
-	virtual OSystem::TransactionError endGFXTransaction();
-
-	virtual inline int16 getHeight() { return _videoMode.screenHeight; }
-	virtual inline int16 getWidth() { return _videoMode.screenWidth; }
-
-	virtual inline PaletteManager *getPaletteManager() { return this; }
-
-	virtual void setPalette(const byte *colors, uint start, uint num);
-	virtual void grabPalette(byte *colors, uint start, uint num) const;
-
-	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h);
-	virtual inline Graphics::Surface *lockScreen() { return &_screen; }
-	virtual void unlockScreen() { _screenDirty = true; }
-	virtual void fillScreen(uint32 col);
-	virtual void updateScreen();
-	virtual void setShakePos(int shakeXOffset, int shakeYOffset);
-
-	virtual void setFocusRectangle(const Common::Rect &rect) {}
-	virtual void clearFocusRectangle() {}
-
-	virtual void showOverlay();
-	virtual void hideOverlay();
-	virtual inline Graphics::PixelFormat getOverlayFormat() const { return _overlayFormat; }
-	virtual void clearOverlay();
-	virtual void grabOverlay(void *buf, int pitch);
-	virtual void copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h);
-	virtual inline int16 getOverlayHeight() { return _videoMode.overlayHeight; }
-	virtual inline int16 getOverlayWidth() { return _videoMode.overlayWidth; }
-
-	virtual bool showMouse(bool visible);
-	virtual void warpMouse(int x, int y);
-
-	virtual void setMouseCursor(const void *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor,
-								bool dontScale = false, const Graphics::PixelFormat *format = NULL);
-
-	virtual void setCursorPalette(const byte *colors, uint start, uint num) {}
-	void disableCursorPalette(bool disable) {}
-	void setMouseCursorPosition(uint16 x, uint16 y);
-
-	// inline struct Window* getHardwareWindow() { return _hardwareWindow; }
-	struct Window *getHardwareWindow();
+	virtual uint32 getMillis(bool skipRecord = false) override;
+	
+	virtual void delayMillis(uint msecs) override;
+	virtual void getTimeAndDate(TimeDate &td) const override;
 
 	virtual inline Audio::Mixer *getMixer() { return _mixerManager->getMixer(); }
+	virtual inline PaletteManager *getPaletteManager() { return this; }
 
-	virtual void displayMessageOnOSD(const char *msg) {}
-
-	virtual MutexRef createMutex();
+	virtual MutexRef createMutex() override;
 	virtual inline void lockMutex(OSystem::MutexRef mutex) { ObtainSemaphore((SignalSemaphore *)mutex); }
 	virtual inline void unlockMutex(OSystem::MutexRef mutex) { ReleaseSemaphore((SignalSemaphore *)mutex); }
 	virtual inline void deleteMutex(OSystem::MutexRef mutex) { FreeVec(mutex); }
+	
+
+	//virtual Common::String getSystemLanguage() const override;
 
 protected:
 	typedef uint16 OverlayColor;
@@ -267,6 +213,81 @@ protected:
 	 */
 	Common::String getDefaultConfigFileName();
 
+	// UBYTE *scaleScreen();
+
+	virtual Common::EventSource *getDefaultEventSource() override { return _eventSource; }
+};
+
+class OSystemAGA : public OSystem_AmigaOS3_Modular {
+public:
+	OSystemAGA();
+	virtual ~OSystemAGA();
+
+	virtual bool hasFeature(OSystem::Feature f) override;
+	virtual void setFeatureState(OSystem::Feature f, bool enable) override;
+	virtual bool getFeatureState(OSystem::Feature f) override;
+
+	virtual const OSystem::GraphicsMode *getSupportedGraphicsModes() const override;
+	virtual const OSystem::GraphicsMode *getSupportedStretchModes() const override;
+	virtual int getDefaultGraphicsMode() const override;
+	virtual bool setGraphicsMode(int mode) override;
+	virtual void resetGraphicsScale() override;
+	virtual int getGraphicsMode() const override;
+
+	virtual void initSize(uint width, uint height, const Graphics::PixelFormat *format = NULL) override;
+
+	virtual int getScreenChangeID() const { return _screenChangeCount; }
+
+	virtual void beginGFXTransaction() override;
+	virtual OSystem::TransactionError endGFXTransaction() override;
+
+	virtual inline int16 getHeight() { return _videoMode.screenHeight; }
+	virtual inline int16 getWidth() { return _videoMode.screenWidth; }
+
+	virtual void setPalette(const byte *colors, uint start, uint num) override;
+	virtual void grabPalette(byte *colors, uint start, uint num) const override;
+
+	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
+	virtual inline Graphics::Surface *lockScreen() { return &_screen; }
+	virtual void unlockScreen() { _screenDirty = true; }
+	virtual void fillScreen(uint32 col) override;
+	virtual void updateScreen() override;
+	virtual void setShakePos(int shakeXOffset, int shakeYOffset) override;
+
+	virtual void setFocusRectangle(const Common::Rect &rect) {}
+	virtual void clearFocusRectangle() {}
+
+	virtual void showOverlay() override;
+	virtual void hideOverlay() override;
+	virtual inline Graphics::PixelFormat getOverlayFormat() const { return _overlayFormat; }
+	virtual void clearOverlay() override;
+	virtual void grabOverlay(void *buf, int pitch) override;
+	virtual void copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h) override;
+	virtual inline int16 getOverlayHeight() { return _videoMode.overlayHeight; }
+	virtual inline int16 getOverlayWidth() { return _videoMode.overlayWidth; }
+
+	virtual bool showMouse(bool visible) override;
+	virtual void warpMouse(int x, int y) override;
+
+	virtual void setMouseCursor(const void *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor,
+								bool dontScale = false, const Graphics::PixelFormat *format = NULL) override;
+
+	virtual void setCursorPalette(const byte *colors, uint start, uint num) {}
+	virtual void disableCursorPalette(bool disable) {}
+	virtual void setMouseCursorPosition(uint16 x, uint16 y);
+
+	virtual struct Window *getHardwareWindow();
+
+	// TODO - UNIMPLEMENTED
+	virtual void displayActivityIconOnOSD(const Graphics::Surface *icon) override;
+	virtual void displayMessageOnOSD(const char *msg) {}
+
+	void loadOverlayPalette();
+	void loadOverlayColorMap();
+
+	void drawMouse();
+	void undrawMouse();
+
 	bool loadGFXMode();
 	ULONG loadModeId();
 	void saveModeId(ULONG modeId);
@@ -275,17 +296,6 @@ protected:
 	struct Window *createHardwareWindow(uint16 width, uint16 height, struct Screen *screen);
 	void unloadGFXMode();
 	void updatePalette();
-
-	void loadOverlayPalette();
-	void loadOverlayColorMap();
-
-	void drawMouse();
-	void undrawMouse();
-
-	// UBYTE *scaleScreen();
-
-	// TODO - UNIMPLEMENTED
-	virtual void displayActivityIconOnOSD(const Graphics::Surface *icon);
 };
 
 #endif

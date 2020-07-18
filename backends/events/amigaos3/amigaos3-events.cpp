@@ -26,7 +26,7 @@
 #include "common/scummsys.h"
 #include "common/system.h"
 
-#include "backends/platform/amigaos3/amigaos3-aga.h"
+#include "backends/platform/amigaos3/amigaos3-modular.h"
 
 #include "backends/events/amigaos3/amigaos3-events.h"
 #include "backends/timer/default/default-timer.h"
@@ -78,7 +78,7 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 
 	bool result = false;
 
-	OSystem_AmigaOS3 * const system = static_cast<OSystem_AmigaOS3 *>(g_system);
+	OSystemAGA *const system = static_cast<OSystemAGA *>(g_system);
 	struct Window *hardwareWindow = system->getHardwareWindow();
 
 	if (hardwareWindow) {
