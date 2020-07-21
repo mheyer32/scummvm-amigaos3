@@ -23,10 +23,7 @@
  *
  */
 
-// Disable symbol overrides so that we can use FILE, fopen etc.
-//#define FORBIDDEN_SYMBOL_ALLOW_ALL
-
-#include "backends/platform/amigaos3/amigaos3-aga.h"
+#include "backends/platform/amigaos3/amigaos3-modular.h"
 
 #include "backends/audiocd/default/default-audiocd.h"
 #include "backends/events/amigaos3/amigaos3-events.h"
@@ -44,15 +41,9 @@
 
 #include <proto/timer.h>
 
-extern struct Device *TimerBase;
-extern struct MsgPort* TimerMP;
-extern struct timerequest *TimerIOReq;
-
 static struct timeval t0;
 
-OSystem_AmigaOS3::OSystem_AmigaOS3() {
-	// gDebugLevel = 11;
-
+OSystem_AmigaOS3_Modular::OSystem_AmigaOS3_Modular() {
 	_inited = false;
 
 	_fsFactory = NULL;
@@ -84,12 +75,10 @@ OSystem_AmigaOS3::OSystem_AmigaOS3() {
 	_overlayColorMap = NULL;
 }
 
-OSystem_AmigaOS3::~OSystem_AmigaOS3() {
+OSystem_AmigaOS3_Modular::~OSystem_AmigaOS3_Modular() {
 #ifndef NDEBUG
 	debug(1, "OSystem_AmigaOS3::~OSystem_AmigaOS3()");
 #endif
-
-	unloadGFXMode();
 
 	/*if (_splashSurface) {
 			_splashSurface->free();
@@ -176,7 +165,7 @@ OSystem_AmigaOS3::~OSystem_AmigaOS3() {
 	}
 }
 
-void OSystem_AmigaOS3::init(int audioThreadPriority) {
+void OSystem_AmigaOS3_Modular::init() {
 	_audioThreadPriority = audioThreadPriority;
 
 	// Initialze File System Factory
@@ -198,7 +187,7 @@ void OSystem_AmigaOS3::init(int audioThreadPriority) {
 
 }
 
-void OSystem_AmigaOS3::initBackend() {
+void OSystem_AmigaOS3_Modular::initBackend() {
 #ifndef NDEBUG
 	debug(1, "OSystem_AmigaOS3::initBackend()");
 
@@ -262,17 +251,17 @@ void OSystem_AmigaOS3::initBackend() {
 	_inited = true;
 }
 
-Common::SeekableReadStream *OSystem_AmigaOS3::createConfigReadStream() {
+Common::SeekableReadStream *OSystem_AmigaOS3_Modular::createConfigReadStream() {
 	Common::FSNode file(getDefaultConfigFileName());
 	return file.createReadStream();
 }
 
-Common::WriteStream *OSystem_AmigaOS3::createConfigWriteStream() {
+Common::WriteStream *OSystem_AmigaOS3_Modular::createConfigWriteStream() {
 	Common::FSNode file(getDefaultConfigFileName());
 	return file.createWriteStream();
 }
 
-void OSystem_AmigaOS3::quit() {
+void OSystem_AmigaOS3_Modular::quit() {
 #ifndef NDEBUG
 	debug(1, "OSystem_AmigaOS3::quit()");
 #endif
@@ -281,7 +270,7 @@ void OSystem_AmigaOS3::quit() {
 	exit(0);
 }
 
-void OSystem_AmigaOS3::logMessage(LogMessageType::Type type, const char *message) {
+void OSystem_AmigaOS3_Modular::logMessage(LogMessageType::Type type, const char *message) {
 	if (type == LogMessageType::kDebug) {
 		if (_debugLogger) {
 			_debugLogger->print(message);
@@ -322,7 +311,7 @@ void OSystem_AmigaOS3::logMessage(LogMessageType::Type type, const char *message
 	}
 }
 
-uint32 OSystem_AmigaOS3::getMillis(bool skipRecord) {
+uint32 OSystem_AmigaOS3_Modular::getMillis(bool skipRecord) {
 	// Kickstart 2.0 version
 	struct timeval t1;
 	long secs, usecs;
@@ -348,7 +337,7 @@ uint32 OSystem_AmigaOS3::getMillis(bool skipRecord) {
 	return tc;
 }
 
-void OSystem_AmigaOS3::delayMillis(uint msecs) {
+void OSystem_AmigaOS3_Modular::delayMillis(uint msecs) {
 // Temporary workaround, using the same IO request from multiple threads
 //  could be dangerous.
 //
@@ -370,7 +359,7 @@ void OSystem_AmigaOS3::delayMillis(uint msecs) {
 	Delay(msecs / 20);
 }
 
-void OSystem_AmigaOS3::getTimeAndDate(TimeDate &td) const {
+void OSystem_AmigaOS3_Modular::getTimeAndDate(TimeDate &td) const {
 	time_t curTime = time(0);
 	struct tm t = *localtime(&curTime);
 
@@ -382,11 +371,11 @@ void OSystem_AmigaOS3::getTimeAndDate(TimeDate &td) const {
 	td.tm_year = t.tm_year;
 }
 
-Common::String OSystem_AmigaOS3::getDefaultConfigFileName() {
+Common::String OSystem_AmigaOS3_Modular::getDefaultConfigFileName() {
 	return "scummvm.ini";
 }
 
-OSystem::MutexRef OSystem_AmigaOS3::createMutex() {
+OSystem::MutexRef OSystem_AmigaOS3_Modular::createMutex() {
 	SignalSemaphore *sem = (SignalSemaphore *)AllocVec(sizeof(SignalSemaphore), MEMF_PUBLIC);
 
 	if (sem) {
@@ -394,11 +383,4 @@ OSystem::MutexRef OSystem_AmigaOS3::createMutex() {
 	}
 
 	return (MutexRef)sem;
-}
-void OSystem_AmigaOS3::displayActivityIconOnOSD(const Graphics::Surface *icon) {
-	// TODO - UNIMPLEMENTED
-}
-
-struct Window *OSystem_AmigaOS3::getHardwareWindow() {
-	return _hardwareWindow;
 }

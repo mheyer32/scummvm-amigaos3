@@ -25,7 +25,7 @@
 
 #include "backends/fs/amigaos3/amigaos3-fs-node.h"
 #include "backends/fs/fs-factory.h"
-#include "backends/platform/amigaos3/amigaos3-aga.h"
+#include "backends/platform/amigaos3/amigaos3-modular.h"
 #include "common/config-manager.h"
 #include "common/debug.h"
 #include "common/scummsys.h"
@@ -40,13 +40,15 @@
 
 #include <stdio.h>
 
-struct Library *CyberGfxBase;
+extern struct Library *CyberGfxBase;
 
 static UWORD emptypointer[] = {
   0x0000, 0x0000, /* reserved, must be NULL */
   0x0000, 0x0000, /* 1 row of image data */
   0x0000, 0x0000  /* reserved, must be NULL */
 };
+
+#define OSYSCGX OSystemCGX
 
 /** Hardware screen */
 static struct Screen *_hardwareGameScreen = NULL;
@@ -63,8 +65,125 @@ static struct Window *_hardwareOverlayWindow = NULL;
 #define CGX_VIDEO_DEPTH 8
 
 static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {{"1x", "Normal", GFX_NORMAL}, {0, 0, 0}};
+static const OSystem::GraphicsMode s_noStretchModes[] = {{"NONE", "Normal", 0}, {nullptr, nullptr, 0 }};
 
-bool OSystem_AmigaOS3::hasFeature(OSystem::Feature f) {
+OSYSCGX::OSystemCGX() {
+	// gDebugLevel = 11;
+
+	_inited = false;
+
+	_fsFactory = NULL;
+	_eventManager = NULL;
+	_savefileManager = NULL;
+	_timerManager = NULL;
+
+	_mixerManager = NULL;
+	_audiocdManager = NULL;
+
+	_eventSource = NULL;
+
+	_debugLogger = NULL;
+	_warningLogger = NULL;
+	_errorLogger = NULL;
+
+	_hardwareWindow = NULL;
+	_hardwareScreen = NULL;
+	memset(_hardwareScreenBuffer, 0, sizeof(_hardwareScreenBuffer));
+	_currentScreenBuffer = 0;
+
+	_currentPalette = NULL,
+	_currentShakePos = 0;
+
+	_screenDirty = false;
+	_overlayDirty = false;
+
+	_overlayVisible = true;
+	_overlayColorMap = NULL;
+}
+
+OSYSCGX::~OSystemCGX() {
+	unloadGFXMode();
+
+	if (_agaPalette) {
+		free(_agaPalette);
+		_agaPalette = NULL;
+	}
+
+	if (_overlayPalette) {
+		free(_overlayPalette);
+		_overlayPalette = NULL;
+	}
+
+	if (_gamePalette) {
+		free(_gamePalette);
+		_gamePalette = NULL;
+	}
+
+	if (_currentPalette) {
+		free(_currentPalette);
+		_currentPalette = NULL;
+	}
+
+	_mouseCursor.surface.free();
+	_mouseCursorMask.surface.free();
+
+	if (_overlayColorMap) {
+		free(_overlayColorMap);
+		_overlayColorMap = NULL;
+	}
+
+	if (_audiocdManager) {
+		delete _audiocdManager;
+		_audiocdManager = NULL;
+	}
+
+	if (_mixerManager) {
+		delete _mixerManager;
+		_mixerManager = NULL;
+	}
+
+	if (_savefileManager) {
+		delete _savefileManager;
+		_savefileManager = NULL;
+	}
+
+	if (_eventManager) {
+		delete _eventManager;
+		_eventManager = NULL;
+	}
+
+	if (_eventSource) {
+		delete _eventSource;
+		_eventSource = NULL;
+	}
+
+	if (_timerManager) {
+		delete _timerManager;
+		_timerManager = NULL;
+	}
+
+	if (_debugLogger) {
+		delete _debugLogger;
+		_debugLogger = NULL;
+	}
+
+	if (_warningLogger) {
+		delete _warningLogger;
+		_warningLogger = NULL;
+	}
+
+	if (_errorLogger) {
+		delete _errorLogger;
+		_errorLogger = NULL;
+	}
+
+	if (_fsFactory) {
+		delete _fsFactory;
+		_fsFactory = NULL;
+	}
+}
+
+bool OSYSCGX::hasFeature(OSystem::Feature f) {
 	/*if (f == OSystem::kFeatureAspectRatioCorrection) {
 		return true;
 		}*/
@@ -76,7 +195,7 @@ bool OSystem_AmigaOS3::hasFeature(OSystem::Feature f) {
 	return false;
 }
 
-void OSystem_AmigaOS3::setFeatureState(OSystem::Feature f, bool enable) {
+void OSYSCGX::setFeatureState(OSystem::Feature f, bool enable) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setFeatureState()");
 #endif
@@ -88,7 +207,7 @@ void OSystem_AmigaOS3::setFeatureState(OSystem::Feature f, bool enable) {
 		}*/
 }
 
-bool OSystem_AmigaOS3::getFeatureState(OSystem::Feature f) {
+bool OSYSCGX::getFeatureState(OSystem::Feature f) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::getFeatureState()");
 
@@ -107,19 +226,23 @@ bool OSystem_AmigaOS3::getFeatureState(OSystem::Feature f) {
 	}
 }
 
-const OSystem::GraphicsMode *OSystem_AmigaOS3::getSupportedGraphicsModes() const {
+const OSystem::GraphicsMode *OSYSCGX::getSupportedGraphicsModes() const {
 	return s_supportedGraphicsModes;
 }
 
-int OSystem_AmigaOS3::getDefaultGraphicsMode() const {
+const OSystem::GraphicsMode *OSYSCGX::getSupportedStretchModes() const {
+	return s_noStretchModes;
+}
+
+int OSYSCGX::getDefaultGraphicsMode() const {
 	return GFX_NORMAL;
 }
 
-void OSystem_AmigaOS3::resetGraphicsScale() {
+void OSYSCGX::resetGraphicsScale() {
 	setGraphicsMode(getDefaultGraphicsMode());
 }
 
-void OSystem_AmigaOS3::beginGFXTransaction() {
+void OSYSCGX::beginGFXTransaction() {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::beginGFXTransaction()");
 
@@ -134,7 +257,7 @@ void OSystem_AmigaOS3::beginGFXTransaction() {
 	_oldVideoMode = _videoMode;
 }
 
-OSystem::TransactionError OSystem_AmigaOS3::endGFXTransaction() {
+OSystem::TransactionError OSYSCGX::endGFXTransaction() {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::endGFXTransaction()");
 
@@ -203,7 +326,7 @@ OSystem::TransactionError OSystem_AmigaOS3::endGFXTransaction() {
 	return (OSystem::TransactionError)errors;
 }
 
-bool OSystem_AmigaOS3::setGraphicsMode(int mode) {
+bool OSYSCGX::setGraphicsMode(int mode) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setGraphicsMode(%d)", mode);
 #endif
@@ -226,13 +349,13 @@ bool OSystem_AmigaOS3::setGraphicsMode(int mode) {
 	return true;
 }
 
-int OSystem_AmigaOS3::getGraphicsMode() const {
+int OSYSCGX::getGraphicsMode() const {
 	assert(_transactionMode == kTransactionNone);
 
 	return _videoMode.mode;
 }
 
-void OSystem_AmigaOS3::initSize(uint w, uint h, const Graphics::PixelFormat *format) {
+void OSYSCGX::initSize(uint w, uint h, const Graphics::PixelFormat *format) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::initSize(%d, %d)", w, h);
 
@@ -259,7 +382,7 @@ void OSystem_AmigaOS3::initSize(uint w, uint h, const Graphics::PixelFormat *for
 	_transactionDetails.sizeChanged = true;
 }
 
-bool OSystem_AmigaOS3::loadGFXMode() {
+bool OSYSCGX::loadGFXMode() {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::loadGFXMode()");
 
@@ -334,7 +457,7 @@ bool OSystem_AmigaOS3::loadGFXMode() {
 	return true;
 }
 
-struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
+struct Screen *OSYSCGX::createHardwareScreen(uint16 width, uint16 height) {
 	// Create the hardware screen.
 	struct Screen *screen = NULL;
 	ULONG modeId = INVALID_ID;
@@ -387,14 +510,14 @@ struct Screen *OSystem_AmigaOS3::createHardwareScreen(uint width, uint height) {
 	return screen;
 }
 
-struct Window *OSystem_AmigaOS3::createHardwareWindow(uint width, uint height, struct Screen *screen) {
+struct Window *OSYSCGX::createHardwareWindow(uint16 width, uint16 height, struct Screen *screen) {
 	return OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, width, WA_Height, height, SA_AutoScroll, FALSE,
 						  WA_CustomScreen, (ULONG)screen, WA_Backdrop, TRUE, WA_Borderless, TRUE, WA_DragBar, FALSE,
 						  WA_Activate, TRUE, WA_SimpleRefresh, TRUE, WA_NoCareRefresh, TRUE, WA_ReportMouse, TRUE,
 						  WA_RMBTrap, TRUE, WA_IDCMP, IDCMP_RAWKEY | IDCMP_MOUSEMOVE | IDCMP_MOUSEBUTTONS, TAG_END);
 }
 
-void OSystem_AmigaOS3::unloadGFXMode() {
+void OSYSCGX::unloadGFXMode() {
 	_screen.free();
 	_tmpscreen.free();
 
@@ -424,7 +547,7 @@ void OSystem_AmigaOS3::unloadGFXMode() {
 	}
 }
 
-void OSystem_AmigaOS3::setPalette(const byte *colors, uint start, uint num) {
+void OSYSCGX::setPalette(const byte *colors, uint start, uint num) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3:setPalette()");
 
@@ -446,7 +569,7 @@ void OSystem_AmigaOS3::setPalette(const byte *colors, uint start, uint num) {
 	}
 }
 
-void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) {
+void OSYSCGX::grabPalette(byte *colors, uint start, uint num) const {
 #ifndef NDEBUG
 	assert(colors);
 #endif
@@ -454,7 +577,7 @@ void OSystem_AmigaOS3::grabPalette(byte *colors, uint start, uint num) {
 	CopyMem(_currentPalette + (3 * start), colors, 3 * num);
 }
 
-void OSystem_AmigaOS3::updatePalette() {
+void OSYSCGX::updatePalette() {
 #ifndef NDEBUG
 	debug(4, "updatePalette()");
 
@@ -492,7 +615,7 @@ void OSystem_AmigaOS3::updatePalette() {
 	_paletteDirtyEnd = 0;
 }
 
-void OSystem_AmigaOS3::copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) {
+void OSYSCGX::copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) {
 #ifndef NDEBUG
 	debug(4, "copyRectToScreen()");
 	debug(5, "copyRectToScreen() - pitch = %d", pitch);
@@ -526,14 +649,14 @@ void OSystem_AmigaOS3::copyRectToScreen(const void *buf, int pitch, int x, int y
 	_screenDirty = true;
 }
 
-void OSystem_AmigaOS3::fillScreen(uint32 col) {
+void OSYSCGX::fillScreen(uint32 col) {
 	if (_screen.getPixels()) {
 		memset(_screen.getPixels(), (int)col, (_videoMode.bytesPerRow * _videoMode.screenHeight));
 		_screenDirty = true;
 	}
 }
 
-void OSystem_AmigaOS3::updateScreen() {
+void OSYSCGX::updateScreen() {
 #ifndef NDEBUG
 	debug(9, "OSystem_AmigaOS3::updateScreen()");
 #endif
@@ -618,19 +741,19 @@ void OSystem_AmigaOS3::updateScreen() {
 	}
 }
 
-void OSystem_AmigaOS3::setShakePos(int shakeOffset) {
+void OSYSCGX::setShakePos(int shakeX, int shakeY) {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
 
-	_newShakePos = shakeOffset;
+	_newShakePos = shakeX;
 }
 
 #pragma mark -
 #pragma mark--- Overlays ---
 #pragma mark -
 
-void OSystem_AmigaOS3::loadOverlayPalette() {
+void OSYSCGX::loadOverlayPalette() {
 	// Load overlay palette file.
 	FILE *paletteFile;
 
@@ -662,7 +785,7 @@ void OSystem_AmigaOS3::loadOverlayPalette() {
 	}
 }
 
-void OSystem_AmigaOS3::loadOverlayColorMap() {
+void OSYSCGX::loadOverlayColorMap() {
 #ifndef NDEBUG
 	debug(4, "generateOverlayColorMap()");
 #endif
@@ -687,7 +810,7 @@ void OSystem_AmigaOS3::loadOverlayColorMap() {
 	fclose(mapFile);
 }
 
-void OSystem_AmigaOS3::showOverlay() {
+void OSYSCGX::showOverlay() {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
@@ -702,7 +825,7 @@ void OSystem_AmigaOS3::showOverlay() {
 	_overlayVisible = true;
 }
 
-void OSystem_AmigaOS3::hideOverlay() {
+void OSYSCGX::hideOverlay() {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
@@ -730,7 +853,7 @@ void OSystem_AmigaOS3::hideOverlay() {
 	_overlayVisible = false;
 }
 
-void OSystem_AmigaOS3::clearOverlay() {
+void OSYSCGX::clearOverlay() {
 	if (!_overlayVisible) {
 		return;
 	}
@@ -741,7 +864,7 @@ void OSystem_AmigaOS3::clearOverlay() {
 	_overlayDirty = true;
 }
 
-void OSystem_AmigaOS3::grabOverlay(void *buf, int pitch) {
+void OSYSCGX::grabOverlay(void *buf, int pitch) {
 #ifndef NDEBUG
 	assert(_transactionMode == kTransactionNone);
 #endif
@@ -751,7 +874,7 @@ void OSystem_AmigaOS3::grabOverlay(void *buf, int pitch) {
 		   (_videoMode.overlayWidth * _videoMode.overlayHeight) * _overlayscreen16.format.bytesPerPixel);
 }
 
-void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h) {
+void OSYSCGX::copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h) {
 #ifndef NDEBUG
 	debug(4, "copyRectToOverlay()");
 
@@ -806,7 +929,7 @@ void OSystem_AmigaOS3::copyRectToOverlay(const void *buf, int pitch, int x, int 
 	_overlayDirty = true;
 }
 
-struct Window *OSystem_AmigaOS3::getHardwareWindow() {
+struct Window *OSYSCGX::getHardwareWindow() {
 	if (_overlayVisible) {
 		return _hardwareOverlayWindow;
 	}
@@ -818,7 +941,7 @@ struct Window *OSystem_AmigaOS3::getHardwareWindow() {
 #pragma mark--- Mouse ---
 #pragma mark -
 
-bool OSystem_AmigaOS3::showMouse(bool visible) {
+bool OSYSCGX::showMouse(bool visible) {
 	if (_mouseCursor.visible == visible) {
 		return visible;
 	}
@@ -837,7 +960,7 @@ bool OSystem_AmigaOS3::showMouse(bool visible) {
 	return last;
 }
 
-void OSystem_AmigaOS3::warpMouse(int x, int y) {
+void OSYSCGX::warpMouse(int x, int y) {
 	struct InputEvent ie;
 	struct IEPointerPixel pp;
 
@@ -855,7 +978,7 @@ void OSystem_AmigaOS3::warpMouse(int x, int y) {
 	AddIEvents(&ie);
 }
 
-void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotspot_x, int hotspot_y, uint32 keycolor,
+void OSYSCGX::setMouseCursor(const void *buf, uint w, uint h, int hotspot_x, int hotspot_y, uint32 keycolor,
 									  bool dontScale, const Graphics::PixelFormat *format) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setMouseCursor(w = %d, h = %d)", w, h);
@@ -892,7 +1015,7 @@ void OSystem_AmigaOS3::setMouseCursor(const void *buf, uint w, uint h, int hotsp
 	CopyMem((void *)buf, _mouseCursor.surface.getPixels(), w * h);
 }
 
-void OSystem_AmigaOS3::setMouseCursorPosition(uint x, uint y) {
+void OSYSCGX::setMouseCursorPosition(uint16 x, uint16 y) {
 	MouseCursor oldMouseCursor = _mouseCursor;
 
 	_mouseCursor.x = x;
@@ -907,7 +1030,7 @@ void OSystem_AmigaOS3::setMouseCursorPosition(uint x, uint y) {
 	}
 }
 
-void OSystem_AmigaOS3::drawMouse() {
+void OSYSCGX::drawMouse() {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::drawMouse()");
 #endif
@@ -1003,7 +1126,7 @@ void OSystem_AmigaOS3::drawMouse() {
 	} while (--h);
 }
 
-void OSystem_AmigaOS3::undrawMouse() {
+void OSYSCGX::undrawMouse() {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::undrawMouse()");
 #endif
@@ -1028,6 +1151,6 @@ void OSystem_AmigaOS3::undrawMouse() {
 	}
 }
 
-void OSystem_AmigaOS3::displayActivityIconOnOSD(const Graphics::Surface *icon) {
+void OSYSCGX::displayActivityIconOnOSD(const Graphics::Surface *icon) {
 	// TODO - UNIMPLEMENTED
 }
