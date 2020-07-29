@@ -171,6 +171,8 @@ static void load_libraries(void) {
 	}
 }
 
+extern bool default_timer;
+
 __stdargs int main(int argcWb, char const * argvWb[]) {
 	load_libraries();
 
@@ -181,6 +183,7 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
 	int closeWb = 0;
+	int forceAGA = 0;
 
 	struct Task * task = FindTask(NULL);
 	ptrdiff_t ss = (char*)task->tc_SPUpper - (char*)task->tc_SPLower;
@@ -199,18 +202,28 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 		if (diskObject != NULL) {
 			char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
-			if (toolType != NULL) {
+			// None of this tooltype code currently seems to work at all.
+			if (toolType != NULL)
 				sscanf(toolType, "%d", &audioThreadPriority);
+
+			/*toolType = (char*)FindToolType(diskObject->do_ToolTypes, "DEFAULT_TIMER");
+			if (toolType != NULL) {
+				default_timer = true;
+				printf("Forcing DefaultTimerManager.\n");
 			}
 
-			toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "CLOSE_WB");
+			toolType = (char*)FindToolType(diskObject->do_ToolTypes, "FORCE_AGA");
 			if (toolType != NULL) {
+				forceAGA = 1;
+				printf("Forcing AGA backend.\n");
+			}*/
+
+			toolType = (char*)FindToolType(diskObject->do_ToolTypes, "CLOSE_WB");
+			if (toolType != NULL)
 				closeWb = 1;
-			}
 
 			FreeDiskObject(diskObject);
 		}
-
 	} else {
 		argc = argcWb;
 		argv = argvWb;
