@@ -210,6 +210,7 @@ _nasm=auto
 _optimization_level=
 _default_optimization_level=-O2
 _nuked_opl=yes
+_enable_lto=no
 # Default commands
 _ranlib=ranlib
 _strip=strip
@@ -1031,6 +1032,7 @@ Optional Features:
                            optimizations)
   --enable-release-mode    enable building in release mode (without optimizations)
   --enable-optimizations   enable optimizations
+  --enable-lto             enable Link Time Optimization
   --enable-asan            enable Address Sanitizer for memory-related debugging
   --enable-profiling       enable profiling
   --enable-plugins         enable the support for dynamic plugins
@@ -1466,6 +1468,9 @@ for ac_option in $@; do
 		;;
 	--disable-optimizations)
 		_optimizations=no
+		;;
+	--enable-lto)
+		_enable_lto=yes
 		;;
 	--enable-profiling)
 		_enable_prof=yes
@@ -3453,7 +3458,10 @@ if test -n "$_host"; then
 #			append_var CXXFLAGS "-fdebug-prefix-map=$_srcdir=source"
 
 			# don't need thread safety for some static objects, no need to link pthread
-			_machine_flags="-noixemul -m68030 -flto -fno-threadsafe-statics"
+			_machine_flags="-noixemul -m68030 -fno-threadsafe-statics"
+			if test "$_enable_lto" != no; then
+				append_var _machine_flags "-flto"
+			fi
 			append_var CXXFLAGS "$_machine_flags"
 			append_var LDFLAGS  "$_machine_flags"
 
