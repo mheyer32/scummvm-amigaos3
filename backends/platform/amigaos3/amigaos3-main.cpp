@@ -171,6 +171,8 @@ static void load_libraries(void) {
 	}
 }
 
+extern bool default_timer;
+
 __stdargs int main(int argcWb, char const * argvWb[]) {
 	load_libraries();
 
@@ -181,6 +183,7 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 	int audioThreadPriority = DEFAULT_AUDIO_THREAD_PRIORITY;
 	int closeWb = 0;
+	int forceAGA = 0;
 
 	struct Task * task = FindTask(NULL);
 	ptrdiff_t ss = (char*)task->tc_SPUpper - (char*)task->tc_SPLower;
@@ -198,19 +201,29 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 		struct DiskObject* diskObject = GetDiskObject((char*)wbStartup->sm_ArgList[0].wa_Name);
 
 		if (diskObject != NULL) {
-			char* toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
-			if (toolType != NULL) {
+
+			STRPTR toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
+			if (toolType != NULL)
 				sscanf(toolType, "%d", &audioThreadPriority);
+
+			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "DEFAULT_TIMER");
+			if (toolType != NULL) {
+				default_timer = true;
+				printf("Forcing DefaultTimerManager.\n");
 			}
 
-			toolType = (char*)FindToolType((char* const*)diskObject->do_ToolTypes, "CLOSE_WB");
+			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "FORCE_AGA");
 			if (toolType != NULL) {
-				closeWb = 1;
+				forceAGA = 1;
+				printf("Forcing AGA backend.\n");
 			}
+
+			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "CLOSE_WB");
+			if (toolType != NULL)
+				closeWb = 1;
 
 			FreeDiskObject(diskObject);
 		}
-
 	} else {
 		argc = argcWb;
 		argv = argvWb;
@@ -218,7 +231,7 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 	// Create our OSystem instance
 	OSystem_AmigaOS3_Modular *sys;
-	if (CyberGfxBase != NULL) {
+	if (CyberGfxBase != NULL && !forceAGA) {
 		sys = new OSystemCGX();
 	}
 	else {

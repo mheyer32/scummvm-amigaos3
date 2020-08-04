@@ -463,25 +463,16 @@ AbstractFSNode *AmigaOS3FilesystemNode::getParent() const {
 	debug(8, "AmigaOS3FilesystemNode::getParent()");
 #endif
 
-	if (!_bIsDirectory) {
-		return 0;
-	}
+	const char *start = _sPath.c_str();
+	const char *end = ::lastPathComponent(_sPath);
 
-	if (_pFileLock == 0) {
-		return new AmigaOS3FilesystemNode(*this);
-	}
+	if (!end)
+		return new AmigaOS3FilesystemNode();
 
-	AmigaOS3FilesystemNode *node;
+	Common::String parent_path = Common::String(start, end - start);
+	AmigaOS3FilesystemNode *p = new AmigaOS3FilesystemNode(parent_path);
 
-	BPTR parentDir = ParentDir(_pFileLock);
-	if (parentDir) {
-		node = new AmigaOS3FilesystemNode(parentDir);
-		UnLock(parentDir);
-	} else {
-		node = new AmigaOS3FilesystemNode();
-	}
-
-	return node;
+	return p;
 }
 
 bool AmigaOS3FilesystemNode::isReadable() const {

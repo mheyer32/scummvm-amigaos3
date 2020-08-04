@@ -6,6 +6,7 @@
 #include "common/queue.h"
 
 #include "backends/events/default/default-events.h"
+#include "backends/timer/default/default-timer.h"
 
 class AmigaOS3EventSource : public Common::EventSource {
 public:
@@ -13,6 +14,8 @@ public:
 	virtual ~AmigaOS3EventSource();
 
 	virtual bool pollEvent(Common::Event &event);
+
+	DefaultTimerManager *_timerManager = NULL;
 };
 
 #endif
