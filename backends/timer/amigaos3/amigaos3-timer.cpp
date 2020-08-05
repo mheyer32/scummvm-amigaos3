@@ -9,6 +9,7 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/realtime.h>
+#include <proto/timer.h>
 
 AmigaOS3TimerManager *AmigaOS3TimerManager::_s_instance = nullptr;
 
@@ -17,7 +18,7 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 
 	// Increase own priority, so we'll hopefully never miss a trigger
 	struct Task *self = FindTask(NULL);
-	SetTaskPri(self, 21);
+	SetTaskPri(self, 10);
 
 	// Tell main thread we're alive
 	Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
@@ -52,6 +53,9 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 			Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
 		}
 	}
+
+	// If an instance had been created (as part of a timer callback), then now destroy that instance
+	TaskLocalTimer::destroyInstance();
 
 	Signal(tm->_mainTask, SIGBREAKF_CTRL_F);
 	Wait(SIGBREAKF_CTRL_C);
@@ -241,4 +245,90 @@ void AmigaOS3TimerManager::removeTimerProc(Common::TimerManager::TimerProc proc)
 			break;
 		}
 	}
+}
+
+TaskLocalTimer *TaskLocalTimer::instance() {
+	struct Task *task = FindTask(NULL);
+	if (!task->tc_UserData) {
+		task->tc_UserData = new TaskLocalTimer();
+	}
+	return reinterpret_cast<TaskLocalTimer *>(task->tc_UserData);
+}
+
+void TaskLocalTimer::destroyInstance() {
+	struct Task *task = FindTask(NULL);
+	if (task->tc_UserData) {
+		delete reinterpret_cast<TaskLocalTimer *>(task->tc_UserData);
+	}
+}
+
+TaskLocalTimer::TaskLocalTimer() {
+	if ((m_timerMP = CreateMsgPort()) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+	if ((m_timerIOReq = (timerequest *)CreateIORequest(m_timerMP, sizeof(struct timerequest))) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+
+	BYTE err = OpenDevice("timer.device", UNIT_MICROHZ, &m_timerIOReq->tr_node, 37);
+	if (err || m_timerIOReq->tr_node.io_Device == NULL) {
+		fprintf(stderr, "Unable to load timer.device!");
+		exit(EXIT_FAILURE);
+	}
+
+	TimerBase = m_timerIOReq->tr_node.io_Device;
+}
+
+TaskLocalTimer::~TaskLocalTimer() {
+	CloseDevice(&m_timerIOReq->tr_node);
+	DeleteIORequest(m_timerIOReq);
+	DeleteMsgPort(m_timerMP);
+
+	struct Task *task = FindTask(NULL);
+	task->tc_UserData = NULL;
+}
+
+void TaskLocalTimer::delayMillis(uint msecs) {
+	if (msecs) {
+		if (msecs < 1000) {
+			m_timerIOReq->tr_time.tv_secs = 0;
+			m_timerIOReq->tr_time.tv_micro = msecs * 1000;
+		} else {
+			m_timerIOReq->tr_time.tv_secs = msecs / 1000;
+			m_timerIOReq->tr_time.tv_micro = (msecs % 1000) * 1000;
+		}
+		m_timerIOReq->tr_node.io_Command = TR_ADDREQUEST;
+		DoIO(&m_timerIOReq->tr_node);
+		WaitIO(&m_timerIOReq->tr_node);
+	}
+}
+
+static struct timeval t0;
+
+uint32 TaskLocalTimer::getMillis() const {
+	// Kickstart 2.0 version
+	struct timeval t1;
+	long secs, usecs;
+	unsigned long tc;
+
+	//FIXME: there must be a more efficient way to determine the
+	// milliseconds past since program startup?
+	if (t0.tv_secs == 0 && t0.tv_micro == 0) {
+		GetSysTime(&t0);
+		return 0;
+	}
+
+	GetSysTime(&t1);
+
+	secs = t1.tv_secs - t0.tv_secs;
+	usecs = t1.tv_micro - t0.tv_micro;
+
+	if (usecs < 0) {
+		usecs += 1000000;
+		secs--;
+	}
+
+	tc = secs * 1000 + usecs / 1000;
+
+	return tc;
 }

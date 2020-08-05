@@ -55,4 +55,28 @@ private:
 	static AmigaOS3TimerManager *_s_instance;
 };
 
+class TaskLocalTimer {
+public:
+	static TaskLocalTimer *instance();
+	static void destroyInstance();
+
+	void delayMillis(uint msecs);
+	uint32 getMillis() const;
+
+	struct Device *getTimerBase() const {
+		return TimerBase;
+	}
+
+private:
+	TaskLocalTimer();
+	~TaskLocalTimer();
+
+	struct MsgPort *m_timerMP = NULL;
+	struct timerequest *m_timerIOReq = NULL;
+	// This is a weird situation: there's a global declared as	TimerBase in timer.h
+	// But we technically need multiple of them as we potentially talk to the timer device
+	// from multiple Tasks (the compiler just doesn't know about)
+	struct Device *TimerBase = NULL;
+};
+
 #endif  // AMIGAOS3TIMER_H

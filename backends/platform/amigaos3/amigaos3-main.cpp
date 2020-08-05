@@ -29,9 +29,10 @@
 #include "common/scummsys.h"
 
 #include "backends/platform/amigaos3/amigaos3-modular.h"
+#include "backends/timer/amigaos3/amigaos3-timer.h"
 
 #include <proto/icon.h>
-#include <proto/timer.h>
+
 #include <workbench/startup.h>
 
 #define DEFAULT_AUDIO_THREAD_PRIORITY 1
@@ -46,63 +47,43 @@ struct IntuitionBase* IntuitionBase = NULL;
 struct KeymapBase* KeymapBase = NULL;
 struct RealTimeBase  *RealTimeBase = NULL;
 
-//extern struct Device* TimerBase = NULL;
-struct MsgPort* TimerMP = NULL;
-struct Device* TimerBase = NULL;
-struct timerequest *TimerIOReq = NULL;
-ULONG eclocks_per_ms; /* EClock frequency in 1000Hz */
-
 static void unload_libraries(void) {
 	if (CxBase != NULL) {
-		CloseLibrary((struct Library*)CxBase);
+		CloseLibrary((struct Library *)CxBase);
 		CxBase = NULL;
 	}
 
 	if (CyberGfxBase != NULL) {
-	    CloseLibrary((struct Library*) CyberGfxBase);
-	    CyberGfxBase = NULL;
+		CloseLibrary((struct Library *)CyberGfxBase);
+		CyberGfxBase = NULL;
 	}
 
 	if (GfxBase != NULL) {
-		CloseLibrary((struct Library*)GfxBase);
+		CloseLibrary((struct Library *)GfxBase);
 		GfxBase = NULL;
 	}
 
 	if (IconBase != NULL) {
-		CloseLibrary((struct Library*)IconBase);
+		CloseLibrary((struct Library *)IconBase);
 		IconBase = NULL;
 	}
 
 	if (IntuitionBase != NULL) {
-		CloseLibrary((struct Library*)IntuitionBase);
+		CloseLibrary((struct Library *)IntuitionBase);
 		IntuitionBase = NULL;
 	}
 
 	if (KeymapBase != NULL) {
-		CloseLibrary((struct Library*)KeymapBase);
+		CloseLibrary((struct Library *)KeymapBase);
 		KeymapBase = NULL;
 	}
 
-
 	if (RealTimeBase != NULL) {
-		CloseLibrary((struct Library*)RealTimeBase);
+		CloseLibrary((struct Library *)RealTimeBase);
 		RealTimeBase = NULL;
 	}
 
-	if (TimerBase != NULL) {
-		CloseDevice(&TimerIOReq->tr_node);
-		TimerBase = NULL;
-	}
-
-	if (TimerIOReq != NULL) {
-		DeleteIORequest(TimerIOReq);
-		TimerIOReq = NULL;
-	}
-
-	if (TimerMP != NULL) {
-		DeleteMsgPort(TimerMP);
-		TimerMP = NULL;
-	}
+	TaskLocalTimer::destroyInstance();
 }
 
 static void load_libraries(void) {
@@ -147,27 +128,6 @@ static void load_libraries(void) {
 	if (RealTimeBase == NULL)	 {
 		fprintf(stderr, "Unable to load realtime.library!\n");
 		exit(EXIT_FAILURE);
-	}
-
-	// Load timer.device so that GetSysTime is
-	// available.
-	if ((TimerMP = CreateMsgPort()) == NULL) {
-		exit(EXIT_FAILURE);
-	}
-	if ((TimerIOReq = (timerequest*)CreateIORequest(TimerMP, sizeof(struct timerequest))) == NULL) {
-		exit(EXIT_FAILURE);
-	}
-	BYTE err = OpenDevice("timer.device", UNIT_MICROHZ, &TimerIOReq->tr_node, 37);
-	if (err || TimerIOReq->tr_node.io_Device == NULL) {
-		fprintf(stderr, "Unable to load timer.device!");
-		exit(EXIT_FAILURE);
-	}
-	TimerBase = TimerIOReq->tr_node.io_Device;
-
-	{
-		extern ULONG eclocks_per_ms;
-		struct EClockVal time;
-		eclocks_per_ms = ReadEClock(&time) / 1000;
 	}
 }
 

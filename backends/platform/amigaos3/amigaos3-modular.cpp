@@ -42,7 +42,6 @@
 
 #include <proto/timer.h>
 
-static struct timeval t0;
 extern bool default_timer;
 
 OSystem_AmigaOS3_Modular::OSystem_AmigaOS3_Modular() {
@@ -316,54 +315,12 @@ void OSystem_AmigaOS3_Modular::logMessage(LogMessageType::Type type, const char 
 	}
 }
 
-uint32 OSystem_AmigaOS3_Modular::getMillis(bool skipRecord) {
-	// Kickstart 2.0 version
-	struct timeval t1;
-	long secs, usecs;
-	unsigned long tc;
-
-	if (t0.tv_secs == 0 && t0.tv_micro == 0) {
-		GetSysTime(&t0);
-		return 0;
-	}
-
-	GetSysTime(&t1);
-
-	secs = t1.tv_secs - t0.tv_secs;
-	usecs = t1.tv_micro - t0.tv_micro;
-
-	if (usecs < 0) {
-		usecs += 1000000;
-		secs--;
-	}
-
-	tc = secs * 1000 + usecs / 1000;
-
-	return tc;
+uint32 OSystem_AmigaOS3_Modular::getMillis(bool /*skipRecord*/) {
+	return TaskLocalTimer::instance()->getMillis();
 }
 
-extern struct timerequest *TimerIOReq;
-
 void OSystem_AmigaOS3_Modular::delayMillis(uint msecs) {
-	// Temporary workaround, using the same IO request from multiple threads
-	//  could be dangerous.
-	if (default_timer) {
-		if (msecs) {
-			if (msecs < 1000) {
-				TimerIOReq->tr_time.tv_secs = 0;
-				TimerIOReq->tr_time.tv_micro = msecs * 1000;
-			} else {
-				TimerIOReq->tr_time.tv_secs = msecs / 1000;
-				TimerIOReq->tr_time.tv_micro = (msecs % 1000) * 1000;
-			}
-			TimerIOReq->tr_node.io_Command = TR_ADDREQUEST;
-			DoIO(&TimerIOReq->tr_node);
-			WaitIO(&TimerIOReq->tr_node);
-		}
-	} else {
-		// 1 Tick is 50Hz, 20ms
-		Delay(msecs / 20);
-	}
+	TaskLocalTimer::instance()->delayMillis(msecs);
 }
 
 void OSystem_AmigaOS3_Modular::getTimeAndDate(TimeDate &td) const {
