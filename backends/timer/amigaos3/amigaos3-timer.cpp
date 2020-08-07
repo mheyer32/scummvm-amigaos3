@@ -38,10 +38,18 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 				assert(slot.player);
 				assert(slot.player->pl_PlayerID == playerId);
 
-					LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, slot.player->pl_AlarmTime + slot.tics,
-											  PLAYER_Ready, TRUE, TAG_END);
-
 				((Common::TimerManager::TimerProc)slot.player->pl_UserData)(slot.refCon);
+
+				LONG nextAlarm = slot.player->pl_AlarmTime + slot.tics;
+				if (nextAlarm < slot.player->pl_MetricTime)
+				{
+					nextAlarm = slot.player->pl_MetricTime + slot.tics / 4;
+					debug("AmigaOS3TimerManager() TimerTask player fallen behind realtime");
+				}
+
+				LONG res = SetPlayerAttrs(slot.player, PLAYER_AlarmTime, nextAlarm,
+										  PLAYER_Ready, TRUE, TAG_END);
+
 			}
 			playerId++;
 			playerSignals >>= 1;
@@ -171,7 +179,7 @@ bool AmigaOS3TimerManager::installTimerProc(Common::TimerManager::TimerProc proc
 			}
 
 			BOOL success =
-			  SetPlayerAttrs(player, PLAYER_AlarmTime, RealTimeBase->rtb_Time + tics, PLAYER_Ready, TRUE, TAG_END);
+				SetPlayerAttrs(player, PLAYER_AlarmTime, player->pl_MetricTime + tics, PLAYER_Ready, TRUE, TAG_END);
 			if (!success) {
 				DeletePlayer(player);
 				FreeSignal(timerSignalBit);
