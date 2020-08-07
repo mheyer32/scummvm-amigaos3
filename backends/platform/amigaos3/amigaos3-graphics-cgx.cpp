@@ -407,7 +407,7 @@ bool OSYSCGX::loadGFXMode() {
 		return false;
 	}
 	uint pitch = GetCyberMapAttr(_hardwareOverlayScreen->RastPort.BitMap, CYBRMATTR_XMOD);
-	printf("OVERLAY PITCH: %d\n", pitch);
+	debug("OVERLAY PITCH: %d\n", pitch);
 	_videoMode.overlayBytesPerRow = pitch;
 
 	// Create the hardware window.
@@ -426,7 +426,7 @@ bool OSYSCGX::loadGFXMode() {
 		return false;
 	}
 	pitch = GetCyberMapAttr(_hardwareGameScreen->RastPort.BitMap, CYBRMATTR_XMOD);
-	printf("GAME PITCH: %d\n", pitch);
+	debug("GAME PITCH: %d\n", pitch);
 	_videoMode.bytesPerRow = pitch;
 
 	// Create the hardware window.
@@ -475,14 +475,13 @@ struct Screen *OSYSCGX::createHardwareScreen(uint16 width, uint16 height) {
 	modeId = BestCModeIDTags(CYBRBIDTG_Depth, CGX_VIDEO_DEPTH, CYBRBIDTG_NominalWidth, width, CYBRBIDTG_NominalHeight,
 							 height, TAG_DONE);
 
-	printf("modeId: %x\n", modeId);
-	printf("INVALID_ID: %x\n", INVALID_ID);
+	debug("modeId: %x\n", modeId);
 
 	// Verify the mode choosen.
 	if (modeId != INVALID_ID) {
 		if (GetCyberIDAttr(CYBRIDATTR_DEPTH, modeId) != CGX_VIDEO_DEPTH) {
 			modeId = INVALID_ID;
-			printf("depth mismatch %d\n", GetCyberIDAttr(CYBRIDATTR_DEPTH, modeId));
+			debug("depth mismatch %d\n", GetCyberIDAttr(CYBRIDATTR_DEPTH, modeId));
 		}
 
 		/*if (GetCyberIDAttr(CYBRIDATTR_WIDTH, modeId) != width) {
@@ -497,11 +496,11 @@ struct Screen *OSYSCGX::createHardwareScreen(uint16 width, uint16 height) {
 	}
 
 	if (modeId == INVALID_ID) {
-		printf("Couldn't find a Screen Mode for requested mode\n");
+		debug("Couldn't find a Screen Mode for requested mode\n");
 	}
 
 	if (modeId != INVALID_ID) {
-		printf("OpenScreenTags()\n");
+		debug("OpenScreenTags()\n");
 		screen = OpenScreenTags(NULL, SA_Depth, CGX_VIDEO_DEPTH, SA_DisplayID, modeId, SA_Width, width, SA_Height,
 								height, SA_Type, CUSTOMSCREEN, SA_Quiet, TRUE, SA_ShowTitle, FALSE, SA_Draggable, FALSE,
 								SA_Exclusive, TRUE, SA_AutoScroll, FALSE, TAG_END);
@@ -982,12 +981,10 @@ void OSYSCGX::setMouseCursor(const void *buf, uint w, uint h, int hotspot_x, int
 									  bool dontScale, const Graphics::PixelFormat *format) {
 #ifndef NDEBUG
 	debug(4, "OSystem_AmigaOS3::setMouseCursor(w = %d, h = %d)", w, h);
-
-	assert(buf);
 #endif
 
 	// Sanity check.
-	if (w == 0 || h == 0) {
+	if (w == 0 || h == 0 || !buf) {
 		return;
 	}
 
