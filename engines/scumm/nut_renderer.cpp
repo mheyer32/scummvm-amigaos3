@@ -199,9 +199,9 @@ void NutRenderer::loadFont(const char *filename) {
 		}
 	}
 
+#ifndef __amigaos3__
 	// Now _palette contains all the used colors, and _paletteMap maps the
 	// real color to the palette index.
-
 	if (numColors <= 2)
 		_bpp = 1;
 	else if (numColors <= 4)
@@ -257,6 +257,9 @@ void NutRenderer::loadFont(const char *filename) {
 
 		_charBuffer = new byte[_maxCharSize];
 	}
+#else
+	_bpp = 8;
+#endif
 
 	delete[] dataSrc;
 	delete[] _paletteMap;
@@ -283,6 +286,7 @@ int NutRenderer::getCharHeight(byte c) const {
 }
 
 byte *NutRenderer::unpackChar(byte c) {
+#ifndef __amigaos3__
 	if (_bpp == 8)
 		return _chars[c].src;
 
@@ -323,6 +327,9 @@ byte *NutRenderer::unpackChar(byte c) {
 	}
 
 	return _charBuffer;
+#else
+	return _chars[c].src;
+#endif
 }
 
 void NutRenderer::drawFrame(byte *dst, int c, int x, int y) {
