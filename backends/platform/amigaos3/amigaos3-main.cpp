@@ -35,7 +35,7 @@
 
 #include <workbench/startup.h>
 
-#define DEFAULT_AUDIO_THREAD_PRIORITY 1
+#define DEFAULT_AUDIO_THREAD_PRIORITY 22 // 1 above the TimerManager
 
 static int wbClosed = 0;
 
