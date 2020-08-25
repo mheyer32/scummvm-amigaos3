@@ -67,30 +67,31 @@ int SmushFont::drawChar(byte *buffer, int dst_width, int x, int y, byte chr) {
 	int w = _chars[chr].width;
 	int h = _chars[chr].height;
 	const byte *src = unpackChar(chr);
-	byte *dst = buffer + dst_width * y + x;
+	int8 *dst = (int8*)buffer + dst_width * y + x;
 
 	assert(dst_width == _vm->_screenWidth);
 
+	const int8 transparency = _chars[chr].transparency;
 	if (_original) {
 		for (int j = 0; j < h; j++) {
 			for (int i = 0; i < w; i++) {
 				int8 value = *src++;
-				if (value != _chars[chr].transparency)
+				if (value != transparency)
 					dst[i] = value;
 			}
 			dst += dst_width;
 		}
 	} else {
-		char color = (_color != -1) ? _color : 1;
+		int8 color = (_color != -1) ? _color : 1;
 		if (_new_colors) {
 			for (int j = 0; j < h; j++) {
 				for (int i = 0; i < w; i++) {
 					int8 value = *src++;
 					if (value == -color) {
-						dst[i] = 0xFF;
+						dst[i] = -1;
 					} else if (value == -31) {
 						dst[i] = 0;
-					} else if (value != _chars[chr].transparency) {
+					} else if (value != transparency) {
 						dst[i] = value;
 					}
 				}
@@ -102,7 +103,7 @@ int SmushFont::drawChar(byte *buffer, int dst_width, int x, int y, byte chr) {
 					int8 value = *src++;
 					if (value == 1) {
 						dst[i] = color;
-					} else if (value != _chars[chr].transparency) {
+					} else if (value != transparency) {
 						dst[i] = 0;
 					}
 				}

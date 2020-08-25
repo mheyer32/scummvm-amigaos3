@@ -30,7 +30,7 @@ namespace Scumm {
 
 class SmushFont : public NutRenderer {
 protected:
-	int16 _color;
+	int8 _color;
 	bool _new_colors;
 	bool _original;
 
@@ -44,7 +44,7 @@ protected:
 public:
 	SmushFont(ScummEngine *vm, const char *filename, bool use_original_colors, bool new_colors);
 
-	void setColor(byte c) { _color = c; }
+	void setColor(int8 c) { _color = c; }
 	void drawString    (const char *str, byte *buffer, int dst_width, int dst_height, int x, int y, bool center);
 	void drawStringWrap(const char *str, byte *buffer, int dst_width, int dst_height, int x, int y, int left, int right, bool center);
 };
