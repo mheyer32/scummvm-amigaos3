@@ -171,7 +171,7 @@ public:
 	}
 
 	virtual Audio::Timestamp getLength() const {
-		Audio::SeekableAudioStream *stream = dynamic_cast<Audio::SeekableAudioStream *>(_stream.get());
+		Audio::SeekableAudioStream *stream = static_cast<Audio::SeekableAudioStream *>(_stream.get());
 		if (stream == nullptr) {
 			error("Cannot get length from a non-seekable stream");
 		}
@@ -747,7 +747,7 @@ uint16 Audio32::play(int16 channelIndex, const ResourceId resourceId, const bool
 
 	if (channelIndex != kNoExistingChannel) {
 		AudioChannel &channel = getChannel(channelIndex);
-		MutableLoopAudioStream *stream = dynamic_cast<MutableLoopAudioStream *>(channel.stream.get());
+		MutableLoopAudioStream *stream = static_cast<MutableLoopAudioStream *>(channel.stream.get());
 		if (stream == nullptr) {
 			error("[Audio32::play]: Unable to cast stream for resource %s", resourceId.toString().c_str());
 		}
@@ -860,7 +860,7 @@ uint16 Audio32::play(int16 channelIndex, const ResourceId resourceId, const bool
 	// need to do any of these things since we use audio streams, and allocate
 	// and fill the monitoring buffer when reading audio data from the stream.
 
-	MutableLoopAudioStream *stream = dynamic_cast<MutableLoopAudioStream *>(channel.stream.get());
+	MutableLoopAudioStream *stream = static_cast<MutableLoopAudioStream *>(channel.stream.get());
 	if (stream == nullptr) {
 		error("[Audio32::play]: Unable to cast stream for resource %s", resourceId.toString().c_str());
 	}
@@ -1061,7 +1061,7 @@ void Audio32::setLoop(const int16 channelIndex, const bool loop) {
 
 	AudioChannel &channel = getChannel(channelIndex);
 
-	MutableLoopAudioStream *stream = dynamic_cast<MutableLoopAudioStream *>(channel.stream.get());
+	MutableLoopAudioStream *stream = static_cast<MutableLoopAudioStream *>(channel.stream.get());
 	assert(stream);
 	stream->loop() = loop;
 }
@@ -1370,7 +1370,7 @@ void Audio32::printAudioList(Console *con) const {
 	Common::StackLock lock(_mutex);
 	for (int i = 0; i < _numActiveChannels; ++i) {
 		const AudioChannel &channel = _channels[i];
-		const MutableLoopAudioStream *stream = dynamic_cast<MutableLoopAudioStream *>(channel.stream.get());
+		const MutableLoopAudioStream *stream = static_cast<MutableLoopAudioStream *>(channel.stream.get());
 		con->debugPrintf("  %d[%04x:%04x]: %s, started at %d, pos %d/%d, vol %d, pan %d%s%s\n",
 						 i,
 						 PRINT_REG(channel.soundNode),
