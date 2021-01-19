@@ -371,10 +371,12 @@ void ScreenItem::calcRects(const Plane &plane) {
 
 				mulinc(temp, celToScreenX, Ratio());
 
-				CelObjPic *celObjPic = dynamic_cast<CelObjPic *>(_celObj.get());
-				if (celObjPic == nullptr) {
+				CelObj *celObj = _celObj.get();
+				if (celObj->_info.type != kCelTypePic) {
 					error("Expected a CelObjPic");
 				}
+				CelObjPic *celObjPic = static_cast<CelObjPic *>(celObj);
+
 				temp.translate((celObjPic->_relativePosition.x * scriptToScreenX).toInt() - originX, 0);
 
 				int deltaX = plane._planeRect.width() - temp.right - temp.left;
@@ -417,11 +419,13 @@ void ScreenItem::calcRects(const Plane &plane) {
 					temp.right -= 1;
 				}
 
-				CelObjPic *celObjPic = dynamic_cast<CelObjPic *>(_celObj.get());
-				if (celObjPic == nullptr) {
+				CelObj *celObj = _celObj.get();
+				if (celObj->_info.type != kCelTypePic) {
 					error("Expected a CelObjPic");
 				}
-				temp.translate(celObjPic->_relativePosition.x - (originX * scaleX).toInt(), celObjPic->_relativePosition.y - (celObj._origin.y * scaleY).toInt());
+				CelObjPic *celObjPic = static_cast<CelObjPic *>(celObj);
+
+				temp.translate(celObjPic->_relativePosition.x - (originX * scaleX).toInt(), celObjPic->_relativePosition.y - (celObj->_origin.y * scaleY).toInt());
 
 				int deltaX = plane._gameRect.width() - temp.right - temp.left;
 

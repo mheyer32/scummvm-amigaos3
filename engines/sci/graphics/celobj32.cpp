@@ -950,10 +950,11 @@ CelObjView::CelObjView(const GuiResourceId viewId, const int16 loopNo, const int
 	const int cacheIndex = searchCache(_info, &cacheInsertIndex);
 	if (cacheIndex != -1) {
 		CelCacheEntry &entry = (*_cache)[cacheIndex];
-		const CelObjView *const cachedCelObj = dynamic_cast<CelObjView *>(entry.celObj.get());
-		if (cachedCelObj == nullptr) {
+		CelObj *celObj = entry.celObj.get();
+		if (celObj->_info.type != kCelTypeView) {
 			error("Expected a CelObjView in cache slot %d", cacheIndex);
 		}
+		const CelObjView *const cachedCelObj = static_cast<CelObjView *>(celObj);
 		*this = *cachedCelObj;
 		entry.id = ++_nextCacheId;
 		return;
@@ -1157,10 +1158,11 @@ CelObjPic::CelObjPic(const GuiResourceId picId, const int16 celNo) {
 	const int cacheIndex = searchCache(_info, &cacheInsertIndex);
 	if (cacheIndex != -1) {
 		CelCacheEntry &entry = (*_cache)[cacheIndex];
-		const CelObjPic *const cachedCelObj = dynamic_cast<CelObjPic *>(entry.celObj.get());
-		if (cachedCelObj == nullptr) {
+		CelObj *celObj = entry.celObj.get();
+		if (celObj->_info.type != kCelTypePic) {
 			error("Expected a CelObjPic in cache slot %d", cacheIndex);
 		}
+		const CelObjPic *const cachedCelObj = static_cast<CelObjPic *>(celObj);
 		*this = *cachedCelObj;
 		entry.id = ++_nextCacheId;
 		return;
