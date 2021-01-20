@@ -306,6 +306,7 @@ void MystMenuDialog::handleCommand(GUI::CommandSender *sender, uint32 cmd, uint3
 	}
 }
 
+#if 0
 bool MystOptionsDialog::getZipMode() const {
 	return _zipModeCheckbox->getState();
 }
@@ -321,6 +322,7 @@ bool MystOptionsDialog::getTransitions() const {
 void MystOptionsDialog::setTransitions(bool enabled) {
 	_transitionsCheckbox->setState(enabled);
 }
+#endif
 
 #endif
 
