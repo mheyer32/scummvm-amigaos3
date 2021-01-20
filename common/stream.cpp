@@ -74,6 +74,11 @@ Common::String ReadStream::readPascalString(bool transformCR) {
 	return s;
 }
 
+MemoryReadStream::~MemoryReadStream() {
+	if (_disposeMemory)
+		free(const_cast<byte *>(_ptrOrig));
+}
+
 uint32 MemoryReadStream::read(void *dataPtr, uint32 dataSize) {
 	// Read at most as many bytes as are still available...
 	if (dataSize > _size - _pos) {
@@ -116,6 +121,14 @@ bool MemoryReadStream::seek(int32 offs, int whence) {
 	_eos = false;
 	return true; // FIXME: STREAM REWRITE
 }
+
+bool MemoryReadStream::eos() const { return _eos; }
+
+void MemoryReadStream::clearErr() { _eos = false; }
+
+int32 MemoryReadStream::pos() const { return _pos; }
+
+int32 MemoryReadStream::size() const { return _size; }
 
 #pragma mark -
 

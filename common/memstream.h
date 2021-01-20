@@ -57,22 +57,18 @@ public:
 		_disposeMemory(disposeMemory),
 		_eos(false) {}
 
-	~MemoryReadStream() {
-		if (_disposeMemory)
-			free(const_cast<byte *>(_ptrOrig));
-	}
+	~MemoryReadStream();
 
 	uint32 read(void *dataPtr, uint32 dataSize);
 
-	bool eos() const { return _eos; }
-	void clearErr() { _eos = false; }
+	bool eos() const;
+	void clearErr();
 
-	int32 pos() const { return _pos; }
-	int32 size() const { return _size; }
+	int32 pos() const;
+	int32 size() const;
 
 	bool seek(int32 offs, int whence = SEEK_SET);
 };
-
 
 /**
  * This is a MemoryReadStream subclass which adds non-endian
