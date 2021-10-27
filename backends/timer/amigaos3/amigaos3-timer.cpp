@@ -100,7 +100,7 @@ void __saveds AmigaOS3TimerManager::TimerTask(void) {
 	AmigaOS3TimerManager *const tm = _s_instance;
 
 	tm->_timerMP = CreatePort(NULL, 0);
-	assert(_timerMP);
+	assert(tm->_timerMP);
 
 	struct MsgPort *const msgPort = tm->_timerMP;
 
