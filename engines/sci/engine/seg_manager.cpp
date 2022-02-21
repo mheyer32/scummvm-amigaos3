@@ -265,9 +265,11 @@ Object *SegManager::getObject(const reg_t &pos) const {
 				warning("getObject(): Trying to get an invalid object");
 		} else if (mobj->getType() == SEG_TYPE_SCRIPT) {
 			Script *scr = (Script *)mobj;
-			if (isReleaseBuild || (offset <= scr->getBufSize() && offset >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET &&
-								   scr->offsetIsObject(offset))) {
+			if (offset <= scr->getBufSize() && offset >= (uint)-SCRIPT_OBJECT_MAGIC_OFFSET &&
+				scr->offsetIsObject(offset)) {
 				obj = scr->getObject(offset);
+			} else {
+				warning("getObject(): invalid object offset");
 			}
 		}
 	}
