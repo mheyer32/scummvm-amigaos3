@@ -59,6 +59,25 @@
 #define RAWKEY_Y 0x15
 #define RAWKEY_Z 0x31
 
+#define RAWKEY_KP_0 0x0F
+#define RAWKEY_KP_1 0x1D
+#define RAWKEY_KP_2 0x1E
+#define RAWKEY_KP_3 0x1F
+#define RAWKEY_KP_4 0x2D
+#define RAWKEY_KP_5 0x2E
+#define RAWKEY_KP_6 0x2F
+#define RAWKEY_KP_7 0x3D
+#define RAWKEY_KP_8 0x3E
+#define RAWKEY_KP_9 0x3F
+#define RAWKEY_KP_POINT 0x3C
+#define RAWKEY_KP_ENTER 0x43
+#define RAWKEY_KP_MINUS 0x4A
+#define RAWKEY_KP_NUMLOCK 0x5A
+#define RAWKEY_KP_SCROLLOCK 0x5B
+#define RAWKEY_KP_MULTIPLY 0x5D
+#define RAWKEY_KP_PLUS 0x5E
+
+
 bool default_timer = false;
 
 AmigaOS3EventSource::AmigaOS3EventSource() {
@@ -228,6 +247,74 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 					result = true;
 					break;
 
+				case RAWKEY_KP_0:
+					event.kbd.keycode = Common::KEYCODE_KP0;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_1:
+					event.kbd.keycode = Common::KEYCODE_KP1;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_2:
+					event.kbd.keycode = Common::KEYCODE_KP2;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_3:
+					event.kbd.keycode = Common::KEYCODE_KP3;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_4:
+					event.kbd.keycode = Common::KEYCODE_KP4;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_5:
+					event.kbd.keycode = Common::KEYCODE_KP5;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_6:
+					event.kbd.keycode = Common::KEYCODE_KP6;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_7:
+					event.kbd.keycode = Common::KEYCODE_KP7;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_8:
+					event.kbd.keycode = Common::KEYCODE_KP8;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_9:
+					event.kbd.keycode = Common::KEYCODE_KP9;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_POINT:
+					event.kbd.keycode = Common::KEYCODE_KP0;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_ENTER:
+					event.kbd.keycode = Common::KEYCODE_KP_ENTER;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_MINUS:
+					event.kbd.keycode = Common::KEYCODE_KP0;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_NUMLOCK:
+					event.kbd.keycode = Common::KEYCODE_NUMLOCK;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_SCROLLOCK:
+					event.kbd.keycode = Common::KEYCODE_SCROLLOCK;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_MULTIPLY:
+					event.kbd.keycode = Common::KEYCODE_KP_MULTIPLY;
+					goto TranslateToAscii;
+
+				case RAWKEY_KP_PLUS:
+					event.kbd.keycode = Common::KEYCODE_KP_PLUS;
+					goto TranslateToAscii;
+
 				default:
 					if (flags == Common::KBD_CTRL && code == RAWKEY_Z) {
 						event.type = Common::EVENT_QUIT;
@@ -237,6 +324,7 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 						event.type = Common::EVENT_QUIT;
 					}
 
+				TranslateToAscii:
 					InputEvent FakedIEvent;
 					memset(&FakedIEvent, 0, sizeof(InputEvent));
 					FakedIEvent.ie_Class = IECLASS_RAWKEY;
@@ -247,10 +335,13 @@ bool AmigaOS3EventSource::pollEvent(Common::Event &event) {
 
 					if (MapRawKey(&FakedIEvent, &charbuf, 1, NULL) == 1) {
 						event.kbd.ascii = charbuf;
-						event.kbd.keycode = (Common::KeyCode)charbuf;
+						if (event.kbd.keycode == Common::KEYCODE_INVALID) {
+							event.kbd.keycode = (Common::KeyCode)charbuf;
+						}
 						result = true;
 					}
 					break;
+
 				}
 			}
 		}
