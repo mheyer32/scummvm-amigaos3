@@ -72,29 +72,29 @@ int MidiDriver_CAMD::open() {
 
 	CamdBase = OpenLibrary("camd.library", 36L);
 	if (!CamdBase) {
-		error("Could not open 'camd.library'");
-		return -1;
+		warning("Could not open 'camd.library'");
+		return MERR_DEVICE_NOT_AVAILABLE;
 	}
 
 	TagItem tags[] = {MIDI_MsgQueue, 0L, MIDI_SysExSize, 4096L, MIDI_Name, (Tag) "scummvm", TAG_END, 0};
 	_midi_node = CreateMidiA(tags);
 	if (!_midi_node) {
 		closeAll();
-		error("Could not create CAMD MIDI node");
-		return -1;
+		warning("Could not create CAMD MIDI node");
+		return MERR_CANNOT_CONNECT;
 	}
 
 	char *devicename = getDevice();
 	if (!devicename) {
 		closeAll();
-		error("Could not find an output device");
-		return MERR_DEVICE_NOT_AVAILABLE;
+		warning("Could not find an output device");
+		return MERR_CANNOT_CONNECT;
 	}
 
 	_midi_link = AddMidiLink(_midi_node, MLTYPE_Sender, MLINK_Location, (Tag)devicename, TAG_END);
 	if (!_midi_link) {
 		closeAll();
-		error("Could not create CAMD MIDI link to '%s'", devicename);
+		warning("Could not create CAMD MIDI link to '%s'", devicename);
 		return MERR_CANNOT_CONNECT;
 	}
 
