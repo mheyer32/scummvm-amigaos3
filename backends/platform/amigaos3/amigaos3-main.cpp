@@ -162,23 +162,23 @@ __stdargs int main(int argcWb, char const * argvWb[]) {
 
 		if (diskObject != NULL) {
 
-			STRPTR toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
+			STRPTR toolType = (STRPTR)FindToolType((CONST_STRPTR*)diskObject->do_ToolTypes, "AUDIO_THREAD_PRIORITY");
 			if (toolType != NULL)
 				sscanf(toolType, "%d", &audioThreadPriority);
 
-			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "DEFAULT_TIMER");
+			toolType = (STRPTR)FindToolType((CONST_STRPTR*)diskObject->do_ToolTypes, "DEFAULT_TIMER");
 			if (toolType != NULL) {
 				default_timer = true;
 				printf("Forcing DefaultTimerManager.\n");
 			}
 
-			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "FORCE_AGA");
+			toolType = (STRPTR)FindToolType((CONST_STRPTR*)diskObject->do_ToolTypes, "FORCE_AGA");
 			if (toolType != NULL) {
 				forceAGA = 1;
 				printf("Forcing AGA backend.\n");
 			}
 
-			toolType = (STRPTR)FindToolType(diskObject->do_ToolTypes, "CLOSE_WB");
+			toolType = (STRPTR)FindToolType((CONST_STRPTR*)diskObject->do_ToolTypes, "CLOSE_WB");
 			if (toolType != NULL)
 				closeWb = 1;
 

@@ -44,7 +44,7 @@ void setErrorHandler(ErrorHandler handler) {
 } // End of namespace Common
 
 
-#if !defined(DISABLE_TEXT_CONSOLE)
+#if !defined(DISABLE_TEXT_CONSOLE) && !((defined(__amigaos3__) && defined(NDEBUG)))
 
 void warning(const char *s, ...) {
 	Common::String output;
